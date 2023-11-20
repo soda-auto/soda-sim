@@ -1,0 +1,324 @@
+VERSION "HIPBNYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY/4/%%%/4/'%**4YYY///"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+
+BS_:
+
+BU_: RMS_PM_Controller DCU
+
+
+BO_ 173 M173_Modulation_And_Flux_Info: 8 RMS_PM_Controller
+ SG_ D4_Iq_Command : 48|16@1- (0.1,0) [-3276.8|3276.7] "A" Vector__XXX
+ SG_ D3_Id_Command : 32|16@1- (0.1,0) [-3276.8|3276.7] "A" Vector__XXX
+ SG_ D2_Flux_Weakening_Output : 16|16@1- (0.1,0) [-3276.8|3276.7] "A" Vector__XXX
+ SG_ D1_Modulation_Index : 0|16@1- (0.0001,0) [-3.2768|3.2767] "" Vector__XXX
+
+BO_ 172 M172_Torque_And_Timer_Info: 8 RMS_PM_Controller
+ SG_ D3_Power_On_Timer : 32|32@1+ (0.003,0) [0|1.28848e+007] "Sec" Vector__XXX
+ SG_ D2_Torque_Feedback : 16|16@1- (0.1,0) [-3276.8|3276.7] "Nm" Vector__XXX
+ SG_ D1_Commanded_Torque : 0|16@1- (0.1,0) [-3276.8|3276.7] "Nm" Vector__XXX
+
+BO_ 194 M194_Read_Write_Param_Response: 8 RMS_PM_Controller
+ SG_ D2_Write_Success : 16|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D3_Data_Response : 32|16@1- (1,0) [-32768|32767] "" Vector__XXX
+ SG_ D1_Parameter_Address_Response : 0|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ D4_Data_Response2 : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+
+BO_ 193 M193_Read_Write_Param_Command: 8 DCU
+ SG_ D3_Data_Command : 32|16@1- (1,0) [-32768|32767] "" Vector__XXX
+ SG_ D2_Read_Write_Command : 16|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D1_Parameter_Address_Command : 0|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ D4_Data_Command2 : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+
+BO_ 192 M192_Command_Message: 8 DCU
+ SG_ Inverter_Enable : 40|1@1+ (1,0) [0|1] "Bit" Vector__XXX
+ SG_ Direction_Command : 32|1@1+ (1,0) [0|1] "Bit" Vector__XXX
+ SG_ Speed_Command : 16|16@1- (1,0) [-32768|32767] "rpm" Vector__XXX
+ SG_ Torque_Command : 0|16@1- (0.1,0) [-3276.8|3276.7] "Nm" Vector__XXX
+ SG_ Inverter_Discharge : 41|1@1+ (1,0) [0|1] "Bit" Vector__XXX
+ SG_ Torque_Limit_Command : 48|16@1- (0.1,0) [-3276.8|3276.7] "Nm" Vector__XXX
+ SG_ Speed_Mode_Enable : 42|1@1+ (1,0) [0|1] "Bit" Vector__XXX
+
+BO_ 171 M171_Fault_Codes: 8 RMS_PM_Controller
+ SG_ D4_Run_Fault_Hi : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ D2_Post_Fault_Hi : 16|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ D3_Run_Fault_Lo : 32|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ D1_Post_Fault_Lo : 0|16@1+ (1,0) [0|65535] "" Vector__XXX
+
+BO_ 170 M170_Internal_States: 8 RMS_PM_Controller
+ SG_ D7_Direction_Command : 56|8@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D6_Inverter_Enable_State : 48|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D3_Relay_3_Status : 26|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D3_Relay_4_Status : 27|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D3_Relay_2_Status : 25|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D4_Inverter_Run_Mode : 32|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D5_Inverter_Command_Mode : 40|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D3_Relay_1_Status : 24|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D2_Inverter_State : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ D1_VSM_State : 0|16@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ D6_Inverter_Enable_Lockout : 55|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D4_Inverter_Discharge_State : 37|3@1+ (1,0) [0|7] "" Vector__XXX
+ SG_ D3_Relay_5_Status : 28|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D3_Relay_6_Status : 29|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 169 M169_Internal_Voltages: 8 RMS_PM_Controller
+ SG_ D4_Reference_Voltage_12_0 : 48|16@1- (0.01,0) [-327.68|327.67] "V" Vector__XXX
+ SG_ D3_Reference_Voltage_5_0 : 32|16@1- (0.01,0) [-327.68|327.67] "V" Vector__XXX
+ SG_ D2_Reference_Voltage_2_5 : 16|16@1- (0.01,0) [-327.68|327.67] "V" Vector__XXX
+ SG_ D1_Reference_Voltage_1_5 : 0|16@1- (0.01,0) [-327.68|327.67] "V" Vector__XXX
+
+BO_ 168 M168_Flux_ID_IQ_Info: 8 RMS_PM_Controller
+ SG_ D4_Iq : 48|16@1- (0.1,0) [-3276.8|3276.7] "A" Vector__XXX
+ SG_ D3_Id : 32|16@1- (0.1,0) [-3276.8|3276.7] "A" Vector__XXX
+ SG_ D2_Flux_Feedback : 16|16@1- (0.001,0) [-32.768|32.767] "Wb" Vector__XXX
+ SG_ D1_Flux_Command : 0|16@1- (0.001,0) [-32.768|32.767] "Wb" Vector__XXX
+
+BO_ 167 M167_Voltage_Info: 8 RMS_PM_Controller
+ SG_ D4_Phase_BC_Voltage : 48|16@1- (0.1,0) [-3276.8|3276.7] "V" Vector__XXX
+ SG_ D3_Phase_AB_Voltage : 32|16@1- (0.1,0) [-3276.8|3276.7] "V" Vector__XXX
+ SG_ D2_Output_Voltage : 16|16@1- (0.1,0) [-3276.8|3276.7] "V" Vector__XXX
+ SG_ D1_DC_Bus_Voltage : 0|16@1- (0.1,0) [-3276.8|3276.7] "V" Vector__XXX
+
+BO_ 166 M166_Current_Info: 8 RMS_PM_Controller
+ SG_ D4_DC_Bus_Current : 48|16@1- (0.1,0) [-3276.8|3276.7] "A" Vector__XXX
+ SG_ D3_Phase_C_Current : 32|16@1- (0.1,0) [-3276.8|3276.7] "A" Vector__XXX
+ SG_ D2_Phase_B_Current : 16|16@1- (0.1,0) [-3276.8|3276.7] "A" Vector__XXX
+ SG_ D1_Phase_A_Current : 0|16@1- (0.1,0) [-3276.8|3276.7] "A" Vector__XXX
+
+BO_ 165 M165_Motor_Position_Info: 8 RMS_PM_Controller
+ SG_ D4_Delta_Resolver_Filtered : 48|16@1- (0.1,0) [-3276.8|3276.7] "deg" Vector__XXX
+ SG_ D3_Electrical_Output_Frequency : 32|16@1- (0.1,0) [-3276.8|3276.7] "hz" Vector__XXX
+ SG_ D2_Motor_Speed : 16|16@1- (1,0) [-32768|32767] "rpm" Vector__XXX
+ SG_ D1_Motor_Angle_Electrical : 0|16@1+ (0.1,0) [0|6553.5] "deg" Vector__XXX
+
+BO_ 164 M164_Digital_Input_Status: 8 RMS_PM_Controller
+ SG_ D5_Digital_Input_5 : 32|1@1+ (1,0) [0|1] "boolean" Vector__XXX
+ SG_ D4_Digital_Input_4 : 24|1@1+ (1,0) [0|1] "boolean" Vector__XXX
+ SG_ D3_Digital_Input_3 : 16|1@1+ (1,0) [0|1] "boolean" Vector__XXX
+ SG_ D2_Digital_Input_2 : 8|1@1+ (1,0) [0|1] "boolean" Vector__XXX
+ SG_ D1_Digital_Input_1 : 0|1@1+ (1,0) [0|1] "boolean" Vector__XXX
+ SG_ D6_Digital_Input_6 : 40|1@1+ (1,0) [0|1] "boolean" Vector__XXX
+ SG_ D7_Digital_Input_7 : 48|1@1+ (1,0) [0|1] "boolean" Vector__XXX
+ SG_ D8_Digital_Input_8 : 56|1@1+ (1,0) [0|1] "boolean" Vector__XXX
+
+BO_ 163 M163_Analog_Input_Voltages: 8 RMS_PM_Controller
+ SG_ D4_Analog_Input_4 : 48|16@1- (0.01,0) [-327.68|327.67] "V" Vector__XXX
+ SG_ D3_Analog_Input_3 : 32|16@1- (0.01,0) [-327.68|327.67] "V" Vector__XXX
+ SG_ D2_Analog_Input_2 : 16|16@1- (0.01,0) [-327.68|327.67] "V" Vector__XXX
+ SG_ D1_Analog_Input_1 : 0|16@1- (0.01,0) [-327.68|327.67] "V" Vector__XXX
+
+BO_ 162 M162_Temperature_Set_3: 8 RMS_PM_Controller
+ SG_ D4_Torque_Shudder : 48|16@1- (0.1,0) [-3276.8|3276.7] "Nm" Vector__XXX
+ SG_ D3_Motor_Temperature : 32|16@1- (0.1,0) [-3276.8|3276.7] "degC" Vector__XXX
+ SG_ D2_RTD5_Temperature : 16|16@1- (0.1,0) [-3276.8|3276.7] "degC" Vector__XXX
+ SG_ D1_RTD4_Temperature : 0|16@1- (0.1,0) [-3276.8|3276.7] "degC" Vector__XXX
+
+BO_ 161 M161_Temperature_Set_2: 8 RMS_PM_Controller
+ SG_ D4_RTD3_Temperature : 48|16@1- (0.1,0) [-3276.8|3276.7] "degC" Vector__XXX
+ SG_ D3_RTD2_Temperature : 32|16@1- (0.1,0) [-3276.8|3276.7] "degC" Vector__XXX
+ SG_ D2_RTD1_Temperature : 16|16@1- (0.1,0) [-3276.8|3276.7] "degC" Vector__XXX
+ SG_ D1_Control_Board_Temperature : 0|16@1- (0.1,0) [-3276.8|3276.7] "degC" Vector__XXX
+
+BO_ 160 M160_Temperature_Set_1: 8 RMS_PM_Controller
+ SG_ D4_Gate_Driver_Board : 48|16@1- (0.1,0) [-3276.8|3276.7] "degC" Vector__XXX
+ SG_ D3_Module_C : 32|16@1- (0.1,0) [-3276.8|3276.7] "degC" Vector__XXX
+ SG_ D2_Module_B : 16|16@1- (0.1,0) [-3276.8|3276.7] "degC" Vector__XXX
+ SG_ D1_Module_A : 0|16@1- (0.1,0) [-3276.8|3276.7] "degC" Vector__XXX
+
+BO_ 174 M174_Firmware_Info: 8 RMS_PM_Controller
+ SG_ D1_Project_Code_EEP_Ver : 0|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ D2_SW_Version : 16|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ D3_DateCode_MMDD : 32|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ D4_DateCode_YYYY : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+
+BO_ 175 M175_Diag_Data: 8 RMS_PM_Controller
+ SG_ D1_Buffer_Record : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ D2_Buffer_Segment : 8|8@1+ (1,0) [0|5] "" Vector__XXX
+ SG_ D3_Diag_Data_1 : 16|16@1- (1,0) [-32768|32767] "" Vector__XXX
+ SG_ D4_Diag_Data_2 : 32|16@1- (1,0) [-32768|32767] "" Vector__XXX
+ SG_ D5_Diag_Data_3 : 48|16@1- (1,0) [-32768|32767] "" Vector__XXX
+
+BO_ 471 M187_U2C_Command_Txd: 8 RMS_PM_Controller
+ SG_ D1_ID_Byte : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ D2_Setpoint_Calc : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 469 M188_U2C_Message_Rxd: 8 DCU
+ SG_ D1_HV_Input_Current_Sensor_Valid : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D2_14V_Master_Fault : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D3_HV_Input_Current : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ D4_DTC_Status : 16|3@1+ (1,0) [0|7] "" Vector__XXX
+ SG_ D5_DTC_Index : 19|5@1+ (1,0) [0|31] "" Vector__XXX
+ SG_ D6_14V_Monitor : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ D7_14V_Conditional : 39|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ D8_14V_Current_Monitor : 48|7@1+ (1,0) [0|127] "" Vector__XXX
+
+BO_ 180 M180_Test1: 8 RMS_PM_Controller
+ SG_ Sig32_1 : 0|32@1- (1,0) [0|0] "" Vector__XXX
+ SG_ Sig16_2 : 32|16@1- (1,0) [0|0] "" Vector__XXX
+ SG_ Sig16_3 : 48|16@1- (1,0) [0|0] "" Vector__XXX
+
+BO_ 181 M181_Test2: 8 RMS_PM_Controller
+ SG_ Sig32_1 : 0|32@1- (1,0) [0|0] "" Vector__XXX
+ SG_ Sig16_2 : 32|16@1- (1,0) [0|0] "" Vector__XXX
+ SG_ Sig16_3 : 48|16@1- (1,0) [0|0] "" Vector__XXX
+
+BO_ 182 M182_Test3: 8 RMS_PM_Controller
+ SG_ Sig16u_1 : 0|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Sig16u_2 : 16|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Sig16u_3 : 32|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Sig16u_4 : 48|16@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 183 M183_Test4: 8 RMS_PM_Controller
+ SG_ Sig16_1 : 0|16@1- (1,0) [0|0] "" Vector__XXX
+ SG_ Sig16_2 : 16|16@1- (1,0) [0|0] "" Vector__XXX
+ SG_ Sig16_3 : 32|16@1- (1,0) [0|0] "" Vector__XXX
+ SG_ Sig16_4 : 48|16@1- (1,0) [0|0] "" Vector__XXX
+
+
+CM_ SG_ 173 D4_Iq_Command "The commanded Q-axis current";
+CM_ SG_ 173 D3_Id_Command "The commanded D-axis current";
+CM_ SG_ 173 D2_Flux_Weakening_Output "This is the current output of the flux regulator.";
+CM_ SG_ 173 D1_Modulation_Index "This is the modulation index. The scale factor is x100. To get the actual modulation index divide the value by 100.";
+CM_ SG_ 172 D3_Power_On_Timer "Updated every 3 msec. This will roll over in approximately 150 days!";
+CM_ SG_ 172 D2_Torque_Feedback "Estimated motor torque feedback";
+CM_ SG_ 172 D1_Commanded_Torque "The commanded Torque";
+CM_ BO_ 194 "To write a parameter use message 0x0C1 with byte #2 set to 1 (write). 
+To read a parameter use message 0x0C1 with byte #2 to set 0 (read). ";
+CM_ SG_ 194 D2_Write_Success "0=Write failure, 1=Success";
+CM_ SG_ 194 D3_Data_Response "All EEPROM data is 16 bits and is contained in bytes 4 and 5. Bytes 6 and 7 should be ignored.";
+CM_ SG_ 194 D1_Parameter_Address_Response "Valid EEPROM Parameter CAN addresses are between 100 and 499.";
+CM_ SG_ 194 D4_Data_Response2 "Additional data";
+CM_ BO_ 193 "To write a parameter use message 0x0C1 with byte #2 set to 1 (write). 
+To read a parameter use message 0x0C1 with byte #2 to set 0 (read). ";
+CM_ SG_ 193 D3_Data_Command "All EEPROM data is 16 bits and is contained in bytes 4 and 5.";
+CM_ SG_ 193 D2_Read_Write_Command "0=Read, 1=Write";
+CM_ SG_ 193 D1_Parameter_Address_Command "Valid EEPROM Parameter CAN addresses are between 100 and 499.";
+CM_ SG_ 193 D4_Data_Command2 "Additional data";
+CM_ BO_ 192 "The command message is used to transmit data to the controller. This message is sent from a user supplied external controller to the PMxxx controller.";
+CM_ SG_ 192 Inverter_Enable "0=Inverter OFF, 1 = Inverter ON";
+CM_ SG_ 192 Direction_Command "0=CW, 1=CCW as veiwed from the shaft end of the motor";
+CM_ SG_ 192 Speed_Command "Speed commandused when in speed mode";
+CM_ SG_ 192 Torque_Command "Torque command when in torque mode";
+CM_ SG_ 192 Inverter_Discharge "0=Discharge Disable,
+=Discharge Enable";
+CM_ SG_ 192 Torque_Limit_Command "Torque Limit, set to 0 to keep default";
+CM_ SG_ 192 Speed_Mode_Enable "0 = No change to mode, 1 = change to speed mode from torque mode";
+CM_ SG_ 171 D4_Run_Fault_Hi "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 171 D2_Post_Fault_Hi "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 171 D3_Run_Fault_Lo "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 171 D1_Post_Fault_Lo "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 170 D7_Direction_Command "1 = Forward
+0 = 'Reverse' if inverter enabled  & 'Stopped' if inverter is disabled";
+CM_ SG_ 170 D6_Inverter_Enable_State "0=Inverter Disabled, 
+1=Inverter Enabled";
+CM_ SG_ 170 D3_Relay_3_Status "0=OFF, 1=ON";
+CM_ SG_ 170 D3_Relay_4_Status "0=OFF, 1=ON";
+CM_ SG_ 170 D3_Relay_2_Status "0=OFF, 1=ON";
+CM_ SG_ 170 D4_Inverter_Run_Mode "0=Torque Mode, 1=Speed Mode";
+CM_ SG_ 170 D5_Inverter_Command_Mode "0=CAN mode, 1=VSM mode";
+CM_ SG_ 170 D3_Relay_1_Status "0=OFF, 1=ON";
+CM_ SG_ 170 D2_Inverter_State "Different states for the inverter state machine";
+CM_ SG_ 170 D1_VSM_State "Different states for the vehicle state machine";
+CM_ SG_ 170 D6_Inverter_Enable_Lockout "0=Lockout Disabled, 1=Lockout Enabled";
+CM_ SG_ 170 D4_Inverter_Discharge_State "0 = Disabled, 1 = Enabled, 2 = Speed Check, 3 = Active, 4 = Complete";
+CM_ SG_ 170 D3_Relay_5_Status "0=OFF, 1=ON";
+CM_ SG_ 170 D3_Relay_6_Status "0=OFF, 1=ON";
+CM_ SG_ 169 D4_Reference_Voltage_12_0 "12V Input Voltage";
+CM_ SG_ 169 D3_Reference_Voltage_5_0 "Transducer voltage";
+CM_ SG_ 169 D2_Reference_Voltage_2_5 "Internal reference voltage";
+CM_ SG_ 169 D1_Reference_Voltage_1_5 "Internal reference voltage";
+CM_ SG_ 168 D4_Iq "The measured Iq current";
+CM_ SG_ 168 D3_Id "The measured Id current";
+CM_ SG_ 168 D2_Flux_Feedback "The estimated flux";
+CM_ SG_ 168 D1_Flux_Command "The commanded flux";
+CM_ SG_ 167 D4_Phase_BC_Voltage "Measured value of the voltage between Phase B and Phase C";
+CM_ SG_ 167 D3_Phase_AB_Voltage "Measured value of the voltage betwen phase A and Phase B";
+CM_ SG_ 167 D2_Output_Voltage "The calculated value of the output voltage, in peak line-neutral volts";
+CM_ SG_ 167 D1_DC_Bus_Voltage "The actual measured value of the DC bus voltage";
+CM_ SG_ 166 D4_DC_Bus_Current "The Calculated DC Bus Current";
+CM_ SG_ 166 D3_Phase_C_Current "The measured value of Phase C current";
+CM_ SG_ 166 D2_Phase_B_Current "The measured value of Phase B current";
+CM_ SG_ 166 D1_Phase_A_Current "The measured value of Phase A current";
+CM_ SG_ 165 D4_Delta_Resolver_Filtered "Used in calibration of resolver angle adjustment.";
+CM_ SG_ 165 D3_Electrical_Output_Frequency "The actual electrical frequency of the inverter";
+CM_ SG_ 165 D2_Motor_Speed "The measured speed of the motor";
+CM_ SG_ 165 D1_Motor_Angle_Electrical "The Electrical Angle of the motor as read by the encoder or resolver";
+CM_ SG_ 164 D5_Digital_Input_5 "Status of Digital Input #5";
+CM_ SG_ 164 D4_Digital_Input_4 "Status of Digital Input #4";
+CM_ SG_ 164 D3_Digital_Input_3 "Status of Digital Input #3";
+CM_ SG_ 164 D2_Digital_Input_2 "Status of Digital Input #2";
+CM_ SG_ 164 D1_Digital_Input_1 "Status of Digital Input #1";
+CM_ SG_ 164 D6_Digital_Input_6 "Status of Digital Input #6";
+CM_ SG_ 164 D7_Digital_Input_7 "Status of Digital Input #7";
+CM_ SG_ 164 D8_Digital_Input_8 "Status of Digital Input #8";
+CM_ SG_ 163 D4_Analog_Input_4 "Voltage on Analog Input #4";
+CM_ SG_ 163 D3_Analog_Input_3 "Voltage on Analog Input #3";
+CM_ SG_ 163 D2_Analog_Input_2 "Voltage on Analog Input #2";
+CM_ SG_ 163 D1_Analog_Input_1 "Voltage on Analog Input #1";
+CM_ SG_ 162 D4_Torque_Shudder "Shudder compensation value of torque";
+CM_ SG_ 162 D3_Motor_Temperature "Motor Temperature Sensor";
+CM_ SG_ 162 D2_RTD5_Temperature "RTD 5 (PT1000) Temperature";
+CM_ SG_ 162 D1_RTD4_Temperature "RTD 4 (PT1000) Temperature";
+CM_ SG_ 161 D4_RTD3_Temperature "RTD input 3 (PT1000) Temperature";
+CM_ SG_ 161 D3_RTD2_Temperature "RTD input 2 (PT1000) Temperature";
+CM_ SG_ 161 D2_RTD1_Temperature "RTD input 1 (PT1000) Temperature";
+CM_ SG_ 161 D1_Control_Board_Temperature "Control Board Temperature";
+CM_ SG_ 160 D4_Gate_Driver_Board "Gate Driver Board Temperature";
+CM_ SG_ 160 D3_Module_C "IGBT Module C Temperature";
+CM_ SG_ 160 D2_Module_B "IGBT Module B Temperature";
+CM_ SG_ 160 D1_Module_A "IGBT Module A Temperature";
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 100000;
+BA_DEF_  "BusType" STRING ;
+BA_DEF_ SG_  "SystemSignalLongSymbol" STRING ;
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
+BA_DEF_DEF_  "BusType" "CAN";
+BA_DEF_DEF_  "SystemSignalLongSymbol" "";
+BA_ "GenMsgCycleTime" BO_ 173 100;
+BA_ "GenMsgCycleTime" BO_ 172 10;
+BA_ "GenMsgCycleTime" BO_ 194 10;
+BA_ "GenMsgCycleTime" BO_ 193 10;
+BA_ "GenMsgCycleTime" BO_ 192 10;
+BA_ "GenMsgCycleTime" BO_ 171 100;
+BA_ "GenMsgCycleTime" BO_ 170 100;
+BA_ "GenMsgCycleTime" BO_ 169 100;
+BA_ "GenMsgCycleTime" BO_ 168 10;
+BA_ "GenMsgCycleTime" BO_ 167 10;
+BA_ "GenMsgCycleTime" BO_ 166 10;
+BA_ "GenMsgCycleTime" BO_ 165 10;
+BA_ "GenMsgCycleTime" BO_ 164 10;
+BA_ "GenMsgCycleTime" BO_ 163 10;
+BA_ "GenMsgCycleTime" BO_ 162 100;
+BA_ "GenMsgCycleTime" BO_ 161 100;
+BA_ "GenMsgCycleTime" BO_ 160 100;
+BA_ "GenMsgCycleTime" BO_ 174 10;
+BA_ "SystemSignalLongSymbol" SG_ 469 D1_HV_Input_Current_Sensor_Valid "D1_HV_Input_Current_Sensor_Validity";
+BA_ "GenMsgCycleTime" BO_ 180 10;
+BA_ "GenMsgCycleTime" BO_ 181 10;
+BA_ "GenMsgCycleTime" BO_ 182 10;
+BA_ "GenMsgCycleTime" BO_ 183 10;
+VAL_ 192 Inverter_Enable 0 "Turn the inverter OFF" 1 "Turn the Inverter ON" ;
+VAL_ 192 Direction_Command 0 "CW" 1 "CCW" ;
+VAL_ 192 Inverter_Discharge 0 "Discharge Disable" 1 "Discharge Enable (if EEPROM parameter is set)" ;
+VAL_ 170 D2_Inverter_State 0 "Power up" 1 "Stop" 2 "Open Loop" 3 "Closed Loop" 4 "Internal State" 5 "Internal State" 6 "Internal State" 7 "Internal State" 8 "Idle Run" 9 "Idle Stop" 10 "Internal State" 11 "Intern State" 12 "Internal State" ;
+VAL_ 170 D1_VSM_State 0 "VSM Start State" 1 "Pre-Charge Init state" 2 "pre-charge active state" 3 "pre-charge complete state" 4 "VSM wait state" 5 "VSM ready state" 6 "Motor Running State" 7 "blink fault code state" 14 "Shutdown state for Key Switch Mode 1" 15 "Reset the inverter" ;

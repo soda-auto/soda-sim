@@ -1,0 +1,10 @@
+prefix=C:/UnrealProjects/ArrivalSim/Plugins/UnrealArrival/Source/ThirdParty/mongodb_c/Linux
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${exec_prefix}/include
+
+Name: libbson static archive
+Description: The libbson BSON serialization library.
+Version: 1.23.1
+Libs: -L${libdir} -lbson-static-1.0  C:/UnrealToolchains/v20_clang-13.0.1-centos7/x86_64-unknown-linux-gnu/usr/lib64/librt.so -lpthread
+Cflags: -I${includedir}/libbson-1.0 -DBSON_STATIC

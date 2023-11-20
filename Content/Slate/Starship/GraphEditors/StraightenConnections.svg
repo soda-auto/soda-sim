@@ -1,0 +1,10 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="9" cy="10" r="2" fill="white"/>
+<circle cx="9" cy="16" r="2" fill="white"/>
+<rect opacity="0.5" x="9" y="9" width="10" height="2" fill="white"/>
+<rect opacity="0.5" x="9" y="15" width="10" height="2" fill="white"/>
+<path opacity="0.5" d="M2 1C2 9 3.5 10 10 10" stroke="white" stroke-width="2"/>
+<path opacity="0.5" d="M2 11C2.00098 15.5 4 16 10.4645 16" stroke="white" stroke-width="2"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M19 8C17.8954 8 17 8.89543 17 10C17 11.1046 17.8954 12 19 12V8Z" fill="white"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M19 14C17.8954 14 17 14.8954 17 16C17 17.1046 17.8954 18 19 18V14Z" fill="white"/>
+</svg>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 26.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;}
+	.st1{fill:url(#SVGID_1_);}
+	.st2{fill-rule:evenodd;clip-rule:evenodd;fill:url(#SVGID_00000100379308157517742500000011885850826788906894_);}
+	.st3{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
+	.st4{opacity:0.71;fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;enable-background:new    ;}
+	.st5{fill-rule:evenodd;clip-rule:evenodd;fill:url(#SVGID_00000170280313786359687250000017393604425325312164_);}
+	.st6{fill-rule:evenodd;clip-rule:evenodd;fill:#C0BFBF;}
+	.st7{opacity:0.5;fill:#FFFFFF;enable-background:new    ;}
+	.st8{opacity:0.5;}
+	.st9{fill:#FFFFFF;}
+	.st10{opacity:0.25;fill:#FFFFFF;enable-background:new    ;}
+	.st11{opacity:0.75;}
+</style>
+<rect class="st0" width="64" height="64"/>
+<g>
+	
+		<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="27.0407" y1="51.2408" x2="26.9593" y2="18.9592" gradientTransform="matrix(1 0 0 1 0 2)">
+		<stop  offset="0" style="stop-color:#333333"/>
+		<stop  offset="1" style="stop-color:#818181"/>
+	</linearGradient>
+	<rect x="10.8" y="21" class="st1" width="32.4" height="32.2"/>
+	<g>
+		
+			<linearGradient id="SVGID_00000008122562233287492130000009387643169385663133_" gradientUnits="userSpaceOnUse" x1="-2725.719" y1="28.6827" x2="-2725.5962" y2="42.488" gradientTransform="matrix(-1 0 0 1 -2698.4956 2)">
+			<stop  offset="0" style="stop-color:#FFFFFF"/>
+			<stop  offset="1" style="stop-color:#989898"/>
+		</linearGradient>
+		<path style="fill-rule:evenodd;clip-rule:evenodd;fill:url(#SVGID_00000008122562233287492130000009387643169385663133_);" d="
+			M35.4,44.6l-3.9-8.2l-2.8,4.9L24.5,31l-5.7,13.5L35.4,44.6L35.4,44.6z"/>
+		<polygon class="st3" points="24.4,31 26.2,35.3 25,34.2 24.3,36.2 23.8,34 23,34.4 		"/>
+		<polygon class="st3" points="31.5,36.3 32.9,39.4 32.1,38.7 31.7,39.9 31.2,38.4 30,38.8 		"/>
+		<polygon class="st4" points="31.2,37.3 28.5,42.7 25.2,34.3 25.5,33.4 28.6,41.2 30.5,37.9 		"/>
+	</g>
+	
+		<linearGradient id="SVGID_00000132810466760049281880000012105030127640413866_" gradientUnits="userSpaceOnUse" x1="27.0529" y1="47.1062" x2="27.0297" y2="37.9176" gradientTransform="matrix(1 0 0 1 0 2)">
+		<stop  offset="0.3858" style="stop-color:#E6E6E5"/>
+		<stop  offset="1" style="stop-color:#414141"/>
+	</linearGradient>
+	<path style="fill-rule:evenodd;clip-rule:evenodd;fill:url(#SVGID_00000132810466760049281880000012105030127640413866_);" d="
+		M37.2,46.1L35,40l3.6,6.6v2.7H15.5v-2.7l3.6-6.7l-2.2,6.2H37.2z"/>
+	<rect x="15.5" y="46.6" class="st6" width="23.1" height="2.7"/>
+</g>
+<g>
+	<path class="st7" d="M53.1,45.9l-7.5,7.5c-0.4,0.3-0.5,0.1-0.5-0.3V21c0-0.4,0-0.8,0.4-1.2l7.5-7.6c0.6-0.5,0.7,0.2,0.7,0.6v31.6
+		C53.7,44.8,53.6,45.4,53.1,45.9z"/>
+	<g class="st8">
+		<path class="st9" d="M52.7,14v30.5c0,0.4-0.1,0.6-0.3,0.7l0,0l0,0L46,51.6V21c0-0.3,0-0.4,0.1-0.5L52.7,14 M53.3,12.1
+			c-0.1,0-0.2,0-0.4,0.2l-7.5,7.6C45,20.2,45,20.7,45,21v32.1c0,0.3,0.1,0.4,0.2,0.4c0.1,0,0.2,0,0.3-0.1l7.5-7.5
+			c0.5-0.5,0.6-1.1,0.6-1.5V12.8C53.7,12.6,53.6,12.1,53.3,12.1L53.3,12.1z"/>
+	</g>
+</g>
+<g>
+	<path class="st10" d="M43.2,19.1H11.3c-0.4,0-1.4,0.1-0.7-0.7l7.2-7.3c0.5-0.5,0.8-0.7,1.1-0.7h33.2c0.5,0,0.6,0.1,0,0.7l-7.4,7.5
+		C44.3,19.2,43.6,19.1,43.2,19.1z"/>
+	<g class="st8">
+		<path class="st9" d="M50.5,11.5L44.1,18c-0.1,0.1-0.3,0.1-0.6,0.1h-0.2h-0.2H12.3l6.2-6.3c0.3-0.3,0.4-0.4,0.4-0.4L50.5,11.5
+			 M52.2,10.5H19c-0.4,0-0.7,0.2-1.1,0.7l-7.2,7.3c-0.6,0.6,0,0.7,0.4,0.7c0.1,0,0.2,0,0.3,0h31.9c0.1,0,0.2,0,0.3,0
+			c0.4,0,0.9,0,1.3-0.4l7.4-7.5C52.8,10.6,52.7,10.5,52.2,10.5L52.2,10.5z"/>
+	</g>
+</g>
+<g>
+	<path class="st9" d="M42.8,21.4v31.4H11.3V21.4H42.8 M43.5,20.4h-33c-0.1,0-0.2,0.1-0.2,0.2v33c0,0.1,0.1,0.2,0.2,0.2h33
+		c0.1,0,0.2-0.1,0.2-0.2v-33C43.8,20.5,43.7,20.4,43.5,20.4L43.5,20.4z"/>
+</g>
+<g class="st11">
+	<polygon class="st9" points="30.2,20.4 24.1,20.4 24.1,28 26.2,27.4 28.3,28.5 30.2,28 	"/>
+</g>
+<g class="st11">
+	<polygon class="st9" points="24.7,18.9 32.6,10.8 38.1,10.8 30.1,18.9 	"/>
+	<path class="st9" d="M37.5,11L30,18.6h-4.7l7.5-7.6H37.5 M38.6,10.5h-6.1L24,19.1h6.1L38.6,10.5L38.6,10.5z"/>
+</g>
+</svg>

@@ -1,0 +1,16 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path opacity="0.5" d="M11 1H5V2H11V1Z" fill="white"/>
+<path opacity="0.5" d="M2 5H1V11H2V5Z" fill="white"/>
+<path opacity="0.5" d="M11 14H5V15H11V14Z" fill="white"/>
+<path opacity="0.5" d="M15 5H14V11H15V5Z" fill="white"/>
+<path opacity="0.5" d="M5 8H2V11H5V8Z" fill="white"/>
+<path opacity="0.5" d="M8 5H5V8H8V5Z" fill="white"/>
+<path opacity="0.5" d="M8 11H5V14H8V11Z" fill="white"/>
+<path opacity="0.5" d="M14 5H11V8H14V5Z" fill="white"/>
+<path opacity="0.5" d="M11 2H8V5H11V2Z" fill="white"/>
+<path opacity="0.5" d="M11 8H8V11H11V8Z" fill="white"/>
+<path d="M1.6 13.7L0 14.5L1.5 16L2.3 14.4L3.7 15.8L4 12L0.2 12.3L1.6 13.7Z" fill="white"/>
+<path d="M1.6 2.3L0 1.5L1.5 0L2.3 1.6L3.7 0.2L4 4L0.2 3.7L1.6 2.3Z" fill="white"/>
+<path d="M14.4 13.7L16 14.5L14.5 16L13.7 14.4L12.3 15.8L12 12L15.8 12.3L14.4 13.7Z" fill="white"/>
+<path d="M14.4 2.3L16 1.5L14.5 0L13.7 1.6L12.3 0.2L12 4L15.8 3.7L14.4 2.3Z" fill="white"/>
+</svg>

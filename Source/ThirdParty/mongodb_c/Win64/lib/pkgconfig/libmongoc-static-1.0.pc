@@ -1,0 +1,11 @@
+prefix=C:/UnrealProjects/ArrivalSim/Plugins/UnrealArrival/Source/ThirdParty/mongodb_c/Win64
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${exec_prefix}/include
+
+Name: libmongoc
+Description: The libmongoc MongoDB client library.
+Version: 1.23.1
+Requires: libbson-static-1.0
+Libs: -L${libdir} -lmongoc-static-1.0  -lsecur32.lib -lcrypt32.lib -lShlwapi.lib -lsecur32.lib -lcrypt32.lib -lBcrypt.lib -lDnsapi
+Cflags: -I${includedir}/libmongoc-1.0 -DMONGOC_STATIC

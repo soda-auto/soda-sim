@@ -1,0 +1,84 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: SafetyLayer Infrastructure
+VAL_TABLE_ Isolation 1 "IsolationError" 0 "OK" ;
+VAL_TABLE_ AIStatus 4 "Error" 3 "SoftStop" 2 "AIInControl" 1 "AIAllowed" 0 "Off" ;
+VAL_TABLE_ SafeStopSource 6 "Other" 5 "Cohda" 4 "VehicleSystems" 3 "AIMonitor" 2 "RemoteControl" 1 "MM" 0 "NoSafeStop" ;
+VAL_TABLE_ VehicleStatus 5 "SafeStop" 4 "Error" 2 "HV" 1 "LV" ;
+VAL_TABLE_ TrackLights 2 "Flashing" 1 "On" 0 "Off" ;
+VAL_TABLE_ OnOff 1 "ON" 0 "Off" ;
+
+
+BO_ 315 Infrastructure2: 8 Infrastructure
+ SG_ V2X_Feedback4 : 56|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ V2X_Feedback3 : 48|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ V2X_Feedback2 : 40|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ V2X_Feedback1 : 32|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ TxRssi : 24|8@1- (1,0) [-128|127] "dB" Vector__XXX
+ SG_ TxPER : 16|8@1+ (1,0) [0|100] "%" Vector__XXX
+ SG_ RxRssi : 8|8@1- (1,0) [-128|127] "dB" Vector__XXX
+ SG_ RxPER : 0|8@1+ (1,0) [0|100] "%" Vector__XXX
+
+BO_ 314 Infrastructure1: 8 Infrastructure
+ SG_ NWatchdogInfrastructure : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ NLapsRemaining : 33|7@1+ (1,0) [0|127] "" Vector__XXX
+ SG_ NRacePosition : 17|3@1+ (1,0) [0|7] "" Vector__XXX
+ SG_ PMotorLimit_kW : 24|9@1+ (1,0) [0|511] "kW" Vector__XXX
+ SG_ vCarLimit_kph : 8|9@1+ (1,0) [0|511] "kph" Vector__XXX
+ SG_ NOvertakingStatus : 5|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ NRaceMode : 3|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ BEStopRequest : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ NDriveModeRequest : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ NControlModeRequest : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 320 SafetyLayer1: 8 SafetyLayer
+ SG_ tLastLap : 48|16@1+ (0.01,0) [0|655.35] "%" Vector__XXX
+ SG_ NCurrentLap : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ BCohdaSafestopEnabledStatus : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ NWatchdogSafetyLayer : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ vCar_kph : 8|12@1+ (0.1,0) [0|409.5] "kph" Vector__XXX
+ SG_ NADSStatus : 2|3@1+ (1,0) [0|7] "" Vector__XXX
+ SG_ NDriveMode : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ NControlMode : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ NGear : 5|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ rSOC_perc : 24|7@1+ (1,0) [0|127] "%" Vector__XXX
+ SG_ NVehicleState : 20|3@1+ (1,0) [0|7] "" Vector__XXX
+
+
+
+BA_DEF_  "BusType" STRING ;
+BA_DEF_DEF_  "BusType" "CAN";
+

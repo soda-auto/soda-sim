@@ -1,0 +1,182 @@
+variables:
+  GEN_VER: 0
+  MAJOR_VER: 13
+  MINOR_VER: 0
+  UA_VER: ${GEN_VER}.${MAJOR_VER}.${MINOR_VER}.${CI_PIPELINE_ID}
+  
+stages:
+- install
+- build
+- deploy
+
+###############################################################################
+#                                Triggers                                     #
+###############################################################################
+Stream ArrivalSim:
+  when: manual
+  stage: install
+  trigger: 
+    project: simulator/ArrivalSim
+    branch: master
+  
+Stream Carla:
+  when: manual
+  stage: install
+  trigger: 
+    project: simulator/carla
+    branch: arrival_0.9.12
+
+###############################################################################
+#                                Jobs for Linux                               #
+###############################################################################
+Install Linux:
+  tags: [sim-linux]
+  when: manual
+  stage: install
+  variables:
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/UnrealArrival
+    GIT_STRATEGY: fetch
+    GIT_SUBMODULE_STRATEGY: recursive
+  script:
+    - git lfs install
+    - git lfs pull
+    - git submodule sync --recursive
+    - git submodule update  --remote --recursive
+    - git submodule foreach git lfs install
+    - git submodule foreach git lfs pull
+    - export PYTHONPATH="$PYTHONPATH:BuildUtils"
+    - python3 gitlab_ci.py install_plugin
+    
+Build Linux:
+  tags: [sim-linux]
+  when: manual
+  stage: build
+  variables:
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/UnrealArrival
+    GIT_STRATEGY: none
+    GIT_SUBMODULE_STRATEGY: none
+    GIT_CLEAN_FLAGS: none
+  script:
+    - export PYTHONPATH="$PYTHONPATH:BuildUtils"
+    - python3 gitlab_ci.py build_plugin
+        
+Deploy GDrive Linux:
+  tags: [sim-linux]
+  when: manual
+  stage: deploy
+  variables:
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/UnrealArrival
+    GIT_STRATEGY: none
+    GIT_SUBMODULE_STRATEGY: none
+    GIT_CLEAN_FLAGS: none
+  script:
+    - export PYTHONPATH="$PYTHONPATH:BuildUtils"
+    - pip3 install httplib2==0.15.0 PyDrive #--force-reinstall
+    - python3 gitlab_ci.py deploy_pligin_gdrive
+    
+Deploy Arrival Dev Linux:
+  tags: [sim-linux]
+  when: manual
+  stage: deploy
+  variables:
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/UnrealArrival
+    GIT_STRATEGY: none
+    GIT_SUBMODULE_STRATEGY: none
+    GIT_CLEAN_FLAGS: none
+  script:
+    - export PYTHONPATH="$PYTHONPATH:BuildUtils"
+    - pip3 install requests
+    - python3 gitlab_ci.py deploy_pligin_arrival dev
+    
+Deploy Arrival Release Linux:
+  tags: [sim-linux]
+  when: manual
+  stage: deploy
+  variables:
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/UnrealArrival
+    GIT_STRATEGY: none
+    GIT_SUBMODULE_STRATEGY: none
+    GIT_CLEAN_FLAGS: none
+  script:
+    - export PYTHONPATH="$PYTHONPATH:BuildUtils"
+    - pip3 install requests
+    - python3 gitlab_ci.py deploy_pligin_arrival release
+    
+###############################################################################
+#                                Jobs for Windows                             #
+###############################################################################
+Install Win32:
+  tags: [sim-win32]
+  when: manual
+  stage: install
+  variables:
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/UnrealArrival
+    GIT_STRATEGY: fetch
+    GIT_SUBMODULE_STRATEGY: recursive
+  script:
+    - git lfs install
+    - git lfs pull
+    - git submodule sync --recursive
+    - git submodule update  --remote --recursive
+    - git submodule foreach git lfs install
+    - git submodule foreach git lfs pull
+    - $Env:PYTHONPATH += "BuildUtils;"
+    - python gitlab_ci.py install_plugin
+    
+Build Win32:
+  tags: [sim-win32]
+  when: manual
+  stage: build
+  variables:
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/UnrealArrival
+    GIT_STRATEGY: none
+    GIT_SUBMODULE_STRATEGY: none
+    GIT_CLEAN_FLAGS: none
+  script:
+    - $Env:PYTHONPATH += "BuildUtils;"
+    - python gitlab_ci.py build_plugin
+    
+Deploy GDrive Win32:
+  tags: [sim-win32]
+  when: manual
+  stage: deploy
+  variables:
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/UnrealArrival
+    GIT_STRATEGY: none
+    GIT_SUBMODULE_STRATEGY: none
+    GIT_CLEAN_FLAGS: none
+  script:
+    - $Env:PYTHONPATH += "BuildUtils;"
+    - pip install httplib2==0.15.0 PyDrive #--force-reinstall
+    - python gitlab_ci.py deploy_pligin_gdrive
+    
+Deploy Arrival Dev Win32:
+  tags: [sim-win32]
+  when: manual
+  stage: deploy
+  variables:
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/UnrealArrival
+    GIT_STRATEGY: none
+    GIT_SUBMODULE_STRATEGY: none
+    GIT_CLEAN_FLAGS: none
+  script:
+    - $Env:PYTHONPATH += "BuildUtils;"
+    - pip install requests
+    - python gitlab_ci.py deploy_pligin_arrival dev
+    
+Deploy Arrival Release Win32:
+  tags: [sim-win32]
+  when: manual
+  stage: deploy
+  variables:
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/UnrealArrival
+    GIT_STRATEGY: none
+    GIT_SUBMODULE_STRATEGY: none
+    GIT_CLEAN_FLAGS: none
+  script:
+    - $Env:PYTHONPATH += "BuildUtils;"
+    - pip install requests
+    - python gitlab_ci.py deploy_pligin_arrival release
+    
+
+    

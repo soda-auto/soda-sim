@@ -1,0 +1,311 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: DCU
+VAL_TABLE_ OpCodeInfo 3 "MaxOpCodeIndex" 2 "SnrsFaultCodes" 1 "HWFaultCodes" 0 "InverterState" ;
+VAL_TABLE_ OpCodeSignal 11 "MaxOpCodeIndex" 10 "DQAxesVoltages" 9 "PowerMeterInfo" 8 "PhaseVoltages" 7 "DQAxesCurrents" 6 "SpeedRefFdbck" 5 "TorqueRefFdbck" 4 "SpeedAndPosition" 3 "MeasuredVoltages" 2 "MeasuredCurrents" 1 "ExternalTemper" 0 "InternalTemper" ;
+
+
+BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
+ SG_ Power_Limit_Reason : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ Power_Limit_Regen : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ Power_Limit_Drive : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 2381580030 Inv_Torque_Limits: 8 Vector__XXX
+ SG_ Torque_Limit_Reason : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ Torque_Limit_Regen : 16|16@1+ (0.1,0) [0|6553.5] "" Vector__XXX
+ SG_ Torque_Limit_Drive : 0|16@1+ (0.1,0) [0|6553.5] "" Vector__XXX
+
+BO_ 2381579774 Inv_Control_Feedback_Info: 8 Vector__XXX
+ SG_ Speed_Feedback : 48|16@1+ (1,-32768) [-32760|32760] "rpm" Vector__XXX
+ SG_ Speed_Reference : 32|16@1+ (1,-32768) [-32760|32760] "rpm" Vector__XXX
+ SG_ Torque_Feedback : 16|16@1+ (0.1,-3276.8) [-3148|3148] "Nm" Vector__XXX
+ SG_ Torque_Reference : 0|16@1+ (0.1,-3276.8) [-3148|3148] "Nm" Vector__XXX
+
+BO_ 2381579518 Inv_Input_Info: 8 Vector__XXX
+ SG_ Input_Power : 48|16@1+ (0.01,-327.68) [-327.6|327.6] "kW" Vector__XXX
+ SG_ Input_Current : 32|16@1+ (0.1,-3276.8) [-3148|3148] "Amps" Vector__XXX
+ SG_ Measured_U_supply : 16|16@1+ (0.01,0) [0|60] "V" Vector__XXX
+ SG_ Measured_U_DC_link : 0|16@1+ (0.1,0) [0|640] "V" Vector__XXX
+
+BO_ 2381579262 Inv_Output_Info: 8 Vector__XXX
+ SG_ Electrical_Output_Freq : 48|16@1+ (0.1,-3276.8) [-3148|3148] "Hz" Vector__XXX
+ SG_ Output_Current : 32|16@1+ (0.1,-3276.8) [-3148|3148] "Amps" Vector__XXX
+ SG_ Output_Voltage : 16|16@1+ (0.1,-3276.8) [-3148|3148] "V" Vector__XXX
+ SG_ Output_Power : 0|16@1+ (0.01,-327.68) [-327.6|327.6] "kW" Vector__XXX
+
+BO_ 2381579006 Inv_Temperature_Info: 8 Vector__XXX
+ SG_ Motor_Temperature : 32|8@1+ (1,-50) [-50|200] "degC" Vector__XXX
+ SG_ Aux3_Temperature : 56|8@1+ (1,-50) [-50|200] "degC" Vector__XXX
+ SG_ Aux2_Temperature : 48|8@1+ (1,-50) [-50|200] "degC" Vector__XXX
+ SG_ Aux1_Temperature : 40|8@1+ (1,-50) [-50|200] "degC" Vector__XXX
+ SG_ IGBT_PhaseW_Temperature : 24|8@1+ (1,-50) [-50|200] "degC" Vector__XXX
+ SG_ IGBT_PhaseV_Temperature : 16|8@1+ (1,-50) [-50|200] "degC" Vector__XXX
+ SG_ IGBT_PhaseU_Temperature : 8|8@1+ (1,-50) [-50|200] "degC" Vector__XXX
+ SG_ CntrlBrd_Temperature : 0|8@1+ (1,-50) [-50|200] "degC" Vector__XXX
+
+BO_ 2381578750 Inv_Fault_Codes: 8 Vector__XXX
+ SG_ Sensor_Faults : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ Gate_Board_Faults : 32|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ Components_Faults : 0|32@1+ (1,0) [0|4294967295] "" Vector__XXX
+
+BO_ 2236963582 Command_Message: 8 Vector__XXX
+ SG_ Torque_Limit_Command : 48|16@1+ (0.1,-3276.8) [-3276.8|3276.7] "Nm" Vector__XXX
+ SG_ Speed_Command : 16|16@1+ (1,-32768) [-32768|32767] "rpm" Vector__XXX
+ SG_ Torque_Command : 32|16@1+ (0.1,-3276.8) [-3276.8|3276.7] "Nm" Vector__XXX
+ SG_ Direction_Command : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Faults_Clear : 6|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ Control_Mode : 4|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ Operation_Mode : 2|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ Enable_Command : 0|2@1+ (1,0) [0|3] "" Vector__XXX
+
+BO_ 2247360766 Inv_State_Info: 8 Vector__XXX
+ SG_ ESTOP_Signal_State : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ KL15_Signal_State : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Inverter_Fault_Critical : 18|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Inverter_Fault : 17|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Inverter_Warning : 16|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Direction_State : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Motor_SM : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ MotorControlSig : 8|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ Control_Mode : 12|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ Operation_Mode : 10|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ Precharge_State : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Ready_State : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Init_State : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Main_SM : 32|16@1+ (1,0) [0|65535] "" Vector__XXX
+
+
+
+CM_ BO_ 3221225472 "This is a message for not used signals, created by Vector CANdb++ DBC OLE DB Provider.";
+CM_ SG_ 3221225472 Power_Limit_Reason "Reason of power limitation";
+CM_ SG_ 3221225472 Power_Limit_Regen "Maximum allowable inverter power in regenration mode";
+CM_ SG_ 3221225472 Power_Limit_Drive "Maximum allowable inverter power in drive mode";
+CM_ SG_ 2381580030 Torque_Limit_Reason "Reason of torque limitation";
+CM_ SG_ 2381580030 Torque_Limit_Regen "Maximum allowable torque in regeneration mode";
+CM_ SG_ 2381580030 Torque_Limit_Drive "Maximum allowable torque in drive mode";
+CM_ BO_ 2381579774 "Speed and torque reference and feedbak values. When inverter in torque control mode Speed_Reference equal zero.";
+CM_ SG_ 2381579774 Speed_Feedback "Estimated value of the speed";
+CM_ SG_ 2381579774 Speed_Reference "Internal reference value of the speed";
+CM_ SG_ 2381579774 Torque_Feedback "Estimated value of the torque";
+CM_ SG_ 2381579774 Torque_Reference "Internal reference value of the torque";
+CM_ BO_ 2381579518 "Measured and calculated values at the inverter input";
+CM_ SG_ 2381579518 Input_Power "Estimated inverter input power";
+CM_ SG_ 2381579518 Input_Current "Estimated inverter input DC current";
+CM_ SG_ 2381579518 Measured_U_supply "Measured supply voltage";
+CM_ SG_ 2381579518 Measured_U_DC_link "Measured DC-link voltage";
+CM_ BO_ 2381579262 "Measured and calculated values at the inverter output";
+CM_ SG_ 2381579262 Electrical_Output_Freq "Calculated value of the output electrical frequency";
+CM_ SG_ 2381579262 Output_Current "Generalized output current";
+CM_ SG_ 2381579262 Output_Voltage "Calculated inverter output voltage";
+CM_ SG_ 2381579262 Output_Power "Estimated inverter output power";
+CM_ BO_ 2381579006 "Temperature values of Inverter, motor and auxillari sensors";
+CM_ SG_ 2381579006 Motor_Temperature "Temperature of the motor";
+CM_ SG_ 2381579006 Aux3_Temperature "Temperature of the auxilary input 3";
+CM_ SG_ 2381579006 Aux2_Temperature "Temperature of the auxilary input 2";
+CM_ SG_ 2381579006 Aux1_Temperature "Temperature of the auxilary input 1";
+CM_ SG_ 2381579006 IGBT_PhaseW_Temperature "Temperature of the phase W IGBT module";
+CM_ SG_ 2381579006 IGBT_PhaseV_Temperature "Temperature of the phase V IGBT module";
+CM_ SG_ 2381579006 IGBT_PhaseU_Temperature "Temperature of the phase U IGBT module";
+CM_ SG_ 2381579006 CntrlBrd_Temperature "Temperature of the inverter control board";
+CM_ BO_ 2381578750 "Inverter fault codes";
+CM_ SG_ 2381578750 Sensor_Faults "Each bit represents sensor fault.  Please refer to documentationl for details.";
+CM_ SG_ 2381578750 Gate_Board_Faults "Each bit represents a gate board fault. Please refer to documentation for details.";
+CM_ SG_ 2381578750 Components_Faults "Each bit represents in invertor component fault. Please refer to documentation for details.";
+CM_ BO_ 2236963582 "Inverter command message";
+CM_ SG_ 2236963582 Torque_Limit_Command "Torque Limit, set to 0 to keep default";
+CM_ SG_ 2236963582 Speed_Command "Speed command used when in speed mode";
+CM_ SG_ 2236963582 Torque_Command "Torque command used when in torque mode";
+CM_ SG_ 2236963582 Direction_Command "Motor rotation direction as viewed from the shaft end of the motor";
+CM_ SG_ 2236963582 Faults_Clear "Faults clear command";
+CM_ SG_ 2236963582 Control_Mode "Motor control mode";
+CM_ SG_ 2236963582 Operation_Mode "Inverter operation mode";
+CM_ SG_ 2236963582 Enable_Command "Turn on command";
+CM_ BO_ 2247360766 "Information about Inverter states ";
+CM_ SG_ 2247360766 ESTOP_Signal_State "State of the ESTOP signal";
+CM_ SG_ 2247360766 KL15_Signal_State "State of the KL15 signal";
+CM_ SG_ 2247360766 Inverter_Fault_Critical "Inverter critical fault status.";
+CM_ SG_ 2247360766 Inverter_Fault "Inverter fault status.";
+CM_ SG_ 2247360766 Inverter_Warning "Inverter warning status.";
+CM_ SG_ 2247360766 Direction_State "Motor rotation direction as viewed from the shaft end of the motor";
+CM_ SG_ 2247360766 Motor_SM "Current state of the inverter low level state machine";
+CM_ SG_ 2247360766 MotorControlSig "Internal motor start/stop command";
+CM_ SG_ 2247360766 Control_Mode "Motor control mode";
+CM_ SG_ 2247360766 Operation_Mode "Inverter operation mode";
+CM_ SG_ 2247360766 Precharge_State "Precharge process state";
+CM_ SG_ 2247360766 Ready_State "Inverter ready state";
+CM_ SG_ 2247360766 Init_State "Motor control initialization process state";
+CM_ SG_ 2247360766 Main_SM "Current state of the inverter high level state machine";
+BA_DEF_ BO_  "TpJ1939VarDlc" ENUM  "No","Yes";
+BA_DEF_ SG_  "SigType" ENUM  "Default","Range","RangeSigned","ASCII","Discrete","Control","ReferencePGN","DTC","StringDelimiter","StringLength","StringLengthControl","MessageCounter","MessageChecksum";
+BA_DEF_ SG_  "GenSigEVName" STRING ;
+BA_DEF_ SG_  "GenSigILSupport" ENUM  "No","Yes";
+BA_DEF_ SG_  "GenSigSendType" ENUM  "Cyclic","OnWrite","OnWriteWithRepetition","OnChange","OnChangeWithRepetition","IfActive","IfActiveWithRepetition","NoSigSendType";
+BA_DEF_ BO_  "GenMsgFastOnStart" INT 0 100000;
+BA_DEF_ SG_  "GenSigInactiveValue" INT 0 0;
+BA_DEF_ BO_  "GenMsgCycleTimeFast" INT 0 3600000;
+BA_DEF_ BO_  "GenMsgNrOfRepetition" INT 0 1000000;
+BA_DEF_ SG_  "GenSigStartValue" INT 0 2147483647;
+BA_DEF_ BO_  "GenMsgDelayTime" INT 0 1000;
+BA_DEF_ BO_  "GenMsgILSupport" ENUM  "No","Yes";
+BA_DEF_ BO_  "GenMsgStartDelayTime" INT 0 100000;
+BA_DEF_ BU_  "NodeLayerModules" STRING ;
+BA_DEF_ BU_  "ECU" STRING ;
+BA_DEF_ BU_  "NmJ1939SystemInstance" INT 0 15;
+BA_DEF_ BU_  "NmJ1939System" INT 0 127;
+BA_DEF_ BU_  "NmJ1939ManufacturerCode" INT 0 2047;
+BA_DEF_ BU_  "NmJ1939IndustryGroup" INT 0 7;
+BA_DEF_ BU_  "NmJ1939IdentityNumber" INT 0 2097151;
+BA_DEF_ BU_  "NmJ1939FunctionInstance" INT 0 7;
+BA_DEF_ BU_  "NmJ1939Function" INT 0 255;
+BA_DEF_ BU_  "NmJ1939ECUInstance" INT 0 3;
+BA_DEF_ BU_  "NmJ1939AAC" INT 0 1;
+BA_DEF_ BU_  "NmStationAddress" INT 0 255;
+BA_DEF_ BO_  "GenMsgSendType" ENUM  "cyclic","NotUsed","IfActive","NotUsed","NotUsed","NotUsed","NotUsed","NotUsed","noMsgSendType";
+BA_DEF_ BO_  "GenMsgRequestable" INT 0 1;
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 3600000;
+BA_DEF_ SG_  "SPN" INT 0 524287;
+BA_DEF_  "DBName" STRING ;
+BA_DEF_  "BusType" STRING ;
+BA_DEF_  "ProtocolType" STRING ;
+BA_DEF_ BO_  "VFrameFormat" ENUM  "StandardCAN","ExtendedCAN","reserved","J1939PG";
+BA_DEF_DEF_  "TpJ1939VarDlc" "No";
+BA_DEF_DEF_  "SigType" "Default";
+BA_DEF_DEF_  "GenSigEVName" "Env@Nodename_@Signame";
+BA_DEF_DEF_  "GenSigILSupport" "Yes";
+BA_DEF_DEF_  "GenSigSendType" "NoSigSendType";
+BA_DEF_DEF_  "GenMsgFastOnStart" 0;
+BA_DEF_DEF_  "GenSigInactiveValue" 0;
+BA_DEF_DEF_  "GenMsgCycleTimeFast" 0;
+BA_DEF_DEF_  "GenMsgNrOfRepetition" 0;
+BA_DEF_DEF_  "GenSigStartValue" 0;
+BA_DEF_DEF_  "GenMsgDelayTime" 0;
+BA_DEF_DEF_  "GenMsgILSupport" "Yes";
+BA_DEF_DEF_  "GenMsgStartDelayTime" 0;
+BA_DEF_DEF_  "NodeLayerModules" "";
+BA_DEF_DEF_  "ECU" "";
+BA_DEF_DEF_  "NmJ1939SystemInstance" 0;
+BA_DEF_DEF_  "NmJ1939System" 0;
+BA_DEF_DEF_  "NmJ1939ManufacturerCode" 0;
+BA_DEF_DEF_  "NmJ1939IndustryGroup" 0;
+BA_DEF_DEF_  "NmJ1939IdentityNumber" 0;
+BA_DEF_DEF_  "NmJ1939FunctionInstance" 0;
+BA_DEF_DEF_  "NmJ1939Function" 0;
+BA_DEF_DEF_  "NmJ1939ECUInstance" 0;
+BA_DEF_DEF_  "NmJ1939AAC" 0;
+BA_DEF_DEF_  "NmStationAddress" 254;
+BA_DEF_DEF_  "GenMsgSendType" "noMsgSendType";
+BA_DEF_DEF_  "GenMsgRequestable" 1;
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
+BA_DEF_DEF_  "SPN" 0;
+BA_DEF_DEF_  "DBName" "";
+BA_DEF_DEF_  "BusType" "CAN";
+BA_DEF_DEF_  "ProtocolType" "J1939";
+BA_DEF_DEF_  "VFrameFormat" "J1939PG";
+BA_ "DBName" "Traction_Inverter";
+BA_ "NmStationAddress" BU_ DCU 100;
+BA_ "GenMsgCycleTime" BO_ 2381580030 10;
+BA_ "VFrameFormat" BO_ 2381580030 3;
+BA_ "GenMsgCycleTime" BO_ 2381579774 10;
+BA_ "VFrameFormat" BO_ 2381579774 3;
+BA_ "GenMsgCycleTime" BO_ 2381579518 100;
+BA_ "VFrameFormat" BO_ 2381579518 3;
+BA_ "GenMsgCycleTime" BO_ 2381579262 100;
+BA_ "VFrameFormat" BO_ 2381579262 3;
+BA_ "GenMsgCycleTime" BO_ 2381579006 1000;
+BA_ "VFrameFormat" BO_ 2381579006 3;
+BA_ "GenMsgCycleTime" BO_ 2381578750 1000;
+BA_ "VFrameFormat" BO_ 2381578750 3;
+BA_ "GenMsgCycleTime" BO_ 2236963582 10;
+BA_ "VFrameFormat" BO_ 2236963582 3;
+BA_ "GenMsgCycleTime" BO_ 2247360766 10;
+BA_ "VFrameFormat" BO_ 2247360766 3;
+BA_ "GenSigStartValue" SG_ 2381579774 Speed_Feedback 32768;
+BA_ "GenSigStartValue" SG_ 2381579774 Speed_Reference 32768;
+BA_ "GenSigStartValue" SG_ 2381579774 Torque_Feedback 32768;
+BA_ "GenSigStartValue" SG_ 2381579774 Torque_Reference 32768;
+BA_ "GenSigStartValue" SG_ 2381579518 Input_Power 32768;
+BA_ "GenSigStartValue" SG_ 2381579518 Input_Current 32768;
+BA_ "GenSigStartValue" SG_ 2381579518 Measured_U_supply 0;
+BA_ "SigType" SG_ 2381579518 Measured_U_supply 1;
+BA_ "GenSigStartValue" SG_ 2381579518 Measured_U_DC_link 0;
+BA_ "SigType" SG_ 2381579518 Measured_U_DC_link 1;
+BA_ "GenSigStartValue" SG_ 2381579262 Electrical_Output_Freq 32768;
+BA_ "SigType" SG_ 2381579262 Output_Current 1;
+BA_ "GenSigStartValue" SG_ 2381579262 Output_Current 32768;
+BA_ "GenSigStartValue" SG_ 2381579262 Output_Voltage 32768;
+BA_ "SigType" SG_ 2381579262 Output_Voltage 1;
+BA_ "GenSigStartValue" SG_ 2381579262 Output_Power 32768;
+BA_ "SigType" SG_ 2381579006 Motor_Temperature 1;
+BA_ "GenSigStartValue" SG_ 2381579006 Motor_Temperature 50;
+BA_ "SigType" SG_ 2381579006 Aux3_Temperature 1;
+BA_ "GenSigStartValue" SG_ 2381579006 Aux3_Temperature 50;
+BA_ "SigType" SG_ 2381579006 Aux2_Temperature 1;
+BA_ "GenSigStartValue" SG_ 2381579006 Aux2_Temperature 50;
+BA_ "SigType" SG_ 2381579006 Aux1_Temperature 1;
+BA_ "GenSigStartValue" SG_ 2381579006 Aux1_Temperature 50;
+BA_ "SigType" SG_ 2381579006 IGBT_PhaseW_Temperature 1;
+BA_ "GenSigStartValue" SG_ 2381579006 IGBT_PhaseW_Temperature 50;
+BA_ "SigType" SG_ 2381579006 IGBT_PhaseV_Temperature 1;
+BA_ "GenSigStartValue" SG_ 2381579006 IGBT_PhaseV_Temperature 50;
+BA_ "SigType" SG_ 2381579006 IGBT_PhaseU_Temperature 1;
+BA_ "GenSigStartValue" SG_ 2381579006 IGBT_PhaseU_Temperature 50;
+BA_ "SigType" SG_ 2381579006 CntrlBrd_Temperature 1;
+BA_ "GenSigStartValue" SG_ 2381579006 CntrlBrd_Temperature 50;
+BA_ "GenSigStartValue" SG_ 2236963582 Torque_Limit_Command 32768;
+BA_ "GenSigStartValue" SG_ 2236963582 Speed_Command 32768;
+BA_ "GenSigStartValue" SG_ 2236963582 Torque_Command 32768;
+BA_ "SPN" SG_ 2247360766 Inverter_Fault_Critical 515104;
+BA_ "SPN" SG_ 2247360766 Inverter_Fault 515102;
+BA_ "SPN" SG_ 2247360766 Inverter_Warning 515101;
+VAL_ 3221225472 Power_Limit_Reason 4 "Motor Currents" 3 "Inverter Temper" 2 "Motor Temper" 1 "External Command" 0 "Default Limits" ;
+VAL_ 2381580030 Torque_Limit_Reason 5 "Motor Current Derating" 255 "Reason Illegal" 4 "Motor Power Derating" 3 "Inverter Current Derating" 2 "Default Inverter Power" 1 "Default Inverter Current" 0 "Default Motor Torque" ;
+VAL_ 2236963582 Direction_Command 1 "CCW" 0 "CW" ;
+VAL_ 2236963582 Faults_Clear 3 "Clear Faults" 2 "TakeNoAction" 1 "TakeNoAction" 0 "TakeNoAction" ;
+VAL_ 2236963582 Control_Mode 3 "Not Valid" 2 "Torque Mode" 1 "Speed Mode" 0 "Not Selected" ;
+VAL_ 2236963582 Operation_Mode 3 "MotorControl" 2 "HVIL" 1 "Calibration" 0 "Not Selected" ;
+VAL_ 2236963582 Enable_Command 3 "Turn ON" 2 "Not Valid" 1 "Not Valid" 0 "Turn OFF" ;
+VAL_ 2247360766 ESTOP_Signal_State 1 "High State" 0 "Low State" ;
+VAL_ 2247360766 KL15_Signal_State 1 "High State" 0 "Low State" ;
+VAL_ 2247360766 Direction_State 1 "CCW" 0 "CW" ;
+VAL_ 2247360766 Motor_SM 32768 "Fault" 16384 "Stop to Fault" 1024 "Resolver Calibration" 512 "Stop to Idle" 256 "Stop" 128 "Any Stop" 64 "Run" 32 "Start Run" 16 "Clear" 8 "Offset_Calibration" 4 "Idle Start" 2 "Idle" 0 "Init" ;
+VAL_ 2247360766 MotorControlSig 3 "Not Valid" 2 "Motor Stop" 1 "Motor Start" 0 "Not Valid" ;
+VAL_ 2247360766 Control_Mode 3 "Not Valid" 2 "Torque Mode" 1 "Speed Mode" 0 "Not Selected" ;
+VAL_ 2247360766 Operation_Mode 3 "MotorControl" 2 "HVIL" 1 "Calibration" 0 "Not Selected" ;
+VAL_ 2247360766 Precharge_State 1 "Charged" 0 "Discharged" ;
+VAL_ 2247360766 Ready_State 1 "Ready" 0 "Not Ready" ;
+VAL_ 2247360766 Init_State 1 "Initialized" 0 "Not Initialized" ;
+VAL_ 2247360766 Main_SM 32768 "Fault" 16384 "Stop_To_Fault" 128 "HVIL" 64 "Calibration" 32 "Stop_To_Idle" 16 "Run_Torque_Control" 8 "Run_Speed_Control" 4 "Start" 2 "Idle" 1 "Precharge" 0 "Initialization" ;
+

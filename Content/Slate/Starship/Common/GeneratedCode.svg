@@ -1,0 +1,15 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.5 2V5" stroke="white" stroke-miterlimit="10"/>
+<path d="M8.5 2V5" stroke="white" stroke-miterlimit="10"/>
+<path d="M6.5 7V10" stroke="white" stroke-miterlimit="10"/>
+<path d="M12.5 7V10" stroke="white" stroke-miterlimit="10"/>
+<path d="M5.5 5C4.9 5 4.5 4.6 4.5 4V3C4.5 2.4 4.9 2 5.5 2C6.1 2 6.5 2.4 6.5 3V4C6.5 4.6 6.1 5 5.5 5Z" stroke="white" stroke-miterlimit="10"/>
+<path d="M11.5 5C10.9 5 10.5 4.6 10.5 4V3C10.5 2.4 10.9 2 11.5 2C12.1 2 12.5 2.4 12.5 3V4C12.5 4.6 12.1 5 11.5 5Z" stroke="white" stroke-miterlimit="10"/>
+<path d="M9.5 10C8.9 10 8.5 9.6 8.5 9V8C8.5 7.4 8.9 7 9.5 7C10.1 7 10.5 7.4 10.5 8V9C10.5 9.6 10.1 10 9.5 10Z" stroke="white" stroke-miterlimit="10"/>
+<path d="M3.5 10C2.9 10 2.5 9.6 2.5 9V8C2.5 7.4 2.9 7 3.5 7C4.1 7 4.5 7.4 4.5 8V9C4.5 9.6 4.1 10 3.5 10Z" stroke="white" stroke-miterlimit="10"/>
+<path d="M2.5 12V15" stroke="white" stroke-miterlimit="10"/>
+<path d="M8.5 12V15" stroke="white" stroke-miterlimit="10"/>
+<path d="M5.5 15C4.9 15 4.5 14.6 4.5 14V13C4.5 12.4 4.9 12 5.5 12C6.1 12 6.5 12.4 6.5 13V14C6.5 14.6 6.1 15 5.5 15Z" stroke="white" stroke-miterlimit="10"/>
+<path d="M11.5 15C10.9 15 10.5 14.6 10.5 14V13C10.5 12.4 10.9 12 11.5 12C12.1 12 12.5 12.4 12.5 13V14C12.5 14.6 12.1 15 11.5 15Z" stroke="white" stroke-miterlimit="10"/>
+<path d="M14.5 0.5H0.5V15.5H14.5V0.5Z" stroke="white" stroke-miterlimit="10"/>
+</svg>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.2.3, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;}
+	.st1{fill:#7F7F7F;}
+	.st2{fill-rule:evenodd;clip-rule:evenodd;fill:url(#SVGID_1_);}
+	.st3{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;stroke:#BFBFBF;stroke-width:0.25;stroke-miterlimit:10;}
+</style>
+<g id="PlayerController_x5F_64">
+	<g>
+		<rect class="st0" width="64" height="64"/>
+		<circle class="st1" cx="45.4" cy="29.6" r="8.2"/>
+		
+			<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="32.1498" y1="204.9963" x2="31.9455" y2="249.3183" gradientTransform="matrix(1 0 0 1 0 -190)">
+			<stop  offset="0" style="stop-color:#BFBFBF"/>
+			<stop  offset="1" style="stop-color:#545454"/>
+		</linearGradient>
+		<path class="st2" d="M57.7,32c-2.2-6.2-7.1-17.3-11.6-17.3c-7.1,0-7.1,1.9-9.8,1.9c-1.3,0-6.7,0-8.4,0c-2.7,0-2.7-1.9-9.8-1.9
+			c-4.4,0-9.3,11.1-11.6,17.3c-4,12-4.4,17.3,4,17.3c9.3,0,9.3-7.8,21.3-7.8s12.5,7.8,21.3,7.8C61.7,49.3,61.7,44,57.7,32z
+			 M26.7,30.8h-4c-0.4,0-0.8,0.3-0.8,0.8v3.6c0,0.4-0.3,0.8-0.8,0.8H19c-0.4,0-0.8-0.3-0.8-0.8v-3.6c0-0.4-0.3-0.8-0.8-0.8h-3.6
+			c-0.4,0-0.8-0.3-0.8-0.8v-2.2c0-0.4,0.3-0.8,0.8-0.8h3.6c0.4,0,0.8-0.3,0.8-0.8v-4c0-0.4,0.3-0.8,0.8-0.8h2.2
+			c0.4,0,0.8,0.3,0.8,0.8v4c0,0.4,0.3,0.8,0.8,0.8h4c0.4,0,0.8,0.3,0.8,0.8V30C27.4,30.4,27.1,30.8,26.7,30.8z M49.5,36.7
+			c-6.5,3.4-12.9-1.5-12.3-7.8c0.5-4.2,4-7.7,8.2-7.5c4.7,0.2,8.9,4.4,8.1,9.8C53.2,33.5,51.6,35.6,49.5,36.7z"/>
+		<circle class="st3" cx="45.4" cy="25.8" r="2"/>
+		<circle class="st3" cx="49.4" cy="29.8" r="2"/>
+		<circle class="st3" cx="41.5" cy="29.8" r="2"/>
+		<circle class="st3" cx="45.4" cy="33.3" r="2"/>
+		<path class="st3" d="M26.7,30.8h-4c-0.4,0-0.8,0.3-0.8,0.8v3.6c0,0.4-0.3,0.8-0.8,0.8H19c-0.4,0-0.8-0.3-0.8-0.8v-3.6
+			c0-0.4-0.3-0.8-0.8-0.8h-3.6c-0.4,0-0.8-0.3-0.8-0.8v-2.2c0-0.4,0.3-0.8,0.8-0.8h3.6c0.4,0,0.8-0.3,0.8-0.8v-4
+			c0-0.4,0.3-0.8,0.8-0.8h2.2c0.4,0,0.8,0.3,0.8,0.8v4c0,0.4,0.3,0.8,0.8,0.8h4c0.4,0,0.8,0.3,0.8,0.8V30
+			C27.4,30.4,27.1,30.8,26.7,30.8z"/>
+	</g>
+</g>
+</svg>

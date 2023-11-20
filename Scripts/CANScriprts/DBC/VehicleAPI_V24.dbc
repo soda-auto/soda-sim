@@ -1,0 +1,189 @@
+VERSION "HIPBNYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY/4/%%%/4/'%**4YYY///"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: DCU RMC
+VAL_TABLE_ VAPI_State 5 "vapi_Control_by_RMS_Run" 4 "vapi_Control_by_RMS_Pause" 3 "vapi_Control_by_remoute" 2 "vapi_Drive" 1 "vapi_Fault" 0 "vapi_Not_ready_to_drive" ;
+VAL_TABLE_ NState 2 "OK_WANTS_CONTROL" 1 "OK_IDLE" 0 "ERROR" ;
+VAL_TABLE_ NControlModeActive 3 "Advanced control" 2 "Simple control" 1 "Path following" 0 "Default" ;
+VAL_TABLE_ NGear 3 "Park" 2 "Reverse" 1 "Drive" 0 "Neutral" ;
+VAL_TABLE_ NDriverInterfaceState 1 "Run" 0 "Pause" ;
+VAL_TABLE_ NVehicleState 3 "SOFTSTOP" 2 "OK" 1 "OFF" 0 "ERROR" ;
+
+
+BO_ 62 DCU_VAPI_Debug: 8 Vector__XXX
+ SG_ DCU_Watchdog_valid : 57|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DCU_Emergency_stop : 56|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DCU_VAPI_State : 48|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DCU_Steer_req : 32|16@1- (1,0) [0|0] "" Vector__XXX
+ SG_ DCU_Brake_req : 16|16@1- (1,0) [0|0] "" Vector__XXX
+ SG_ DCU_Torque_req : 0|16@1- (1,0) [0|0] "" Vector__XXX
+
+BO_ 59 DCU_VehicleState: 8 Vector__XXX
+ SG_ DCU_NWatchdog : 16|8@1+ (1,0) [0|255] "enum" Vector__XXX
+ SG_ DCU_NVehicleState : 8|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ DCU_NGear : 5|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_NDriverInterfaceState : 3|2@1+ (1,0) [0|3] "enum" Vector__XXX
+ SG_ DCU_NControlModeActive : 0|3@1+ (1,0) [0|7] "enum" Vector__XXX
+
+BO_ 60 RMC_DriverControlAdvanced: 8 Vector__XXX
+ SG_ RMC_pBrakeRReq : 56|8@1+ (0.5,0) [0|127.5] "bar" Vector__XXX
+ SG_ RMC_pBrakeFReq : 48|8@1+ (0.5,0) [0|127.5] "bar" Vector__XXX
+ SG_ RMC_TqRRReq_Nm : 36|12@1- (1,0) [-2048|2047] "Nm" Vector__XXX
+ SG_ RMC_TqRLReq_Nm : 24|12@1- (1,0) [-2048|2047] "Nm" Vector__XXX
+ SG_ RMC_TqFRReq_Nm : 12|12@1- (1,0) [-2048|2047] "Nm" Vector__XXX
+ SG_ RMC_TqFLReq_Nm : 0|12@1- (1,0) [-2048|2047] "Nm" Vector__XXX
+
+BO_ 61 RMC_DriverControlSimple: 8 Vector__XXX
+ SG_ RMC_RoadWheelAngleRequest : 16|16@1- (0.0001,0) [-3.2768|3.2767] "rad" Vector__XXX
+ SG_ RMC_WatchDog : 48|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ RMC_TractionForceRequest : 32|16@1- (1,0) [-32768|32767] "N" Vector__XXX
+ SG_ RMC_GearRequest : 8|3@1+ (1,0) [0|0] "enum" Vector__XXX
+ SG_ RMC_DriverControlMode : 4|2@1+ (1,0) [0|0] "enum" Vector__XXX
+ SG_ RMC_DriverState : 0|4@1+ (1,0) [0|0] "enum" Vector__XXX
+
+BO_ 52 DCU_Limits_TorqueR: 8 Vector__XXX
+ SG_ DCU_TqRRMin_Nm : 48|16@1- (0.1,0) [-3276.8|3276.7] "Nm" Vector__XXX
+ SG_ DCU_TqRRMax_Nm : 32|15@1+ (0.1,0) [0|3276.7] "Nm" Vector__XXX
+ SG_ DCU_TqRLMin_Nm : 16|16@1- (0.1,0) [-3276.8|3276.7] "Nm" Vector__XXX
+ SG_ DCU_TqRLMax_Nm : 0|15@1+ (0.1,0) [0|3276.7] "Nm" Vector__XXX
+
+BO_ 51 DCU_Limits_TorqueF: 8 Vector__XXX
+ SG_ DCU_TqFRMin_Nm : 48|16@1- (0.1,0) [-3276.8|3276.7] "Nm" Vector__XXX
+ SG_ DCU_TqFRMax_Nm : 32|15@1+ (0.1,0) [0|3276.7] "Nm" Vector__XXX
+ SG_ DCU_TqFLMin_Nm : 16|16@1- (0.1,0) [-3276.8|3276.7] "Nm" Vector__XXX
+ SG_ DCU_TqFLMax_Nm : 0|15@1+ (0.1,0) [0|3276.7] "Nm" Vector__XXX
+
+BO_ 50 DCU_Limits_BrakeSteering: 8 Vector__XXX
+ SG_ DCU_pBrakeRMax_bar : 48|10@1+ (0.1,0) [0|102.3] "bar" Vector__XXX
+ SG_ DCU_pBrakeFMax_bar : 32|10@1+ (0.1,0) [0|102.3] "bar" Vector__XXX
+ SG_ DCU_aWheelFMin_rad : 16|10@1- (0.001,0) [-0.512|0.511] "rad" Vector__XXX
+ SG_ DCU_aWheelFMax_rad : 0|10@1- (0.001,0) [-0.512|0.511] "rad" Vector__XXX
+
+BO_ 53 DCU_Limits_Traction: 8 Vector__XXX
+ SG_ DCU_FTractionMin_N : 32|20@1- (0.1,0) [-52428.8|52428.7] "Nm" Vector__XXX
+ SG_ DCU_FTractionMax_N : 0|20@1- (0.1,0) [-52428.8|52428.7] "Nm" Vector__XXX
+
+BO_ 49 DCU_BrakeSteering: 8 Vector__XXX
+ SG_ DCU_aWheelF_rad : 16|16@1- (0.0001,0) [-3.2768|3.2767] "rad" Vector__XXX
+ SG_ DCU_aWheelF_Quality : 13|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_pBrakeR_Quality : 42|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_pBrakeR_bar : 32|10@1+ (0.1,0) [0|102.3] "bar" Vector__XXX
+ SG_ DCU_pBrakeF_Quality : 10|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_pBrakeF_bar : 0|10@1+ (0.1,0) [0|102.3] "bar" Vector__XXX
+
+BO_ 54 DCU_OSS: 8 Vector__XXX
+ SG_ DCU_OSS_vLong_Quality : 36|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_OSS_vLong_ms : 40|15@1- (0.01,0) [-163.84|163.83] "m/s" Vector__XXX
+ SG_ DCU_OSS_vLat_Quality : 3|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_OSS_vLat_ms : 24|12@1- (0.01,0) [-20.48|20.47] "m/s" Vector__XXX
+ SG_ DCU_OSS_aSlip_rad : 8|15@1- (0.0001,0) [-1.6384|1.6383] "rad" Vector__XXX
+ SG_ DCU_OSS_aSlip_Quality : 0|3@1+ (1,0) [0|7] "enum" Vector__XXX
+
+BO_ 58 DCU_Torque_R: 8 Vector__XXX
+ SG_ DCU_TqRR_Quality : 32|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_TqRR_Nm : 16|16@1- (0.1,0) [-3276.8|3276.7] "Nm" Vector__XXX
+ SG_ DCU_TqRL_Quality : 48|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_TqRL_Nm : 0|16@1- (0.1,0) [-3276.8|3276.7] "Nm" Vector__XXX
+
+BO_ 57 DCU_Torque_F: 8 Vector__XXX
+ SG_ DCU_TqFR_Quality : 32|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_TqFR_Nm : 16|16@1- (0.1,0) [-3276.8|3276.7] "Nm" Vector__XXX
+ SG_ DCU_TqFL_Quality : 40|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_TqFL_Nm : 0|16@1- (0.1,0) [-3276.8|3276.7] "Nm" Vector__XXX
+
+BO_ 48 DCU_Chassis: 8 Vector__XXX
+ SG_ DCU_vCar_Quality : 60|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_vCar_ms : 16|14@1+ (0.01,0) [0|163.83] "m/s" Vector__XXX
+ SG_ DCU_nYaw_Quality : 57|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_nYaw_rad_s : 0|15@1- (0.0002,0) [-3.2768|3.2766] "rad/s" Vector__XXX
+ SG_ DCU_gLong_Quality : 44|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_gLong_ms2 : 48|9@1- (0.1,-5) [-30.6|20.5] "m/s2" Vector__XXX
+ SG_ DCU_gLat_Quality : 41|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_gLat_ms2 : 32|9@1- (0.1,0) [-25.6|25.5] "m/s2" Vector__XXX
+
+BO_ 56 DCU_Speed_RearAxle: 8 Vector__XXX
+ SG_ DCU_nWheelRR_rpm : 16|16@1+ (0.1,0) [0|6553.5] "rpm" Vector__XXX
+ SG_ DCU_nWheelRR_Quality : 35|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_nWheelRL_rpm : 0|16@1+ (0.1,0) [0|6553.5] "rpm" Vector__XXX
+ SG_ DCU_nWheelRL_Quality : 32|3@1+ (1,0) [0|7] "enum" Vector__XXX
+
+BO_ 55 DCU_Speed_FrontAxle: 8 Vector__XXX
+ SG_ DCU_nWheelFR_rpm : 16|16@1+ (0.1,0) [0|6553.5] "rpm" Vector__XXX
+ SG_ DCU_nWheelFR_Quality : 32|3@1+ (1,0) [0|7] "enum" Vector__XXX
+ SG_ DCU_nWheelFL_rpm : 0|16@1+ (0.1,0) [0|6553.5] "rpm" Vector__XXX
+ SG_ DCU_nWheelFL_Quality : 35|3@1+ (1,0) [0|7] "enum" Vector__XXX
+
+
+
+CM_ BO_ 62 "Simple control message with all needed signals. We also can add more data in case of correct brake ctrl scaling.";
+CM_ BO_ 60 "Simple control message with all needed signals. We also can add more data in case of correct brake ctrl scaling.";
+CM_ SG_ 60 RMC_pBrakeRReq "Precission: 0.001 Bar";
+CM_ SG_ 60 RMC_pBrakeFReq "Precission: 0.001 Bar";
+CM_ SG_ 60 RMC_TqRRReq_Nm "Precission: 1 Nm";
+CM_ SG_ 60 RMC_TqRLReq_Nm "Precission: 1 Nm";
+CM_ SG_ 60 RMC_TqFRReq_Nm "Precission: 1 Nm";
+CM_ SG_ 60 RMC_TqFLReq_Nm "Precission: 1 Nm";
+CM_ BO_ 61 "Simple control message with all needed signals. We also can add more data in case of correct brake ctrl scaling.";
+CM_ SG_ 61 RMC_RoadWheelAngleRequest "Precission: 0.001 Bar";
+CM_ SG_ 61 RMC_TractionForceRequest "Precission: 0.01 deg";
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 1000;
+BA_DEF_  "BusType" STRING ;
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
+BA_DEF_DEF_  "BusType" "CAN";
+BA_ "BusType" "CAN";
+BA_ "GenMsgCycleTime" BO_ 62 10;
+BA_ "GenMsgCycleTime" BO_ 59 10;
+BA_ "GenMsgCycleTime" BO_ 60 10;
+BA_ "GenMsgCycleTime" BO_ 61 10;
+BA_ "GenMsgCycleTime" BO_ 52 100;
+BA_ "GenMsgCycleTime" BO_ 51 100;
+BA_ "GenMsgCycleTime" BO_ 50 100;
+BA_ "GenMsgCycleTime" BO_ 53 100;
+BA_ "GenMsgCycleTime" BO_ 49 10;
+BA_ "GenMsgCycleTime" BO_ 54 100;
+BA_ "GenMsgCycleTime" BO_ 58 10;
+BA_ "GenMsgCycleTime" BO_ 57 10;
+BA_ "GenMsgCycleTime" BO_ 48 100;
+BA_ "GenMsgCycleTime" BO_ 56 10;
+BA_ "GenMsgCycleTime" BO_ 55 10;
+VAL_ 62 DCU_VAPI_State 5 "Control_by_RMS_Run" 4 "Control_by_RMS_Pause" 3 "Control_by_remoute" 2 "Drive" 1 "Fault" 0 "Not_ready_to_drive" ;
+VAL_ 59 DCU_NVehicleState 3 "SOFTSTOP" 2 "OK" 1 "OFF" 0 "ERROR" ;
+VAL_ 59 DCU_NGear 3 "Park" 2 "Reverse" 1 "Drive" 0 "Neutral" ;
+VAL_ 59 DCU_NDriverInterfaceState 1 "Run" 0 "Pause" ;
+VAL_ 59 DCU_NControlModeActive 3 "Advanced control" 2 "Simple control" 1 "Path following" 0 "Default" ;
+VAL_ 61 RMC_GearRequest 3 "Park" 2 "Reverse" 1 "Drive" 0 "Neutral" ;
+VAL_ 61 RMC_DriverControlMode 3 "Advanced control" 2 "Simple control" 1 "Path following" 0 "Default" ;
+VAL_ 61 RMC_DriverState 2 "OK_WANTS_CONTROL" 1 "OK_IDLE" 0 "ERROR" ;
+

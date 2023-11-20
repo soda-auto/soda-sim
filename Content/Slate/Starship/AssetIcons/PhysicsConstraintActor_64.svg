@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 25.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="PhysicsConstraintActor_x5F_64"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 64 64"
+	 style="enable-background:new 0 0 64 64;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:url(#SVGID_1_);}
+	.st1{fill:url(#SVGID_2_);}
+	.st2{fill:#3D3D3D;}
+	.st3{fill:#333333;}
+	.st4{fill:url(#SVGID_3_);}
+	.st5{fill:url(#SVGID_4_);}
+	.st6{fill:none;}
+</style>
+<g>
+	<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="27.7358" y1="42.343" x2="27.7358" y2="59.2089">
+		<stop  offset="0" style="stop-color:#4D4D4D"/>
+		<stop  offset="0.4822" style="stop-color:#808080"/>
+	</linearGradient>
+	<polygon class="st0" points="19.3,42.3 36.2,42.3 36.2,59.2 19.3,59.2 	"/>
+	<radialGradient id="SVGID_2_" cx="27.7358" cy="29.192" r="17.2601" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#4D4D4D"/>
+		<stop  offset="1" style="stop-color:#808080"/>
+	</radialGradient>
+	<circle class="st1" cx="27.7" cy="29.2" r="17.3"/>
+	<g>
+		<path class="st2" d="M27.7,41.5c-6.7,0-12.1-5.4-12.1-12.1s5.4-12.1,12.1-12.1c6.7,0,12.1,5.4,12.1,12.1S34.4,41.5,27.7,41.5z"/>
+		<path class="st3" d="M27.7,18.4c6.1,0,11.1,5,11.1,11.1s-5,11.1-11.1,11.1s-11.1-5-11.1-11.1S21.6,18.4,27.7,18.4 M27.7,16.4
+			c-7.2,0-13.1,5.9-13.1,13.1s5.9,13.1,13.1,13.1s13.1-5.9,13.1-13.1S34.9,16.4,27.7,16.4L27.7,16.4z"/>
+	</g>
+	<linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="37.692" y1="11.1192" x2="44.611" y2="17.9051">
+		<stop  offset="0" style="stop-color:#666666"/>
+		<stop  offset="0.5" style="stop-color:#A3A3A3"/>
+		<stop  offset="1" style="stop-color:#666666"/>
+	</linearGradient>
+	<polygon class="st4" points="37.7,26.9 30.2,19.3 46,3.5 53.5,11 	"/>
+	<radialGradient id="SVGID_4_" cx="30.1741" cy="24.701" r="15.6596" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#FFFFFF"/>
+		<stop  offset="0.3121" style="stop-color:#B3B3B3"/>
+		<stop  offset="0.6357" style="stop-color:#6A6A6A"/>
+		<stop  offset="0.7861" style="stop-color:#4D4D4D"/>
+		<stop  offset="1" style="stop-color:#666666"/>
+	</radialGradient>
+	<path class="st5" d="M27.7,40.4c6.1,0,11-4.9,11-11s-4.9-11-11-11s-11,4.9-11,11S21.6,40.4,27.7,40.4z"/>
+	<rect x="0" class="st6" width="64" height="64"/>
+</g>
+</svg>

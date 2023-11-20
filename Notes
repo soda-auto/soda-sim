@@ -1,0 +1,26 @@
+xCU & xCU2:
+Don't forget delete "#define dcu_model_Van_Robopilot_core_MDLREF_HIDE_CHILD_" in the dcu_model_Van_Robopilot_sim.h file when update xCU model
+
+Exemple of rename the Class (in the <Project>/Config/DefaultEngine.ini):
+[CoreRedirects]
++ClassRedirects=(OldName="/Script/xCUYandex.VehicleDriverXCUYandexComponent",NewName="/Script/xCU2.VehicleDriverXCU2Component")
+
+To build the UnrealArrival plugin with FIVE support, need to build the project in the modular mode. To do this, add the following line to the file <ProjName>.Target.cs:
+    LinkType = TargetLinkType.Modular;
+    
+The following bugs were found in the modular mode (for the UE4.24):
+1) The Foliage module don't start by default. To fix it add following line to the UE4\Engine\Source\Runtime\Launch\Private\LaunchEngineLoop.cpp file before FModuleManager::Get().LoadModule(TEXT("Landscape")) line:
+    [3331 line] FModuleManager::Get().LoadModule(TEXT("Foliage"));
+2) Conflict of the module name "Lumin". To fix it add following line to DefaultEngine.ini of the project:
+    [Staging]
+    +RemapDirectories=(From="Engine/Binaries/Win64/Lumin", To="Engine/Binaries/Win64/_Lumin")
+3) For Linux there are some problems with LD path. To fix it run project with enviroment:
+    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/LinuxNoEditor/Engine/Plugins/Runtime/ProceduralMeshComponent/Binaries/Linux
+	
+Bug for windows (maybe these are my crooked hands). If using RHI=DefaultGraphicsRHI_DX12 the engine crashes when trying to copy a render target texture from GPU to CPU in the file D3D12Resources.h by line:
+   D3D12_RESOURCE_STATES GetDefaultResourceState() const { check(!bRequiresResourceStateTracking); return DefaultResourceState; } 
+To choose DX12 or DX11 in the file DefaultEngine.ini:
+   [/Script/WindowsTargetPlatform.WindowsTargetSettings]
+   DefaultGraphicsRHI=DefaultGraphicsRHI_DX12
+   
+There are bugs in the modular mode for the UE4.27 in the WebRemoteControl plugin. To fix it add "Engine" and "DeveloperSettings" modules to the "RemoteControlCommon.Build.cs" and RemoteControlCommon.Build.cs

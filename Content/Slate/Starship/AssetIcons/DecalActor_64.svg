@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.2.3, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;}
+	.st1{fill:url(#SVGID_1_);}
+	.st2{fill:url(#SVGID_2_);}
+</style>
+<g id="DecalActor_x5F_64">
+	<g>
+		<rect class="st0" width="64" height="64"/>
+		
+			<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="26.1833" y1="218.8982" x2="43.5808" y2="245.9717" gradientTransform="matrix(1 0 0 1 0 -190)">
+			<stop  offset="0" style="stop-color:#4D4D4D"/>
+			<stop  offset="1" style="stop-color:#CCCCCC"/>
+		</linearGradient>
+		<path class="st1" d="M57.6,34.1l-17.9,23L6.4,41.8l23.1-15.4L57.6,34.1z"/>
+		
+			<linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="29.15" y1="231.6048" x2="29.15" y2="196.8541" gradientTransform="matrix(1 0 0 1 0 -190)">
+			<stop  offset="0" style="stop-color:#FFFFFF"/>
+			<stop  offset="1" style="stop-color:#999999"/>
+		</linearGradient>
+		<path class="st2" d="M25.6,6.9L51.9,19c0,0-4.8,13.1-19.9,18.9c-13.1,4.8-25.6,3.5-25.6,3.5s7.7-3.2,13.1-10.6
+			C26.2,21.9,25.6,6.9,25.6,6.9z"/>
+	</g>
+</g>
+</svg>

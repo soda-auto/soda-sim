@@ -1,0 +1,75 @@
+VERSION "HIPBNYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY/4/%%%/4/'%**4YYY///"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: SCU RMC
+
+
+BO_ 130 SCU_Limits: 8 Vector__XXX
+ SG_ SCU_StrTrq_Max : 16|10@1- (0.1,0) [-51.2|51.1] "Nm" Vector__XXX
+ SG_ SCU_RWA_Max : 0|12@1- (0.001,0) [-2.048|2.047] "rad" Vector__XXX
+
+BO_ 129 SCU_State: 8 Vector__XXX
+ SG_ SCU_StrTrq_OK : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SCU_RWA_OK : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SCU_Watchdog : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ SCU_VibrState : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SCU_StrTakeoverStatus : 20|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ SCU_StrSysStatus : 16|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ SCU_StrTrq : 24|10@1- (0.1,0) [-51.2|51.1] "Nm" Vector__XXX
+ SG_ SCU_DriverTrqReq : 34|10@1- (0.1,0) [-51.2|51.1] "Nm" Vector__XXX
+ SG_ SCU_RWA : 0|12@1- (0.001,0) [-2.048|2.047] "rad" Vector__XXX
+
+BO_ 128 RMC_SCU_Request: 8 Vector__XXX
+ SG_ RMC_SCU_Watchdog : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ RMC_SCU_VibrOnReq : 31|1@1+ (1,0) [0|1] "Nm" Vector__XXX
+ SG_ RMC_SCU_StrTrq_Req : 20|10@1- (0.1,0) [-51.2|51.1] "Nm" Vector__XXX
+ SG_ RMC_SCU_ModePhase : 0|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ RMC_SCU_ModeFeature : 4|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ RMC_SCU_Flg : 30|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ RMC_RWA_Req : 8|12@1- (0.001,0) [-2.048|2.047] "rad" Vector__XXX
+
+
+
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 1000;
+BA_DEF_  "BusType" STRING ;
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
+BA_DEF_DEF_  "BusType" "CAN";
+BA_ "BusType" "CAN";
+BA_ "GenMsgCycleTime" BO_ 130 100;
+BA_ "GenMsgCycleTime" BO_ 129 10;
+BA_ "GenMsgCycleTime" BO_ 128 10;
+VAL_ 128 RMC_SCU_ModePhase 4 "Phase 4" 3 "Phase 3" 2 "Phase 2" 1 "Phase 1" ;
+VAL_ 128 RMC_SCU_ModeFeature 8 "DMS" 7 "SCW" 6 "AD" 5 "IPA" 4 "LCA" 3 "LKA" 2 "ALC" 1 "AES" ;
+

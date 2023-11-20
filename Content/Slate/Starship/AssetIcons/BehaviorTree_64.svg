@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.3.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="BehaviorTree_x5F_64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 x="0px" y="0px" viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;}
+	.st1{fill:url(#SVGID_1_);enable-background:new    ;}
+	.st2{fill:none;stroke:url(#SVGID_2_);stroke-width:2;stroke-miterlimit:10;enable-background:new    ;}
+	.st3{fill:none;stroke:url(#SVGID_3_);stroke-width:2;stroke-miterlimit:10;enable-background:new    ;}
+	.st4{fill:none;stroke:url(#SVGID_4_);stroke-width:2;stroke-miterlimit:10;enable-background:new    ;}
+	.st5{fill:url(#SVGID_5_);}
+	.st6{fill:url(#SVGID_6_);}
+	.st7{fill:url(#SVGID_7_);}
+	.st8{fill:url(#SVGID_8_);}
+	.st9{fill:url(#SVGID_9_);}
+</style>
+<g>
+	<rect x="0" class="st0" width="64" height="64"/>
+	<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="31.8975" y1="28.6536" x2="32.1025" y2="20.6553">
+		<stop  offset="0.5076" style="stop-color:#808080"/>
+		<stop  offset="1" style="stop-color:#333333"/>
+	</linearGradient>
+	<path class="st1" d="M33.7,20.7h-3.4v7.9h3.4V20.7z"/>
+	<linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="23.2917" y1="51.5298" x2="23.7721" y2="32.7937">
+		<stop  offset="0.5076" style="stop-color:#808080"/>
+		<stop  offset="1" style="stop-color:#333333"/>
+	</linearGradient>
+	<path class="st2" d="M32,33.7L15.1,50.6"/>
+	<linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="40.2381" y1="51.132" x2="40.6981" y2="33.1914">
+		<stop  offset="0.5076" style="stop-color:#808080"/>
+		<stop  offset="1" style="stop-color:#333333"/>
+	</linearGradient>
+	<path class="st3" d="M32,33.7l16.9,16.9"/>
+	<linearGradient id="SVGID_4_" gradientUnits="userSpaceOnUse" x1="31.7607" y1="50.6493" x2="32.2393" y2="31.9805">
+		<stop  offset="0.5076" style="stop-color:#808080"/>
+		<stop  offset="1" style="stop-color:#333333"/>
+	</linearGradient>
+	<path class="st4" d="M32,32v18.6"/>
+	<linearGradient id="SVGID_5_" gradientUnits="userSpaceOnUse" x1="31.9586" y1="20.529" x2="32.0479" y2="8.7389">
+		<stop  offset="0" style="stop-color:#CCCCCC"/>
+		<stop  offset="1" style="stop-color:#808080"/>
+	</linearGradient>
+	<path class="st5" d="M46.6,8.3H17.4c-0.3,0-0.6,0.3-0.6,0.6v12.3c0,0.3,0.3,0.6,0.6,0.6h29.3c0.3,0,0.6-0.3,0.6-0.6V8.9
+		C47.2,8.6,47,8.3,46.6,8.3z"/>
+	<linearGradient id="SVGID_6_" gradientUnits="userSpaceOnUse" x1="48.9362" y1="56.1921" x2="48.9362" y2="49.4039">
+		<stop  offset="0" style="stop-color:#CCCCCC"/>
+		<stop  offset="1" style="stop-color:#808080"/>
+	</linearGradient>
+	<path class="st6" d="M53.4,48.9h-9c-0.3,0-0.6,0.3-0.6,0.6v5.6c0,0.3,0.3,0.6,0.6,0.6h9c0.3,0,0.6-0.3,0.6-0.6v-5.6
+		C54,49.2,53.7,48.9,53.4,48.9z"/>
+	<linearGradient id="SVGID_7_" gradientUnits="userSpaceOnUse" x1="14.9734" y1="55.8484" x2="15.152" y2="48.8815">
+		<stop  offset="0" style="stop-color:#CCCCCC"/>
+		<stop  offset="1" style="stop-color:#808080"/>
+	</linearGradient>
+	<path class="st7" d="M19.5,48.9h-9c-0.3,0-0.6,0.3-0.6,0.6v5.6c0,0.3,0.3,0.6,0.6,0.6h9c0.3,0,0.6-0.3,0.6-0.6v-5.6
+		C20.1,49.2,19.9,48.9,19.5,48.9z"/>
+	<linearGradient id="SVGID_8_" gradientUnits="userSpaceOnUse" x1="32.0895" y1="55.6332" x2="31.9108" y2="49.0236">
+		<stop  offset="0" style="stop-color:#CCCCCC"/>
+		<stop  offset="1" style="stop-color:#808080"/>
+	</linearGradient>
+	<path class="st8" d="M36.5,48.9h-9c-0.3,0-0.6,0.3-0.6,0.6v5.6c0,0.3,0.3,0.6,0.6,0.6h9c0.3,0,0.6-0.3,0.6-0.6v-5.6
+		C37.1,49.2,36.8,48.9,36.5,48.9z"/>
+	<linearGradient id="SVGID_9_" gradientUnits="userSpaceOnUse" x1="32.0495" y1="35.3637" x2="31.9601" y2="29.29">
+		<stop  offset="0" style="stop-color:#CCCCCC"/>
+		<stop  offset="1" style="stop-color:#808080"/>
+	</linearGradient>
+	<path class="st9" d="M39.9,28.6H24.1c-0.3,0-0.6,0.3-0.6,0.6v5.6c0,0.3,0.3,0.6,0.6,0.6h15.7c0.3,0,0.6-0.3,0.6-0.6v-5.6
+		C40.5,28.9,40.2,28.6,39.9,28.6z"/>
+</g>
+</svg>

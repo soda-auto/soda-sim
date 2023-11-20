@@ -1,0 +1,116 @@
+VERSION "HIPBNYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY/4/%%%/4/'%**4YYY///"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: DCU RMC
+
+
+BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
+ SG_ DTS_TractionTrqMin_Nm : 0|16@1- (1,0) [-32768|32767] "Nm" Vector__XXX
+ SG_ DTS_TractionTrqMax_Nm : 0|16@1- (1,0) [-32768|32767] "Nm" Vector__XXX
+
+BO_ 49 TCU_State: 8 Vector__XXX
+ SG_ TCU_SysStatus : 0|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ TCU_WatchDog : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ TCU_NGear_OK : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ TCU_NGear : 4|3@1+ (1,0) [0|7] "enum" Vector__XXX
+
+BO_ 48 DTS_State: 8 Vector__XXX
+ SG_ DTS_AccTakeoverStatus : 20|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ DTS_WatchDog : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ DTS_SysStatus : 16|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ DTS_AccPedalPos_OK : 10|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ DTS_AccPedalPos : 0|10@1+ (0.1,0) [0|102.3] "%" Vector__XXX
+
+BO_ 145 RMC_DCU_Request_Advanced: 8 Vector__XXX
+ SG_ RMC_TqRRReq_Nm : 48|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+ SG_ RMC_TqRLReq_Nm : 32|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+ SG_ RMC_TqFRReq_Nm : 16|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+ SG_ RMC_TqFLReq_Nm : 0|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+
+BO_ 144 RMC_DCU_Request: 8 Vector__XXX
+ SG_ RMC_TractionTrqReq_Nm : 11|16@1- (1,0) [-32768|32767] "Nm" Vector__XXX
+ SG_ RMC_GearReq : 8|3@1+ (1,0) [0|0] "enum" Vector__XXX
+ SG_ RMC_DCU_WatchDog : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ RMC_DCU_ModePhase : 4|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ RMC_DCU_ModeFeature : 0|4@1+ (1,0) [0|15] "" Vector__XXX
+
+BO_ 52 DTS_Limits_TorqueR: 8 Vector__XXX
+ SG_ DTS_TqRRMin_Nm : 48|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+ SG_ DTS_TqRRMax_Nm : 32|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+ SG_ DTS_TqRLMin_Nm : 16|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+ SG_ DTS_TqRLMax_Nm : 0|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+
+BO_ 51 DTS_Limits_TorqueF: 8 Vector__XXX
+ SG_ DTS_TqFRMin_Nm : 48|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+ SG_ DTS_TqFRMax_Nm : 32|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+ SG_ DTS_TqFLMin_Nm : 16|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+ SG_ DTS_TqFLMax_Nm : 0|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+
+BO_ 58 DTS_Torque_R: 8 Vector__XXX
+ SG_ DTS_TqRR_OK : 30|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ DTS_TqRR_Nm : 16|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+ SG_ DTS_TqRL_OK : 14|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ DTS_TqRL_Nm : 0|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+
+BO_ 57 DTS_Torque_F: 8 Vector__XXX
+ SG_ DTS_TqFR_OK : 30|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ DTS_TqFR_Nm : 16|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+ SG_ DTS_TqFL_OK : 14|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ DTS_TqFL_Nm : 0|14@1- (1,0) [-8192|8191] "Nm" Vector__XXX
+
+
+
+CM_ BO_ 3221225472 "This is a message for not used signals, created by Vector CANdb++ DBC OLE DB Provider.";
+CM_ SG_ 145 RMC_TqRRReq_Nm "Precission: 1 Nm";
+CM_ SG_ 145 RMC_TqRLReq_Nm "Precission: 1 Nm";
+CM_ SG_ 145 RMC_TqFRReq_Nm "Precission: 1 Nm";
+CM_ SG_ 145 RMC_TqFLReq_Nm "Precission: 1 Nm";
+CM_ SG_ 144 RMC_TractionTrqReq_Nm "Precission: 0.01 deg";
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 1000;
+BA_DEF_  "BusType" STRING ;
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
+BA_DEF_DEF_  "BusType" "CAN";
+BA_ "BusType" "CAN";
+BA_ "GenMsgCycleTime" BO_ 49 10;
+BA_ "GenMsgCycleTime" BO_ 48 10;
+BA_ "GenMsgCycleTime" BO_ 145 10;
+BA_ "GenMsgCycleTime" BO_ 144 10;
+BA_ "GenMsgCycleTime" BO_ 52 100;
+BA_ "GenMsgCycleTime" BO_ 51 100;
+BA_ "GenMsgCycleTime" BO_ 58 10;
+BA_ "GenMsgCycleTime" BO_ 57 10;
+VAL_ 49 TCU_NGear 3 "Park" 2 "Reverse" 1 "Drive" 0 "Neutral" ;
+VAL_ 144 RMC_GearReq 3 "Park" 2 "Reverse" 1 "Drive" 0 "Neutral" ;
+

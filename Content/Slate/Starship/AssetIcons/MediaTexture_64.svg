@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.3.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="MediaTexture_x5F_64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 x="0px" y="0px" viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;}
+	.st1{fill:url(#SVGID_1_);}
+	.st2{fill:url(#SVGID_2_);}
+	.st3{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
+	.st4{fill-rule:evenodd;clip-rule:evenodd;fill:url(#SVGID_3_);}
+	.st5{fill-rule:evenodd;clip-rule:evenodd;fill:url(#SVGID_4_);}
+	.st6{fill-rule:evenodd;clip-rule:evenodd;fill:url(#SVGID_5_);}
+	.st7{fill-rule:evenodd;clip-rule:evenodd;fill:url(#SVGID_6_);}
+	.st8{fill-rule:evenodd;clip-rule:evenodd;fill:#BFBFBF;}
+	.st9{fill:#FFFFFF;}
+	.st10{opacity:1.000000e-02;fill:#FFFFFF;}
+</style>
+<g>
+	<rect x="0" class="st0" width="64" height="64"/>
+	<g>
+		<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="20.6266" y1="16.8616" x2="22.725" y2="15.6432">
+			<stop  offset="0" style="stop-color:#CCCCCC"/>
+			<stop  offset="0.6345" style="stop-color:#666666"/>
+			<stop  offset="1" style="stop-color:#808080"/>
+		</linearGradient>
+		<path class="st1" d="M26.4,24.1L26.4,24.1c-0.5,0.3-1.1,0.1-1.4-0.4l-8.1-14c-0.3-0.5-0.1-1.1,0.4-1.4v0c0.5-0.3,1.1-0.1,1.4,0.4
+			l8.1,14C27,23.2,26.9,23.8,26.4,24.1z"/>
+		<linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="35.2441" y1="15.5775" x2="36.5979" y2="16.3898">
+			<stop  offset="0" style="stop-color:#CCCCCC"/>
+			<stop  offset="0.6345" style="stop-color:#666666"/>
+			<stop  offset="1" style="stop-color:#808080"/>
+		</linearGradient>
+		<path class="st2" d="M31.7,24.1L31.7,24.1c0.5,0.3,1.1,0.1,1.4-0.4l8.1-14c0.3-0.5,0.1-1.1-0.4-1.4v0c-0.5-0.3-1.1-0.1-1.4,0.4
+			l-8.1,14C31,23.2,31.2,23.8,31.7,24.1z"/>
+		<path class="st3" d="M53.1,52.2H11.9c-2.2,0-4-1.8-4-4V24c0-2.2,1.8-4,4-4h41.2c2.2,0,4,1.8,4,4v24.1
+			C57.2,50.4,55.4,52.2,53.1,52.2z"/>
+		<linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="32.5338" y1="21.9955" x2="32.5338" y2="54.0886">
+			<stop  offset="0" style="stop-color:#CCCCCC"/>
+			<stop  offset="0.7817" style="stop-color:#666666"/>
+			<stop  offset="1" style="stop-color:#808080"/>
+		</linearGradient>
+		<path class="st4" d="M53.1,52.9H11.9c-2.2,0-4-1.8-4-4V24.8c0-2.2,1.8-4,4-4h41.2c2.2,0,4,1.8,4,4v24.1
+			C57.2,51.1,55.4,52.9,53.1,52.9z"/>
+		<radialGradient id="SVGID_4_" cx="28.8071" cy="34.0735" r="21.2159" gradientUnits="userSpaceOnUse">
+			<stop  offset="0" style="stop-color:#808080"/>
+			<stop  offset="1" style="stop-color:#333333"/>
+		</radialGradient>
+		<path class="st5" d="M43.2,49.7H14.6c-1.7,0-3.1-1.4-3.1-3.1V26.9c0-1.7,1.4-3.1,3.1-3.1h28.6c1.7,0,3.1,1.4,3.1,3.1v19.7
+			C46.3,48.3,44.9,49.7,43.2,49.7z"/>
+		<radialGradient id="SVGID_5_" cx="51.8704" cy="27.9195" r="3.2783" gradientUnits="userSpaceOnUse">
+			<stop  offset="0" style="stop-color:#808080"/>
+			<stop  offset="1" style="stop-color:#4D4D4D"/>
+		</radialGradient>
+		<circle class="st6" cx="51.9" cy="27.9" r="3.3"/>
+		<radialGradient id="SVGID_6_" cx="51.8704" cy="36.0865" r="3.2783" gradientUnits="userSpaceOnUse">
+			<stop  offset="0" style="stop-color:#808080"/>
+			<stop  offset="1" style="stop-color:#4D4D4D"/>
+		</radialGradient>
+		<circle class="st7" cx="51.9" cy="36.1" r="3.3"/>
+		<circle class="st8" cx="51.9" cy="27.9" r="2.5"/>
+		<circle class="st8" cx="51.9" cy="36.1" r="2.5"/>
+	</g>
+	<g>
+		<path class="st9" d="M46.3,32.4H34.7v-8.7h8.7c1.6,0,2.9,1.3,2.9,2.9V32.4z"/>
+		<rect x="34.7" y="32.4" class="st10" width="11.6" height="8.7"/>
+		<path class="st9" d="M43.4,49.7h-8.7v-8.7h11.6v5.7C46.3,48.4,45,49.7,43.4,49.7z"/>
+		<rect x="23.1" y="23.7" class="st10" width="11.6" height="8.7"/>
+		<rect x="23.1" y="32.4" class="st9" width="11.6" height="8.7"/>
+		<rect x="23.1" y="41.1" class="st10" width="11.6" height="8.7"/>
+		<path class="st9" d="M23.1,32.4H11.4v-5.7c0-1.6,1.3-2.9,2.9-2.9h8.7V32.4z"/>
+		<rect x="11.4" y="32.4" class="st10" width="11.6" height="8.7"/>
+		<path class="st9" d="M23.1,49.7h-8.7c-1.6,0-2.9-1.3-2.9-2.9v-5.7h11.6V49.7z"/>
+	</g>
+</g>
+</svg>

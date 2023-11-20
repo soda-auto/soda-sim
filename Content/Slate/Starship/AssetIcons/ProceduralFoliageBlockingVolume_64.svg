@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.2.3, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;}
+	.st1{fill-rule:evenodd;clip-rule:evenodd;fill:#7F7F7F;}
+	.st2{fill-rule:evenodd;clip-rule:evenodd;fill:url(#SVGID_1_);}
+	.st3{fill-rule:evenodd;clip-rule:evenodd;fill:url(#SVGID_2_);}
+	.st4{fill-rule:evenodd;clip-rule:evenodd;fill:url(#SVGID_3_);}
+</style>
+<g id="ProceduralFoliageBlockingVolume_x5F_64">
+	<g>
+		<rect class="st0" width="64" height="64"/>
+		<path class="st1" d="M52.9,48.7c-14.3,0-25.6,5.5-26,8.8C27,57.5,40.9,57.2,52.9,48.7z"/>
+		
+			<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="40.9303" y1="224.4591" x2="40.9697" y2="247.4629" gradientTransform="matrix(1 0 0 1 0 -190)">
+			<stop  offset="0" style="stop-color:#FFFFFF"/>
+			<stop  offset="1" style="stop-color:#808080"/>
+		</linearGradient>
+		<path class="st2" d="M54.9,34.4c-7.1,5.2-17.5,12-27.9,23.1C27,57.5,33.1,37,54.9,34.4z"/>
+		<path class="st1" d="M9.1,36.7C27,39.6,26.6,54.2,27,57.5C27,57.5,21.4,45.5,9.1,36.7z"/>
+		
+			<linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="19.7584" y1="213.3843" x2="19.8169" y2="247.5123" gradientTransform="matrix(1 0 0 1 0 -190)">
+			<stop  offset="0" style="stop-color:#FFFFFF"/>
+			<stop  offset="1" style="stop-color:#808080"/>
+		</linearGradient>
+		<path class="st3" d="M28.9,50.6L27,57.5c-2.3-7.5,1.1-19.8-16.4-34.1C31,34.4,28.9,50.6,28.9,50.6z"/>
+		
+			<linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="29.1794" y1="199.6227" x2="29.2613" y2="247.4563" gradientTransform="matrix(1 0 0 1 0 -190)">
+			<stop  offset="0.5989" style="stop-color:#FFFFFF"/>
+			<stop  offset="1" style="stop-color:#808080"/>
+		</linearGradient>
+		<path class="st4" d="M22.7,6.5c23.4,29.4,9,44.9,4.3,51C27,57.5,33.6,38.4,22.7,6.5z"/>
+	</g>
+</g>
+</svg>

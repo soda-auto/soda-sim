@@ -1,0 +1,100 @@
+VERSION "HIPBNYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY/4/%%%/4/'%**4YYY///"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: TAG ADS
+
+
+BO_ 516 SafetyLayer5_100Hz: 8 Vector__XXX
+ SG_ MMotorFRMax_Nm : 20|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+ SG_ MMotorFRMin_Nm : 30|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+ SG_ MMotorFLMin_Nm : 10|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+ SG_ MMotorFLMax_Nm : 0|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+
+BO_ 515 SafetyLayer4_100Hz: 8 Vector__XXX
+ SG_ gLongMin_g : 32|9@1+ (0.01,-5.11) [-5.11|0] "g" Vector__XXX
+ SG_ gLongMax_g : 24|8@1+ (0.01,0) [0|2.55] "g" Vector__XXX
+ SG_ rCurvatureAbsMax_1m : 0|20@1+ (1E-006,0) [0|1.048575] "1/m" Vector__XXX
+
+BO_ 514 SafetyLayer3_10Hz: 8 Vector__XXX
+ SG_ pBrakeRMax_bar : 22|10@1+ (0.1,0) [0|102.3] "bar" Vector__XXX
+ SG_ pBrakeFMax_bar : 12|10@1+ (0.1,0) [0|102.3] "bar" Vector__XXX
+ SG_ aWheelFMeanAbsMax_deg : 0|12@1+ (0.01,0) [0|40.95] "deg" Vector__XXX
+
+BO_ 530 ADS3: 8 Vector__XXX
+ SG_ MMotorRLRequest_Nm : 43|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+ SG_ MMotorRRRequest_Nm : 33|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+ SG_ pBrakeRRequest_bar : 23|10@1+ (0.1,0) [0|102.3] "bar" Vector__XXX
+ SG_ pBrakeFRequest_bar : 13|10@1+ (0.1,0) [0|102.3] "bar" Vector__XXX
+ SG_ aWheelFMeanRequest_deg : 0|13@1- (0.01,0) [-40.96|40.95] "deg" Vector__XXX
+
+BO_ 529 ADS2: 8 Vector__XXX
+ SG_ MMotorFRRequest_Nm : 44|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+ SG_ MMotorFLRequest_Nm : 34|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+ SG_ gLongRequest_g : 21|10@1- (0.01,0) [-4.096|4.095] "g" Vector__XXX
+ SG_ rCurvatureRequest_1m : 0|21@1- (1E-006,0) [-1.048576|1.048575] "1/m" Vector__XXX
+
+BO_ 513 SafetyLayer2_100Hz: 8 Vector__XXX
+ SG_ PBatteryMax_kW : 40|9@1+ (1,0) [0|511] "kW" Vector__XXX
+ SG_ MMotorRLMin_Nm : 30|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+ SG_ MMotorRRMin_Nm : 20|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+ SG_ MMotorRRMax_Nm : 10|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+ SG_ MMotorRLMax_Nm : 0|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+
+BO_ 512 SafetyLayer1_500Hz: 8 Vector__XXX
+ SG_ NGear : 0|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ BEStop : 27|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BADSStatusControl : 25|1@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ NWatchdogSafetyLayer : 28|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ BDriveMode : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 528 ADS1: 8 TAG
+ SG_ PMotorTotalMax_kW : 48|10@1+ (1,0) [0|1023] "kW" Vector__XXX
+ SG_ NStabilisationStatus : 40|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ NPlanningStatus : 32|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ NPerceptionStatus : 24|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ NMappingLocalisationStatus : 16|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ NGearRequest : 4|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ NControlModeActive : 2|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ NADSStatus : 0|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ NWatchdogADS : 6|8@1+ (1,0) [0|255] "" Vector__XXX
+
+
+
+BA_DEF_ BO_  "GenMsgCycleTime" INT 1 1000;
+BA_DEF_  "BusType" STRING ;
+BA_DEF_DEF_  "GenMsgCycleTime" 100;
+BA_DEF_DEF_  "BusType" "CAN";
+BA_ "BusType" "CAN";
+

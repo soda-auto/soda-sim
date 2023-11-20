@@ -1,0 +1,229 @@
+VERSION "HIPBNYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY/4/%%%/4/'%**4YYY///"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: TAG ADS
+
+
+BO_ 293 ADSTelemetry14: 8 Vector__XXX
+ SG_ LoggingFloat2 : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ LoggingFloat1 : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 292 ADSTelemetry13: 8 Vector__XXX
+ SG_ LoggingFloat2 : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ LoggingFloat1 : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 291 ADSTelemetry12: 8 Vector__XXX
+ SG_ LoggingFloat2 : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ LoggingFloat1 : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 290 ADSTelemetry11: 8 Vector__XXX
+ SG_ LoggingFloat2 : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ LoggingFloat1 : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 289 ADSTelemetry10: 8 Vector__XXX
+ SG_ LoggingWord4 : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord3 : 32|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord2 : 16|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord1 : 0|16@1+ (1,0) [0|65535] "" Vector__XXX
+
+BO_ 288 ADSTelemetry9: 8 Vector__XXX
+ SG_ LoggingWord4 : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord3 : 32|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord2 : 16|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord1 : 0|16@1+ (1,0) [0|65535] "" Vector__XXX
+
+BO_ 281 ADSReference2_1Hz: 8 Vector__XXX
+ SG_ Reference_Alt : 0|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+
+BO_ 280 ADSReference1_1Hz: 8 Vector__XXX
+ SG_ Reference_Lon : 32|32@1- (1E-007,0) [-214.7483648|214.7483647] "" Vector__XXX
+ SG_ Reference_Lat : 0|32@1- (1E-007,0) [-214.7483648|214.7483647] "" Vector__XXX
+
+BO_ 261 GenericSetup1_10Hz: 8 Vector__XXX
+ SG_ DCU_RunYear m12 : 56|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ DCU_RunWeek m12 : 48|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ DCU_RunType m12 : 40|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ DCU_RunNLogN m12 : 32|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ DCU_RunLoc3 m12 : 24|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ DCU_RunLoc2 m12 : 16|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ DCU_RunLoc1 m12 : 8|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ DCU_RunDay m11 : 56|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ DCU_RunCar4 m11 : 48|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ DCU_RunCar3 m11 : 40|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ DCU_RunCar2 m11 : 32|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ DCU_RunCar1 m11 : 24|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ DCU_LoggingTrigger m11 : 16|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ DCU_EventType m11 : 8|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupWord8 m8 : 16|16@1+ (1,0) [0|0] "uint16" Vector__XXX
+ SG_ SetupWord7 m7 : 16|16@1+ (1,0) [0|0] "uint16" Vector__XXX
+ SG_ SetupWord6 m6 : 16|16@1+ (1,0) [0|0] "uint16" Vector__XXX
+ SG_ SetupWord5 m5 : 16|16@1+ (1,0) [0|0] "uint16" Vector__XXX
+ SG_ SetupWord4 m4 : 16|16@1+ (1,0) [0|0] "uint16" Vector__XXX
+ SG_ SetupWord3 m3 : 16|16@1+ (1,0) [0|0] "uint16" Vector__XXX
+ SG_ SetupWord2 m2 : 16|16@1+ (1,0) [0|0] "uint16" Vector__XXX
+ SG_ SetupWord1 m1 : 16|16@1+ (1,0) [0|0] "uint16" Vector__XXX
+ SG_ SetupFloat8 m8 : 32|32@1- (1,0) [-2147483648|2147483647] "float" Vector__XXX
+ SG_ SetupFloat7 m7 : 32|32@1- (1,0) [-2147483648|2147483647] "float" Vector__XXX
+ SG_ SetupFloat6 m6 : 32|32@1- (1,0) [-2147483648|2147483647] "float" Vector__XXX
+ SG_ SetupFloat5 m5 : 32|32@1- (1,0) [-2147483648|2147483647] "float" Vector__XXX
+ SG_ SetupFloat4 m4 : 32|32@1- (1,0) [-2147483648|2147483647] "float" Vector__XXX
+ SG_ SetupFloat3 m3 : 32|32@1- (1,0) [-2147483648|2147483647] "float" Vector__XXX
+ SG_ SetupFloat2 m2 : 32|32@1- (1,0) [-2147483648|2147483647] "float" Vector__XXX
+ SG_ SetupFloat1 m1 : 32|32@1- (1,0) [-2147483648|2147483647] "float" Vector__XXX
+ SG_ SetupByte22 m10 : 56|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte21 m10 : 48|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte20 m10 : 40|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte19 m10 : 32|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte18 m10 : 24|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte17 m10 : 16|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte16 m10 : 8|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte15 m9 : 56|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte14 m9 : 48|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte13 m9 : 40|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte12 m9 : 32|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte11 m9 : 24|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte10 m9 : 16|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte09 m9 : 8|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte08 m8 : 8|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte07 m7 : 8|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte06 m6 : 8|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte05 m5 : 8|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte04 m4 : 8|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte03 m3 : 8|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte02 m2 : 8|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupByte01 m1 : 8|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+ SG_ SetupMuxId M : 0|8@1+ (1,0) [0|0] "uint8" Vector__XXX
+
+BO_ 279 ADSTelemetry8: 8 Vector__XXX
+ SG_ LoggingWord4 : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord3 : 32|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord2 : 16|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord1 : 0|16@1+ (1,0) [0|65535] "" Vector__XXX
+
+BO_ 278 ADSTelemetry7: 8 Vector__XXX
+ SG_ LoggingFloat2 : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ LoggingFloat1 : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 277 ADSTelemetry6: 8 Vector__XXX
+ SG_ LoggingWord4 : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord3 : 32|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord2 : 16|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord1 : 0|16@1+ (1,0) [0|65535] "" Vector__XXX
+
+BO_ 276 ADSTelemetry5: 8 Vector__XXX
+ SG_ LoggingWord4 : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord3 : 32|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord2 : 16|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ LoggingWord1 : 0|16@1+ (1,0) [0|65535] "" Vector__XXX
+
+BO_ 275 ADSTelemetry4: 8 Vector__XXX
+ SG_ LoggingByte8 : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ LoggingByte7 : 48|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ LoggingByte6 : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ LoggingByte5 : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ LoggingByte4 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ LoggingByte3 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ LoggingByte2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ LoggingByte1 : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 274 ADSTelemetry3: 8 Vector__XXX
+ SG_ NADSVersion : 32|32@1+ (1,0) [0|4294967295] "" Vector__XXX
+ SG_ NEmotionTriggers : 0|32@1+ (1,0) [0|4294967295] "" Vector__XXX
+
+BO_ 273 ADSTelemetry2: 8 Vector__XXX
+ SG_ aCarHeadingDesired_rad : 0|16@1+ (0.0001,0) [0|6.5535] "radians" Vector__XXX
+ SG_ xCarPositionDesiredN_m : 37|21@1- (0.01,0) [-10485.76|10485.75] "m" Vector__XXX
+ SG_ xCarPositionDesiredE_m : 16|21@1- (0.01,0) [-10485.76|10485.75] "m" Vector__XXX
+
+BO_ 272 ADSTelemetry1: 8 Vector__XXX
+ SG_ NTeamID : 58|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ aCarHeadingEstimated_rad : 42|16@1+ (0.0001,0) [0|6.5535] "radians" Vector__XXX
+ SG_ xCarPositionEstimatedN_m : 21|21@1- (0.01,0) [-10485.76|10485.75] "m" Vector__XXX
+ SG_ xCarPositionEstimatedE_m : 0|21@1- (0.01,0) [-10485.76|10485.75] "m" Vector__XXX
+
+BO_ 260 VehicleMeasurements5_200Hz: 8 TAG
+ SG_ MMotorFR_OK : 37|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ MMotorFR_Nm : 50|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+ SG_ MMotorFL_OK : 38|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ MMotorFL_Nm : 40|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+ SG_ aWheelF_OK : 22|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ aWheelF_deg : 24|13@1- (0.01,0) [-40.96|40.95] "deg" Vector__XXX
+ SG_ rCurvature_OK : 21|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ rCurvature_1m : 0|21@1- (1E-006,0) [-1.048576|1.048575] "1/m" Vector__XXX
+
+BO_ 259 VehicleMeasurements4_200Hz: 8 TAG
+ SG_ vCar_OK : 15|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ vCar_kph : 0|12@1+ (0.1,0) [0|409.5] "kph" Vector__XXX
+ SG_ rSOC_OK : 14|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ rSOC_perc : 48|7@1+ (1,0) [0|127] "%" Vector__XXX
+ SG_ MMotorRR_OK : 13|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ MMotorRR_Nm : 32|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+ SG_ MMotorRL_OK : 12|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ MMotorRL_Nm : 16|10@1- (1,0) [-512|511] "Nm" Vector__XXX
+
+BO_ 258 VehicleMeasurements3_200Hz: 8 TAG
+ SG_ OSSvLong_OK : 60|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ OSSvLong_ms : 16|15@1- (0.01,0) [-163.84|163.83] "m/s" Vector__XXX
+ SG_ OSSvLat_OK : 47|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ OSSvLat_ms : 48|12@1- (0.01,0) [-20.48|20.47] "m/s" Vector__XXX
+ SG_ OSSaSlip_OK : 31|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ OSSaSlip_deg : 0|15@1- (0.01,0) [-163.84|163.83] "deg" Vector__XXX
+
+BO_ 257 VehicleMeasurements2_200Hz: 8 TAG
+ SG_ gLat_OK : 28|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ gLat_g : 53|9@1- (0.01,0) [-2.56|2.55] "g" Vector__XXX
+ SG_ nWheelRR_rpm : 41|12@1+ (1,0) [0|4095] "rpm" Vector__XXX
+ SG_ nWheelRR_OK : 15|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ nWheelRL_rpm : 29|12@1+ (1,0) [0|4095] "rpm" Vector__XXX
+ SG_ nWheelRL_OK : 14|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ nWheelFR_rpm : 16|12@1+ (1,0) [0|4095] "rpm" Vector__XXX
+ SG_ nWheelFR_OK : 13|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ nWheelFL_rpm : 0|12@1+ (1,0) [0|4095] "rpm" Vector__XXX
+ SG_ nWheelFL_OK : 12|1@1+ (1,0) [0|1] "enum" Vector__XXX
+
+BO_ 256 VehicleMeasurements1_200Hz: 8 TAG
+ SG_ NLoggingTriggers : 58|6@1+ (1,0) [0|63] "" Vector__XXX
+ SG_ gLong_OK : 28|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ gLong_g : 48|10@1- (0.01,0) [-5.12|5.11] "g" Vector__XXX
+ SG_ nYaw_OK : 27|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ nYaw_degs : 0|15@1- (0.01,0) [-163.84|163.83] "deg/s" Vector__XXX
+ SG_ pBrakeR_OK : 26|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ pBrakeR_bar : 32|10@1+ (0.1,0) [0|102.3] "bar" Vector__XXX
+ SG_ pBrakeF_OK : 15|1@1+ (1,0) [0|1] "enum" Vector__XXX
+ SG_ pBrakeF_bar : 16|10@1+ (0.1,0) [0|102.3] "bar" Vector__XXX
+
+
+
+
