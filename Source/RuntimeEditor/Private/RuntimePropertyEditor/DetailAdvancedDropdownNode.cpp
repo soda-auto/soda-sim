@@ -10,6 +10,7 @@
 #include "RuntimePropertyEditor/UserInterface/PropertyEditor/PropertyEditorConstants.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Input/SButton.h"
+#include "AssetRegistry/AssetData.h"
 
 namespace soda
 {

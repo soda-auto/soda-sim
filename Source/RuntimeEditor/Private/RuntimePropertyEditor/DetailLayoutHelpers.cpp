@@ -12,7 +12,7 @@
 #include "RuntimePropertyEditor/ObjectPropertyNode.h"
 #include "Modules/ModuleManager.h"
 #include "RuntimePropertyEditor/UserInterface/PropertyEditor/SPropertyEditorEditInline.h"
-
+#include "AssetRegistry/AssetData.h"
 #include "RuntimeEditorUtils.h"
 #include "RuntimeMetaData.h"
 

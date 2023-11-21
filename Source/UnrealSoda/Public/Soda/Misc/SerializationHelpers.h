@@ -9,6 +9,7 @@
 #include "Soda/Misc/EditorUtils.h"
 #include "Soda/UnrealSoda.h"
 #include "Engine/World.h"
+#include "Engine/Level.h"
 #include "SerializationHelpers.generated.h"
 
 USTRUCT()

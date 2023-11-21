@@ -1,40 +1,28 @@
 # SodaSim  
 
-SodaSim is an OpenSource vehicle simulator built to test and verify vehicles, robots and their various internal systems throughout the entire development lifecycle.
-SodaSim is a plugin for UnrealEngine that turns UnrealEngine into a vehicle simulator tool.
+**SodaSim** is an OpenSource vehicle simulator built to test and verify vehicles, robots and their various internal systems throughout the entire development lifecycle.
+**SodaSim** is a plugin for UnrealEngine that turns UnrealEngine into a vehicle simulator tool.
 ![SodaSim](Docs/img/intro.jpg)
 
-# Base Features
-  
-## Vehicle Digital Twin
-This is a "component based"  methodology where a vehicle is perceived as an assembly of small, autonomous units termed "components". 
-These components can signify actual devices such as lidar or transmission systems, or embody algorithms, such as Advanced Driver Assistance (ADS).
+Full list of features see [here](https://docs.soda.auto/projects/soda-sim/en/latest/Introduction.html).  
 
-Leveraging this approach, you can swiftly construct a vehicle model by merging pre-defined, fully operational components, 
-and by crafting bespoke components exclusively for the segments of the vehicle you are focusing on.
+## Docs
+All documentation is [here](https://docs.soda.auto/projects/soda-sim/en/latest/) 
+Quick start [here](https://docs.soda.auto/projects/soda-sim/en/latest/How_To/Quick_Start.html)  
 
-Furthermore, this component-centric method facilitates a seamless transition between Software-in-the-Loop (SIL) and Hardware-in-the-Loop (HIL), 
-provided that the Sim is amalgamated with an appropriate HIL device. 
-This transition can be accomplished by merely substituting a virtual component with a physical counterpart, 
-negating the need to modify other sectors of the vehicle model.
+## Install
 
-## Scenario Design and Editing
-The Soda Editor Mode allow to add and edit specail types of actors (Scenario Actors and Soda Vehicles) on a level. 
-This could be path trajectories, pedestrians, cars or even the weather. There is one special type of actor [Scenario Action](https://www.notion.so/Scenario-Action-TODO-576a948a2d1645c7bcc6ee672d752596). 
-It is a simple visual programming language that allows you to create simple scenarios.
+This repository is plugin for UnrealEngine. You can clone this repo to the UnrealEngine's plugins folder or to the project plugins folders. Then you need to follow the next steps: [Setup_a_New_UProject](https://docs.soda.auto/projects/soda-sim/en/latest/How_To/Setup_a_New_UProject.html)
 
-## Other
-There are also a huge number of auxiliary capabilities, for example, recording a dataset, CI/CD and Automated Testing, integrated DB and other.
-Not all features are available in the free version. 
-Some featers avalible only in privat zone by subscribe, more details about this see [here]().  
-Full list of features see [here](https://www.notion.so/Introduction-2176a979629f454c82091fe0f14de3f8).  
+> Keep it mind this repo contain one submodule **SodaSimProto**. Keep it mind you clone the submodule as well.
 
-# Docs
-All documentation is [here](https://www.notion.so/SODA-Sim-7cfab234b91b4b37b01969d79af4b41e)  
-Qick start [here](https://www.notion.so/Quick-Start-54c987fd269f4770b43fce4a53dd5f90)  
-C++ API [here]()
+See more information about [Working with Plugins in Unreal Engine](https://docs.unrealengine.com/5.0/en-US/working-with-plugins-in-unreal-engine/).
 
-# Roadmap
+## Supported OS
+* Windows
+* Linux (not tested)
+
+## Roadmap
 
 * Integration with [Project Chrono](https://projectchrono.org/) for accurate vehicle physics simulation.
 * Analog/Digital Input/Output hardware interface. 
@@ -47,9 +35,23 @@ We have almost finished developing our own hardware, which will allow virtual An
 * Distributed simulation. Horisontal parallelization of simulation on multiple computers to simulate more vehicle sensors.
 * Integration with ROS/ROS2.
 
-# Contact
-Please feel free to provide feedback or ask questions by creating a Github issue. For inquiries about collaboration, please email us at ivan@soda.com.
+## Contact
+Please feel free to provide feedback or ask questions by creating a Github issue. For inquiries about collaboration, please email us at sim@soda.com.
 
-# Copyright and License
+## Copyright and License
 Copyright © 2023 SODA.AUTO UK LTD. ALL RIGHTS RESERVED.  
 This software contains code licensed as described in LICENSE.  
+
+### Third Parties Licenses
+Please ensure to comply with the respective licenses when using these third-party components in your project.
+Lists the licenses for third-party software used in this project:
+* **dbcppp** - Licensed under the MIT License(https://opensource.org/licenses/MIT).
+* **libzmq** - Licensed under the Mozilla Public License 2.0(https://www.mozilla.org/en-US/MPL/2.0/).
+* mongodb Licensed under the Server Side Public License (SSPL) v1.0(https://www.mongodb.com/licensing/server-side-public-license). MongoDB drivers are available under the Apache License v2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+* **mongodb-cxx** - Licensed under the Apache License, version 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+* **opendrive_reader** - Licensed under the MIT License (https://opensource.org/licenses/MIT).
+* **pugixml** - Distributed under the MIT License (https://opensource.org/licenses/MIT).
+* **quickhull** - Licensed under the BSD-2-Clause license (https://opensource.org/licenses/BSD-2-Clause).
+* **3D models** - Licensed under the CC-BY License (https://creativecommons.org/licenses/by/4.0/).
+* **Unreal Engine** - Dependencies Associated with the Unreal Engine EULA (https://www.unrealengine.com/en-US/eula).
+
