@@ -12,7 +12,7 @@ Quick start [here](https://docs.soda.auto/projects/soda-sim/en/latest/How_To/Qui
 
 ## Install
 
-This repository is plugin for UnrealEngine. You can clone this repo to the UnrealEngine's plugins folder or to the project plugins folders. Then you need to follow the next steps: [Setup_a_New_UProject](https://docs.soda.auto/projects/soda-sim/en/latest/How_To/Setup_a_New_UProject.html)
+This repository is plugin for UnrealEngine. You can clone this repo to the UnrealEngine's plugins folder or to the project plugins folders. Then you need to follow the next steps: [Setup a New UProject](https://docs.soda.auto/projects/soda-sim/en/latest/How_To/Setup_a_New_UProject.html)
 
 > Keep it mind this repo contain one submodule **SodaSimProto**. Keep it mind you clone the submodule as well.
 
