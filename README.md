@@ -7,7 +7,7 @@
 Full list of features see [here](https://docs.soda.auto/projects/soda-sim/en/latest/Introduction.html).  
 
 ## Docs
-All documentation is [here](https://docs.soda.auto/projects/soda-sim/en/latest/) 
+All documentation is [here](https://docs.soda.auto/projects/soda-sim) 
 Quick start [here](https://docs.soda.auto/projects/soda-sim/en/latest/How_To/Quick_Start.html)  
 
 ## Install
