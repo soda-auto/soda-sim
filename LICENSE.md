@@ -36,11 +36,6 @@ Other Rights and Obligations
 15. No Group Litigation
 16. Miscellaneous
 
-*
-*
-
- 
-
 *The LICENSED SOFTWARE*
 
 1. What SODA.AUTO Is Licensing to You
@@ -170,9 +165,9 @@ a.  Proprietary Notices and Attribution
 
 You agree to retain the copyright, trademark, and other proprietary notices and disclaimers of SODA.AUTO as they appear in the LICENSED SOFTWARE.
 
-If a Product you develop under this Agreement has credits, you must place the following notices in the credits (replacing xxxx with the current year):
+If a Product you develop under this Agreement has credits, you must place the following notices in the credits:
 
-“© 2023 - xxxx [SODA.AUTO](https://soda.auto/) UK LTD. ALL RIGHTS RESERVED”
+“© 2023 [SODA.AUTO](https://soda.auto/) UK LTD. ALL RIGHTS RESERVED”
 
 No other license or right is granted under this Agreement in the trademarks, service marks, trade names, and logos associated with SODA.AUTO, SODA.AUTO’s intellectual property, including Software (the “SODA.AUTO IPR"). All use of the SODA.AUTO IPR will inure to the sole benefit of SODA.AUTO. You agree not to engage in any activity that could tarnish, dilute, or affect the validity or enforceability of the SODA.AUTO IPR or cause consumer confusion or diminish any goodwill relating to any SODA.AUTO Trademarks.
 
