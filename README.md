@@ -4,7 +4,8 @@
 
 By simulating vehicles at the level of atomic components, such as sensors, vehicle systems, and electronic control units SODA.Sim is not only a perfect tool for AD/ADAS development, but also a virtual proving ground for validation and certification of all vehicle functions.
 
-SODA.Sim is empowered by SODA Validation Library. You can choose available tests or craft your bespoke scenarios in real-time. Be the first to access SODA Validation Library with a built-in AI scenario generator and AI scenario mixer.**SodaSim** is a plugin for UnrealEngine that turns UnrealEngine into a vehicle simulator tool.
+SODA.Sim is empowered by SODA Validation Library. You can choose available tests or craft your bespoke scenarios in real-time. Be the first to access SODA Validation Library with a built-in AI scenario generator and AI scenario mixer.**SodaSim** is a plugin for UnrealEngine that turns UnrealEngine into a vehicle simulator tool.  
+
 ![SodaSim](Docs/img/intro.jpg)
 
 Full list of features see [here](https://docs.soda.auto/projects/soda-sim/en/latest/Introduction.html).  
