@@ -1,0 +1,71 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "SodaSim",
+	"Description": "",
+	"Category": "Soda",
+	"CreatedBy": "Soda LTD",
+	"CreatedByURL": "http://soda.auto",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "SodaStyle",
+			"Type": "DeveloperTool"
+		},
+		{
+			"Name": "SodaSimProto",
+			"Type": "DeveloperTool"
+		},
+		{
+			"Name": "RuntimeEditor",
+			"Type": "DeveloperTool"
+		},
+		{
+			"Name": "SodaJoystick",
+			"Type": "DeveloperTool"
+		},
+		{
+			"Name": "UnrealSoda",
+			"Type": "DeveloperTool"
+		},
+		{
+			"Name": "SodaLoadingScreen",
+			"Type": "DeveloperTool",
+			"LoadingPhase": "PreLoadingScreen"
+		},
+		{
+			"Name": "SodaSimEditor",
+			"Type": "UncookedOnly",
+			"LoadingPhase": "PreDefault"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ChaosVehiclesPlugin",
+			"Enabled": true
+		},
+		{
+			"Name": "RemoteControl",
+			"Enabled": true
+		},
+		{
+			"Name": "ProceduralMeshComponent",
+			"Enabled": true
+		},
+		{
+			"Name": "GeoReferencing",
+			"Enabled": true
+		},
+		{
+			"Name": "GeometryProcessing",
+			"Enabled": true
+		}
+	]
+
+}

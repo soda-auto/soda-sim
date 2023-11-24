@@ -1,0 +1,150 @@
+// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+
+#pragma once
+
+#include "Curves/CurveFloat.h"
+#include "Soda/VehicleComponents/VehicleInputComponent.h"
+#include "Soda/Vehicles/VehicleBaseTypes.h"
+#include "VehicleInputJoyComponent.generated.h"
+
+UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
+class UNREALSODA_API UVehicleInputJoyComponent : public UVehicleInputComponent
+{
+	GENERATED_UCLASS_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/SodaSim.VehicleSteeringRackBaseComponent"))
+	FSubobjectReference LinkToSteering { TEXT("SteeringRack") };
+
+	/** In the dead zone the break input will be zero. [0..1] */
+	UPROPERTY(EditAnywhere, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
+	float InputBrakeDeadzone = 0.02f;
+
+	/** 
+	 * Сontinue driving at a low speed when the accelerator pedal is released.
+	 * This is an imitation of the behavior of a real automatic transmission.
+	 */
+	UPROPERTY(EditAnywhere, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
+	bool bCreepMode = false;
+
+	/** Vehicle speed when the accelerator pedal is released and bCreepMode is enabled [km/h] */
+	UPROPERTY(EditAnywhere, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
+	float CreepSpeed = 7.f;
+
+	/** Maximum throttle input available for creep mode [0..1] */
+	UPROPERTY(EditAnywhere, Category = VehicleJoyInput)
+	float MaxCreepThrottle = 0.2f;
+
+	/** Enable the effect of returning the steering wheel to the center position in relation to vehicle speed. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SteeringWheelFeedback, SaveGame, meta = (EditInRuntime))
+	bool bFeedbackAutocenterEnabled = true; 
+
+	/**  Enable the effect of the resistance roation of stering wheel in relation to stering wheel angular velocity. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SteeringWheelFeedback, SaveGame, meta = (EditInRuntime))
+	bool bFeedbackResistionEnabled = true; 
+
+	/**  Enable the effect of the rotation of the wheel to match the position of the wheels and steering wheel. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SteeringWheelFeedback, SaveGame, meta = (EditInRuntime))
+	bool bFeedbackDiffEnabled = true;
+
+	/** Multiplier for bFeedbackAutocenterEnabled. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SteeringWheelFeedback, SaveGame, meta = (EditInRuntime))
+	float FeedbackAutocenterCoeff = 2.0;
+
+	/** Multipliert for bFeedbackDiffEnabled. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SteeringWheelFeedback, SaveGame, meta = (EditInRuntime))
+	float FeedbackDiffCoeff = 1.0;
+
+	/** Multiplier for bFeedbackResistionEnabled. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SteeringWheelFeedback, SaveGame, meta = (EditInRuntime))
+	float FeedbackResistionCoeff = 0.0;
+
+	/** 
+	 * Time axis (X axis) - vehicle speed [km/h]
+	 * Value axis (Y axis) - normalized value (force) [0..1] of the force that will be applied at the steering wheel to return it to center position.
+	 */
+	UPROPERTY(EditAnywhere, Category = SteeringWheelFeedback)
+	FRuntimeFloatCurve FeedbackAutocenterCurve;
+
+	/** 
+	 * Time axis (X axis) - difference beetween steering wheel and front vehicle wheels [deg].
+	 * Value axis (Y axis) - normalized value (force) [0..1] of the force to rotate steering wheels.
+	 */
+	UPROPERTY(EditAnywhere, Category = SteeringWheelFeedback)
+	FRuntimeFloatCurve FeedbackDiffCurve;
+
+	/** 
+	 * Time axis (X axis) - steering wheel rotation speed [nozmalized_value/s].
+	 * Value axis (Y axis) - normalized value (force) [0..1] of the rotational resistance force.
+	 */
+	UPROPERTY(EditAnywhere, Category = SteeringWheelFeedback)
+	FRuntimeFloatCurve FeedbackResistionCurve;
+
+	/** Сommon filter [0..1] for feedback effect */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SteeringWheelFeedback, SaveGame, meta = (EditInRuntime, UIMin = 0, ClampMin = 0, UIMax = 1, ClampMax = 1))
+	float FeedbackFilter = 0.3;
+
+	/** Multiplier for calculated normalized force of user (driver) has attached to the steering wheel. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SteeringWheelFeedback, SaveGame, meta = (EditInRuntime))
+	float CalcDriverForceCompensationCoeff = 1.5;
+
+	/** Area in which the driver (user) force applied to the steering wheel considered as 0. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SteeringWheelFeedback, SaveGame, meta = (EditInRuntime))
+	float CalcDriverForceCompensationDeadZone = 0.4;
+
+	/** Show the steering wheel feedback effect (for steering wheel joystic) debug values on the debug canvas. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
+	bool bShowFeedback = false;
+
+	/** Enable bump feedback effect  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BumpEffect, SaveGame, meta = (EditInRuntime))
+	bool bEnableBumpEffect = false;
+
+	/** Threshold front wheel suspension offset changing speed to activete bump feedback effect  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BumpEffect, SaveGame, meta = (EditInRuntime))
+	float BumpEffectThreshold = 150.f;
+
+	/** Coef to calculate force for bump feedback effect  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BumpEffect, SaveGame, meta = (EditInRuntime))
+	float BumpEffectForceCoef = 30;
+
+public:
+	UFUNCTION(Category = "VehicleJoyInput", BlueprintCallable, CallInEditor, meta = (CallInRuntime))
+	void ReinitDevice();
+
+public:
+	virtual void CopyInputStates(UVehicleInputComponent* Previous) override;
+	virtual float GetSteeringInput() const override { return SteeringInput; }
+	virtual float GetThrottleInput() const override { return ThrottleInput;  }
+	virtual float GetBrakeInput() const override { return BrakeInput;  }
+	virtual ENGear GetGearInput() const override { return  GearInput; }
+	virtual float GetDriverInputSteerTension() const override { return FeedbackDriverSteerTension; }
+	virtual void SetADMode(bool bIsADMode) { bFeedbackAutocenterEnabled = !bIsADMode; }
+	virtual void UpdateInputStates(float DeltaTime, float ForwardSpeed, const APlayerController* PlayerController) override;
+	virtual void SetHapticAutocenter(bool Enable) { bFeedbackAutocenterEnabled = Enable; }
+	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
+	virtual void SetGearInput(ENGear Value) override { GearInput = Value; }
+
+protected:
+	virtual bool OnActivateVehicleComponent() override;
+	virtual void OnDeactivateVehicleComponent() override;
+
+protected:
+	ISodaJoystickPlugin * Joy = nullptr;
+
+	float MaxSteer = 0;
+
+	float SteeringInput = 0.f;
+	float ThrottleInput = 0.f;
+	float BrakeInput = 0.f;
+	ENGear GearInput = ENGear::Drive;
+
+	float FeedbackDiffFactor = 0.f;
+	float FeedbackResistionFactor = 0.f;
+	float FeedbackAutocenterFactor = 0.f;
+	float FeedbackFullFactor = 0.f;
+	float FeedbackDriverSteerTension = 0.f;
+
+	float FrontWheelPrevSuspensionOffset[2] = { 0.f, 0.f };
+};

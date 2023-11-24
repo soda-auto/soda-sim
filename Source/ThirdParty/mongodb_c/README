@@ -1,0 +1,7 @@
+Note:
+If will appear error like this:
+==========================================
+mt.exe : general error c101008d: Failed to write the updated manifest to the resource of file "mongoc-1.0.dll". The process cannot access the file because it is being used by another process.
+NMAKE : fatal error U1077: '"C:\Program Files\CMake\bin\cmake.exe"' : return code '0xffffffff'
+==========================================
+Try to remove or disable antiviruses

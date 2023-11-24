@@ -1,0 +1,1 @@
+The Linux version of ZMQ is compiled from the source, but the source isn't inculded to this repo. See build_linux_example.sh to help how to build ZMQ for linux
