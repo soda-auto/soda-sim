@@ -11,6 +11,9 @@
 #include "Soda/SodaUserSettings.h"
 #include "Soda/DBC/Serialization.h"
 #include "UI/SOutputLog.h"
+#include "Misc/App.h"
+#include "UObject/Package.h"
+
 // Http server
 #include "HttpServerModule.h"
 #include "IHttpRouter.h"

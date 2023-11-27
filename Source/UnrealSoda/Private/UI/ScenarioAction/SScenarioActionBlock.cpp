@@ -16,6 +16,7 @@
 #include "Styling/StyleColors.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Framework/Application/SlateApplication.h"
+#include "Engine/World.h"
 //#include "Soda/ISodaActor.h"
 //#include "RuntimeEditorModule.h"
 //#include "RuntimePropertyEditor/IDetailsView.h"

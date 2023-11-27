@@ -7,6 +7,7 @@
 #include "Engine/CanvasRenderTarget2D.h"
 #include "Kismet/KismetRenderingLibrary.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Widgets/SWindow.h"
 

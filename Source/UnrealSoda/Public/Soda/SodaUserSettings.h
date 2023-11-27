@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"
+#include "Engine/EngineTypes.h"
 #include "SodaUserSettings.generated.h"
 
 #define GPS_EPOCH_OFFSET 315964800

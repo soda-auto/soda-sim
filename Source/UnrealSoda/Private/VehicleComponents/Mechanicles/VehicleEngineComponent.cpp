@@ -5,6 +5,7 @@
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Soda/SodaStatics.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 #include "UObject/ConstructorHelpers.h"
 

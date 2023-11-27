@@ -2,7 +2,7 @@
 
 #include "Soda/Vehicles/SodaVehicleWheel.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
-
+#include "Engine/Engine.h"
 #include "Engine/Canvas.h"
 
 USodaVehicleWheelComponent::USodaVehicleWheelComponent(const FObjectInitializer& ObjectInitializer)

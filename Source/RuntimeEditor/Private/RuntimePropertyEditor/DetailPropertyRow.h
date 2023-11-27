@@ -7,6 +7,7 @@
 #include "Misc/Attribute.h"
 #include "Layout/Visibility.h"
 //#include "AssetThumbnail.h"
+#include "AssetRegistry/AssetData.h"
 #include "RuntimePropertyEditor/IPropertyUtilities.h"
 #include "RuntimePropertyEditor/PropertyNode.h"
 #include "RuntimePropertyEditor/IPropertyTypeCustomization.h"

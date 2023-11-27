@@ -4,6 +4,8 @@
 #include "Soda/UnrealSoda.h"
 #include "Soda/Misc/SensorSceneProxy.h"
 #include "Components/SceneCaptureComponent2D.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Materials/Material.h"
 #include "RuntimeMetaData.h"
 
 USensorComponent::USensorComponent(const FObjectInitializer& ObjectInitializer)

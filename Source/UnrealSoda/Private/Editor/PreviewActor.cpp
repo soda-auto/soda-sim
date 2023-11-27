@@ -5,6 +5,8 @@
 #include "DynamicMeshBuilder.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/Material.h"
+#include "SceneManagement.h"
+#include "SceneView.h"
 
 #define INNER_AXIS_CIRCLE_RADIUS  48.0f
 #define OUTER_AXIS_CIRCLE_RADIUS  56.0f

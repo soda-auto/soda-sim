@@ -3,6 +3,7 @@
 #include "Soda/SodaHUD.h"
 #include "Soda/UnrealSodaVersion.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
 #include "Soda/SodaGameViewportClient.h"
 #include "Soda/Editor/SodaSelection.h"
 

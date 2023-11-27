@@ -6,6 +6,7 @@
 #include "RuntimePropertyEditor/DetailWidgetRow.h"
 #include "SodaStyleSet.h"
 #include "Engine/LevelScriptActor.h"
+#include "Engine/BlueprintGeneratedClass.h"
 #include "RuntimePropertyEditor/IDetailChildrenBuilder.h"
 #include "RuntimePropertyEditor/IDetailPropertyRow.h"
 #include "RuntimePropertyEditor/IPropertyTypeCustomization.h"

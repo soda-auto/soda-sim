@@ -4,6 +4,7 @@
 #include "Soda/UnrealSoda.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
 
 UVehicleDifferentialBaseComponent::UVehicleDifferentialBaseComponent(const FObjectInitializer& ObjectInitializer)

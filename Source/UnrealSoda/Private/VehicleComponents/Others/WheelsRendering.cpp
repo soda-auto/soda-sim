@@ -3,6 +3,7 @@
 #include "Soda/VehicleComponents/Others/WheelsRendering.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
+#include "Components/StaticMeshComponent.h"
 
 UWheelsRenderingComponent::UWheelsRenderingComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

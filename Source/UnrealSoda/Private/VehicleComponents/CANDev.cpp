@@ -5,6 +5,7 @@
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaApp.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
 #include "Soda/DBC/Serialization.h"
 
 UCANDevComponent::UCANDevComponent(const FObjectInitializer& ObjectInitializer)

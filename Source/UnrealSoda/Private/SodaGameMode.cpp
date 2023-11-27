@@ -36,6 +36,8 @@
 #include "Async/Async.h"
 #include "Soda/SodaActorFactory.h"
 #include "Soda/Editor/SodaSelection.h"
+#include "Engine/GameInstance.h"
+#include "Engine/Engine.h"
 
 #define SLOT_GAMEMODE "SodaGameMode"
 

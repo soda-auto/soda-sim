@@ -23,6 +23,7 @@
 #include "CanvasItem.h"
 #include "Soda/VehicleComponents/VehicleSensorComponent.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
 #include "RuntimeEditorModule.h"
 #include "RuntimeMetaData.h"
 #include "Soda/VehicleComponents/CANBus.h"
@@ -39,6 +40,7 @@
 #include "UI/Wnds/SExportVehicleWindow.h"
 #include "UI/ToolBoxes/SVehicleComponentsToolBox.h"
 #include "SodaStyleSet.h"
+#include "GlobalRenderResources.h"
 
 #include "bsoncxx/builder/stream/helpers.hpp"
 #include "bsoncxx/exception/exception.hpp"

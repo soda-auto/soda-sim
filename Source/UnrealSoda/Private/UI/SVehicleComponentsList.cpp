@@ -28,6 +28,7 @@
 #include "Soda/SodaGameViewportClient.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Components/ActorComponent.h"
+#include "Components/PrimitiveComponent.h"
 
 #define LOCTEXT_NAMESPACE "VehicleComponentsBar"
 

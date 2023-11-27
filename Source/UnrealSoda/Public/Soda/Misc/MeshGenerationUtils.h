@@ -4,6 +4,7 @@
 
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
+#include "DynamicMeshBuilder.h"
 
 namespace FMeshGenerationUtils
 {

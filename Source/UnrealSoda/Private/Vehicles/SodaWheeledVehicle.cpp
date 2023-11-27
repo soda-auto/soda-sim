@@ -25,6 +25,7 @@
 #include "Soda/VehicleComponents/Mechanicles/VehicleGearBoxComponent.h"
 #include "VehicleUtility.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
 #include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
 #include "Soda/SodaUserSettings.h"

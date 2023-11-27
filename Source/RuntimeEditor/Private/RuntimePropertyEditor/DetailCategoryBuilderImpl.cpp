@@ -20,7 +20,7 @@
 #include "RuntimePropertyEditor/SDetailSingleItemRow.h"
 #include "RuntimePropertyEditor/StructurePropertyNode.h"
 #include "Styling/StyleColors.h"
-
+#include "Components/ActorComponent.h"
 #include "RuntimeMetaData.h"
 
 namespace soda

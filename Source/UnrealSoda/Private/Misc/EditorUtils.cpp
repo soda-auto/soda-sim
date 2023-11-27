@@ -8,6 +8,7 @@
 #include "Engine/GameViewportClient.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/EngineTypes.h"
+#include "Engine/World.h"
 
 FEditorUtils::FViewportCursorLocation::FViewportCursorLocation(const FSceneView* View, USodaGameViewportClient* InViewportClient, int32 X, int32 Y)
 	: Origin(ForceInit), Direction(ForceInit), CursorPos(X, Y)

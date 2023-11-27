@@ -12,6 +12,8 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Soda/Misc/MeshGenerationUtils.h"
 #include "DynamicMeshBuilder.h"
+#include "Async/ParallelFor.h"
+#include "SceneView.h"
 
 #if PLATFORM_LINUX
 #pragma GCC diagnostic ignored "-Wshadow"

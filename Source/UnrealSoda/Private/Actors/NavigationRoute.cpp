@@ -21,6 +21,7 @@
 #include "Soda/Editor/SodaSelection.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/Material.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/StaticMesh.h"
 #include "Soda/SodaApp.h"

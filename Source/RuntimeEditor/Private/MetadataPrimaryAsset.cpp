@@ -3,6 +3,13 @@
 #include "MetadataPrimaryAsset.h"
 #include "UObject/ObjectSaveContext.h"
 #include "RuntimeMetaData.h"
+#include "Misc/PackageName.h"
+#include "UObject/Package.h"
+
+FPrimaryAssetId UMetadataPrimaryAsset::GetPrimaryAssetId() const
+{
+	return FPrimaryAssetId(FName("MetadataPrimaryAsset"), FPackageName::GetShortFName(GetOutermost()->GetName()));
+}
 
 #if WITH_EDITOR
 bool UMetadataPrimaryAsset::AddStructToMetadataGlobalScope(const UStruct* Struct)

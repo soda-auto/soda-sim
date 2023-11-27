@@ -16,7 +16,7 @@
 //#include "ActorFactories/ActorFactory.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Styling/SlateIconFinder.h"
-
+#include "GameFramework/Actor.h"
 #include "SodaDragDropOp.h"
 
 #define LOCTEXT_NAMESPACE "PlacementMode"

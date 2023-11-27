@@ -8,7 +8,9 @@
 #include "HighResScreenshot.h"
 #include "ImageWriteQueue.h"
 #include "Engine/TextureRenderTarget2D.h"
-
+#include "Async/ParallelFor.h"
+#include "RenderingThread.h"
+#include "Soda/Misc/PixelReader.h"
 
 ATileScanner::ATileScanner()
 {

@@ -42,8 +42,5 @@ public:
 	//UPROPERTY(EditAnywhere, Category = "SodaLibraryPrimaryAsset", meta = (AssetBundles = "ActorGroundTruth"))
 	//TArray<FActorGroundTruthRecord> ActorGroundTruthExporter;
 
-	virtual FPrimaryAssetId GetPrimaryAssetId() const override
-	{
-		return FPrimaryAssetId(FName("SodaLibraryPrimaryAsset"), FPackageName::GetShortFName(GetOutermost()->GetName()));
-	}
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 };

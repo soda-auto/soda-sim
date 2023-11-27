@@ -10,6 +10,7 @@
 #include "Sockets.h"
 #include "SocketSubsystem.h"
 #include "Soda/LevelState.h"
+#include "UObject/UObjectIterator.h"
 
 int UV2VTransmitterComponent::IDsCounter = 10000;
 

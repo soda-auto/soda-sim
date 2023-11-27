@@ -7,6 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/LevelScriptActor.h"
+#include "Engine/World.h"
 //#include "Editor.h"
 #include "Modules/ModuleManager.h"
 #include "UObject/UObjectHash.h"

@@ -19,6 +19,7 @@
 #include "Components/DecalComponent.h"
 #include "Soda/LevelState.h"
 #include "DesktopPlatformModule.h"
+#include "Materials/MaterialInterface.h"
 #include <map>
 
 struct FPolyline;

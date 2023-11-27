@@ -13,6 +13,7 @@
 #include "Soda/SodaApp.h"
 #include "Math/UnrealMathUtility.h"
 #include "VehicleUtility.h"
+#include "Templates/Tuple.h"
 
 #include "bsoncxx/builder/stream/helpers.hpp"
 #include "bsoncxx/exception/exception.hpp"
@@ -179,7 +180,12 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 
 			FTransform VehicleTransform = TrajectoryPlaner.GetRouteSpline()->GetTransformAtSplineInputKey(TrajectoryPlaner.GetCurrentSplineKey(), ESplineCoordinateSpace::World);
 
-			TArray<TTuple<int, FVector>> Points;
+			struct FIndVec
+			{
+				int Ind;
+				FVector Vec;
+			};
+			TArray<FIndVec> Points;
 			Points.Reserve(Wheels.Num());
 			for (int i = 0; i < Wheels.Num(); ++i)
 			{
@@ -190,7 +196,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 
 				if (Wheel.Hit.bBlockingHit)
 				{
-					Points.Add(MakeTuple( i, Wheel.Hit.Location));
+					Points.Add({ i, Wheel.Hit.Location });
 				}
 
 				Wheel.RotationAngularVelocit = -CurrentVelocity  / Wheel.Radius;
@@ -199,14 +205,14 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 
 			if (Points.Num() >= 3)
 			{
-				Points.Sort([](const auto& Pt1, const auto& Pt2) { return Pt1.Get<1>().Z > Pt2.Get<1>().Z; });
-				FPlane PlaneRoad(Points[0].Get<1>(), Points[1].Get<1>(), Points[2].Get<1>());
+				Points.Sort([](const auto& Pt1, const auto& Pt2) { return Pt1.Vec.Z > Pt2.Vec.Z; });
+				FPlane PlaneRoad(Points[0].Vec, Points[1].Vec, Points[2].Vec);
 				if (PlaneRoad.GetNormal().Z < 0) PlaneRoad = PlaneRoad.Flip();
 
 				FPlane PlaneVehicle(
-					VehicleTransform.TransformPosition(Wheels[Points[0].Get<0>()].Location + FVector(0, 0, -Wheels[Points[0].Get<0>()].Radius)),
-					VehicleTransform.TransformPosition(Wheels[Points[1].Get<0>()].Location + FVector(0, 0, -Wheels[Points[1].Get<0>()].Radius)),
-					VehicleTransform.TransformPosition(Wheels[Points[2].Get<0>()].Location + FVector(0, 0, -Wheels[Points[2].Get<0>()].Radius))
+					VehicleTransform.TransformPosition(Wheels[Points[0].Ind].Location + FVector(0, 0, -Wheels[Points[0].Ind].Radius)),
+					VehicleTransform.TransformPosition(Wheels[Points[1].Ind].Location + FVector(0, 0, -Wheels[Points[1].Ind].Radius)),
+					VehicleTransform.TransformPosition(Wheels[Points[2].Ind].Location + FVector(0, 0, -Wheels[Points[2].Ind].Radius))
 				);
 				if (PlaneVehicle.GetNormal().Z < 0) PlaneVehicle = PlaneVehicle.Flip();
 
@@ -214,9 +220,9 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 				VehicleTransform.SetRotation(dQuat * VehicleTransform.GetRotation());
 
 				const double Distance = (
-					PlaneRoad.PlaneDot(VehicleTransform.TransformPosition(Wheels[Points[0].Get<0>()].Location + FVector(0, 0, -Wheels[Points[0].Get<0>()].Radius))) +
-					PlaneRoad.PlaneDot(VehicleTransform.TransformPosition(Wheels[Points[1].Get<0>()].Location + FVector(0, 0, -Wheels[Points[1].Get<0>()].Radius))) +
-					PlaneRoad.PlaneDot(VehicleTransform.TransformPosition(Wheels[Points[2].Get<0>()].Location + FVector(0, 0, -Wheels[Points[2].Get<0>()].Radius)))) / 3;
+					PlaneRoad.PlaneDot(VehicleTransform.TransformPosition(Wheels[Points[0].Ind].Location + FVector(0, 0, -Wheels[Points[0].Ind].Radius))) +
+					PlaneRoad.PlaneDot(VehicleTransform.TransformPosition(Wheels[Points[1].Ind].Location + FVector(0, 0, -Wheels[Points[1].Ind].Radius))) +
+					PlaneRoad.PlaneDot(VehicleTransform.TransformPosition(Wheels[Points[2].Ind].Location + FVector(0, 0, -Wheels[Points[2].Ind].Radius)))) / 3;
 				VehicleTransform.SetTranslation(VehicleTransform.GetTranslation() - VehicleTransform.InverseTransformVector(PlaneRoad.GetNormal() * Distance));
 				
 			}

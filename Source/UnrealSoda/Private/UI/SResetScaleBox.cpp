@@ -5,6 +5,7 @@
 #include "Soda/SodaApp.h"
 #include "Soda/SodaUserSettings.h"
 #include "Layout/ArrangedChildren.h"
+#include "Engine/GameViewportClient.h"
 
 namespace soda
 {
