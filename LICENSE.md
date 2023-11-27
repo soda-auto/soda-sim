@@ -141,7 +141,7 @@ As an exception to the above requirement that only a User may use the LICENSED S
 SODA.AUTO UK Ltd. a company incorporated in the United Kingdom under company number 14698049 whose registered office is at 71-75 Uxbridge Road, Ealing, London, England, W5 5SL.  
 
 10.	***Privacy***  
-Your privacy is important to us. Please review our [Privacy Policy](https://soda.auto/privacypolicy). It describes how we collect, use, and share information when you use the SODA.AUTO services that link to this Privacy Policy.
+Your privacy is important to us. Please review our [Privacy Policy](https://soda.auto/privacy-policy). It describes how we collect, use, and share information when you use the SODA.AUTO services that link to this Privacy Policy.
 
 ## Other Rights and Obligations
 11.	***Disclaimers***  
