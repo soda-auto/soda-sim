@@ -2,6 +2,7 @@
 
 #include "Soda/Actors/GhostVehicle/AnimNode_GhostWheelController.h"
 #include "Soda/Actors/GhostVehicle/GhostVehicle.h"
+#include "Soda/UnrealSoda.h"
 #include "AnimationRuntime.h"
 #include "Animation/AnimStats.h"
 #include "WheeledVehiclePawn.h"
@@ -81,7 +82,7 @@ void FAnimNode_GhostWheelController::EvaluateSkeletalControl_AnyThread(FComponen
 			}
 			else
 			{
-				UE_LOG(LogChaos, Error, TEXT("Invalid condition Wheel.WheelIndex (%d) >= WheelAnimData.Num (%d)"), Wheel.WheelIndex, WheelAnimData.Num());
+				UE_LOG(LogSoda, Error, TEXT("Invalid condition Wheel.WheelIndex (%d) >= WheelAnimData.Num (%d)"), Wheel.WheelIndex, WheelAnimData.Num());
 			}
 		}
 	}

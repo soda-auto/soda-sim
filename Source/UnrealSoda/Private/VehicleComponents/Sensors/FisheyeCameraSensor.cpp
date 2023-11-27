@@ -23,6 +23,10 @@
 #include "Soda/Misc/MeshGenerationUtils.h"
 #include "Async/Future.h"
 #include "DynamicMeshBuilder.h"
+#include "Components/StaticMeshComponent.h"
+#include "SceneView.h"
+#include "Engine/Texture2D.h"
+#include "TextureResource.h"
 
 template <typename  T>
 static void AddToBuf(TArray<uint8>& Buf, T && Value)

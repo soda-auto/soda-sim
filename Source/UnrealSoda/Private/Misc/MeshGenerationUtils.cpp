@@ -11,7 +11,7 @@
 #include "quickhull/QuickHull.hpp"
 #include "UObject/ConstructorHelpers.h"
 #include "ConstrainedDelaunay2.h"
-#include "DynamicMeshBuilder.h"
+
 
 namespace FMeshGenerationUtils
 {

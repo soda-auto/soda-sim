@@ -21,6 +21,7 @@
 #include "Engine/Engine.h"
 #include "CanvasItem.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
 #include "Engine/StaticMesh.h"
 #include "Interfaces/IPluginManager.h"
 #include "Engine/SCS_Node.h"
@@ -28,6 +29,10 @@
 #include "Engine/ObjectLibrary.h"
 #include "HAL/PlatformFileManager.h"
 #include "PhysicsEngine/PhysicsAsset.h"
+#include "DynamicMeshBuilder.h"
+#include "UObject/UObjectIterator.h"
+#include "Engine/GameViewportClient.h"
+
 #include <iostream>
 #include <fstream>
 #include <map>

@@ -3,6 +3,7 @@
 #include "Soda/Misc/PixelReader.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "DataDrivenShaderPlatformInfo.h"
+#include "TextureResource.h"
 
 void FCameraPixelReader::BeginRead(
 	UTextureRenderTarget2D& RenderTarget,

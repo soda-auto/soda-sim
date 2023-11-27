@@ -18,16 +18,14 @@
 #include "UObject/UObjectHash.h"
 #include "UObject/UObjectIterator.h"
 #include "StaticMeshResources.h"
-
+#include "DynamicMeshBuilder.h"
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "SceneInterface.h"
 
 //#include "ConstrainedDelaunay2.h"
 //#include "Polygon2.h"
 //#include "DynamicMesh/DynamicMesh3.h"
-
-using namespace UE::Geometry;
-
 
 
 struct FSensoFOVProxy

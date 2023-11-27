@@ -14,6 +14,7 @@
 #include "Widgets/SBoxPanel.h"
 #include "Framework/SlateDelegates.h"
 #include "Materials/MaterialInterface.h"
+#include "AssetRegistry/AssetData.h"
 #include "RuntimePropertyEditor/PropertyHandle.h"
 #include "RuntimePropertyEditor/IDetailCustomNodeBuilder.h"
 #include "RuntimePropertyEditor/DetailWidgetRow.h"
@@ -23,7 +24,6 @@
 #include "RuntimePropertyEditor/IDetailPropertyRow.h"
 
 //class AActor;
-struct FAssetData;
 //class FAssetThumbnailPool;
 class UActorComponent;
 class UFactory;

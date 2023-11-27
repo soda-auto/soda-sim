@@ -3,6 +3,7 @@
 #include "Soda/VehicleComponents/Mechanicles/VehicleGearBoxComponent.h"
 #include "Soda/UnrealSoda.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 

@@ -3,6 +3,7 @@
 #include "Soda/Misc/TelemetryGraph.h"
 #include "Engine/Engine.h"
 #include "Engine/Canvas.h"
+#include "GlobalRenderResources.h"
 
 FFontRenderInfo FontRenderInfo;
 

@@ -7,6 +7,8 @@
 #include "Soda/UnrealSoda.h"
 #include "RuntimeMetaData.h"
 #include "Soda/SodaGameViewportClient.h"
+#include "Engine/Engine.h"
+#include "SceneView.h"
 
 bool ISodaVehicleComponent::OnActivateVehicleComponent()
 {

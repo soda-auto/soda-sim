@@ -6,6 +6,7 @@
 #include "Misc/App.h"
 #include "EngineGlobals.h"
 #include "Engine/TextureStreamingTypes.h"
+#include "Engine/Engine.h"
 #include "Slate/SceneViewport.h"
 #include "Slate/SGameLayerManager.h"
 #include "Framework/Notifications/NotificationManager.h"

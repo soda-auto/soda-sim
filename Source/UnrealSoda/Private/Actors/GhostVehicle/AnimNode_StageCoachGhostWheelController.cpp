@@ -1,6 +1,7 @@
 // © 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Actors/GhostVehicle/AnimNode_StageCoachGhostWheelController.h"
+#include "Soda/UnrealSoda.h"
 #include "Soda/Actors/GhostVehicle/GhostVehicle.h"
 #include "AnimationRuntime.h"
 #include "Animation/AnimStats.h"
@@ -84,7 +85,7 @@ void FAnimNode_StageCoachGhostWheelController::EvaluateSkeletalControl_AnyThread
 			}
 			else
 			{
-				UE_LOG(LogChaos, Error, TEXT("Invalid condition Wheel.WheelIndex (%d) >= WheelAnimData.Num (%d)"), Wheel.WheelIndex, WheelAnimData.Num());
+				UE_LOG(LogSoda, Error, TEXT("Invalid condition Wheel.WheelIndex (%d) >= WheelAnimData.Num (%d)"), Wheel.WheelIndex, WheelAnimData.Num());
 			}
 		}
 	}

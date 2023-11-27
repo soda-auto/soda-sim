@@ -5,6 +5,7 @@
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
 
 UVehicleHandBrakeBaseComponent::UVehicleHandBrakeBaseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

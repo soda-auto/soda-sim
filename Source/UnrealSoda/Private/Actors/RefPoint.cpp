@@ -11,6 +11,9 @@
 #include "UObject/ConstructorHelpers.h"
 #include "SceneView.h"
 #include "EngineUtils.h"
+#include "Materials/Material.h"
+#include "Engine/GameViewportClient.h"
+#include <cmath>
 
 namespace soda
 {

@@ -22,11 +22,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "MetadataPrimaryAsset")
 	bool bSaveAllCPPMetadata = false;
 
-	virtual FPrimaryAssetId GetPrimaryAssetId() const override
-	{
-		return FPrimaryAssetId(FName("MetadataPrimaryAsset"), FPackageName::GetShortFName(GetOutermost()->GetName()));
-	}
-
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 	virtual void PreSave(FObjectPreSaveContext ObjectSaveContext) override;
 	virtual void Serialize(FArchive& Ar) override;
 	//virtual void Serialize(FStructuredArchive::FRecord Record) override;

@@ -8,6 +8,7 @@
 #include "DynamicMeshBuilder.h"
 #include "CanvasTypes.h"
 #include "Soda/SodaGameViewportClient.h"
+#include "Engine/Engine.h"
 
 /**
  * Renders any widget specific HUD text

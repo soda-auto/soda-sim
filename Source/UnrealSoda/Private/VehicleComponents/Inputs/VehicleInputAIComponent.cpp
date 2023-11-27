@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Soda/SodaStatics.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
 #include "VehicleUtility.h"
 #include "WheeledVehiclePawn.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"

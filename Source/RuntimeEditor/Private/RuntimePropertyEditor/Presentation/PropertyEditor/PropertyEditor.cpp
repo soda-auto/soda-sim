@@ -24,6 +24,9 @@
 //#include "ActorTreeItem.h"
 #include "RuntimePropertyEditor/PropertyHandleImpl.h"
 
+#include "GameFramework/Actor.h"
+#include "AssetRegistry/AssetData.h"
+
 #define LOCTEXT_NAMESPACE "PropertyEditor"
 
 namespace soda

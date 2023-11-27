@@ -6,6 +6,8 @@
 #include "Soda/Misc/SerializationHelpers.h"
 #include "VehicleSensorComponent.generated.h"
 
+struct FDynamicMeshVertex;
+
 /**
  * An auxiliary structure that describes the settings for rendering the FOV for a sensor.
  */

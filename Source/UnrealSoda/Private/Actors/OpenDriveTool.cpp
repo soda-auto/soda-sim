@@ -16,6 +16,7 @@
 #include "Soda/SodaGameMode.h"
 #include "Soda/UI/SMessageBox.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 #include "bsoncxx/builder/stream/helpers.hpp"
 #include "bsoncxx/exception/exception.hpp"

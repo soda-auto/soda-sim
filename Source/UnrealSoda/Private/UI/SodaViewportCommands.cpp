@@ -9,6 +9,7 @@
 #include "MaterialShared.h"
 #include "Engine/Texture2D.h"
 #include "Stats/StatsData.h"
+#include "Engine/Engine.h"
 
 #define LOCTEXT_NAMESPACE "SodaViewportCommands"
 

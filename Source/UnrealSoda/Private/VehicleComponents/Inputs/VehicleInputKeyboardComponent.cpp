@@ -4,6 +4,7 @@
 #include "Soda/UnrealSoda.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
 #include "Soda/SodaStatics.h"
 #include "Soda/SodaApp.h"
 #include "Soda/SodaUserSettings.h"

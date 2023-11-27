@@ -13,6 +13,8 @@
 #include "Blueprint/BlueprintSupport.h"
 #include "Engine/BlueprintGeneratedClass.h"
 #include "Engine/Blueprint.h"
+#include "Misc/PackageName.h"
+#include "AssetRegistry/AssetData.h"
 
 namespace FRuntimeEditorUtils
 {

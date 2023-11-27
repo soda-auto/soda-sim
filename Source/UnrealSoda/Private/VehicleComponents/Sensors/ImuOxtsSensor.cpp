@@ -8,6 +8,7 @@
 #include "Soda/SodaApp.h"
 #include "Soda/SodaUserSettings.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
 #include <cstddef>
