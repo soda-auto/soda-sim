@@ -5,6 +5,7 @@
 #include "Soda/VehicleComponents/Sensors/CameraSensor.h"
 #include "Engine/Scene.h"
 #include "Soda/Transport/GenericLidarPublisher.h"
+#include "Soda/Transport/GenericCameraPublisher.h"
 #include "LidarDepthSensorCube.generated.h"
 
 UENUM(BlueprintType)

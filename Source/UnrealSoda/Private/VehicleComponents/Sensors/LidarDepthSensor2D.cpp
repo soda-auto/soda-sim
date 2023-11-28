@@ -311,7 +311,7 @@ bool ULidarDepthSensor2DComponent::OnActivateVehicleComponent()
 
 	CameraFrame.Height = Height;
 	CameraFrame.Width = Width;
-	CameraFrame.OutFormat = ECameraSensorShader::Depth8;
+	CameraFrame.SetShader(ECameraSensorShader::Depth8);
 
 	Map.resize(Height * Width);
 

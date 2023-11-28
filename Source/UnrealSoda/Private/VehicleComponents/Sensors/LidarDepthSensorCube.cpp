@@ -60,7 +60,7 @@ bool ULidarDepthSensorCubeComponent::OnActivateVehicleComponent()
 
 	CameraFrame.Height = Size;
 	CameraFrame.Width = Size * 4;
-	CameraFrame.OutFormat = ECameraSensorShader::Depth8;
+	CameraFrame.SetShader(ECameraSensorShader::Depth8);
 	CameraFrame.ImageStride = Size * 4;
 
 	Map.resize(Size * Size * 4);

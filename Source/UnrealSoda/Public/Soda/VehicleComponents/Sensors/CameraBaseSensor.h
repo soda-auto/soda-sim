@@ -5,7 +5,7 @@
 #include "Soda/VehicleComponents/VehicleSensorComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/SceneCapture2D.h"
-#include "Soda/Transport/GenericCameraPublisher.h"
+#include "Soda/Transport/CameraPublisher.h"
 #include "Soda/Misc/PixelReader.h"
 #include "CameraBaseSensor.generated.h"
 

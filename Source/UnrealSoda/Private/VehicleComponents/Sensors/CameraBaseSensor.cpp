@@ -119,7 +119,7 @@ bool UCameraBaseSensorComponent::OnActivateVehicleComponent()
 
 	CameraFrame.Height = Height;
 	CameraFrame.Width = Width;
-	CameraFrame.OutFormat = Format;
+	CameraFrame.SetShader(Format);
 	CameraFrame.MaxDepthDistance = MaxDepthDistance;
 
 	if (CameraPublisher)
@@ -273,7 +273,7 @@ void UCameraBaseSensorComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	{
 		if (HealthIsWorkable() && GetHealth() != EVehicleComponentHealth::Warning)
 		{
-			if (!CameraPublisher->IsWorking() && !CameraPublisher->IsInitializing())
+			if (!CameraPublisher->IsOk() && !CameraPublisher->IsInitializing())
 			{
 				SetHealth(EVehicleComponentHealth::Warning, "Can't Initialize publisher");
 			}
@@ -331,17 +331,17 @@ void UCameraBaseSensorComponent::TickComponent(float DeltaTime, ELevelTick TickT
 		}
 		*/
 
-		if (CameraPublisher && CameraPublisher->IsWorking())
+		if (CameraPublisher && CameraPublisher->IsOk())
 		{
 			CameraFrame.Timestamp = Timestamp;
 			CameraFrame.Index = IndexSaved;
-			TArray<FColor>& Pixels = CameraPublisher->LockFrontBuffer(CameraFrame);
+			TArray<FColor>& Pixels = CameraPublisher->LockBuffer();
 			{
 				//SCOPE_CYCLE_COUNTER(STAT_CameraRead);
 				FCameraPixelReader::ReadPixels(*GetSceneCaptureComponent2D()->TextureTarget, RHICmdList, Pixels, CameraFrame.ImageStride);
 			}
 
-			CameraPublisher->UnlockFrontBuffer();
+			CameraPublisher->UnlockBuffer(CameraFrame);
 		}
 
 	});

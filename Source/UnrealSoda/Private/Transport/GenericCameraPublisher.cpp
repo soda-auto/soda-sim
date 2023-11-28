@@ -3,18 +3,8 @@
 #include "Soda/Transport/GenericCameraPublisher.h"
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaApp.h"
-#include "Async/ParallelFor.h"
 #include <errno.h>
 
-static uint8 GetCVSize(uint8 CVType)
-{
-	static const uint8 CV_2_SIZE[7] = { 1, 1, 2, 2, 4, 4, 8 };
-	return CV_2_SIZE[CVType];
-}
-
-UCameraPublisher::UCameraPublisher(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
-{}
 
 /***********************************************************************************************
 	FCameraAsyncTask
@@ -69,7 +59,7 @@ bool UGenericCameraPublisher::Advertise()
 {
 	if (!SodaApp.GetZmqContext())
 	{
-		bIsWorking = false;
+		bIsOk = false;
 		return false;
 	}
 
@@ -80,7 +70,7 @@ bool UGenericCameraPublisher::Advertise()
 	catch (...)
 	{
 		UE_LOG(LogSoda, Error, TEXT("UGenericCameraPublisher::Advertise(), can't create socket, errno: %i"), errno);
-		bIsWorking = false;
+		bIsOk = false;
 		return false;
 	}
 
@@ -95,13 +85,13 @@ bool UGenericCameraPublisher::Advertise()
 		UE_LOG(LogSoda, Error, TEXT("UGenericCameraPublisher::Advertise() SockPub->bind('%s') failed"), *ZmqAddress);
 		delete SockPub;
 		SockPub = nullptr;
-		bIsWorking = false;
+		bIsOk = false;
 		return false;
 	}
 
 	AsyncTask->Start();
 	SodaApp.CamTaskManager.AddTask(AsyncTask);
-	bIsWorking = true;
+	bIsOk = true;
 	return true;
 }
 
@@ -117,34 +107,33 @@ void UGenericCameraPublisher::Shutdown()
 
 	SockPub = nullptr;
 
-	bIsWorking = false;
+	bIsOk = false;
 }
 
 void UGenericCameraPublisher::Publish(const void* ImgBGRA8Ptr, const FCameraFrame& CameraFrame)
 {
-	TArray<FColor> & Buf = LockFrontBuffer(CameraFrame);
+	TArray<FColor> & Buf = LockBuffer();
+	Buf.SetNum(CameraFrame.ImageStride * CameraFrame.Height, false);
 	FMemory::BigBlockMemcpy(Buf.GetData(), ImgBGRA8Ptr, Buf.Num());
-	UnlockFrontBuffer();
-
+	UnlockBuffer(CameraFrame);
 }
 
-TArray<FColor> & UGenericCameraPublisher::LockFrontBuffer(const FCameraFrame& CameraFrame)
+TArray<FColor> & UGenericCameraPublisher::LockBuffer()
 {
 	TSharedPtr<FCameraAsyncTask> Task = AsyncTask->LockFrontTask();
 	if (!Task->IsDone())
 	{
-		UE_LOG(LogSoda, Warning, TEXT("UGenericCameraPublisher::LockFrontBuffer(). Skipped one frame") );
+		UE_LOG(LogSoda, Warning, TEXT("UGenericCameraPublisher::LockBuffer(). Skipped one frame") );
 	}
-	Task->ImgBuffer.SetNum(CameraFrame.ImageStride * CameraFrame.Height);
-	Task->CameraFrame = CameraFrame;
 	Task->Initialize();
 	return Task->ImgBuffer;
 }
 
-void UGenericCameraPublisher::UnlockFrontBuffer()
+void UGenericCameraPublisher::UnlockBuffer(const FCameraFrame& CameraFrame)
 {
 	if (AsyncTask.IsValid())
 	{
+		AsyncTask->GetLockedFrontTask().CameraFrame = CameraFrame;
 		AsyncTask->UnlockFrontTask();
 	}
 	SodaApp.CamTaskManager.Trigger();
@@ -171,41 +160,10 @@ void FCameraAsyncTask::Tick()
 	check(!bIsDone);
 	check(ImgBuffer.Num() > 0 && uint32(ImgBuffer.Num()) >= CameraFrame.ImageStride * CameraFrame.Height);
 
-	uint8 DType = 0;
-	uint8 Channels = 0;
-
-	switch (CameraFrame.OutFormat)
-	{
-	case ECameraSensorShader::SegmBGR8:
-	case ECameraSensorShader::ColorBGR8:
-	case ECameraSensorShader::HdrRGB8:
-	case ECameraSensorShader::CFA:
-		DType = CV_8U;
-		Channels = 3;
-		break;
-
-	case ECameraSensorShader::Segm8:
-	case ECameraSensorShader::Depth8:
-		DType = CV_8U;
-		Channels = 1;
-		break;
-
-	case ECameraSensorShader::DepthFloat32:
-		DType = CV_32F;
-		Channels = 1;
-		break;
-
-	case ECameraSensorShader::Depth16:
-		DType = CV_16U;
-		Channels = 1;
-		break;
-
-	default:
-		check(0);
-	}
+	const uint32 ImgRawBufferSize = CameraFrame.ComputeRawBufferSize();
 
 	static TArray<uint8> RawBuffer;
-	RawBuffer.SetNum(GetCVSize(DType) * Channels * CameraFrame.Height * CameraFrame.Width + sizeof(soda::TensorMsgHeader), false);
+	RawBuffer.SetNum(ImgRawBufferSize + sizeof(soda::TensorMsgHeader), false);
 	soda::TensorMsgHeader& Header = *((soda::TensorMsgHeader*)RawBuffer.GetData());
 	uint8* ImgBufferPtr = &RawBuffer[sizeof(soda::TensorMsgHeader)];
 
@@ -214,70 +172,11 @@ void FCameraAsyncTask::Tick()
 	Header.tenser.shape.depth = 1;
 	Header.timestamp = soda::RawTimestamp<std::chrono::milliseconds>( CameraFrame.Timestamp);
 	Header.index = CameraFrame.Index;
-	Header.dtype = DType;
-	Header.tenser.shape.channels = Channels;
+	Header.dtype = uint8(CameraFrame.GetDataType());
+	Header.tenser.shape.channels = CameraFrame.GetChannels();
 
-	switch (CameraFrame.OutFormat)
-	{
-		case ECameraSensorShader::Segm8:
-			ParallelFor(CameraFrame.Height, [&](int32 i)
-				{
-					for (uint32 j = 0; j < CameraFrame.Width; j++)
-					{
-						ImgBufferPtr[i * CameraFrame.Width + j] = ImgBuffer[i * CameraFrame.ImageStride + j].R;  //Only R cnannel
-					}
-				});
-			break;
+	soda::ColorToRawBuffer(ImgBuffer, CameraFrame, ImgBufferPtr);
 
-		case ECameraSensorShader::ColorBGR8:
-		case ECameraSensorShader::SegmBGR8:
-		case ECameraSensorShader::HdrRGB8:
-		case ECameraSensorShader::CFA:
-			ParallelFor(CameraFrame.Height, [&](int32 i)
-				{
-					for (uint32 j = 0; j < CameraFrame.Width; j++)
-					{
-						uint32 out_ind = (i * CameraFrame.Width + j) * 3;
-						uint32 in_ind = (i * CameraFrame.ImageStride + j);
-						*(uint32*)&ImgBufferPtr[out_ind + 0] = *(uint32*)&ImgBuffer[in_ind + 0];
-					}
-				});
-			break;
-		
-
-		case ECameraSensorShader::DepthFloat32:
-			ParallelFor(CameraFrame.Height, [&](int32 i)
-				{
-					for (uint32 j = 0; j < CameraFrame.Width; j++)
-					{
-						((float*)ImgBufferPtr)[i * CameraFrame.Width + j] = Rgba2Float(ImgBuffer[CameraFrame.ImageStride * i + j]) * CameraFrame.MaxDepthDistance;
-					}
-				});
-			break;
-		
-
-		case ECameraSensorShader::Depth16:
-			ParallelFor(CameraFrame.Height, [&](int32 i)
-				{
-					for (uint32 j = 0; j < CameraFrame.Width; j++)
-					{
-						((uint16_t*)ImgBufferPtr)[i * CameraFrame.Width + j] = static_cast<uint16_t>(Rgba2Float(ImgBuffer[CameraFrame.ImageStride * i + j]) * 0xFFFF + 0.5f);
-					}
-				});
-			break;
-
-		case ECameraSensorShader::Depth8:
-			ParallelFor(CameraFrame.Height, [&](int32 i)
-				{
-					for (uint32 j = 0; j < CameraFrame.Width; j++)
-					{
-						ImgBufferPtr[i * CameraFrame.Width + j] = static_cast<uint8_t>(Rgba2Float(ImgBuffer[CameraFrame.ImageStride * i + j]) * 0xFF + 0.5f);
-					}
-				});
-			break;
-		
-	}
-	
 	Publisher->Publish(RawBuffer.GetData(), RawBuffer.Num());
 	bIsDone = true;
 }

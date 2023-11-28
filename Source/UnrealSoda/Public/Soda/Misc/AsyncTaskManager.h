@@ -91,6 +91,8 @@ public:
 
 	void UnlockFrontTask() { TasksLock.Unlock(); }
 
+	T& GetLockedFrontTask() { return *FrontTask; }
+
 
 protected:
 	FCriticalSection TasksLock;
