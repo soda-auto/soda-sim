@@ -510,14 +510,17 @@ float UVehicleInputAIComponent::RayCast(const FVector& Start, const FVector& End
 {	
 	FHitResult OutHit;
 	static FName TraceTag = FName(TEXT("VehicleTrace"));
+	FCollisionObjectQueryParams QueryParams(ECollisionChannel::ECC_Vehicle);
 	FCollisionQueryParams CollisionParams(TraceTag, true);
 	CollisionParams.AddIgnoredActor(GetVehicle());
-	CollisionParams.bFindInitialOverlaps = true;
+	//CollisionParams.bFindInitialOverlaps = true;
 
-	const bool Success = GetVehicle()->GetWorld()->SweepSingleByChannel(
-		OutHit, Start, End, (End - Start).Rotation().Quaternion(),
-		ECollisionChannel::ECC_Visibility,
-		FCollisionShape::MakeBox(FVector(50, 150, 100)), CollisionParams);
+	const bool Success = GetVehicle()->GetWorld()->SweepSingleByObjectType(
+		OutHit, Start, End, 
+		(End - Start).Rotation().Quaternion(),
+		QueryParams,
+		FCollisionShape::MakeBox(FVector(50, 150, 100)), 
+		CollisionParams);
 
 	if (Success && OutHit.bBlockingHit)
 	{

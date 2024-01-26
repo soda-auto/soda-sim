@@ -25,8 +25,10 @@
 AGhostVehicle::AGhostVehicle()
 {
 	Mesh = CreateDefaultSubobject< USkeletalMeshComponent >(TEXT("VehicleMesh"));
-	//Mesh->SetCollisionProfileName(UCollisionProfile::Vehicle_ProfileName);
+	
+	Mesh->SetCollisionProfileName(UCollisionProfile::Vehicle_ProfileName);
 	Mesh->SetSimulatePhysics(false);
+	/*
 	Mesh->SetGenerateOverlapEvents(true);
 	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -38,6 +40,7 @@ AGhostVehicle::AGhostVehicle()
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Ignore);
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Vehicle, ECollisionResponse::ECR_Ignore);
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Destructible, ECollisionResponse::ECR_Ignore);
+	*/
 
 	RootComponent = Mesh;
 	PrimaryActorTick.bCanEverTick = true;
@@ -231,7 +234,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 				VehicleTransform.GetLocation() - 
 				VehicleTransform.GetRotation().RotateVector(VehicleTransform.InverseTransformPosition(VehicleTransform.GetLocation()) + RealAxesOffset)
 			);
-			SetActorTransform(VehicleTransform);
+			SetActorTransform(VehicleTransform, false, nullptr, ETeleportType::TeleportPhysics);
 		}
 
 		if (Dataset)
@@ -255,7 +258,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 						VehicleTransform.GetLocation() -
 						VehicleTransform.GetRotation().RotateVector(VehicleTransform.InverseTransformPosition(VehicleTransform.GetLocation()) + RealAxesOffset)
 					);
-					SetActorTransform(VehicleTransform);
+					SetActorTransform(VehicleTransform, false, nullptr, ETeleportType::TeleportPhysics);
 				}
 				else
 				{
@@ -288,7 +291,7 @@ void AGhostVehicle::GoToLeftRoute(float StaticOffset, float VelocityToOffset)
 {
 	if (bIsMoving)
 	{
-		if (TrajectoryPlaner.GoToLeftRoute(GetWorld(), GetActorTransform(), StaticOffset + CurrentVelocity * VelocityToOffset))
+		if (TrajectoryPlaner.GoToLeftRoute(GetWorld(), GetRealAxesTransform(), StaticOffset + CurrentVelocity * VelocityToOffset))
 		{
 			CurrentSplineOffset = TrajectoryPlaner.GetDistanceAlongSpline();
 			CalculateSpeedProfile();
@@ -300,7 +303,7 @@ void AGhostVehicle::GoToRightRoute(float StaticOffset, float VelocityToOffset)
 {
 	if (bIsMoving)
 	{
-		if (TrajectoryPlaner.GoToRightRoute(GetWorld(), GetActorTransform(), StaticOffset + CurrentVelocity * VelocityToOffset))
+		if (TrajectoryPlaner.GoToRightRoute(GetWorld(), GetRealAxesTransform(), StaticOffset + CurrentVelocity * VelocityToOffset))
 		{
 			CurrentSplineOffset = TrajectoryPlaner.GetDistanceAlongSpline();
 			CalculateSpeedProfile();
@@ -312,7 +315,7 @@ void AGhostVehicle::GoToRoute(TSoftObjectPtr<ANavigationRoute> Route, float Stat
 {
 	if (bIsMoving && Route.Get())
 	{
-		if (TrajectoryPlaner.GoToRoute(GetWorld(), GetActorTransform(), StaticOffset + CurrentVelocity * VelocityToOffset, Route.Get()))
+		if (TrajectoryPlaner.GoToRoute(GetWorld(), GetRealAxesTransform(), StaticOffset + CurrentVelocity * VelocityToOffset, Route.Get()))
 		{
 			CurrentSplineOffset = TrajectoryPlaner.GetDistanceAlongSpline();
 			CalculateSpeedProfile();
@@ -352,7 +355,7 @@ void AGhostVehicle::StopMoving()
 {
 	if (bIsMoving)
 	{
-		SetActorTransform(InitTransform);
+		SetActorTransform(InitTransform, false, nullptr, ETeleportType::TeleportPhysics);
 		bIsMoving = false;
 		CurrentVelocity = 0;
 		CurrentAcc = 0;
@@ -487,6 +490,16 @@ void AGhostVehicle::UpdateJoinCurve()
 		}
 	}
 }
+
+FTransform AGhostVehicle::GetRealAxesTransform() const
+{
+	FTransform Transform = GetActorTransform();
+	Transform.SetLocation(
+		Transform.GetLocation() -
+		Transform.GetRotation().RotateVector(Transform.InverseTransformPosition(Transform.GetLocation()) - RealAxesOffset));
+	return Transform;
+}
+
 
 void AGhostVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) const
 {

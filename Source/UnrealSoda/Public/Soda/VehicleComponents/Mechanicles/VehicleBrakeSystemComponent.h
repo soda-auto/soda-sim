@@ -159,7 +159,7 @@ class UNREALSODA_API UVehicleBrakeSystemSimpleComponent : public UVehicleBrakeSy
 	UPROPERTY(EditAnywhere, Category = BrakeSystem, SaveGame, meta = (EditInRuntime))
 	FInputRate MechanicalBrakeRate {3000, 3000};
 
-	UPROPERTY(EditAnywhere, Category = BrakeSystem, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, Category = BrakeSystem, SaveGame, meta = (EditInRuntime))
 	TArray<FWheelBrakeSetup> WheelBrakesSetup;
 
 	/** Allow set brake from default the UVhicleInputComponent */

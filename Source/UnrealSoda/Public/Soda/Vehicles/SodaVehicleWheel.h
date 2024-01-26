@@ -41,15 +41,15 @@ class UNREALSODA_API USodaVehicleWheelComponent
 
 public:
 	/** Bone name on mesh to create wheel at */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WheelSetup)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
 	FName BoneName = NAME_None;
 
 	/** if current vehicle is 4WD, this is index of current wheel */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WheelSetup)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
 	E4WDWheelIndex WheelIndex4WD = E4WDWheelIndex::None;
 
 	/** Additional offset to give the wheels for this axle */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WheelSetup)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
 	FVector AdditionalOffset;
 
 	/** Initially wheel position [Cm]*/

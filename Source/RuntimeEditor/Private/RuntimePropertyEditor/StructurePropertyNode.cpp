@@ -20,7 +20,7 @@ namespace soda
 		for (TFieldIterator<FProperty> It(Struct); It; ++It)
 		{
 			FProperty* StructMember = *It;
-			if (PropertyEditorHelpers::ShouldBeVisible(*this, StructMember))
+			if (Cast<UFunction>(Struct) != nullptr || PropertyEditorHelpers::ShouldBeVisible(*this, StructMember)) // TODO: @ivanzhuk, check "Cast<UFunction>(Struct) != nullptr" is corrent 
 			{
 				StructMembers.Add(StructMember);
 			}

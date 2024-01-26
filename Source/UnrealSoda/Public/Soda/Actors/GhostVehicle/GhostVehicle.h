@@ -196,6 +196,8 @@ public:
 	virtual void TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;
 	virtual FVector GetVelocity() const override;
 
+	FTransform GetRealAxesTransform() const;
+
 protected:
 	void CalculateSpeedProfile();
 	void UpdateJoinCurve();

@@ -351,7 +351,15 @@ static float SimplifyPlolylane(const TArray<FVector>& In, float MinSegmentLength
 ATrackBuilder::ATrackBuilder()
 {
 	RouteOffset = FVector(0, 0, 100);
-	RootComponent = CreateDefaultSubobject< USceneComponent >(TEXT("Root"));;
+	RootComponent = CreateDefaultSubobject< USceneComponent >(TEXT("Root"));
+
+	static ConstructorHelpers::FObjectFinder< UMaterial > DefMat(TEXT("/SodaSim/Assets/SimpleMat/VertexColorMat"));
+	if (DefMat.Succeeded())
+	{
+		TrackMaterial = DefMat.Object;
+		MarkingsMaterial = DefMat.Object;
+		DecalMaterial = DefMat.Object;
+	}
 }
 
 bool ATrackBuilder::JSONReadLine(const TSharedPtr<FJsonObject>& JSON, const FString& FieldName, TArray<FVector>& OutPoints, bool ImportAltitude)
@@ -896,8 +904,9 @@ void ATrackBuilder::GenerateTrack()
 		bool bTriangulationSuccess = Triangulation.Triangulate();
 		if (!bTriangulationSuccess || Triangulation.Triangles.Num() == 0)
 		{
-			UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::GenerateMesh(); Can't triangulateh"));
-			break;
+			UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::GenerateMesh(); Can't triangulateh section %i"), MeshID);
+			++MeshID;
+			continue;
 		}
 
 		/*
@@ -924,9 +933,10 @@ void ATrackBuilder::GenerateTrack()
 			Triangles.Add(Tri.B);
 			Triangles.Add(Tri.C);
 		}
-
-		TArray<FVector> Normals;
 		TArray<FColor> Colors;
+		Colors.SetNum(Vertices.Num());
+		for (auto& It : Colors) It = FColor(50, 50, 50);
+		TArray<FVector> Normals;
 		TArray<FProcMeshTangent> Tangents;
 		UKismetProceduralMeshLibrary::CalculateTangentsForMesh(Vertices, Triangles, UVs, Normals, Tangents);
 
@@ -1084,7 +1094,7 @@ bool ATrackBuilder::GenerateMarkingsInner(const TArray<FVector>& Points)
 
 	if (Points.Num() < 3)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::GenerateRoadMarkings(); Input track is broken"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::GenerateMarkingsInner(); Input track is broken"));
 		return false;
 	}
 
@@ -1198,8 +1208,9 @@ bool ATrackBuilder::GenerateMarkingsInner(const TArray<FVector>& Points)
 		bool bTriangulationSuccess = Triangulation.Triangulate();
 		if (!bTriangulationSuccess || Triangulation.Triangles.Num() == 0)
 		{
-			UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::GenerateRoadMarkings(); Can't triangulateh"));
-			break;
+			UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::GenerateMarkingsInner(); Can't triangulateh section %i"), MeshID);
+			++MeshID;
+			continue;
 		}
 
 		/*
@@ -1223,8 +1234,10 @@ bool ATrackBuilder::GenerateMarkingsInner(const TArray<FVector>& Points)
 			Triangles.Add(Tri.C);
 		}
 
-		TArray<FVector> Normals;
 		TArray<FColor> Colors;
+		Colors.SetNum(Vertices.Num());
+		for (auto& It : Colors) It = FColor(255, 255, 255);
+		TArray<FVector> Normals;
 		TArray<FProcMeshTangent> Tangents;
 		UKismetProceduralMeshLibrary::CalculateTangentsForMesh(Vertices, Triangles, UVs, Normals, Tangents);
 

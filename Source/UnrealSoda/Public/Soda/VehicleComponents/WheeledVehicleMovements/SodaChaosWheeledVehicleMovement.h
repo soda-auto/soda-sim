@@ -20,13 +20,13 @@ struct UNREALSODA_API FSodaChaosWheelSetup
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
+	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
 	FSubobjectReference ConnectedSodaWheel;
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup, meta = (EditCondition = "bOverrideRadius"))
+	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditCondition = "bOverrideRadius", EditInRuntime))
 	float OverrideRadius = 25;
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
+	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
 	bool bOverrideRadius = false;
 
 	UPROPERTY()
@@ -83,7 +83,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
 	bool bLogPhysStemp = false;
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup, EditFixedSize)
+	UPROPERTY(EditAnywhere, Category = WheelSetup, EditFixedSize, SaveGame, meta = (EditInRuntime))
 	TArray<FSodaChaosWheelSetup> SodaWheelSetups;
 
 public:
