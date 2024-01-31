@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -9,6 +9,14 @@
 class ASodaVehicle;
 class USodaGameModeComponent;
 class ALevelState;
+
+struct FSensorDataHeader
+{
+	TTimestamp Timestamp;
+	int64 FrameIndex;
+	//FString FrameName;
+};
+
 /**
  * UVehicleBaseComponent
  */
@@ -54,6 +62,9 @@ public:
 
 	USodaGameModeComponent* GetGameMode() const { return GameMode; }
 	ALevelState* GetLevelState() const { return LevelState; }
+
+	FSensorDataHeader GetHeaderGameThread() const;
+	FSensorDataHeader GetHeaderVehicleThread() const;
 
 private:
 	UPROPERTY()

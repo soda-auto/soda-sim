@@ -1,5 +1,5 @@
-set (UE_LIBCXX C:/UE/UE_5.1/Engine/Source/ThirdParty/Unix/LibCxx)
-set (LINUX_MULTIARCH_ROOT C:/UnrealToolchains/v20_clang-13.0.1-centos7)
+set (UE_LIBCXX C:/UE/UE_5.3/Engine/Source/ThirdParty/Unix/LibCxx)
+set (LINUX_MULTIARCH_ROOT C:/UnrealToolchains/v22_clang-16.0.6-centos7)
 set (TARGET_TRIPLE x86_64-unknown-linux-gnu)
 set (LD_FLAGS "-nodefaultlibs -stdlib=libc++ -lc -lm -lgcc_s -lgcc ${UE_LIBCXX}/lib/Unix/x86_64-unknown-linux-gnu/libc++.a ${UE_LIBCXX}/lib/Unix/x86_64-unknown-linux-gnu/libc++abi.a")
 

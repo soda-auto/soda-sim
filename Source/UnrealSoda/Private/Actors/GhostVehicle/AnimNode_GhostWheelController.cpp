@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Actors/GhostVehicle/AnimNode_GhostWheelController.h"
 #include "Soda/Actors/GhostVehicle/GhostVehicle.h"

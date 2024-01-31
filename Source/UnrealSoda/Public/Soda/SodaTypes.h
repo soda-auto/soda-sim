@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -25,6 +25,20 @@ namespace soda
 		COORD_World,
 		COORD_Local,
 		COORD_Max,
+	};
+	
+	/** 
+	 * OpenCV compatible data types 
+	 */
+	enum class EDataType : uint8
+	{
+		CV_8U = 0,
+		CV_8S,
+		CV_16U,
+		CV_16S,
+		CV_32S,
+		CV_32F,
+		CV_64F,
 	};
 }
 

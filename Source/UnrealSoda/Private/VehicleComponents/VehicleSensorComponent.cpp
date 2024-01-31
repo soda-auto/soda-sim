@@ -1,7 +1,9 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/VehicleSensorComponent.h"
+#include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/UnrealSoda.h"
+#include "Soda/SodaApp.h"
 #include "Soda/Misc/SensorSceneProxy.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "UObject/ConstructorHelpers.h"
@@ -18,11 +20,6 @@ USensorComponent::USensorComponent(const FObjectInitializer& ObjectInitializer)
 
 	static ConstructorHelpers::FObjectFinder< UMaterial > SensorFOVMaterialFinder(TEXT("/SodaSim/Assets/CPP/SensorFOVMaterial"));
 	SensorFOVMaterial = SensorFOVMaterialFinder.Object;
-}
-
-void USensorComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
 }
 
 void USensorComponent::HideActorComponentsFromSensorView(AActor* Actor)

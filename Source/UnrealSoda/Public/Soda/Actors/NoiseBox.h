@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -6,7 +6,7 @@
 #include "Components/BillboardComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Soda/ISodaActor.h"
-#include "Soda/VehicleComponents/Sensors/ImuSensor.h"
+#include "Soda/VehicleComponents/Sensors/Base/ImuGnssSensor.h"
 #include "NoiseBox.generated.h"
 
 /**

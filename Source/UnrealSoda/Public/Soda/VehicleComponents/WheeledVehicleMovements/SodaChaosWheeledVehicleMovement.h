@@ -1,10 +1,10 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
 #include "Curves/CurveFloat.h"
 #include "Soda/VehicleComponents/VehicleDriverComponent.h"
-#include "Soda/VehicleComponents/Sensors/ImuSensor.h"
+//#include "Soda/VehicleComponents/Sensors/ImuSensor.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
 #include "VehicleAnimationInstance.h"
 #include "Soda/ISodaVehicleComponent.h"

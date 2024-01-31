@@ -1,8 +1,8 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
-#include "Soda/VehicleComponents/Sensors/ImuSensor.h"
+#include "Soda/VehicleComponents/Sensors/Base/ImuGnssSensor.h"
 #include "Soda/Misc/ExtraWindow.h"
 #include "Soda/Misc/TelemetryGraph.h"
 #include "OdometryTest.generated.h"
@@ -34,7 +34,7 @@ struct UNREALSODA_API FOdometryData
 };
 
 UCLASS(ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UOdometryTestComponent : public UImuSensorComponent
+class UNREALSODA_API UOdometryTestComponent : public UImuGnssSensor
 {
 	GENERATED_UCLASS_BODY()
 

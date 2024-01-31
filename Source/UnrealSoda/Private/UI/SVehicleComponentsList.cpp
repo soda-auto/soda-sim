@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/UI/SVehicleComponentsList.h"
 #include "Soda/UnrealSoda.h"
@@ -798,7 +798,7 @@ void SVehicleComponentsList::RebuildNodes()
 	bool bLastNodeIsDeleted = false;
 	if (CategoriesSorted.Remove("DELETED") > 0)
 	{
-		CategoriesSorted.Add("DELETED"); // Push "DELETED" to the ånd of the array
+		CategoriesSorted.Add("DELETED"); // Push "DELETED" to the and of the array
 		bLastNodeIsDeleted = true;
 	}
 	for (auto& It : CategoriesSorted)

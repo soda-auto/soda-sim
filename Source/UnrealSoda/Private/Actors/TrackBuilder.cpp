@@ -1,8 +1,8 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Actors/TrackBuilder.h"
 #include "Soda/UnrealSoda.h"
-#include "Soda/Misc/MathUtils.hpp"
+#include "Soda/Misc/Utils.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Serialization/JsonReader.h"
@@ -20,6 +20,7 @@
 #include "Soda/LevelState.h"
 #include "DesktopPlatformModule.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/Material.h"
 #include <map>
 
 struct FPolyline;

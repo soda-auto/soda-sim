@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -14,7 +14,7 @@ class UNREALSODA_API UVehicleInputJoyComponent : public UVehicleInputComponent
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/SodaSim.VehicleSteeringRackBaseComponent"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/UnrealSoda.VehicleSteeringRackBaseComponent"))
 	FSubobjectReference LinkToSteering { TEXT("SteeringRack") };
 
 	/** In the dead zone the break input will be zero. [0..1] */

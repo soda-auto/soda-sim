@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/UI/SSodaViewport.h"
 #include "Misc/Paths.h"
@@ -483,7 +483,7 @@ void SSodaViewport::BindCommands()
 		FExecuteAction::CreateLambda([this]()
 		{
 			USodaStatics::TagActorsInLevel(GetWorld(), true);
-			USodaStatics::AddV2VComponentToAllVehiclesInLevel(GetWorld(), ASodaVehicle::StaticClass());
+			USodaStatics::AddV2XMarkerToAllVehiclesInLevel(GetWorld(), ASodaVehicle::StaticClass());
 		})
 	);
 
