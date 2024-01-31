@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -97,7 +97,7 @@ public:
 	/** Add V2V component to all vehicles in level.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Soda")
-	static void AddV2VComponentToAllVehiclesInLevel(UObject* WorldContextObject, TSubclassOf<AActor> VehicleClass);
+	static void AddV2XMarkerToAllVehiclesInLevel(UObject* WorldContextObject, TSubclassOf<AActor> VehicleClass);
 
 	UFUNCTION(BlueprintCallable, Category=Soda)
 	static bool WriteStringToFile(const FString & FileName, const FString & StringToWrite, bool AllowOwerWriting = true);
@@ -166,9 +166,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category=Soda)
 	static void SetFKeyByName(FString& Name, FKey& Key);
-
-	UFUNCTION(BlueprintCallable, Category=Soda)
-	static void GetActorLocalBounds(AActor* Actor, FBox& LocalBounds);
 
 	UFUNCTION(BlueprintCallable, Category=Soda)
 	static float GetDistanceAlongSpline(float InputKey, USplineComponent* InSplineComponent);

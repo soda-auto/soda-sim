@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/UI/SodaViewportCommands.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
@@ -80,7 +80,7 @@ void FSodalViewportCommands::RegisterCommands()
 	UI_COMMAND(PossesNextVehicle, "Posses Next Vehicle", "Posses next Soda Vehicle", EUserInterfaceActionType::Button, FInputChord(EKeys::X));
 	UI_COMMAND(BackMenu, "Back Menu", "Back menu", EUserInterfaceActionType::Button, FInputChord(EKeys::Escape));
 	UI_COMMAND(BackMenuEditor, "Back Menu", "Back menu", EUserInterfaceActionType::Button, FInputChord(EKeys::Tab));
-	UI_COMMAND(TagActors, "Tag Actors", "Tag all actors for semantic segmentation and add V2V components for all SodaVehicles", EUserInterfaceActionType::Button, FInputChord());
+	UI_COMMAND(TagActors, "Tag Actors", "Tag all actors for semantic segmentation and add V2X components for all SodaVehicles", EUserInterfaceActionType::Button, FInputChord());
 	UI_COMMAND(Exit, "Exit", "Exit application", EUserInterfaceActionType::Button, FInputChord(EModifierKey::Shift, EKeys::Q));
 	
 

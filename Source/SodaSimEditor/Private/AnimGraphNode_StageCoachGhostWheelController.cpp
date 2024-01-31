@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "AnimGraphNode_StageCoachGhostWheelController.h"
 #include "Kismet2/BlueprintEditorUtils.h"

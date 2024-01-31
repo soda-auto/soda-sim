@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/WheeledVehicleMovements/Soda2DWheeledVehicleMovement.h"
 #include "VehicleComponents/WheeledVehicleMovements/Bicycle/dyncar_bicycle.h"
@@ -7,7 +7,7 @@
 #include "Engine/Engine.h"
 #include "Engine/Canvas.h"
 #include "Engine/CollisionProfile.h"
-#include "Soda/Misc/MathUtils.hpp"
+#include "Soda/Misc/Utils.h"
 #include "Soda/SodaApp.h"
 #include "Soda/SodaUserSettings.h"
 

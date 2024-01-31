@@ -1,10 +1,10 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/SodaStatics.h"
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaApp.h"
 #include "Soda/VehicleComponents/VehicleSensorComponent.h"
-#include "Soda/VehicleComponents/Others/V2V.h"
+#include "Soda/VehicleComponents/Sensors/Base/V2XSensor.h"
 #include "Soda/SodaGameMode.h"
 #include "Soda/LevelState.h"
 #include "Soda/UnrealSodaVersion.h"
@@ -314,7 +314,7 @@ FString USodaStatics::GetTagAsString(const ESegmObjectLabel Label)
 #undef GET_LABEL_STR
 }
 
-void USodaStatics::AddV2VComponentToAllVehiclesInLevel(UObject* WorldContextObject, TSubclassOf<AActor> VehicleClass)
+void USodaStatics::AddV2XMarkerToAllVehiclesInLevel(UObject* WorldContextObject, TSubclassOf<AActor> VehicleClass)
 {
 	UWorld* World = GetGameWorld(WorldContextObject);
 	if (!World) return;
@@ -323,31 +323,31 @@ void USodaStatics::AddV2VComponentToAllVehiclesInLevel(UObject* WorldContextObje
 	UGameplayStatics::GetAllActorsOfClass(World, VehicleClass, FoundVehicles);
 	if (FoundVehicles.Num() == 0)
 	{
-		UE_LOG(LogSoda, Log, TEXT("USodaStatics::AddV2VComponentToAllVehiclesInLevel - no vehicles found"));
+		UE_LOG(LogSoda, Log, TEXT("USodaStatics::AddV2XMarkerToAllVehiclesInLevel - no vehicles found"));
 	}
 
 	for (auto& Vehicle : FoundVehicles)
 	{
-		if (Vehicle->GetComponentByClass(UV2VTransmitterComponent::StaticClass()) == 0)
+		if (Vehicle->GetComponentByClass(UV2XMarkerSensor::StaticClass()) == 0)
 		{
-			FName V2VObjectName("V2V");
+			FName V2XObjectName("V2X");
 
-			UV2VTransmitterComponent* NewV2VComp = NewObject<UV2VTransmitterComponent>(Vehicle, V2VObjectName);
-			check(NewV2VComp);
+			UV2XMarkerSensor* NewV2XComp = NewObject<UV2XMarkerSensor>(Vehicle, V2XObjectName);
+			check(NewV2XComp);
 
-			if (Vehicle->GetComponentByClass(UV2VReceiverComponent::StaticClass()) != 0)
+			if (Vehicle->GetComponentByClass(UV2XReceiverSensor::StaticClass()) != 0)
 			{
-				NewV2VComp->DeactivateVehicleComponent();
+				NewV2XComp->DeactivateVehicleComponent();
 			}
 
-			NewV2VComp->RegisterComponent();       
-			NewV2VComp->AttachToComponent(Vehicle->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-			NewV2VComp->CalculateBoundingBox();
-			if (!NewV2VComp->bAssignUniqueIdAtStartup)
+			NewV2XComp->RegisterComponent();       
+			NewV2XComp->AttachToComponent(Vehicle->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+			NewV2XComp->CalculateBoundingBox();
+			if (!NewV2XComp->bAssignUniqueIdAtStartup)
 			{
-				NewV2VComp->AssignUniqueId();
+				NewV2XComp->AssignUniqueId();
 			}
-			UE_LOG(LogSoda, Log, TEXT("USodaStatics V2VComponent added. Id = %d"), NewV2VComp->ID);
+			UE_LOG(LogSoda, Log, TEXT("AddV2XMarkerToAllVehiclesInLevel(), V2X component added. Id = %d"), NewV2XComp->ID);
 		}
 	}
 }
@@ -638,29 +638,6 @@ void USodaStatics::SetFKeyByName(FString& Name, FKey& Key)
 		{
 			Key = It;
 			return;
-		}
-	}
-}
-
-void USodaStatics::GetActorLocalBounds(AActor* Actor, FBox& LocalBounds)
-{
-	if (USkeletalMeshComponent* SkeletalMeshComp = Actor->FindComponentByClass<USkeletalMeshComponent>())
-	{
-		FTransform UnrotatedTransform = FTransform(Actor->GetTransform().GetRotation().Inverse(), FVector::ZeroVector, FVector::OneVector);
-		FRotator SkeletalMeshRotator = SkeletalMeshComp->GetComponentRotation();
-		SkeletalMeshComp->SetAllPhysicsRotation(FRotator());
-		SkeletalMeshComp->InvalidateCachedBounds();
-		LocalBounds = Actor->CalculateComponentsBoundingBoxInLocalSpace(false);
-		SkeletalMeshComp->SetAllPhysicsRotation(SkeletalMeshRotator);
-		SkeletalMeshComp->InvalidateCachedBounds();
-	}
-	else if (UStaticMeshComponent* StaticMeshComp = Actor->FindComponentByClass<UStaticMeshComponent>())
-	{
-		if (UStaticMesh* StaticMesh = StaticMeshComp->GetStaticMesh())
-		{
-			FVector LocDelta = StaticMeshComp->GetComponentLocation() - Actor->GetActorLocation();
-			LocalBounds = StaticMesh->GetBoundingBox();
-			LocalBounds = LocalBounds.ShiftBy(LocDelta);
 		}
 	}
 }
@@ -1040,6 +1017,31 @@ FBox USodaStatics::CalculateActorExtent(const AActor * Actor)
 
 	return Box;
 }
+
+/*
+void USodaStatics::GetActorLocalBounds(AActor* Actor, FBox& LocalBounds)
+{
+	if (USkeletalMeshComponent* SkeletalMeshComp = Actor->FindComponentByClass<USkeletalMeshComponent>())
+	{
+		FTransform UnrotatedTransform = FTransform(Actor->GetTransform().GetRotation().Inverse(), FVector::ZeroVector, FVector::OneVector);
+		FRotator SkeletalMeshRotator = SkeletalMeshComp->GetComponentRotation();
+		SkeletalMeshComp->SetAllPhysicsRotation(FRotator());
+		SkeletalMeshComp->InvalidateCachedBounds();
+		LocalBounds = Actor->CalculateComponentsBoundingBoxInLocalSpace(false);
+		SkeletalMeshComp->SetAllPhysicsRotation(SkeletalMeshRotator);
+		SkeletalMeshComp->InvalidateCachedBounds();
+	}
+	else if (UStaticMeshComponent* StaticMeshComp = Actor->FindComponentByClass<UStaticMeshComponent>())
+	{
+		if (UStaticMesh* StaticMesh = StaticMeshComp->GetStaticMesh())
+		{
+			FVector LocDelta = StaticMeshComp->GetComponentLocation() - Actor->GetActorLocation();
+			LocalBounds = StaticMesh->GetBoundingBox();
+			LocalBounds = LocalBounds.ShiftBy(LocDelta);
+		}
+	}
+}
+*/
 
 ESegmObjectLabel USodaStatics::GetTagOfTaggedComponent(UPrimitiveComponent* Component)
 {

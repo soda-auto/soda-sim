@@ -1,11 +1,11 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Dom/JsonObject.h"
 #include "Soda/Vehicles/ISodaVehicleExporter.h"
 
-class UImuSensorComponent;
-class UFisheyeCameraSensorComponent;
-class UCameraBaseSensorComponent;
+class UImuGnssSensor;
+class UCameraFisheyeSensor;
+class UCameraSensor;
 class USensorComponent;
 
 class FSodaVehicleCommonExporter : public ISodaVehicleExporter
@@ -18,8 +18,8 @@ public:
 	static const FString ExporterName;
 	static const FString ExporterFileType;
 
-	static TSharedPtr<FJsonObject> GetImuIntrinsics(const UImuSensorComponent* Sensor);
-	static TSharedPtr<FJsonObject> GetFisheyeIntrinsics(const UFisheyeCameraSensorComponent* Sensor);
-	static TSharedPtr<FJsonObject> GetCameraIntrinsics(const UCameraBaseSensorComponent* Sensor);
+	static TSharedPtr<FJsonObject> GetImuIntrinsics(const UImuGnssSensor* Sensor);
+	static TSharedPtr<FJsonObject> GetFisheyeIntrinsics(const UCameraFisheyeSensor* Sensor);
+	static TSharedPtr<FJsonObject> GetCameraIntrinsics(const UCameraSensor* Sensor);
 	static TSharedPtr<FJsonObject> GetSensorExtrinsics(const USensorComponent* Sensor);
 };

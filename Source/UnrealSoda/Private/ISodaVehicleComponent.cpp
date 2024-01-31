@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/ISodaVehicleComponent.h"
 #include "Engine/Canvas.h"
@@ -324,12 +324,17 @@ void ISodaVehicleComponent::RuntimePostEditChangeChainProperty(FPropertyChangedC
 	static FName RelativeRotationName("RelativeRotation");
 	static FName RelativeScale3DName("RelativeScale3D");
 
+	static FName ReactivateComponent("ReactivateComponent");
+	static FName ReactivateActor("ReactivateActor");
+
 	if (PropertyChangedEvent.Property->HasAllPropertyFlags(CPF_SaveGame) || PropertyName == RelativeLocationName || PropertyName == RelativeRotationName || PropertyName == RelativeScale3DName)
 	{
 		MarkAsDirty();
 	}
 
-	if (FRuntimeMetaData::HasMetaData(PropertyChangedEvent.Property, TEXT("ReactivateComponent")))
+	auto & TailProperty = PropertyChangedEvent.PropertyChain.GetTail()->GetValue();
+
+	if (FRuntimeMetaData::HasMetaData(PropertyChangedEvent.Property, ReactivateComponent) || FRuntimeMetaData::HasMetaData(TailProperty, ReactivateComponent) )
 	{
 		if (IsVehicleComponentActiveted())
 		{
@@ -337,7 +342,7 @@ void ISodaVehicleComponent::RuntimePostEditChangeChainProperty(FPropertyChangedC
 			ActivateVehicleComponent();
 		}
 	}
-	else if (FRuntimeMetaData::HasMetaData(PropertyChangedEvent.Property, TEXT("ReactivateActor")))
+	else if (FRuntimeMetaData::HasMetaData(PropertyChangedEvent.Property, ReactivateActor) || FRuntimeMetaData::HasMetaData(TailProperty, ReactivateActor))
 	{
 		GetVehicle()->ReActivateVehicleComponents(true);
 	}

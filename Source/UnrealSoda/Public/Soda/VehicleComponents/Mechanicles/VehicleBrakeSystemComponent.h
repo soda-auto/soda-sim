@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -115,7 +115,7 @@ struct FWheelBrakeSetup
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = BrakeSetup, SaveGame, meta = (EditInRuntime))
 	float MaxTorque = 1500.0f;
 
-	UPROPERTY(EditAnywhere, Category = BrakeSetup, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "/Script/SodaSim.SodaVehicleWheelComponent"))
+	UPROPERTY(EditAnywhere, Category = BrakeSetup, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "/Script/UnrealSoda.SodaVehicleWheelComponent"))
 	FSubobjectReference ConnectedWheel;
 };
 

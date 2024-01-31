@@ -1,7 +1,7 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Misc/LLConverter.h"
-#include "Soda/Misc/MathUtils.hpp"
+#include "Soda/Misc/Utils.h"
 #include "Math/RotationMatrix.h"
 
 #define _DEG2RAD(a) ((a) / (180.0 / M_PI))

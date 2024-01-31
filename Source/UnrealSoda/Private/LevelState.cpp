@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/LevelState.h"
 #include "Soda/UnrealSoda.h"
@@ -9,7 +9,6 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Misc/FileHelper.h"
 #include "EngineUtils.h"
-#include "Soda/VehicleComponents/Sensors/ImuOxtsSensor.h"
 #include "GameFramework/SpectatorPawn.h"
 #include "TimerManager.h"
 #include "Engine/LevelStreamingPersistent.h"

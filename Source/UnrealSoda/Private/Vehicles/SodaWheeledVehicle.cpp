@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -374,6 +374,8 @@ FWheeledVehicleState ASodaWheeledVehicle::GetVehicleState() const
 			WheelDataConv(*GetWheel4WD(E4WDWheelIndex::RR), Ret.WheelsRR);
 		}
 	}
+
+
 
 	return Ret;
 }

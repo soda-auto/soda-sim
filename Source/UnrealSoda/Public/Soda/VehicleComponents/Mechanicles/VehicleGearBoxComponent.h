@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -44,7 +44,7 @@ class UNREALSODA_API UVehicleGearBoxSimpleComponent : public UVehicleGearBoxBase
 	GENERATED_UCLASS_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "/Script/SodaSim.TorqueTransmission"))
+	UPROPERTY(EditAnywhere, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "/Script/UnrealSoda.TorqueTransmission"))
 	FSubobjectReference LinkToTorqueTransmission { TEXT("Differential") };
 
 	/** Allow set brake from default the UVhicleInputComponent */

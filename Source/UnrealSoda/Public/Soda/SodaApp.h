@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -14,7 +14,7 @@
 #include "GameFramework/WorldSettings.h"
 #include "Soda/Misc/LLConverter.h"
 #include "Soda/Misc/AsyncTaskManager.h"
-#include "Soda/Misc/MathUtils.hpp"
+#include "Soda/Misc/Utils.h"
 #include "Soda/Misc/Time.h"
 #include "Soda/Vehicles/ISodaVehicleExporter.h"
 #include "JsonObjectWrapper.h"

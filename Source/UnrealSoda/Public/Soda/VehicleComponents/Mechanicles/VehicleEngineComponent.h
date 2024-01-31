@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -103,7 +103,6 @@ protected:
 	virtual void OnDeactivateVehicleComponent() override;
 
 public:
-	//void GetComponenUIÑomment(FString& Info) override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 	virtual void PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp & Timestamp) override;
 	virtual void PostPhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
