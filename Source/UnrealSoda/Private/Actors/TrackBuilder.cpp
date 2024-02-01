@@ -21,6 +21,12 @@
 #include "DesktopPlatformModule.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/Material.h"
+#include "Styling/StyleColors.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "Framework/Commands/UIAction.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Widgets/SWindow.h"
+#include "SodaStyleSet.h"
 #include <map>
 
 struct FPolyline;
@@ -361,6 +367,9 @@ ATrackBuilder::ATrackBuilder()
 		MarkingsMaterial = DefMat.Object;
 		DecalMaterial = DefMat.Object;
 	}
+
+	PrimaryActorTick.bCanEverTick = true;
+
 }
 
 bool ATrackBuilder::JSONReadLine(const TSharedPtr<FJsonObject>& JSON, const FString& FieldName, TArray<FVector>& OutPoints, bool ImportAltitude)
@@ -471,6 +480,29 @@ void ATrackBuilder::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ATrackBuilder::TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction)
 {
 	Super::TickActor(DeltaTime, TickType, ThisTickFunction);
+
+	if (bDrawDebug)
+	{
+		for (int i = 0; i < OutsidePoints.Num() -1; ++i)
+		{
+			DrawDebugLine(GetWorld(), OutsidePoints[i], OutsidePoints[i + 1], FColor(0, 0, 255), false, -1,0, 2);
+		}
+
+		for (int i = 0; i < InsidePoints.Num() - 1; ++i)
+		{
+			DrawDebugLine(GetWorld(), InsidePoints[i], InsidePoints[i + 1], FColor(0, 0, 255), false, -1, 0, 2);
+		}
+
+		for (int i = 0; i < CentrePoints.Num() - 1; ++i)
+		{
+			DrawDebugLine(GetWorld(), CentrePoints[i], CentrePoints[i + 1], FColor(0, 255, 0), false, -1, 0, 2);
+		}
+
+		for (int i = 0; i < RacingPoints.Num() - 1; ++i)
+		{
+			DrawDebugLine(GetWorld(), RacingPoints[i], RacingPoints[i + 1], FColor(255, 0, 0), false, -1, 0, 2);
+		}
+	}
 }
 
 void ATrackBuilder::OnConstruction(const FTransform& Transform)
@@ -479,14 +511,14 @@ void ATrackBuilder::OnConstruction(const FTransform& Transform)
 	//GenerateMesh();
 }
 
-bool ATrackBuilder::LoadJson(const FString & InFileName)
+bool ATrackBuilder::LoadJsonFromFile(const FString & InFileName)
 {
 	UnloadJson();
 
 	FString JsonString;
 	if (!FFileHelper::LoadFileToString(JsonString, *InFileName))
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson(); Can't read file"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJsonFromFile(); Can't read file"));
 		return false;
 	}
 
@@ -494,7 +526,7 @@ bool ATrackBuilder::LoadJson(const FString & InFileName)
 	TSharedRef<TJsonReader<TCHAR>> Reader = TJsonReaderFactory<TCHAR>::Create(JsonString);
 	if (!FJsonSerializer::Deserialize(Reader, JSON))
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson(); Can't JSON deserialize"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJsonFromFile(); Can't JSON deserialize"));
 		return false;
 	}
 
@@ -502,7 +534,7 @@ bool ATrackBuilder::LoadJson(const FString & InFileName)
 		!JSONReadLine(JSON, TEXT("Outside"), OutsidePoints, bImportAltitude) ||
 		!JSONReadLine(JSON, TEXT("Centre"), CentrePoints, bImportAltitude))
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson(); Can't parse Inside or Outside or Centre node"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJsonFromFile(); Can't parse Inside or Outside or Centre node"));
 		return false;
 	}
 
@@ -510,11 +542,12 @@ bool ATrackBuilder::LoadJson(const FString & InFileName)
 
 	if (CentrePoints.Num() < 3 && OutsidePoints.Num() < 3 && CentrePoints.Num() < 3)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson(); Size of track line < 3"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJsonFromFile(); Size of track line < 3"));
 		return false;
 	}
 
 	//Align the lines
+	/*
 	int Ind;
 	Ind = FindNearestPoint2D(CentrePoints[0], InsidePoints);
 	InsidePoints.Append(InsidePoints.GetData(), Ind);
@@ -522,6 +555,7 @@ bool ATrackBuilder::LoadJson(const FString & InFileName)
 	Ind = FindNearestPoint2D(CentrePoints[0], OutsidePoints);
 	OutsidePoints.Append(OutsidePoints.GetData(), Ind);
 	OutsidePoints.RemoveAt(0, Ind);
+	*/
 
 	if (bIsClosedTrack)
 	{
@@ -531,7 +565,7 @@ bool ATrackBuilder::LoadJson(const FString & InFileName)
 
 		if (CentrePointsDir != InsidePointsDir || CentrePointsDir != OutsidePointsDir)
 		{
-			UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson(); Direction of Inside, Outside and Centre line are not matched"));
+			UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJsonFromFile(); Direction of Inside, Outside and Centre line are not matched"));
 			return false;
 		}
 
@@ -554,13 +588,13 @@ bool ATrackBuilder::LoadJson(const FString & InFileName)
 	}
 	else
 	{
-		UE_LOG(LogSoda, Warning, TEXT("ATrackBuilder::LoadJson(); Can't parse 'ReferencePoint' node"));
+		UE_LOG(LogSoda, Warning, TEXT("ATrackBuilder::LoadJsonFromFile(); Can't parse 'ReferencePoint' node"));
 	}
 
 	bJSONLoaded = true;
 	LoadedFileName = InFileName;
 
-	UE_LOG(LogSoda, Log, TEXT(" ATrackBuilder::LoadJson(); %s sucessful loaded"), *FileName);
+	UE_LOG(LogSoda, Log, TEXT(" ATrackBuilder::LoadJsonFromFile(); %s sucessful loaded"), *FileName);
 
 	return true;
 }
@@ -591,12 +625,12 @@ void ATrackBuilder::GenerateAll()
 	UpdateGlobalRefpoint();
 }
 
-void ATrackBuilder::LoadJson_Editor()
+void ATrackBuilder::LoadJson()
 {
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
 	if (!DesktopPlatform)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson_Editor() Can't get the IDesktopPlatform ref"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson() Can't get the IDesktopPlatform ref"));
 		return;
 	}
 
@@ -606,11 +640,11 @@ void ATrackBuilder::LoadJson_Editor()
 	int32 FilterIndex = -1;
 	if (!DesktopPlatform->OpenFileDialog(nullptr, TEXT("Import track from JSON"), TEXT(""), TEXT(""), FileTypes, EFileDialogFlags::None, OpenFilenames, FilterIndex) || OpenFilenames.Num() <= 0)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson_Editor() Can't open file"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson() Can't open file"));
 		return;
 	}
 
-	LoadJson(OpenFilenames[0]);
+	LoadJsonFromFile(OpenFilenames[0]);
 }
 
 
@@ -1372,4 +1406,80 @@ const FSodaActorDescriptor* ATrackBuilder::GenerateActorDescriptor() const
 		FVector(0, 0, 50), /*SpawnOffset*/
 	};
 	return &Desc;
+}
+
+TSharedPtr<SWidget> ATrackBuilder::GenerateToolBar()
+{
+	FUniformToolBarBuilder ToolbarBuilder(TSharedPtr<const FUICommandList>(), FMultiBoxCustomization::None);
+	ToolbarBuilder.SetStyle(&FSodaStyle::Get(), "PaletteToolBar");
+	ToolbarBuilder.BeginSection(NAME_None);
+	ToolbarBuilder.AddToolBarButton(
+		FUIAction(FExecuteAction::CreateLambda([this] {
+			LoadJson();
+		})),
+		NAME_None,
+		FText::FromString("Load"),
+		FText::FromString("Load JSON track"),
+		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaVehicleBar.Import"),
+		EUserInterfaceActionType::Button
+	);
+
+	ToolbarBuilder.AddToolBarButton(
+		FUIAction(FExecuteAction::CreateLambda([this] {
+			GenerateTrack();
+		})),
+		NAME_None,
+		FText::FromString("Track"),
+		FText::FromString("Generate Track"),
+		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.RaceTrack"),
+		EUserInterfaceActionType::Button
+	);
+
+	ToolbarBuilder.AddSeparator();
+	ToolbarBuilder.AddToolBarButton(
+		FUIAction(FExecuteAction::CreateLambda([this] {
+			GenerateMarkings();
+		})),
+		NAME_None,
+		FText::FromString("Marks"),
+		FText::FromString("Generate Border Marks"),
+		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.Road"),
+		EUserInterfaceActionType::Button
+	);
+
+	ToolbarBuilder.AddSeparator();
+	ToolbarBuilder.AddToolBarButton(
+		FUIAction(FExecuteAction::CreateLambda([this] {
+
+		})),
+		NAME_None,
+		FText::FromString("Center"),
+		FText::FromString("Generate Center Route"),
+		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.Route"),
+		EUserInterfaceActionType::Button
+	);
+
+	ToolbarBuilder.AddSeparator();
+	ToolbarBuilder.AddToolBarButton(
+		FUIAction(FExecuteAction::CreateLambda([this] {
+
+		})),
+		NAME_None,
+		FText::FromString("Race"),
+		FText::FromString("Generate Race Route"),
+		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.Route"),
+		EUserInterfaceActionType::Button
+	);
+
+
+	ToolbarBuilder.EndSection();
+
+	return 
+		SNew(SBorder)
+		.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+		.BorderBackgroundColor(FStyleColors::Panel)
+		.Padding(3)
+		[
+			ToolbarBuilder.MakeWidget()
+		];
 }

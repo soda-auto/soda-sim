@@ -117,6 +117,7 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual void OnPreActivateVehicleComponent() override;
+	virtual void OnPreDeactivateVehicleComponent() override;
 
 public:
 	/** Override IWheeledVehicleMovementInterface */

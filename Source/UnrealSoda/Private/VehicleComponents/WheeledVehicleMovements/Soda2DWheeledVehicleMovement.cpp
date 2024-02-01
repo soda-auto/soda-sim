@@ -176,9 +176,13 @@ bool USoda2DWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 void USoda2DWheeledVehicleMovementComponent::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
-
-	PrecisionTimer.TimerStop();
 	DynCar.Reset();
+}
+
+void USoda2DWheeledVehicleMovementComponent::OnPreDeactivateVehicleComponent()
+{
+	Super::OnPreDeactivateVehicleComponent();
+	PrecisionTimer.TimerStop();
 }
 
 void USoda2DWheeledVehicleMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

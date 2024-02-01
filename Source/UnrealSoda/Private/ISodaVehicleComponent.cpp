@@ -42,11 +42,6 @@ bool ISodaVehicleComponent::OnActivateVehicleComponent()
 		UE_LOG(LogSoda, Error, TEXT("ISodaVehicleComponent::OnActivateVehicleComponent(); Parent actor must be ASodaVehicle"));
 		return false;
 	}
-
-	if (GetVehicle() && GetVehicleComponentCommon().bIsTopologyComponent)
-	{
-		GetVehicle()->NotifyNeedReActivateComponents();
-	}
 	
 	SetHealth(EVehicleComponentHealth::Ok);
 	return true;
@@ -59,17 +54,14 @@ void ISodaVehicleComponent::OnDeactivateVehicleComponent()
 	DeferredTask = EVehicleComponentDeferredTask::None;
 	DebugCanvasErrorMessages.Empty();
 	DebugCanvasWarningMessages.Empty();
-
-	if (GetVehicle() && GetVehicleComponentCommon().bIsTopologyComponent)
-	{
-		GetVehicle()->NotifyNeedReActivateComponents();
-	}
 }
 
 void ISodaVehicleComponent::ActivateVehicleComponent()
 {
 	if (!bIsVehicleComponentActiveted)
 	{
+		
+		bool bNeedReActivateComponents = false;
 
 		if (GetVehicle())
 		{
@@ -88,13 +80,13 @@ void ISodaVehicleComponent::ActivateVehicleComponent()
 						{
 							// Don't need activate components after register
 							Component->DeferredTask = EVehicleComponentDeferredTask::Deactivate;
-							GetVehicle()->NotifyNeedReActivateComponents();
+							bNeedReActivateComponents = true;
 						}
 					}
 				}
 			}
 
-			if (GetVehicleComponentCommon().bIsTopologyComponent || GetVehicle()->DoNeedReActivateComponents())
+			if (GetVehicleComponentCommon().bIsTopologyComponent || bNeedReActivateComponents)
 			{
 				// Activate vehicle components in scope
 				DeferredTask = EVehicleComponentDeferredTask::Activate;
@@ -105,12 +97,14 @@ void ISodaVehicleComponent::ActivateVehicleComponent()
 				FScopeLock ScopeLock(&GetVehicle()->PhysicMutex);
 				OnPreActivateVehicleComponent();
 				OnActivateVehicleComponent();
+				OnPostActivateVehicleComponent();
 			}
 		}
 		else
 		{
 			OnPreActivateVehicleComponent();
 			OnActivateVehicleComponent();
+			OnPostActivateVehicleComponent();
 		}
 	}
 }
@@ -119,15 +113,31 @@ void ISodaVehicleComponent::DeactivateVehicleComponent()
 {
 	if (bIsVehicleComponentActiveted)
 	{
+		bool bNeedReActivateComponents = false;
+
 		if (GetVehicle())
 		{
-			FScopeLock ScopeLock(&GetVehicle()->PhysicMutex);
-			OnDeactivateVehicleComponent();
-			GetVehicle()->ReActivateVehicleComponentsIfNeeded();
+			if (GetVehicleComponentCommon().bIsTopologyComponent /* || GetVehicle()->DoNeedReActivateComponents() */)
+			{
+				DeferredTask = EVehicleComponentDeferredTask::Deactivate;
+				GetVehicle()->ReActivateVehicleComponents(true);
+			}
+			else
+			{
+				FScopeLock ScopeLock(&GetVehicle()->PhysicMutex);
+				OnPreDeactivateVehicleComponent();
+				OnDeactivateVehicleComponent();
+				OnPostDeactivateVehicleComponent();
+				//GetVehicle()->ReActivateVehicleComponentsIfNeeded();
+			}
+
+
 		}
 		else
 		{
+			OnPreDeactivateVehicleComponent();
 			OnDeactivateVehicleComponent();
+			OnPostDeactivateVehicleComponent();
 		}
 	}
 }

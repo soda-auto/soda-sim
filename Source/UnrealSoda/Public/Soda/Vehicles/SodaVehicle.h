@@ -261,9 +261,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
 	virtual void ReActivateVehicleComponents(bool bOnlyTopologyComponents);
 
-	UFUNCTION(BlueprintCallable, Category = Vehicle)
-	virtual bool ReActivateVehicleComponentsIfNeeded();
-
 	/** Get vehicle extent calculated and store in the CalculateVehicleExtent(). */
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
 	virtual const FExtent & GetVehicleExtent() const { return VehicelExtent; }
@@ -299,9 +296,6 @@ public:
 
 	//TODO: Add CanCreateVehicle() logic
 	//virtual bool CanCreateVehicle() const;
-
-	void NotifyNeedReActivateComponents() { bNotifyNeedReActivateComponents = true; }
-	bool DoNeedReActivateComponents() const { return bNotifyNeedReActivateComponents; }
 
 public:
 	/**
@@ -379,7 +373,6 @@ protected:
 	TSharedPtr<FJsonActorArchive> JsonAr;
 	FExtent VehicelExtent;
 
-	bool bNotifyNeedReActivateComponents = false;
 	FPhysBodyKinematic PhysBodyKinematicCashed;
 	TSharedPtr<soda::FActorDatasetData> Dataset;
 };

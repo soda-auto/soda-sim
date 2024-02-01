@@ -412,12 +412,17 @@ bool USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 	return true;
 }
 
-void USodaChaosWheeledVehicleMovementComponent::OnDeactivateVehicleComponent()
+void USodaChaosWheeledVehicleMovementComponent::OnPreDeactivateVehicleComponent()
 {
-	ISodaVehicleComponent::OnDeactivateVehicleComponent();
+	ISodaVehicleComponent::OnPreDeactivateVehicleComponent();
 
 	DestroyPhysicsState();
 	bAllowCreatePhysicsState = false;
+}
+
+void USodaChaosWheeledVehicleMovementComponent::OnDeactivateVehicleComponent()
+{
+	ISodaVehicleComponent::OnDeactivateVehicleComponent();
 }
 
 bool USodaChaosWheeledVehicleMovementComponent::ShouldCreatePhysicsState() const

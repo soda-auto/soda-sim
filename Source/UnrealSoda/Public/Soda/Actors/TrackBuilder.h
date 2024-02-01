@@ -139,6 +139,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = StartPoint)
 	bool bGeneratStartLineOnBeginPlay = true;
 
+	UPROPERTY(EditAnywhere, Category = Debug, SaveGame, meta = (EditInRuntime))
+	bool bDrawDebug = false;
+
 public:
 	UPROPERTY(BlueprintReadOnly, Category = TrackBuilder, SaveGame)
 	TArray<FVector> OutsidePoints;
@@ -187,10 +190,10 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = LoadJsonTrack)
-	bool LoadJson(const FString& InFileName);
+	bool LoadJsonFromFile(const FString& InFileName);
 
 	UFUNCTION(CallInEditor, Category = LoadJsonTrack, meta = (DisplayName="Load JSON", CallInRuntime))
-	void LoadJson_Editor();
+	void LoadJson();
 
 	UFUNCTION(CallInEditor, BlueprintCallable, Category = LoadJsonTrack, meta = (CallInRuntime))
 	void UnloadJson();
@@ -238,6 +241,7 @@ public:
 	virtual const FSodaActorDescriptor* GenerateActorDescriptor() const override;
 	//virtual bool OnSetPinnedActor(bool bIsPinnedActor) override;
 	//virtual bool IsPinnedActor() const override;
+	virtual TSharedPtr<SWidget> GenerateToolBar();
 
 public:
 	virtual void BeginPlay() override;

@@ -79,16 +79,10 @@ struct FVehicleComponentCommon
 {
 	GENERATED_USTRUCT_BODY()
 
+public:
 	/** if true component will activated after BeginPlay() */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleComponent, SaveGame)
 	EVehicleComponentActivation Activation = EVehicleComponentActivation::None;
-
-	/**
-	  * The Topology Component means that other vehicle components may depend on this component.
-	  * This means that if this component is added, removed, renamed or activated, all other components of the vehicle will be reactivated.
-	  */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = VehicleComponent)
-	bool bIsTopologyComponent = false;
 
 	/** 
 	 * Component will update on frequency FPS/Divider.
@@ -109,12 +103,22 @@ struct FVehicleComponentCommon
 	  * Whether to write a dataset for this component. Valid only if this component supports dataset writing.
 	  * See USodaVehicleComponent::OnPushDataset().
 	  */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = VehicleComponent)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleComponent, SaveGame, meta = (EditInRuntime))
 	bool bWriteDataset = false;
 
 	/** Whether to allow this sensor to display any debug information. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Debug, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
 	bool bDrawDebugCanvas = false;
+
+
+public:
+	/**
+	  * The Topology Component means that other vehicle components may depend on this component.
+	  * This means that if this component is added, removed, renamed, activated or deactivated,
+	  * all other topology components of the vehicle will be reactivated if they are activeed.
+	  */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = VehicleComponent)
+	bool bIsTopologyComponent = false;
 
 	/** Only one component of this class can be active */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = VehicleComponent)
@@ -260,9 +264,14 @@ protected:
 
 protected:
 	virtual void OnRegistreVehicleComponent() {}
+
 	virtual void OnPreActivateVehicleComponent() {}
 	virtual bool OnActivateVehicleComponent();
+	virtual void OnPostActivateVehicleComponent() {}
+
+	virtual void OnPreDeactivateVehicleComponent() {}
 	virtual void OnDeactivateVehicleComponent();
+	virtual void OnPostDeactivateVehicleComponent() {}
 
 	/** 
 	 * Callen during scenario playing if the datset is recording for this vehicle.

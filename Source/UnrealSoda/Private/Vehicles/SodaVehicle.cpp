@@ -309,6 +309,14 @@ void ASodaVehicle::BeginPlay()
 		}
 	}
 
+	for (auto& Component : GetVehicleComponents())
+	{
+		if (Component->IsVehicleComponentActiveted())
+		{
+			Component->OnPostActivateVehicleComponent();
+		}
+	}
+
 	PhysicMutex.Unlock();
 }
 
@@ -318,7 +326,25 @@ void ASodaVehicle::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		if (Component->IsVehicleComponentActiveted())
 		{
+			Component->OnPreDeactivateVehicleComponent();
+		}
+	}
+
+	TArray<ISodaVehicleComponent*> ComponentsToPostDeactivateVehicle;
+	for (auto& Component : GetVehicleComponents())
+	{
+		if (Component->IsVehicleComponentActiveted())
+		{
 			Component->OnDeactivateVehicleComponent();
+			ComponentsToPostDeactivateVehicle.Add(Component);
+		}
+	}
+
+	for (auto& Component : ComponentsToPostDeactivateVehicle)
+	{
+		if (Component->IsVehicleComponentActiveted())
+		{
+			Component->OnPostDeactivateVehicleComponent();
 		}
 	}
 
@@ -725,13 +751,15 @@ void ASodaVehicle::ReActivateVehicleComponents(bool bOnlyTopologyComponents)
 	{
 		if (!bOnlyTopologyComponents || It->GetVehicleComponentCommon().bIsTopologyComponent)
 		{
-			bool bIsNeedActivate =
+			const bool bNeedActivate =
 				(It->IsVehicleComponentActiveted() && It->GetDeferredTask() != EVehicleComponentDeferredTask::Deactivate) ||
 				It->GetDeferredTask() == EVehicleComponentDeferredTask::Activate;
-			ComponentsActive.Add(MakeTuple(It, bIsNeedActivate));
+			ComponentsActive.Add(MakeTuple(It, bNeedActivate));
 			if (It->IsVehicleComponentActiveted())
 			{
+				It->OnPreDeactivateVehicleComponent();
 				It->OnDeactivateVehicleComponent();
+				It->OnPostDeactivateVehicleComponent();
 			}
 		}
 	}
@@ -748,18 +776,12 @@ void ASodaVehicle::ReActivateVehicleComponents(bool bOnlyTopologyComponents)
 		if (It.Get<1>()) It.Get<0>()->OnActivateVehicleComponent();
 	}
 
-	bNotifyNeedReActivateComponents = false;
+	for (auto& It : ComponentsActive)
+	{
+		if (It.Get<1>()) It.Get<0>()->OnPostActivateVehicleComponent();
+	}
 }
 
-bool ASodaVehicle::ReActivateVehicleComponentsIfNeeded()
-{
-	if (bNotifyNeedReActivateComponents)
-	{
-		ReActivateVehicleComponents(true);
-		return true;
-	}
-	return false;
-}
 
 void ASodaVehicle::UpdateProperties()
 {
