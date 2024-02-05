@@ -142,3 +142,7 @@ bool UProtoV1RadarPublisher::Publish(const soda::sim::proto_v1::RadarScan& Scan)
 	}
 }
 
+FString UProtoV1RadarPublisher::GetRemark() const
+{
+	return "udp://" + Address + ":" + FString::FromInt(Port);
+}

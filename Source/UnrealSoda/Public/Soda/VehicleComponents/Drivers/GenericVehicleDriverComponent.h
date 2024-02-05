@@ -15,11 +15,18 @@ class UVehicleGearBoxBaseComponent;
 
 namespace soda
 {
-	struct FWheeledVehiclControl
+	struct FWheeledVehiclControlMode1
 	{
 		float SteerReq;
 		float AccDecelReq;
-		ENGear GearReq;
+		EGearState GearStateReq;
+		/**
+		 * Desire gear number for the drive and revers gear;
+		 * Values:
+		 *   - 0        - automatic/undefined;
+		 *   - others   - desire gear number;
+		 */
+		int8 GearNumReq;
 		TTimestamp RecvTimestamp;
 	};
 
@@ -78,11 +85,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleDriver)
 	FTransform IMURelativePosition;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleDriver)
-	float EngineToWheelsRatio = 1.f;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleDriver)
+	//float EngineToWheelsRatio = 1.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleDriver)
-	float VehicleWheelRadius = 35.0f;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleDriver)
+	//float VehicleWheelRadius = 35.0f;
 
 protected:
 	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
@@ -90,11 +97,12 @@ protected:
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual bool IsVehicleComponentInitializing() const override;
 	virtual void DrawDebug(UCanvas *Canvas, float &YL, float &YPos) override;
+	virtual FString GetRemark() const override;
 	virtual void PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
 	virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
 
 public:
-	virtual ENGear GetGear() const override { return Gear; }
+	virtual EGearState GetGearState() const override { return GearState; }
 	virtual bool IsADPing() const override { return bVapiPing; }
 	virtual ESodaVehicleDriveMode GetDriveMode() const override;
 
@@ -117,8 +125,13 @@ protected:
 
 protected:
 	bool bVapiPing = false;
-	bool bIsADMode = false;
-	ENGear Gear = ENGear::Park;
+	bool bADModeEnbaled = false;
+	bool bSafeStopEnbaled = false;
+	EGearState GearState = EGearState::Neutral;
+	int GearNum = 0;
+
+	float WheelRadius;
+	bool bWheelRadiusValid = false;
 
 	FGenericPublisherHelper<UGenericVehicleDriverComponentComponent, UGenericWheeledVehiclePublisher> PublisherHelper { this, &UGenericVehicleDriverComponentComponent::PublisherClass, &UGenericVehicleDriverComponentComponent::Publisher };
 	FGenericListenerHelper<UGenericVehicleDriverComponentComponent, UGenericWheeledVehicleControlListener> ListenerHelper { this, &UGenericVehicleDriverComponentComponent::VehicleControlClass, &UGenericVehicleDriverComponentComponent::VehicleControl, "VehicleControlClass", "VehicleControl", "VehicleControlRecord" };

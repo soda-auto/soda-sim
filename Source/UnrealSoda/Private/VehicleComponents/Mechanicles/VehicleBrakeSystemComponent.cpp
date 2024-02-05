@@ -251,7 +251,7 @@ void UVehicleBrakeSystemSimpleComponent::TickComponent(float DeltaTime, enum ELe
 	{
 		if (UVehicleInputComponent* VehicleInput = GetWheeledVehicle()->GetActiveVehicleInput())
 		{
-			PedalPos = VehicleInput->GetBrakeInput();
+			PedalPos = VehicleInput->GetInputState().Brake;
 		}
 		else
 		{

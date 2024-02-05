@@ -105,7 +105,13 @@ void ASodaActorFactory::AddActor(AActor* Actor)
 
 void ASodaActorFactory::RemoveAllActors()
 {
-	for (auto& Actor : SpawnedActors) Actor->Destroy();
+	for (auto& Actor : SpawnedActors)
+	{
+		if (IsValid(Actor))
+		{
+			Actor->Destroy();
+		}
+	}
 	SpawnedActors.Empty();
 	OnInvalidateDelegate.Broadcast();
 }

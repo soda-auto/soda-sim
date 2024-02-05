@@ -152,3 +152,8 @@ bool UProtoV1V2XPublisher::Publish(const soda::sim::proto_v1::V2XRenderObject& M
 		}
 	}
 }
+
+FString UProtoV1V2XPublisher::GetRemark() const
+{
+	return "udp://" + Address + ":" + FString::FromInt(Port);
+}

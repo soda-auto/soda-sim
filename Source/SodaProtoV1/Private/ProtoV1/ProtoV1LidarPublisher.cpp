@@ -157,3 +157,8 @@ bool UProtoV1LidarPublisher::Publish(const soda::sim::proto_v1::LidarScan& ScanT
 		}
 	}
 }
+
+FString UProtoV1LidarPublisher::GetRemark() const
+{
+	return "udp://" + Address + ":" + FString::FromInt(Port);
+}

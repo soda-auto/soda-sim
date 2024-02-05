@@ -56,9 +56,9 @@ void UV2XMarkerSensor::OnDeactivateVehicleComponent()
 	Super::OnDeactivateVehicleComponent();
 }
 
-void UV2XMarkerSensor::GetRemark(FString& Info) const
+FString UV2XMarkerSensor::GetRemark() const
 {
-	Info = "ID: " + FString::FromInt(ID);
+	return "ID: " + FString::FromInt(ID);
 }
 
 void UV2XMarkerSensor::CalculateBoundingBox()

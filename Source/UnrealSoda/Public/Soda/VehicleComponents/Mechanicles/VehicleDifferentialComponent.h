@@ -17,8 +17,8 @@ class UNREALSODA_API UVehicleDifferentialBaseComponent  : public UWheeledVehicle
 public:
 	virtual void PassTorque(float InTorque) {}
 	virtual float ResolveAngularVelocity() const { return 0; }
-	virtual float FindWheelRadius() const { return 0; }
-	virtual float FindToWheelRatio() const { return 1; }
+	virtual bool FindWheelRadius(float& OutRadius) const override { return false; }
+	virtual bool FindToWheelRatio(float& OutRatio) const override { return false; }
 };
 
 /**
@@ -57,8 +57,8 @@ protected:
 public:
 	virtual void PassTorque(float InTorque) override;
 	virtual float ResolveAngularVelocity() const override;
-	virtual float FindWheelRadius() const override;
-	virtual float FindToWheelRatio() const override { return Ratio; }
+	virtual bool FindWheelRadius(float& OutRadius) const override;
+	virtual bool FindToWheelRatio(float& OutRatio) const override { OutRatio = Ratio; return true; }
 
 protected:
 	mutable float DebugInTorq = 0;

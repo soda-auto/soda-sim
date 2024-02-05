@@ -59,9 +59,9 @@ void UOXTSSensorComponent::OnDeactivateVehicleComponent()
 	Shutdown();
 }
 
-void UOXTSSensorComponent::GetRemark(FString & Info) const
+FString UOXTSSensorComponent::GetRemark() const
 {
-	Info = "Port: " +  FString::FromInt(Port);
+	return "Port: " +  FString::FromInt(Port);
 }
 
 bool UOXTSSensorComponent::Advertise()

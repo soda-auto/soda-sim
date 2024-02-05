@@ -362,9 +362,10 @@ bool USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 	if (GetWheeledVehicle()->GetWheels().Num() == 0)
 	{
 		SetHealth(EVehicleComponentHealth::Error);
-		UE_LOG(LogSoda, Error, TEXT("USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent(); wheels num == 0"));
+		UE_LOG(LogSoda, Error, TEXT("USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent(); USodaVehicleWheel.Num() == 0"));
 		return false;
 	}
+
 
 	for (auto& It : SodaWheelSetups)
 	{
@@ -381,7 +382,7 @@ bool USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 			return false;
 		}
 
-		//(*SodaWheel)->Radius = It->WheelRadius;
+		//SodaWheel->Radius = Wheels[0]->WheelRadius; //It->WheelRadius;
 	}
 
 	if (UpdatedPrimitive)
@@ -392,6 +393,18 @@ bool USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 	/***    Activate chaos vehicle   ***/
 	bAllowCreatePhysicsState = true;
 	CreatePhysicsState(true);
+
+	if (SodaWheelSetups.Num() != Wheels.Num())
+	{
+		SetHealth(EVehicleComponentHealth::Error);
+		UE_LOG(LogSoda, Error, TEXT("USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent(); UChaosVehicleWheel.Num() != SodaWheelSetups.Num()"));
+		return false;
+	}
+
+	for (int i = 0; i < SodaWheelSetups.Num(); ++i)
+	{
+		SodaWheelSetups[i].SodaWheel->Radius = Wheels[i]->WheelRadius;
+	}
 
 
 	if (USkeletalMeshComponent* SkeletalMesh = GetSkeletalMesh())

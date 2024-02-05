@@ -10,7 +10,7 @@ namespace sim
 namespace proto_v1 
 {
 
-enum class EGear : std::uint8_t 
+enum class EGearState : std::uint8_t 
 { 
 	Neutral = 0, 
 	Drive, 
@@ -34,13 +34,21 @@ enum class EControlMode : std::uint8_t
 
 };
 
-#pragma pack(push, 8)
+#pragma pack(push, 1)
 
-struct GenericVehicleControl
+struct GenericVehicleControlMode1
 {
 	float steer_req; // [rad]
 	float acc_decel_req; // [m/s^2]
-	EGear gear_req; // 0 - Neutral, 1 - Drive, 2 - Revers, 3 - Parking
+	EGearState gear_state_req; 
+	
+	/** 
+	 * Desire gear number for the drive and revers gear;  
+	 * Values:
+	 *   - 0        - automatic/undefined; 
+	 *   - others   - desire gear number;
+	 */
+	std::int8_t gear_num_req; 
 };
 
 // State estimated by localization.
@@ -48,17 +56,18 @@ struct GenericVehicleState
 {
 	struct WheelState
 	{
-		double ang_vel; // [rad/s]
-		double brake_torq; // [H/m]
-		double torq;  // [H/m]
+		float ang_vel; // [rad/s]
+		float brake_torq; // [H/m]
+		float torq;  // [H/m]
 	};
-
-	double steer; // [rad]
-	EGear gear; 
-	EControlMode mode;
-	NavigationState navigation_state;
 	WheelState wheels_state[4]; // FL, FR, RL, RR wheels
+	float steer; // [rad]
+	EGearState gear_state; 
+	std::int8_t gear_num;
+	EControlMode mode;
 };
+
+static_assert(sizeof(float) == 4);
 
 #pragma pack (pop)
 

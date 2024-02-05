@@ -77,21 +77,21 @@ void UCSVLoggerComponent::PostPhysicSimulationDeferred(float DeltaTimeIn, const 
 		Output += FString::SanitizeFloat(VehicleInput->GetBrakeInput() * 100) + ", ";
 		Output += FString::SanitizeFloat(VehicleInput->GetSteeringInput() * 100) + ", ";
 
-		switch (VehicleInput->GetGearInput())
+		switch (VehicleInput->GetGearStateInput())
 		{
-		case ENGear::Park:
+		case EGearState::Park:
 			Output += "Park";
 			break;
 
-		case ENGear::Reverse:
+		case EGearState::Reverse:
 			Output += "Reverse";
 			break;
 
-		case ENGear::Neutral:
+		case EGearState::Neutral:
 			Output += "Neutral";
 			break;
 
-		case ENGear::Drive:
+		case EGearState::Drive:
 			Output += "Drive";
 			break;
 		}

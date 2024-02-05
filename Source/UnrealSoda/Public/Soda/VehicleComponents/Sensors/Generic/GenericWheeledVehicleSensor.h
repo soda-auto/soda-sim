@@ -20,7 +20,8 @@ struct FWheeledVehicleStateExtra
 {
 	FPhysBodyKinematic BodyKinematic{};
 	FTransform RelativeTransform{};
-	ENGear Gear{};
+	EGearState GearState{};
+	int GearNum{};
 	ESodaVehicleDriveMode DriveMode{};
 	FWheeledVehicleWheelState WheelStates[4];
 };
@@ -87,6 +88,8 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual bool IsVehicleComponentInitializing() const override;
+	virtual FString GetRemark() const override;
+	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 	virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
 
 protected:

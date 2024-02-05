@@ -46,36 +46,29 @@ void UVehicleEngineBaseComponent::OnDeactivateVehicleComponent()
 	Super::OnDeactivateVehicleComponent();
 }
 
-float UVehicleEngineBaseComponent::FindWheelRadius() const
+bool UVehicleEngineBaseComponent::FindWheelRadius(float& OutRadius) const
 {
-	float Ret = 0;
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		Ret = OutputTorqueTransmission->FindWheelRadius();
+		return OutputTorqueTransmission->FindWheelRadius(OutRadius);
 	}
 
-	if (bVerboseLog)
-	{
-		UE_LOG(LogSoda, Log, TEXT("UVehicleEngineBaseComponent::FindWheelRadius() return %f; Name: %s"), Ret, *GetFName().ToString());
-	}
-
-	return Ret;
+	return false;
 }
 
-float UVehicleEngineBaseComponent::FindToWheelRatio() const
+bool UVehicleEngineBaseComponent::FindToWheelRatio(float& OutRatio) const
 {
-	float Ret = 1;
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		Ret = OutputTorqueTransmission->FindToWheelRatio() * Ratio;
+		float PrevRatio;
+		if (OutputTorqueTransmission->FindToWheelRatio(PrevRatio))
+		{
+			OutRatio = PrevRatio * Ratio;
+			return true;
+		}
 	}
 
-	if (bVerboseLog)
-	{
-		UE_LOG(LogSoda, Log, TEXT("UVehicleEngineBaseComponent::FindToWheelRatio() return %f; Name: %s"), Ret, *GetFName().ToString());
-	}
-
-	return Ret;
+	return false;
 }
 
 /********************************************************************************************************/
@@ -111,7 +104,7 @@ void UVehicleEngineSimpleComponent::TickComponent(float DeltaTime, ELevelTick Ti
 	{
 		if (UVehicleInputComponent* VehicleInput = GetWheeledVehicle()->GetActiveVehicleInput())
 		{
-			PedalPos = VehicleInput->GetThrottleInput();
+			PedalPos = VehicleInput->GetInputState().Throttle;
 		}
 		else
 		{

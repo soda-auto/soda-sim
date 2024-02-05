@@ -208,7 +208,7 @@ public:
 
 	/** This description will be displayed in the UI (Vehicle Components List) */
 	UFUNCTION(BlueprintCallable, Category = VehicleComponent)
-	virtual void GetRemark(FString & Info) const { Info = ""; }
+	virtual FString GetRemark() const { return ""; }
 
 	UFUNCTION(BlueprintCallable, Category = VehicleComponent)
 	virtual EVehicleComponentHealth GetHealth() const { return  Health; }

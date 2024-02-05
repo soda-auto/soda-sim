@@ -94,21 +94,8 @@ bool UProtoV1WheeledVehiclePublisher::Publish(float DeltaTime, const FSensorData
 	static auto ToSodaRot = [](const FVector& V) { return soda::sim::proto_v1::Vector{ -V.X, V.Y, -V.Z }; };
 
 	soda::sim::proto_v1::GenericVehicleState Msg{};
-	Msg.navigation_state.timestamp = soda::RawTimestamp<std::chrono::nanoseconds>(Header.Timestamp);
-	//Msg.navigation_state.longitude = Lon;
-	//Msg.navigation_state.latitude = Lat;
-	//Msg.navigation_state.altitude = Alt;
-	Msg.navigation_state.rotation.roll = -NormAngRad(WorldRot.Roll / 180.0 * M_PI); 
-	Msg.navigation_state.rotation.pitch = NormAngRad(WorldRot.Pitch / 180.0 * M_PI);
-	Msg.navigation_state.rotation.yaw = -NormAngRad(WorldRot.Yaw / 180.0 * M_PI);
-	Msg.navigation_state.position = ToSodaVec(WorldLoc * 0.01);
-	Msg.navigation_state.world_velocity = ToSodaVec(WorldVel * 0.01);
-	Msg.navigation_state.loc_velocity = ToSodaVec(LocVel * 0.01);
-	Msg.navigation_state.angular_velocity = ToSodaRot(Gyro);
-	//Msg.navigation_state.acceleration = ToSodaVec(LocalAcc * 0.01);
-	//Msg.navigation_state.gyro_biases = ToSodaRot(NoiseParams.Gyro.GetAccuracy());
-	//Msg.navigation_state.acc_biases = ToSodaVec(NoiseParams.Acceleration.GetAccuracy());
-	Msg.gear = soda::sim::proto_v1::EGear(VehicleStateExtra.Gear);
+	Msg.gear_state = soda::sim::proto_v1::EGearState(VehicleStateExtra.GearState);
+	Msg.gear_num = VehicleStateExtra.GearNum;
 	Msg.mode = soda::sim::proto_v1::EControlMode(VehicleStateExtra.DriveMode);
 	Msg.steer = -(VehicleStateExtra.WheelStates[0].Steer + VehicleStateExtra.WheelStates[1].Steer) / 2;
 	for (int i = 0; i < 4; i++)
@@ -151,4 +138,9 @@ bool UProtoV1WheeledVehiclePublisher::Publish(const soda::sim::proto_v1::Generic
 			return true;
 		}
 	}
+}
+
+FString UProtoV1WheeledVehiclePublisher::GetRemark() const
+{
+	return "udp://" + Address + ":" + FString::FromInt(Port);
 }

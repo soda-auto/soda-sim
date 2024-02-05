@@ -5,6 +5,8 @@
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaApp.h"
 #include "Common/UdpSocketBuilder.h"
+#include "Engine/Engine.h"
+#include "Engine/Canvas.h"
 
 bool UProtoV1WheeledVehicleControl::StartListen(UVehicleBaseComponent* Parent)
 {
@@ -54,11 +56,41 @@ void UProtoV1WheeledVehicleControl::Recv(const FArrayReaderPtr& ArrayReaderPtr, 
 	}
 }
 
-bool UProtoV1WheeledVehicleControl::GetControl(soda::FWheeledVehiclControl& Control) const
+bool UProtoV1WheeledVehicleControl::GetControl(soda::FWheeledVehiclControlMode1& Control) const
 {
 	Control.SteerReq = Msg.steer_req;
 	Control.AccDecelReq = Msg.acc_decel_req;
-	Control.GearReq = ENGear(Msg.gear_req);
+	Control.GearStateReq = EGearState(Msg.gear_state_req);
+	Control.GearNumReq = Msg.gear_num_req;
 	Control.RecvTimestamp = RecvTimestamp;
 	return true;
+}
+
+FString UProtoV1WheeledVehicleControl::GetRemark() const
+{
+	return  "udp://*:" + FString::FromInt(RecvPort);
+}
+
+void UProtoV1WheeledVehicleControl::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
+{
+	Super::DrawDebug(Canvas, YL, YPos);
+
+	UFont* RenderFont = GEngine->GetSmallFont();
+
+	const uint64 dt = std::chrono::duration_cast<std::chrono::milliseconds>(SodaApp.GetRealtimeTimestamp() - RecvTimestamp).count();
+
+	Canvas->SetDrawColor(FColor::White);
+	YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("steer_req: %.2f"), Msg.steer_req), 16, YPos);
+	YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("acc_decel_req: %.1f"), Msg.acc_decel_req), 16, YPos);
+	YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("gear_state_req: %d"), (int)Msg.gear_state_req), 16, YPos);
+	YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("gear_num_req: %d"), (int)Msg.gear_num_req), 16, YPos);
+
+	if (dt > 10000)
+	{
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("dtime: timeout")), 16, YPos);
+	}
+	else
+	{
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("dtime: %dms"), dt), 16, YPos);
+	}
 }

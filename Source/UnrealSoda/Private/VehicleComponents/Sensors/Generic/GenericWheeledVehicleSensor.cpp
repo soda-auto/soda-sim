@@ -151,7 +151,8 @@ void UGenericWheeledVehicleSensor::PostPhysicSimulationDeferred(float DeltaTime,
 
 	if (GearBox)
 	{
-		Extra.Gear = GearBox->GetGear();
+		Extra.GearState = GearBox->GetGearState();
+		Extra.GearNum = GearBox->GetGearNum();
 	}
 
 	if (WheeledVehicle->Is4WDVehicle())
@@ -172,4 +173,15 @@ void UGenericWheeledVehicleSensor::PostPhysicSimulationDeferred(float DeltaTime,
 
 	PublishSensorData(DeltaTime, GetHeaderVehicleThread(),  Extra);
 
+}
+
+void UGenericWheeledVehicleSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
+{
+	Super::DrawDebug(Canvas, YL, YPos);
+	Publisher->DrawDebug(Canvas, YL, YPos);
+}
+
+FString UGenericWheeledVehicleSensor::GetRemark() const
+{
+	return Publisher ? Publisher->GetRemark() : "null";
 }

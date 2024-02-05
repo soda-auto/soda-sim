@@ -49,9 +49,9 @@ void UOdometryTestComponent::OnDeactivateVehicleComponent()
 	}
 }
 
-void UOdometryTestComponent::GetRemark(FString & Info) const
+FString UOdometryTestComponent::GetRemark() const
 {
-	Info = "";
+	return "";
 }
 
 void UOdometryTestComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)

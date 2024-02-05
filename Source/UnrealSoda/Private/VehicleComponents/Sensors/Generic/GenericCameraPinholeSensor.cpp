@@ -69,3 +69,14 @@ bool UGenericCameraPinholeSensor::PublishSensorData(float DeltaTime, const FSens
 	}
 	return false;
 }
+
+void UGenericCameraPinholeSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
+{
+	Super::DrawDebug(Canvas, YL, YPos);
+	Publisher->DrawDebug(Canvas, YL, YPos);
+}
+
+FString UGenericCameraPinholeSensor::GetRemark() const
+{
+	return Publisher ? Publisher->GetRemark() : "null";
+}

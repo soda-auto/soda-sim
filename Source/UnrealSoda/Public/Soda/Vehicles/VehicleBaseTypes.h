@@ -13,7 +13,7 @@
  * Gears for electric vehicles
  */
 UENUM(BlueprintType)
-enum class ENGear : uint8
+enum class EGearState : uint8
 {
 	Neutral = 0,
 	Drive = 1,
@@ -30,6 +30,7 @@ enum class  EVehicleInputType : uint8
 	External = 3,
 	AI = 4
 };
+
 
 /**
  * Helper structure that allows to change any value of a variable over time depending on speed (RiseRate and FallRate)
@@ -160,10 +161,10 @@ public:
 	virtual float ResolveAngularVelocity() const = 0;
 
 	/** Try to find wheel(s) radius to which set this torque [cm] */
-	virtual float FindWheelRadius() const = 0;
+	virtual bool FindWheelRadius(float & OutRadius) const = 0;
 
 	/** Try to find ratio beetwen this transmission and connected wheel(s) */
-	virtual float FindToWheelRatio() const = 0;
+	virtual bool FindToWheelRatio(float & OutRatio) const = 0;
 };
 
 USTRUCT(BlueprintType)
@@ -238,7 +239,7 @@ struct FVehicleSimData
 };
 
 
-inline float GearToRatio(ENGear Gear)
+inline float GearToRatio(EGearState Gear)
 {
 	static float GearRatios[] = { 0, 1, -1, 0 };
 	check((uint8)Gear < 5);

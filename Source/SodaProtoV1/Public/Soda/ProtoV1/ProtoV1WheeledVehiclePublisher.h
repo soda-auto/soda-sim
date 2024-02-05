@@ -37,6 +37,7 @@ public:
 	virtual bool IsOk() const override { return !!Socket; }
 	//virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 	virtual bool Publish(float DeltaTime, const FSensorDataHeader& Header, const FWheeledVehicleStateExtra& VehicleState) override;
+	virtual FString GetRemark() const override;
 
 protected:
 	bool Publish(const soda::sim::proto_v1::GenericVehicleState& Scan);

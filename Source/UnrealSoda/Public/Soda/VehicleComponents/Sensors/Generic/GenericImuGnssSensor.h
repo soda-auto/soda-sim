@@ -27,6 +27,8 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual bool IsVehicleComponentInitializing() const override;
+	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
+	virtual FString GetRemark() const override;
 	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FTransform& RelativeTransform, const FPhysBodyKinematic& VehicleKinematic) override;
 
 protected:

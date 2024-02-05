@@ -9,7 +9,7 @@
 #include <sstream>
 
 
-bool UProtoV1UltrasoncPublisher::Advertise(UVehicleBaseComponent* Parent)
+bool UProtoV1UltrasoncHubPublisher::Advertise(UVehicleBaseComponent* Parent)
 {
 	Shutdown();
 
@@ -17,7 +17,7 @@ bool UProtoV1UltrasoncPublisher::Advertise(UVehicleBaseComponent* Parent)
 	Socket = TSharedPtr<FSocket>(ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateSocket(NAME_DGram, TEXT("default"), false));
 	if (!Socket)
 	{
-		UE_LOG(LogSoda, Error, TEXT("UProtoV1UltrasoncPublisher::Advertise() Can't create socket"));
+		UE_LOG(LogSoda, Error, TEXT("UProtoV1UltrasoncHubPublisher::Advertise() Can't create socket"));
 		Shutdown();
 		return false;
 	}
@@ -26,7 +26,7 @@ bool UProtoV1UltrasoncPublisher::Advertise(UVehicleBaseComponent* Parent)
 	Addr = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
 	if (!Addr)
 	{
-		UE_LOG(LogSoda, Error, TEXT("UProtoV1UltrasoncPublisher::Advertise() Can't create internet addr"));
+		UE_LOG(LogSoda, Error, TEXT("UProtoV1UltrasoncHubPublisher::Advertise() Can't create internet addr"));
 		Shutdown();
 		return false;
 	}
@@ -36,7 +36,7 @@ bool UProtoV1UltrasoncPublisher::Advertise(UVehicleBaseComponent* Parent)
 		Addr->SetBroadcastAddress();
 		if (!Socket->SetBroadcast(true))
 		{
-			UE_LOG(LogSoda, Error, TEXT("UProtoV1UltrasoncPublisher::Advertise() Can't set SetBroadcast mode"));
+			UE_LOG(LogSoda, Error, TEXT("UProtoV1UltrasoncHubPublisher::Advertise() Can't set SetBroadcast mode"));
 			Shutdown();
 			return false;
 		}
@@ -47,7 +47,7 @@ bool UProtoV1UltrasoncPublisher::Advertise(UVehicleBaseComponent* Parent)
 		Addr->SetIp((const TCHAR*)(*Address), Valid);
 		if (!Valid)
 		{
-			UE_LOG(LogSoda, Error, TEXT("UProtoV1UltrasoncPublisher::Advertise() IP address isn't valid"));
+			UE_LOG(LogSoda, Error, TEXT("UProtoV1UltrasoncHubPublisher::Advertise() IP address isn't valid"));
 			Shutdown();
 			return false;
 		}
@@ -61,7 +61,7 @@ bool UProtoV1UltrasoncPublisher::Advertise(UVehicleBaseComponent* Parent)
 	return true;
 }
 
-void UProtoV1UltrasoncPublisher::Shutdown()
+void UProtoV1UltrasoncHubPublisher::Shutdown()
 {
 	if (AsyncTask)
 	{
@@ -82,7 +82,7 @@ void UProtoV1UltrasoncPublisher::Shutdown()
 	}
 }
 
-bool UProtoV1UltrasoncPublisher::Publish(float DeltaTime, const FSensorDataHeader& Header, const TArray < FUltrasonicEchos >& EchoCollections)
+bool UProtoV1UltrasoncHubPublisher::Publish(float DeltaTime, const FSensorDataHeader& Header, const TArray < FUltrasonicEchos >& EchoCollections)
 {
 	Msg.device_timestamp = soda::RawTimestamp<std::chrono::milliseconds>(Header.Timestamp);
 	Msg.ultrasonics.resize(EchoCollections.Num());
@@ -106,7 +106,7 @@ bool UProtoV1UltrasoncPublisher::Publish(float DeltaTime, const FSensorDataHeade
 	return Publish(Msg);
 }
 
-bool UProtoV1UltrasoncPublisher::Publish(const soda::sim::proto_v1::UltrasonicsHub& Scan)
+bool UProtoV1UltrasoncHubPublisher::Publish(const soda::sim::proto_v1::UltrasonicsHub& Scan)
 {
 	if (!Socket)
 	{
@@ -116,14 +116,14 @@ bool UProtoV1UltrasoncPublisher::Publish(const soda::sim::proto_v1::UltrasonicsH
 	std::stringstream sout(std::ios_base::out | std::ios_base::binary);
 	int const points_count = soda::sim::proto_v1::write(sout, Scan);
 	if (!sout)
-		UE_LOG(LogSoda, Fatal, TEXT("UProtoV1UltrasoncPublisher::Publish() failed to serialize scan"));
+		UE_LOG(LogSoda, Fatal, TEXT("UProtoV1UltrasoncHubPublisher::Publish() failed to serialize scan"));
 	sout.seekp(0, std::ios_base::end);
 
 	if (bAsync)
 	{
 		if (!AsyncTask->Publish(sout.str().data(), sout.str().length()))
 		{
-			UE_LOG(LogSoda, Warning, TEXT("UProtoV1UltrasoncPublisher::PublishAsync(). Skipped one frame"));
+			UE_LOG(LogSoda, Warning, TEXT("UProtoV1UltrasoncHubPublisher::PublishAsync(). Skipped one frame"));
 		}
 		SodaApp.EthTaskManager.Trigger();
 		return true;
@@ -134,7 +134,7 @@ bool UProtoV1UltrasoncPublisher::Publish(const soda::sim::proto_v1::UltrasonicsH
 		if (!Socket->SendTo((const uint8*)sout.str().data(), sout.str().length(), BytesSent, *Addr))
 		{
 			ESocketErrors ErrorCode = ISocketSubsystem::Get()->GetLastErrorCode();
-			UE_LOG(LogSoda, Error, TEXT("UProtoV1UltrasoncPublisher::Publish() Can't send(), error code %i"), int32(ErrorCode));
+			UE_LOG(LogSoda, Error, TEXT("UProtoV1UltrasoncHubPublisher::Publish() Can't send(), error code %i"), int32(ErrorCode));
 			return false;
 		}
 		else
@@ -142,4 +142,9 @@ bool UProtoV1UltrasoncPublisher::Publish(const soda::sim::proto_v1::UltrasonicsH
 			return true;
 		}
 	}
+}
+
+FString UProtoV1UltrasoncHubPublisher::GetRemark() const
+{
+	return "udp://" + Address + ":" + FString::FromInt(Port);
 }

@@ -115,8 +115,8 @@ public:
 	/* Override ITorqueTransmission*/
 	virtual void PassTorque(float InTorque) override;
 	virtual float ResolveAngularVelocity() const override;
-	virtual float FindWheelRadius() const override { return Radius; }
-	virtual float FindToWheelRatio() const override { return 1.0; }
+	virtual bool FindWheelRadius(float& OutRadius) const override { OutRadius = Radius; return true; }
+	virtual bool FindToWheelRatio(float& OutRatio) const override { OutRatio = 1.0; return true; }
 
 public:
 	//virtual void OnRegistreVehicleComponent() override;

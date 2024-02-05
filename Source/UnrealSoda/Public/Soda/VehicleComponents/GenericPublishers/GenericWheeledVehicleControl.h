@@ -8,7 +8,7 @@
 
 namespace soda
 {
-	struct FWheeledVehiclControl;
+	struct FWheeledVehiclControlMode1;
 }
 
 /**
@@ -20,7 +20,7 @@ class UNREALSODA_API UGenericWheeledVehicleControlListener: public UGenericListe
 	GENERATED_BODY()
 
 public:
-	virtual bool GetControl(soda::FWheeledVehiclControl& Control) const { return false; }
+	virtual bool GetControl(soda::FWheeledVehiclControlMode1& Control) const { return false; }
 };
 
 

@@ -124,3 +124,14 @@ bool UGenericLidarDepth2DSensor::PublishSensorData(float DeltaTime, const FSenso
 	}
 	return false;
 }
+
+void UGenericLidarDepth2DSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
+{
+	Super::DrawDebug(Canvas, YL, YPos);
+	Publisher->DrawDebug(Canvas, YL, YPos);
+}
+
+FString UGenericLidarDepth2DSensor::GetRemark() const
+{
+	return Publisher ? Publisher->GetRemark() : "null";
+}

@@ -84,6 +84,13 @@ bool UGenericVehicleDriverComponentComponent::OnActivateVehicleComponent()
 		SetHealth(EVehicleComponentHealth::Warning);
 	}
 
+	bWheelRadiusValid = (Engine) && (Engine->FindWheelRadius(WheelRadius)) && (WheelRadius > 1.0);
+	if (!bWheelRadiusValid)
+	{
+		SetHealth(EVehicleComponentHealth::Warning);
+		AddDebugMessage(EVehicleComponentHealth::Error, TEXT("Can't estimate wheel radius"));
+	}
+
 	PublisherHelper.Advertise();
 	ListenerHelper.StartListen();
 
@@ -114,7 +121,8 @@ void UGenericVehicleDriverComponentComponent::PostPhysicSimulationDeferred(float
 
 		if (GearBox)
 		{
-			Extra.Gear = GearBox->GetGear();
+			Extra.GearState = GearBox->GetGearState();
+			Extra.GearNum = GearBox->GetGearNum();
 		}
 
 		if (GetWheeledVehicle()->Is4WDVehicle())
@@ -144,47 +152,49 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 
 	static const std::chrono::nanoseconds Timeout(500000000ll); // 500ms
 
-	soda::FWheeledVehiclControl Control;
+	soda::FWheeledVehiclControlMode1 Control;
 
 	bVapiPing = bIsVehicleDriveDebugMode;
 
 	if (VehicleControl && VehicleControl->GetControl(Control))
 	{
-		bVapiPing = ((SodaApp.GetRealtimeTimestamp() - Control.RecvTimestamp > Timeout));
+		bVapiPing = ((SodaApp.GetRealtimeTimestamp() - Control.RecvTimestamp < Timeout));
 	}
 
 	UVehicleInputComponent* VehicleInput = GetWheeledVehicle()->GetActiveVehicleInput();
 
 	if (VehicleInput)
 	{
-		bIsADMode = VehicleInput->bADModeInput;
+		bADModeEnbaled = VehicleInput->GetInputState().bADModeEnbaled;
+		bSafeStopEnbaled = VehicleInput->GetInputState().bSafeStopEnbaled;
 	}
 	
 	if (GetDriveMode() == ESodaVehicleDriveMode::Manual || GetDriveMode() == ESodaVehicleDriveMode::ReadyToAD) // Manual mode
 	{
 		if (VehicleInput)
 		{
-			Gear = VehicleInput->GetGearInput();
-			float SteerReq = VehicleInput->GetSteeringInput();
-			float ThrottleReq = VehicleInput->GetThrottleInput();
-			float BrakeReq = VehicleInput->GetBrakeInput();
+			float SteerReq = VehicleInput->GetInputState().Steering;
+			float ThrottleReq = VehicleInput->GetInputState().Throttle;
+			float BrakeReq = VehicleInput->GetInputState().Brake;
 			float HandBrakeReq = 0;
 
-			switch (Gear)
+			if (VehicleInput->GetInputState().IsNeutralGear())
 			{
-			case ENGear::Neutral:
 				ThrottleReq = 0;
-				break;
-			case ENGear::Drive:
-			case ENGear::Reverse:
-				break;
-			case ENGear::Park:
+			}
+			else if (VehicleInput->GetInputState().IsParkGear())
+			{
 				ThrottleReq = 0;
 				BrakeReq = 0;
 				HandBrakeReq = 1;
 			}
 
-			if (GearBox) GearBox->SetGear(Gear);
+			if (GearBox)
+			{
+				GearBox->AcceptGearFromVehicleInput(VehicleInput);
+				GearState = GearBox->GetGearState();
+				GearNum = GearBox->GetGearNum();
+			}
 			if (Engine) Engine->RequestByRatio(ThrottleReq);
 			if (BrakeSystem) BrakeSystem->RequestByRatio(BrakeReq, DeltaTime);
 			if (SteeringRack) SteeringRack->RequestByRatio(SteerReq);
@@ -193,7 +203,7 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 	}
 	else if ((GetDriveMode() == ESodaVehicleDriveMode::SafeStop) || (GetDriveMode() == ESodaVehicleDriveMode::AD && !bVapiPing)) // SafeStop mode
 	{
-		if (GearBox) GearBox->SetGear(ENGear::Neutral);
+		if (GearBox) GearBox->SetGearByState(EGearState::Neutral);
 		if (Engine) Engine->RequestByRatio(0.0);
 		if (BrakeSystem) BrakeSystem->RequestByRatio(0.0, DeltaTime);
 		if (SteeringRack) SteeringRack->RequestByRatio(0.0);
@@ -201,7 +211,9 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 	}
 	else // AD mode
 	{
-		Gear = (ENGear)Control.GearReq;
+		GearState = Control.GearStateReq;
+		GearNum = Control.GearNumReq;
+
 		float SteerReq = Control.SteerReq;
 		float AccReq = 0;
 		float DeaccReq = 0;
@@ -216,23 +228,41 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 			DeaccReq = -Control.AccDecelReq;
 		}
 
-		switch (Gear)
+		switch (GearState)
 		{
-		case ENGear::Neutral:
+		case EGearState::Neutral:
 			AccReq = 0;
 			break;
-		case ENGear::Drive:
-		case ENGear::Reverse:
+		case EGearState::Drive:
+		case EGearState::Reverse:
 			break;
-		case ENGear::Park:
+		case EGearState::Park:
 			AccReq = 0;
 			DeaccReq = 0;
 			HandBrakeReq = 1;
 			break;
 		}
 
-		if (GearBox) GearBox->SetGear(Gear);
-		if (Engine) Engine->RequestByTorque(AccReq / EngineToWheelsRatio * VehicleWheelRadius / 100.0);
+		if (GearBox)
+		{
+			if (GearState == EGearState::Drive && GearNum != 0)
+			{
+				GearBox->SetGearByNum(GearNum);
+			}
+			else
+			{
+				GearBox->SetGearByState(GearState);
+			}
+		}
+		if (Engine)
+		{
+			float EngineToWheelsRatio;
+			const bool bRatioValid = Engine->FindToWheelRatio(EngineToWheelsRatio) && !FMath::IsNearlyZero(EngineToWheelsRatio, 0.01);
+			if (bRatioValid && bWheelRadiusValid)
+			{
+				Engine->RequestByTorque(AccReq / EngineToWheelsRatio * WheelRadius / 100.0 * GetWheeledComponentInterface()->GetVehicleMass());
+			}
+		}
 		if (BrakeSystem) BrakeSystem->RequestByAcceleration(DeaccReq, DeltaTime);
 		if (SteeringRack) SteeringRack->RequestByAngle(SteerReq);
 		if (HandBrake) HandBrake->RequestByRatio(HandBrakeReq);
@@ -241,38 +271,56 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 
 ESodaVehicleDriveMode UGenericVehicleDriverComponentComponent::GetDriveMode() const
 {
-	UVehicleInputComponent* VehicleInput = GetWheeledVehicle()->GetActiveVehicleInput();
-
-	if (!VehicleInput || VehicleInput->bSafeStopInput) return ESodaVehicleDriveMode::SafeStop;
-
-	if (bVapiPing)
+	if (bSafeStopEnbaled)
 	{
-
-		if (VehicleInput->bADModeInput) return  ESodaVehicleDriveMode::AD;
-		else return ESodaVehicleDriveMode::ReadyToAD;
-
+		return ESodaVehicleDriveMode::SafeStop;
 	}
-
-	if (VehicleInput->bADModeInput) return ESodaVehicleDriveMode::SafeStop;
-	
-	return ESodaVehicleDriveMode::Manual;
+	else if (bVapiPing)
+	{
+		if (bADModeEnbaled)
+		{
+			return  ESodaVehicleDriveMode::AD;
+		}
+		else
+		{
+			return ESodaVehicleDriveMode::ReadyToAD;
+		}
+	} 
+	else if (bADModeEnbaled)
+	{
+		return ESodaVehicleDriveMode::SafeStop;
+	}
+	else
+	{
+		return ESodaVehicleDriveMode::Manual;
+	}
 }
 
 void UGenericVehicleDriverComponentComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
 	Super::DrawDebug(Canvas, YL, YPos);
 
-	if (Common.bDrawDebugCanvas && GetHealth() != EVehicleComponentHealth::Disabled)
-	{
-		UFont* RenderFont = GEngine->GetSmallFont();
+	const FColor SubCaption(170, 170, 170);
+	UFont* RenderFont = GEngine->GetSmallFont();
 
-		Canvas->SetDrawColor(FColor::White);
-		//YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("SteerReq: %.2f"), MsgIn.steer_req), 16, YPos);
-		//YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("AccDecelReq: %.1f"), MsgIn.acc_decel_req), 16, YPos);
-		//YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("GearReq: %d"), (int)MsgIn.gear_req), 16, YPos);
+	if (Publisher)
+	{
+		Canvas->SetDrawColor(SubCaption);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Publisher :")), 16, YPos);
+		Publisher->DrawDebug(Canvas, YL, YPos);
+	}
+	if (VehicleControl)
+	{
+		Canvas->SetDrawColor(SubCaption);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Control :")), 16, YPos);
+		VehicleControl->DrawDebug(Canvas, YL, YPos);
 	}
 }
 
+FString UGenericVehicleDriverComponentComponent::GetRemark() const
+{
+	return VehicleControl ? VehicleControl->GetRemark() : "null";
+}
 
 void UGenericVehicleDriverComponentComponent::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {

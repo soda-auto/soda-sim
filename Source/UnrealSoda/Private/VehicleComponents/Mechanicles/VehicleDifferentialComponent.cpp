@@ -90,19 +90,21 @@ float UVehicleDifferentialSimpleComponent::ResolveAngularVelocity() const
 	return 0;
 }
 
-float UVehicleDifferentialSimpleComponent::FindWheelRadius() const
+bool UVehicleDifferentialSimpleComponent::FindWheelRadius(float& OutRadius) const
 {
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
 		switch (DifferentialType)
 		{
 		case EVehicleDifferentialType::Open_FrontDrive:
-			return (GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->Radius + GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->Radius) / 2.0;
+			OutRadius = (GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->Radius + GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->Radius) / 2.0;
+			return true;
 		case EVehicleDifferentialType::Open_RearDrive:
-			return (GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->Radius + GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->Radius) / 2.0;
+			OutRadius = (GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->Radius + GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->Radius) / 2.0;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 void UVehicleDifferentialSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)

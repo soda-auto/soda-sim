@@ -9,10 +9,10 @@
 struct FUltrasonicEchos;
 
 /**
- * UGenericUltrasoncPublisher
+ * UGenericUltrasoncHubPublisher
  */
 UCLASS(abstract, ClassGroup = Soda)
-class UNREALSODA_API UGenericUltrasoncPublisher: public UGenericPublisher
+class UNREALSODA_API UGenericUltrasoncHubPublisher: public UGenericPublisher
 {
 	GENERATED_BODY()
 

@@ -16,6 +16,78 @@ UVehicleGearBoxBaseComponent::UVehicleGearBoxBaseComponent(const FObjectInitiali
 	Common.Activation = EVehicleComponentActivation::OnStartScenario;
 }
 
+FString UVehicleGearBoxBaseComponent::GetGearChar() const
+{
+	switch (GetGearState())
+	{
+	case EGearState::Neutral: return TEXT("N");
+	//case EGearState::Drive: return TEXT("D");
+	case EGearState::Reverse: return TEXT("R");
+	case EGearState::Park: return TEXT("P");
+	}
+	
+	if (GetGearNum() == 0)
+	{
+		return TEXT("N");
+	}
+	else if(GetGearNum() == -1)
+	{
+		return TEXT("R");
+	}
+	else
+	{
+		return FString::FromInt(GetGearNum());
+	}
+}
+
+bool UVehicleGearBoxBaseComponent::AcceptGearFromVehicleInput(UVehicleInputComponent* VehicleInput)
+{
+	if (!VehicleInput)
+	{
+		return false;
+	}
+
+	if (VehicleInput->GetInputState().GearInputMode == EGearInputMode::ByState)
+	{
+		EGearState NewGear = VehicleInput->GetInputState().GearState;
+		if (GetGearState() != NewGear)
+		{
+			SetGearByState(NewGear);
+		}
+	}
+	if (VehicleInput->GetInputState().GearInputMode == EGearInputMode::ByNum)
+	{
+		int NewGear = VehicleInput->GetInputState().GearNum;
+		if (GetGearNum() != NewGear)
+		{
+			SetGearByNum(NewGear);
+		}
+	}
+	if (VehicleInput->GetInputState().bWasGearUpPressed)
+	{
+		if (GetGearNum() >= 0 && GetGearNum() < GetForwardGearsCount())
+		{
+			SetGearByNum(GetGearNum() + 1);
+			VehicleInput->GetInputState().GearNum = GetGearNum();
+			VehicleInput->GetInputState().GearState = GetGearState();
+		}
+		VehicleInput->GetInputState().bWasGearUpPressed = false;
+	}
+	if (VehicleInput->GetInputState().bWasGearDownPressed)
+	{
+		if (GetGearNum() > 0)
+		{
+			SetGearByNum(GetGearNum() - 1);
+			VehicleInput->GetInputState().GearNum = GetGearNum();
+			VehicleInput->GetInputState().GearState = GetGearState();
+		}
+		VehicleInput->GetInputState().bWasGearDownPressed = false;
+	}
+	return true;
+}
+
+//------------------------------------------------------------------------------------------------------------
+
 UVehicleGearBoxSimpleComponent::UVehicleGearBoxSimpleComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -25,6 +97,9 @@ UVehicleGearBoxSimpleComponent::UVehicleGearBoxSimpleComponent(const FObjectInit
 	PrimaryComponentTick.bCanEverTick = true;
 	bTickInEditor = false;
 	PrimaryComponentTick.TickGroup = TG_PrePhysics;
+
+	ReverseGearRatios.Add({ 10});
+	ForwardGearRatios.Add({ 10});
 }
 
 bool UVehicleGearBoxSimpleComponent::OnActivateVehicleComponent()
@@ -95,53 +170,84 @@ float UVehicleGearBoxSimpleComponent::ResolveAngularVelocity() const
 	}
 }
 
-float UVehicleGearBoxSimpleComponent::FindWheelRadius() const
+
+bool UVehicleGearBoxSimpleComponent::FindWheelRadius(float& OutRadius) const
 {
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		return OutputTorqueTransmission->FindWheelRadius();
+		return OutputTorqueTransmission->FindWheelRadius(OutRadius);
 	}
-	return 0;
+	return false;
 }
 
-float UVehicleGearBoxSimpleComponent::FindToWheelRatio() const
+bool UVehicleGearBoxSimpleComponent::FindToWheelRatio(float& OutRatio) const
 {
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		return OutputTorqueTransmission->FindToWheelRatio() * Ratio;
+		float PrevRatio;
+		if (OutputTorqueTransmission->FindToWheelRatio(PrevRatio))
+		{
+			OutRatio = PrevRatio * Ratio;
+			return true;
+		}
 	}
-	return 1.0;
+	return false;
 }
 
-FString UVehicleGearBoxSimpleComponent::GetGearChar() const
+bool UVehicleGearBoxSimpleComponent::SetGearByState(EGearState InGearState)
 {
-	switch (Gear)
+	GearState = InGearState;
+	switch(InGearState)
 	{
-	case ENGear::Neutral: return TEXT("N");
-	case ENGear::Drive: return TEXT("D");
-	case ENGear::Reverse: return TEXT("R");
-	case ENGear::Park: return TEXT("P");
-	}
-	return TEXT("?");
-}
-
-void UVehicleGearBoxSimpleComponent::SetGear(ENGear InGear)
-{
-	Gear = InGear;
-
-	switch(Gear)
-	{
-	case ENGear::Drive:
-		Ratio = DGearRatio;
-		break;
-	case ENGear::Reverse:
-		Ratio = -RGearRatio;
-		break;
-	case ENGear::Park:
-	case ENGear::Neutral:
-		Ratio = 0;
-		break;
+	case EGearState::Drive:
+		if (GetGearNum() <= 0) return SetGearByNum(1);
+		else return true;
+	case EGearState::Reverse:
+		if (GetGearNum() >= 0) return SetGearByNum(-1);
+		else return true;
+	case EGearState::Park:
+	case EGearState::Neutral:
+		return SetGearByNum(0);
+	default:
+		return false;
 	};
+}
+
+bool UVehicleGearBoxSimpleComponent::SetGearByNum(int InGearNum)
+{
+	if (InGearNum > 0) 
+	{
+		if (InGearNum > ForwardGearRatios.Num())
+		{
+			return false;
+		}
+		GearState = EGearState::Drive;
+		Ratio = ForwardGearRatios[InGearNum - 1];
+		GearNum = InGearNum;
+		return true;
+	}
+	else if (InGearNum < 0)
+	{
+		if (FMath::Abs(InGearNum) > ReverseGearRatios.Num())
+		{
+			return false;
+		}
+		GearState = EGearState::Reverse;
+		Ratio = -ReverseGearRatios[FMath::Abs(InGearNum) - 1];
+		GearNum = InGearNum;
+		return true;
+	}
+	else // InGearNum == 0
+	{
+
+		if (GearState != EGearState::Park)
+		{
+			GearState = EGearState::Neutral;
+		}
+		Ratio = 0.f;
+		GearNum = 0;
+		return true;
+	}
 }
 
 void UVehicleGearBoxSimpleComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -152,11 +258,7 @@ void UVehicleGearBoxSimpleComponent::TickComponent(float DeltaTime, enum ELevelT
 	{
 		if (UVehicleInputComponent* VehicleInput = GetWheeledVehicle()->GetActiveVehicleInput())
 		{
-			ENGear NewGear = VehicleInput->GetGearInput();
-			if (Gear != NewGear)
-			{
-				SetGear(NewGear);
-			}
+			AcceptGearFromVehicleInput(VehicleInput);
 		}
 	}
 }
@@ -170,7 +272,7 @@ void UVehicleGearBoxSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, float
 		UFont* RenderFont = GEngine->GetSmallFont();
 		Canvas->SetDrawColor(FColor::White);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Gear: %s "), *GetGearChar()), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Ratio: %.2f "), Ratio), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Ratio: %.2f "), GetGearRatio()), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InTorq: %.2f "), DebugInTorq), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutTorq: %.2f "), DebugOutTorq), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InAngVel: %.2f "), DebugInAngularVelocity), 16, YPos);

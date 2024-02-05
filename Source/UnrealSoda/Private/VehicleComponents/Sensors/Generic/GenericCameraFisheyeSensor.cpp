@@ -69,3 +69,14 @@ bool UGenericCameraFisheyeSensor::PublishSensorData(float DeltaTime, const FSens
 	}
 	return false;
 }
+
+void UGenericCameraFisheyeSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
+{
+	Super::DrawDebug(Canvas, YL, YPos);
+	Publisher->DrawDebug(Canvas, YL, YPos);
+}
+
+FString UGenericCameraFisheyeSensor::GetRemark() const
+{
+	return Publisher ? Publisher->GetRemark() : "null";
+}

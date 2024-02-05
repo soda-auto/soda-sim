@@ -77,6 +77,9 @@ class UNREALSODA_API UVehicleInputAIComponent : public UVehicleInputComponent
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, Category = "AI controller", meta = (EditInRuntime))
+	FWheeledVehicleInputState InputState{};
+
 	/** Rate at which input throttle can rise and fall */
 	UPROPERTY(Category = "AI controller", EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
 	FInputRate ThrottleInputRate;
@@ -198,11 +201,8 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
-	virtual void CopyInputStates(UVehicleInputComponent* Previous) override;
-	virtual float GetSteeringInput() const override { return SteeringInput; }
-	virtual float GetThrottleInput() const override { return ThrottleInput;  }
-	virtual float GetBrakeInput() const override { return BrakeInput;  }
-	virtual ENGear GetGearInput() const override { return  GearInput; }
+	virtual const FWheeledVehicleInputState& GetInputState() const override { return InputState; }
+	virtual FWheeledVehicleInputState& GetInputState() override { return InputState; }
 	virtual void UpdateInputStates(float DeltaTime, float ForwardSpeed, const APlayerController* PlayerController) override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 
@@ -260,12 +260,7 @@ private:
 	bool bDriveBackvard = false;
 	int32 CurrentSplineSegment = -1;
 
-	float SteeringInput = 0.f;
-	float ThrottleInput = 0.f;
-	float BrakeInput = 0.f;
-	ENGear GearInput = ENGear::Drive;
-
 	float Throttle = 0.f;
 	float Steering = 0.f;
-	ENGear Gear = ENGear::Drive;
+	EGearState Gear = EGearState::Drive;
 };

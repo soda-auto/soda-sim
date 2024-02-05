@@ -33,7 +33,7 @@ public:
 	virtual bool Advertise(UVehicleBaseComponent* Parent) override;
 	virtual void Shutdown() override;
 	virtual bool IsOk() const override { return !!Socket; }
-
+	virtual FString GetRemark() const override;
 	virtual bool Publish(float DeltaTime, const FSensorDataHeader& Header, const TArray<UV2XMarkerSensor*>& Transmitters) override;
 
 protected:

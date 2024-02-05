@@ -6,6 +6,52 @@
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Soda/SodaApp.h"
 #include "Soda/SodaUserSettings.h"
+#include "Engine/Canvas.h"
+#include "Engine/Engine.h"
+
+void FWheeledVehicleInputState::SetGearState(EGearState InGearState)
+{
+	GearState = InGearState;
+	GearInputMode = EGearInputMode::ByState;
+}
+
+void FWheeledVehicleInputState::SetGearNum(int InGearNum)
+{
+	GearNum = InGearNum;
+	GearInputMode = EGearInputMode::ByNum;
+}
+
+void FWheeledVehicleInputState::GearUp()
+{
+	bWasGearUpPressed = true;
+	//GearInputMode = EGearInputMode::ByOffset;
+}
+
+void FWheeledVehicleInputState::GearDown()
+{
+	bWasGearDownPressed = true;
+	//GearInputMode = EGearInputMode::ByOffset;
+}
+
+bool FWheeledVehicleInputState::IsForwardGear() const
+{
+	return (GearInputMode == EGearInputMode::ByState && GearState == EGearState::Drive) || (GearInputMode == EGearInputMode::ByNum && GearNum > 0);
+}
+
+bool FWheeledVehicleInputState::IsReversGear() const
+{
+	return (GearInputMode == EGearInputMode::ByState && GearState == EGearState::Reverse) || (GearInputMode == EGearInputMode::ByNum && GearNum < 0);
+}
+
+bool FWheeledVehicleInputState::IsNeutralGear() const
+{
+	return (GearInputMode == EGearInputMode::ByState && GearState == EGearState::Neutral) || (GearInputMode == EGearInputMode::ByNum && GearNum == 0);
+}
+
+bool FWheeledVehicleInputState::IsParkGear() const
+{
+	return (GearInputMode == EGearInputMode::ByState && GearState == EGearState::Park);
+}
 
 UVehicleInputComponent::UVehicleInputComponent(const FObjectInitializer &ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -41,67 +87,91 @@ void UVehicleInputComponent::UpdateInputStates(float DeltaTime, float ForwardSpe
 		return;
 	}
 
+	if (bUpdateDefaultsButtonsFromKeyboard)
+	{
+		UpdateInputStatesDefaultsButtons(DeltaTime, ForwardSpeed, PlayerController);
+	}
+
+	/*
 	USodaUserSettings* Settings = SodaApp.GetSodaUserSettings();
 
-	if (PlayerController->WasInputKeyJustPressed(Settings->ChangeModeKeyInput))
-	{
-		bADModeInput = !bADModeInput;
-	}
 
-	if (PlayerController->WasInputKeyJustPressed(Settings->SafeStopKeyInput))
-	{
-		bSafeStopInput = !bSafeStopInput;
-	}
-
-	if (PlayerController->WasInputKeyJustPressed(Settings->HeadlightsKeyInput))
-	{
-		bEnabledHeadlightsInput = !bEnabledHeadlightsInput;
-	}
-
-	bEnabledHornInput = PlayerController->IsInputKeyDown(Settings->HornKeyInput);
-
-
-	/**********************************
-	* Change Cruise Control Mode
-	***********************************/
-	if (PlayerController->WasInputKeyJustPressed(Settings->KeyCruiseControl))
-	{
-
-		if (CruiseControlMode != ECruiseControlMode::CruiseControlActive)
-		{
-			CruiseControlMode = ECruiseControlMode::CruiseControlActive;
-			CruiseControlTargetSpeed = ForwardSpeed;
-		}
-		else
-		{
-			CruiseControlMode = ECruiseControlMode::Off;
-		}
-	}
-
-	/**********************************
-	* Change Speed Limiter Mode
-	***********************************/
-	if (PlayerController->WasInputKeyJustPressed(Settings->KeySpeedLimiter))
-	{
-		if (CruiseControlMode != ECruiseControlMode::SpeedLimiterActive)
-		{
-			CruiseControlMode = ECruiseControlMode::SpeedLimiterActive;
-			CruiseControlTargetSpeed = ForwardSpeed;
-		}
-		else
-		{
-			CruiseControlMode = ECruiseControlMode::Off;
-		}
-	}
-
-	if ((CruiseControlMode == ECruiseControlMode::CruiseControlActive && GetBrakeInput() > 0.1f) || GetGearInput() != ENGear::Drive)
+	if ((CruiseControlMode == ECruiseControlMode::CruiseControlActive && GetBrakeInput() > 0.1f) || GetGearStateInput() != EGearState::Drive)
 	{
 		CruiseControlMode = ECruiseControlMode::Off;
 	}
 
 	CCThrottleInput = FMath::Clamp(CruiseControlPropCoef * (CruiseControlTargetSpeed - std::abs(ForwardSpeed)), 0.0f, CruiseControlMode == ECruiseControlMode::CruiseControlActive ? MaxCruiseControlThrottle : 1.f);
+	*/
 }
 
+void UVehicleInputComponent::UpdateInputStatesDefaultsButtons(float DeltaTime, float ForwardSpeed, const APlayerController* PlayerController)
+{
+	USodaUserSettings* Settings = SodaApp.GetSodaUserSettings();
+
+	if (PlayerController->WasInputKeyJustPressed(Settings->ChangeModeKeyInput))
+	{
+		GetInputState().bADModeEnbaled = !GetInputState().bADModeEnbaled;
+	}
+
+	if (PlayerController->WasInputKeyJustPressed(Settings->SafeStopKeyInput))
+	{
+		GetInputState().bSafeStopEnbaled = !GetInputState().bSafeStopEnbaled;
+	}
+
+	if (PlayerController->WasInputKeyJustPressed(Settings->HeadlightsKeyInput))
+	{
+		GetInputState().bHeadlightsEnabled = !GetInputState().bHeadlightsEnabled;
+	}
+
+	GetInputState().bHornEnabled = PlayerController->IsInputKeyDown(Settings->HornKeyInput);
+
+	if (PlayerController->WasInputKeyJustPressed(Settings->KeyCruiseControl))
+	{
+		if (GetInputState().CruiseControlMode != ECruiseControlMode::CruiseControlActive)
+		{
+			GetInputState().CruiseControlMode = ECruiseControlMode::CruiseControlActive;
+			//CruiseControlTargetSpeed = ForwardSpeed;
+		}
+		else
+		{
+			GetInputState().CruiseControlMode = ECruiseControlMode::Off;
+		}
+	}
+
+	if (PlayerController->WasInputKeyJustPressed(Settings->KeySpeedLimiter))
+	{
+		if (GetInputState().CruiseControlMode != ECruiseControlMode::SpeedLimiterActive)
+		{
+			GetInputState().CruiseControlMode = ECruiseControlMode::SpeedLimiterActive;
+			//CruiseControlTargetSpeed = ForwardSpeed;
+		}
+		else
+		{
+			GetInputState().CruiseControlMode = ECruiseControlMode::Off;
+		}
+	}
+
+	if (PlayerController->IsInputKeyDown(Settings->NeutralGearKeyInput))
+	{
+		GetInputState().SetGearState(EGearState::Neutral);
+	}
+	else if (PlayerController->IsInputKeyDown(Settings->ParkGearKeyInput))
+	{
+		GetInputState().SetGearState(EGearState::Park);
+	}
+
+	if (PlayerController->WasInputKeyJustPressed(Settings->GearUpKeyInput))
+	{
+		GetInputState().GearUp();
+	}
+	if (PlayerController->WasInputKeyJustPressed(Settings->GearDownKeyInput))
+	{
+		GetInputState().GearDown();
+	}
+}
+
+/*
 float UVehicleInputComponent::GetCruiseControlModulatedThrottleInput(float ThrottleInput) const
 {
 	switch (CruiseControlMode)
@@ -116,25 +186,26 @@ float UVehicleInputComponent::GetCruiseControlModulatedThrottleInput(float Throt
 	}
 	return ThrottleInput;
 }
+*/
 
-
-void UVehicleInputComponent::SetSteeringInput(float /*Value*/)
+void UVehicleInputComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
-	UE_LOG(LogSoda, Warning, TEXT("UVehicleInputComponent::SetSteeringInput() is not supported for this InputComponent"));
+	Super::DrawDebug(Canvas, YL, YPos);
+
+	if (Common.bDrawDebugCanvas && GetWheeledVehicle() && (GetWheeledVehicle()->GetActiveVehicleInput() == this))
+	{
+		UFont* RenderFont = GEngine->GetSmallFont();
+		Canvas->SetDrawColor(FColor::White);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Steering: %.2f"), GetInputState().Steering), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Throttle: %.2f"), GetInputState().Throttle), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Brake: %.2f"), GetInputState().Brake), 16, YPos);
+	}
 }
 
-void UVehicleInputComponent::SetThrottleInput(float /*Value*/) 
+void UVehicleInputComponent::CopyInputStates(UVehicleInputComponent* Previous)
 {
-	UE_LOG(LogSoda, Warning, TEXT("UVehicleInputComponent::SetThrottleInput() is not supported for this InputComponent"));
+	if (Previous)
+	{
+		GetInputState() = Previous->GetInputState();
+	}
 }
-
-void UVehicleInputComponent::SetBrakeInput(float /*Value*/) 
-{
-	UE_LOG(LogSoda, Warning, TEXT("UVehicleInputComponent::SetBrakeInput() is not supported for this InputComponent"));
-}
-
-void UVehicleInputComponent::SetGearInput(ENGear /*Value*/) 
-{
-	UE_LOG(LogSoda, Warning, TEXT("UVehicleInputComponent::SetGearInput() is not supported for this InputComponent"));
-}
-
