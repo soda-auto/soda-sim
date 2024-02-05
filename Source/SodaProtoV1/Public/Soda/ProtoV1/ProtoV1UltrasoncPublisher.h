@@ -12,10 +12,10 @@
 
 
 /**
-* UProtoV1UltrasoncPublisher
+* UProtoV1UltrasoncHubPublisher
 */
 UCLASS(ClassGroup = Soda, BlueprintType)
-class SODAPROTOV1_API UProtoV1UltrasoncPublisher: public UGenericUltrasoncPublisher
+class SODAPROTOV1_API UProtoV1UltrasoncHubPublisher: public UGenericUltrasoncHubPublisher
 {
 	GENERATED_BODY()
 
@@ -40,6 +40,7 @@ public:
 	virtual void Shutdown() override;
 	virtual bool IsOk() const override { return !!Socket; }
 	virtual bool Publish(float DeltaTime, const FSensorDataHeader& Header, const TArray < FUltrasonicEchos >& EchoCollections) override;
+	virtual FString GetRemark() const override;
 
 protected:
 	bool Publish(const soda::sim::proto_v1::UltrasonicsHub& Scan);

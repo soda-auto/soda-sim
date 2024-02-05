@@ -20,7 +20,7 @@ public:
 	 * Name of the vehicle component to which need to connect the engine shaft (wheel, gearbox, transmission, etc).
 	 * Default wheels name: WheelFL, WheelFR, WheelRL, WheelRR.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActorr, AllowedClasses = "TorqueTransmission"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "TorqueTransmission"))
 	FSubobjectReference LinkToTorqueTransmission { TEXT("Differential") };
 
 
@@ -58,10 +58,10 @@ public:
 	virtual float GetEngineLoad() { return std::fabsf( GetTorque() / GetMaxTorque()); }
 
 	/** Try to find wheel(s) radius to which set this torque [cm] */
-	virtual float FindWheelRadius() const;
+	virtual bool FindWheelRadius(float& OutRadius) const;
 
 	/** Try to find ratio beetwen this transmission and connected wheel(s) */
-	virtual float FindToWheelRatio() const;
+	virtual bool FindToWheelRatio(float& OutRatio) const;
 
 protected:
 	virtual bool OnActivateVehicleComponent() override;

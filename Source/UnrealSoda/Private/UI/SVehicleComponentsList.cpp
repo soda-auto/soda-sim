@@ -342,9 +342,7 @@ public:
 				SNew(STextBlock)
 				.Text_Lambda([this]() 
 				{
-					FString Remark;
-					Component->GetRemark(Remark);
-					return FText::FromString(Remark); 
+					return FText::FromString(Component->GetRemark());
 				})
 				.ColorAndOpacity(FLinearColor(0.3f, 0.3f, 0.3f));
 		}

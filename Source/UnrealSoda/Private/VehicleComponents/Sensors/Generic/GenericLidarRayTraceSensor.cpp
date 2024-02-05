@@ -91,3 +91,14 @@ bool UGenericLidarRayTraceSensor::PublishSensorData(float DeltaTime, const FSens
 	}
 	return false;
 }
+
+void UGenericLidarRayTraceSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
+{
+	Super::DrawDebug(Canvas, YL, YPos);
+	Publisher->DrawDebug(Canvas, YL, YPos);
+}
+
+FString UGenericLidarRayTraceSensor::GetRemark() const
+{
+	return Publisher ? Publisher->GetRemark() : "null";
+}

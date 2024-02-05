@@ -71,3 +71,14 @@ bool UGenericImuGnssSensor::PublishSensorData(float DeltaTime, const FSensorData
 	}
 	return false;
 }
+
+void UGenericImuGnssSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
+{
+	Super::DrawDebug(Canvas, YL, YPos);
+	Publisher->DrawDebug(Canvas, YL, YPos);
+}
+
+FString UGenericImuGnssSensor::GetRemark() const
+{
+	return Publisher ? Publisher->GetRemark() : "null";
+}

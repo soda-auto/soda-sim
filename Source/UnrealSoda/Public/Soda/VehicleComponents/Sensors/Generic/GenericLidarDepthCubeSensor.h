@@ -57,6 +57,8 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual bool IsVehicleComponentInitializing() const override;
+	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
+	virtual FString GetRemark() const override;
 
 protected:
 	virtual float GetFOVHorizontMax() const override { return FOV_HorizontMax; }

@@ -253,8 +253,9 @@ bool UCANBusComponent::ProcessRecvMessage(const TTimestamp& Timestamp, const dbc
 	}
 }
 
-void UCANBusComponent::GetRemark(FString& Info) const
+FString UCANBusComponent::GetRemark() const
 {
+	return "";
 }
 
 void UCANBusComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)

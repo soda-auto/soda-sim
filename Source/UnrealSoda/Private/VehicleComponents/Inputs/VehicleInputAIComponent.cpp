@@ -301,7 +301,7 @@ void UVehicleInputAIComponent::UpdateInputStatesInner(float DeltaTime)
 	//Compute Throttle, Steering, Gear
 	Throttle = 0;
 	Steering = TargetLocations.Num() ? CalcStreeringValue(DeltaTime) : 0.0f;
-	Gear = bDriveBackvard ? ENGear::Reverse : ENGear::Drive;
+	Gear = bDriveBackvard ? EGearState::Reverse : EGearState::Drive;
 
 	if (CurrentObstacleDistance > 0.f && CurrentObstacleDistance < ObstacleStopDistance * 100 && !bDriveBackvard) // Stop if Obstacle
 	{
@@ -318,7 +318,7 @@ void UVehicleInputAIComponent::UpdateInputStatesInner(float DeltaTime)
 		Steering = 0.0f;
 		if (AbsSpeed < 0.1f)
 		{
-			Gear = ENGear::Park;
+			Gear = EGearState::Park;
 		}
 
 	}
@@ -343,10 +343,10 @@ void UVehicleInputAIComponent::UpdateInputStates(float DeltaTime, float ForwardS
 
 	UpdateInputStatesInner(DeltaTime);
 
-	BrakeInput    = BrakeInputRate.InterpInputValue(DeltaTime, BrakeInput, FMath::Clamp(-1.f * Throttle, 0.f, 1.f)); 
-	ThrottleInput = ThrottleInputRate.InterpInputValue(DeltaTime, ThrottleInput, FMath::Min(FMath::Clamp(Throttle, 0.f, 1.f), ThrottlePedalLimit));
-	SteeringInput = SteerInputRate.InterpInputValue(DeltaTime, SteeringInput, Steering);
-	GearInput = Gear;
+	InputState.Brake    = BrakeInputRate.InterpInputValue(DeltaTime, InputState.Brake, FMath::Clamp(-1.f * Throttle, 0.f, 1.f));
+	InputState.Throttle = ThrottleInputRate.InterpInputValue(DeltaTime, InputState.Throttle, FMath::Min(FMath::Clamp(Throttle, 0.f, 1.f), ThrottlePedalLimit));
+	InputState.Steering = SteerInputRate.InterpInputValue(DeltaTime, InputState.Steering, Steering);
+	InputState.SetGearState(Gear);
 }
 
 float UVehicleInputAIComponent::CalcStreeringValue(float DeltaTime)
@@ -684,21 +684,15 @@ void UVehicleInputAIComponent::DrawCurrentRoute()
 
 void UVehicleInputAIComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
-	if (GetWheeledVehicle() && (GetWheeledVehicle()->GetActiveVehicleInput() == this))
-	{
-		Super::DrawDebug(Canvas, YL, YPos);
+	Super::DrawDebug(Canvas, YL, YPos);
 
-		if (Common.bDrawDebugCanvas)
-		{
-			UFont* RenderFont = GEngine->GetSmallFont();
-			Canvas->SetDrawColor(FColor::White);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Steering: %.2f"), GetSteeringInput()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Throttle: %.2f"), GetThrottleInput()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Brake: %.2f"), GetBrakeInput()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("TargetLocations: %i"), TargetLocations.Num()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("SideError: %f"), SideError), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("ObstacleDistance: %f"), CurrentObstacleDistance), 16, YPos);
-		}
+	if (Common.bDrawDebugCanvas && GetWheeledVehicle() && (GetWheeledVehicle()->GetActiveVehicleInput() == this))
+	{
+		UFont* RenderFont = GEngine->GetSmallFont();
+		Canvas->SetDrawColor(FColor::White);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("TargetLocations: %i"), TargetLocations.Num()), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("SideError: %f"), SideError), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("ObstacleDistance: %f"), CurrentObstacleDistance), 16, YPos);
 	}
 }
 
@@ -710,15 +704,4 @@ bool UVehicleInputAIComponent::AssignRoute(const ANavigationRoute* RoutePlanner)
 		SetFixedRouteBySpline(Route, RoutePlanner->bDriveBackvard, false);
 	}
 	return false;
-}
-
-void UVehicleInputAIComponent::CopyInputStates(UVehicleInputComponent* Previous)
-{
-	if (Previous)
-	{
-		SteeringInput = Previous->GetSteeringInput();
-		ThrottleInput = Previous->GetThrottleInput();
-		BrakeInput = Previous->GetBrakeInput();
-		GearInput = Previous->GetGearInput();
-	}
 }

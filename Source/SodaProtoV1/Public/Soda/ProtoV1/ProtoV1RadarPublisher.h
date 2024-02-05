@@ -39,6 +39,7 @@ public:
 	virtual void Shutdown() override;
 	virtual bool IsOk() const override { return !!Socket; }
 	virtual bool Publish(float DeltaTime, const FSensorDataHeader& Header, const TArray<FRadarParams>& Params, const FRadarClusters& Clusters, const FRadarObjects& Objects) override;
+	virtual FString GetRemark() const override;
 
 protected:
 	bool Publish(const soda::sim::proto_v1::RadarScan& Scan);

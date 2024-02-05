@@ -412,10 +412,10 @@ void ASodaWheeledVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) cons
 	if (UVehicleInputComponent* Input = GetActiveVehicleInput())
 	{
 		InDataset.GetRowDoc() << "inputs" << open_document
-			<< "break" << Input->GetBrakeInput()
-			<< "steer" << Input->GetSteeringInput()
-			<< "throttle" << Input->GetThrottleInput()
-			<< "gear" << int(Input->GetGearInput())
+			<< "break" << Input->GetInputState().Brake
+			<< "steer" << Input->GetInputState().Steering
+			<< "throttle" << Input->GetInputState().Throttle
+			<< "gear" << int(Input->GetInputState().GearState)
 		<< close_document;
 	}
 

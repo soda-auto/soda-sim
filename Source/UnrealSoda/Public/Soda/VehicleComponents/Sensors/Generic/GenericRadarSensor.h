@@ -32,8 +32,11 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual bool IsVehicleComponentInitializing() const override;
-	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FRadarClusters& Clusters, const FRadarObjects& Objects) override;
+	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
+	virtual FString GetRemark() const override;
 
+protected:
+	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FRadarClusters& Clusters, const FRadarObjects& Objects) override;
 	virtual ERadarMode GetRadarMode() const override { return RadarMode; }
 	virtual const TArray<FRadarParams>& GetRadarParams() const override { return RadarParams; }
 

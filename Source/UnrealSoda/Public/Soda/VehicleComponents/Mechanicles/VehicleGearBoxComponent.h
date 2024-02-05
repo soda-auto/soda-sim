@@ -5,7 +5,7 @@
 #include "Soda/VehicleComponents/WheeledVehicleComponent.h"
 #include "VehicleGearBoxComponent.generated.h"
 
-
+class UVehicleInputComponent;
 
 /**
  * UVehicleGearBoxBaseComponent
@@ -19,21 +19,37 @@ class UNREALSODA_API UVehicleGearBoxBaseComponent  :
 
 public:
 	UFUNCTION(Category = GearBox, BlueprintCallable)
-	virtual FString GetGearChar() const { return TEXT("?"); }
+	virtual bool SetGearByState(EGearState GearState) { return false; }
 
 	UFUNCTION(Category = GearBox, BlueprintCallable)
-	virtual void SetGear(ENGear Gear) {}
+	virtual bool SetGearByNum(int GearNum) { return false; }
 
 	UFUNCTION(Category = GearBox, BlueprintCallable)
-	virtual ENGear GetGear() const { return ENGear::Neutral; }
+	virtual EGearState GetGearState() const { return EGearState::Neutral; }
+
+	UFUNCTION(Category = GearBox, BlueprintCallable)
+	virtual int GetGearNum() const { return 0; }
+
+	UFUNCTION(Category = GearBox, BlueprintCallable)
+	virtual float GetGearRatio() const { return 0; }
+
+	UFUNCTION(Category = GearBox, BlueprintCallable)
+	virtual FString GetGearChar() const;
+
+	UFUNCTION(Category = GearBox, BlueprintCallable)
+	virtual int GetForwardGearsCount() const { return 0; }
+
+	UFUNCTION(Category = GearBox, BlueprintCallable)
+	virtual int GetReversGearsCount() const { return 0; }
+
+	virtual bool AcceptGearFromVehicleInput(UVehicleInputComponent* VehicleInput);
 
 public:
-	virtual void PassTorque(float InTorque) {}
-	virtual float ResolveAngularVelocity() const { return 0; }
-	virtual float FindWheelRadius() const { return 0; }
-	virtual float FindToWheelRatio() const { return 1; }
+	virtual void PassTorque(float InTorque) override {}
+	virtual float ResolveAngularVelocity() const override { return 0; }
+	virtual bool FindWheelRadius(float& OutRadius) const override { return false; }
+	virtual bool FindToWheelRatio(float& OutRatio) const override { return false; }
 };
-
 
 /**
  * UVehicleGearBoxSimpleComponent
@@ -51,14 +67,35 @@ public:
 	UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime))
 	bool bAcceptGearFromVehicleInput = true;
 
-	/** Drive gear ratio */
-	UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime))
-	float DGearRatio = 1;
+	//UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	//bool bUseAutomaticGears;
 
-	/** Reverse gear ratio */
-	UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime))
-	float RGearRatio = 1;
+	//UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	//bool bUseAutoReverse;
 
+	/** Forward gear ratios */
+	UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	TArray<float> ForwardGearRatios;
+
+	/** Reverse gear ratio(s) */
+	UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	TArray<float> ReverseGearRatios;
+
+	/** Engine Revs at which gear up change ocurrs */
+	//UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ClampMin = "0.0", UIMin = "0.0", ClampMax = "50000.0", UIMax = "50000.0"))
+	//float ChangeUpRPM = 4500.0f;
+
+	/** Engine Revs at which gear down change ocurrs */
+	//UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ClampMin = "0.0", UIMin = "0.0", ClampMax = "50000.0", UIMax = "50000.0"))
+	//float ChangeDownRPM = 2000.0f;
+
+	/** Time it takes to switch gears (seconds) */
+	//UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ClampMin = "0.0", UIMin = "0.0"))
+	//float GearChangeTime = 0.0;
+
+	/** Mechanical frictional losses mean transmission might operate at 0.94 (94% efficiency) */
+	//UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	//float TransmissionEfficiency = 1.0;
 
 protected:
 	virtual bool OnActivateVehicleComponent() override;
@@ -68,22 +105,25 @@ protected:
 public:
 	virtual void PassTorque(float InTorque) override;
 	virtual float ResolveAngularVelocity() const override;
-	virtual float FindWheelRadius() const override;
-	virtual float FindToWheelRatio() const override;
-
-public:
-	virtual FString GetGearChar() const override;
+	virtual bool FindWheelRadius(float& OutRadius) const override;
+	virtual bool FindToWheelRatio(float& OutRatio) const override;
 
 public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
-	virtual void SetGear(ENGear Gear) override;
-	virtual ENGear GetGear() const override { return Gear; };
+	virtual bool SetGearByState(EGearState GearState) override;
+	virtual bool SetGearByNum(int GearNum) override;
+	virtual EGearState GetGearState() const override { return GearState; };
+	virtual int GetGearNum() const override { return GearNum; }
+	virtual float GetGearRatio() const override { return Ratio; }
+	virtual int GetForwardGearsCount() const { return ForwardGearRatios.Num(); }
+	virtual int GetReversGearsCount() const { return ReverseGearRatios.Num(); }
 
 protected:
 	float Ratio = 0;
-	ENGear Gear = ENGear::Park;
+	EGearState GearState = EGearState::Neutral;
+	int GearNum = 0;
 
 	UPROPERTY()
 	TScriptInterface<ITorqueTransmission> OutputTorqueTransmission;

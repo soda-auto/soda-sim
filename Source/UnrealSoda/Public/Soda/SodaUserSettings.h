@@ -40,6 +40,12 @@ public:
 	FKey ParkGearKeyInput;
 
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, meta = (EditInRuntime))
+	FKey GearUpKeyInput;
+
+	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, meta = (EditInRuntime))
+	FKey GearDownKeyInput;
+
+	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, meta = (EditInRuntime))
 	FKey ChangeModeKeyInput;
 
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, meta = (EditInRuntime))
@@ -83,6 +89,12 @@ public:
 
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, meta = (EditInRuntime))
 	FKey ParkGearJoyInput;
+
+	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, meta = (EditInRuntime))
+	FKey GearUpJoyInput;
+
+	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, meta = (EditInRuntime))
+	FKey GearDownJoyInput;
 
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = UI, meta = (EditInRuntime))
 	float DPIScale;

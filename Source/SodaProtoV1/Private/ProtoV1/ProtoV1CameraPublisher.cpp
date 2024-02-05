@@ -102,3 +102,8 @@ bool UProtoV1CameraPublisher::Publish(const soda::sim::proto_v1::TensorMsgHeader
 	Publish(RawBuffer.GetData(), RawBuffer.Num());
 	return true;
 }
+
+FString UProtoV1CameraPublisher::GetRemark() const
+{
+	return ZmqAddress;
+}

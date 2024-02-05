@@ -88,7 +88,7 @@ public:
 	void UnregSendMsgJ1939(const FString& MessageName, uint8 SourceAddress = 0xFE);
 
 public:
-	virtual void GetRemark(FString& Info) const override;
+	virtual FString GetRemark() const override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 
 protected:

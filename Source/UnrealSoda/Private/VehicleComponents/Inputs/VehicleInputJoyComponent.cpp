@@ -107,47 +107,58 @@ void UVehicleInputJoyComponent::UpdateInputStates(float DeltaTime, float Forward
 
 	if (!Joy || !PlayerController || !HealthIsWorkable())
 	{
-		//ThrottleInput = 0;
-		//SteeringInput = 0;
-		//BrakeInput = 1.0;
+		//Throttle = 0;
+		//Steering = 0;
+		//Brake = 1.0;
 		return;
 	}
 
 	USodaUserSettings* Settings = SodaApp.GetSodaUserSettings();
 
-	const float PrevSteeringInput = SteeringInput;
+	const float PrevSteeringInput = InputState.Steering;
 
-	ThrottleInput = FMath::Clamp(PlayerController->GetInputAnalogKeyState(Settings->ThrottleJoyInput), 0.f, 1.f);
-	SteeringInput = FMath::Clamp(PlayerController->GetInputAnalogKeyState(Settings->SteeringJoyInput), -1.f, 1.f);
-	BrakeInput = FMath::Clamp(PlayerController->GetInputAnalogKeyState(Settings->BrakeJoyInput), 0.f, 1.f);
+	InputState.Throttle = FMath::Clamp(PlayerController->GetInputAnalogKeyState(Settings->ThrottleJoyInput), 0.f, 1.f);
+	InputState.Steering = FMath::Clamp(PlayerController->GetInputAnalogKeyState(Settings->SteeringJoyInput), -1.f, 1.f);
+	InputState.Brake = FMath::Clamp(PlayerController->GetInputAnalogKeyState(Settings->BrakeJoyInput), 0.f, 1.f);
 
-	if (std::abs(BrakeInput) < InputBrakeDeadzone)
+	if (std::abs(InputState.Brake) < InputBrakeDeadzone)
 	{
-		BrakeInput = 0.f;
+		InputState.Brake = 0.f;
 	}
 
-	bool GearChangePossible = bCreepMode == false || BrakeInput > 0.1f;
+	bool GearChangePossible = bCreepMode == false || InputState.Brake > 0.1f;
 
 	/**********************************
 	* Change Gear
 	***********************************/
 	if (PlayerController->IsInputKeyDown(Settings->NeutralGearJoyInput) || PlayerController->IsInputKeyDown(Settings->NeutralGearKeyInput))
-		GearInput = ENGear::Neutral;
+	{
+		InputState.SetGearState(EGearState::Neutral);
+	}
 	else if (GearChangePossible && (PlayerController->IsInputKeyDown(Settings->DriveGearJoyInput) || PlayerController->IsInputKeyDown(Settings->DriveGearKeyInput)))
-		GearInput = ENGear::Drive;
+	{
+		InputState.SetGearState(EGearState::Drive);
+	}
 	else if (GearChangePossible && (PlayerController->IsInputKeyDown(Settings->ReverseGearJoyInput) || PlayerController->IsInputKeyDown(Settings->ReverseGearKeyInput)))
-		GearInput = ENGear::Reverse;
+	{
+		InputState.SetGearState(EGearState::Reverse);
+	}
 	else if (GearChangePossible && (PlayerController->IsInputKeyDown(Settings->ParkGearJoyInput) || PlayerController->IsInputKeyDown(Settings->ParkGearKeyInput)))
-		GearInput = ENGear::Park;
+	{
+		InputState.SetGearState(EGearState::Park);
+	}
 
-	if (bCreepMode && (GearInput == ENGear::Drive || GearInput == ENGear::Reverse))
+	InputState.bWasGearUpPressed = PlayerController->WasInputKeyJustPressed(Settings->GearUpJoyInput);
+	InputState.bWasGearDownPressed = PlayerController->WasInputKeyJustPressed(Settings->GearDownJoyInput);
+
+	if (bCreepMode && (InputState.IsForwardGear() || InputState.IsReversGear()))
 	{
 		float SpeedError = CreepSpeed - std::abs(ForwardSpeed);
 		float CreepThrottleInput = FMath::Clamp(SpeedError / CreepSpeed, 0.0f, MaxCreepThrottle);
-		ThrottleInput = FMath::Max(CreepThrottleInput, ThrottleInput);
+		InputState.Throttle = FMath::Max(CreepThrottleInput, InputState.Throttle);
 	}
 		
-	const float InputSteeringSpeed = (SteeringInput - PrevSteeringInput) / DeltaTime;
+	const float InputSteeringSpeed = (InputState.Steering - PrevSteeringInput) / DeltaTime;
 	const float CurrSteer = GetWheeledVehicle()->GetSteer() / M_PI * 180.0;
 
 	FeedbackAutocenterFactor = 0;
@@ -162,7 +173,7 @@ void UVehicleInputJoyComponent::UpdateInputStates(float DeltaTime, float Forward
 
 	if (FeedbackDiffCurve.ExternalCurve && bFeedbackDiffEnabled)
 	{
-		FeedbackDiffFactor = FeedbackDiffCurve.ExternalCurve->GetFloatValue(MaxSteer * SteeringInput - CurrSteer) * FeedbackDiffCoeff;
+		FeedbackDiffFactor = FeedbackDiffCurve.ExternalCurve->GetFloatValue(MaxSteer * InputState.Steering - CurrSteer) * FeedbackDiffCoeff;
 	}
 
 	if (FeedbackResistionCurve.ExternalCurve && bFeedbackResistionEnabled)
@@ -214,8 +225,6 @@ void UVehicleInputJoyComponent::UpdateInputStates(float DeltaTime, float Forward
 			//UE_LOG(LogSoda, Log, TEXT("Appying bump effect. Force:= %d, Len = %d"), Force, Len);
 		}
 	}
-
-	ThrottleInput = GetCruiseControlModulatedThrottleInput(ThrottleInput);
 }
 
 void UVehicleInputJoyComponent::ReinitDevice()
@@ -228,59 +237,42 @@ void UVehicleInputJoyComponent::ReinitDevice()
 
 void UVehicleInputJoyComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
-	if (GetWheeledVehicle() && (GetWheeledVehicle()->GetActiveVehicleInput() == this))
-	{
-		Super::DrawDebug(Canvas, YL, YPos);
+	Super::DrawDebug(Canvas, YL, YPos);
 
-		if (Common.bDrawDebugCanvas)
+	if (Common.bDrawDebugCanvas && GetWheeledVehicle() && (GetWheeledVehicle()->GetActiveVehicleInput() == this))
+	{
+		UFont* RenderFont = GEngine->GetSmallFont();
+
+		if (Joy)
 		{
-			UFont* RenderFont = GEngine->GetSmallFont();
-			Canvas->SetDrawColor(FColor::White);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Steering: %.2f"), GetSteeringInput()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Throttle: %.2f"), GetThrottleInput()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Brake: %.2f"), GetBrakeInput()), 16, YPos);
-
-			if (Joy)
-			{
-				YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Joy Num: %i"), Joy->GetJoyNum()), 16, YPos);
-				
-			}
-
-			if (bShowFeedback)
-			{
-				YPos += Canvas->DrawText(RenderFont, TEXT("Feedback:"), 16, YPos + 4);
-
-				Canvas->DrawText(RenderFont, TEXT("DiffFactor:"), 16, YPos + 4);
-				YPos += USodaStatics::DrawProgress(Canvas, 120, YPos + 4, 120, 16, FeedbackDiffFactor, -1.0, 1.0, true,
-					FString::Printf(TEXT("%i%%"), int(FeedbackDiffFactor * 100)));
-
-				Canvas->DrawText(RenderFont, TEXT("ResistionFactor:"), 16, YPos + 4);
-				YPos += USodaStatics::DrawProgress(Canvas, 120, YPos + 4, 120, 16, FeedbackResistionFactor, -1.0, 1.0, true,
-					FString::Printf(TEXT("%i%%"), int(FeedbackResistionFactor * 100)));
-
-				Canvas->DrawText(RenderFont, TEXT("AutocenterFactor:"), 16, YPos + 4);
-				YPos += USodaStatics::DrawProgress(Canvas, 120, YPos + 4, 120, 16, FeedbackAutocenterFactor, -1.0, 1.0, true,
-					FString::Printf(TEXT("%i%%"), int(FeedbackAutocenterFactor * 100)));
-
-				Canvas->DrawText(RenderFont, TEXT("FullFactor:"), 16, YPos + 4);
-				YPos += USodaStatics::DrawProgress(Canvas, 120, YPos + 4, 120, 16, FeedbackFullFactor, -1.0, 1.0, true,
-					FString::Printf(TEXT("%i%%"), int(FeedbackFullFactor * 100)));
-
-				Canvas->DrawText(RenderFont, TEXT("DriverTension:"), 16, YPos + 4);
-				YPos += USodaStatics::DrawProgress(Canvas, 120, YPos + 4, 120, 16, FeedbackDriverSteerTension, -1.0, 1.0, true,
-					FString::Printf(TEXT("%i%%"), int(FeedbackDriverSteerTension * 100)));
-			}
+			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Joy Num: %i"), Joy->GetJoyNum()), 16, YPos);
 		}
-	}
-}
 
-void UVehicleInputJoyComponent::CopyInputStates(UVehicleInputComponent* Previous)
-{
-	if (Previous)
-	{
-		SteeringInput = Previous->GetSteeringInput();
-		ThrottleInput = Previous->GetThrottleInput();
-		BrakeInput = Previous->GetBrakeInput();
-		GearInput = Previous->GetGearInput();
+		if (bShowFeedback)
+		{
+			Canvas->SetDrawColor(FColor::White);
+
+			YPos += Canvas->DrawText(RenderFont, TEXT("Feedback:"), 16, YPos + 4);
+
+			Canvas->DrawText(RenderFont, TEXT("DiffFactor:"), 16, YPos + 4);
+			YPos += USodaStatics::DrawProgress(Canvas, 120, YPos + 4, 120, 16, FeedbackDiffFactor, -1.0, 1.0, true,
+				FString::Printf(TEXT("%i%%"), int(FeedbackDiffFactor * 100)));
+
+			Canvas->DrawText(RenderFont, TEXT("ResistionFactor:"), 16, YPos + 4);
+			YPos += USodaStatics::DrawProgress(Canvas, 120, YPos + 4, 120, 16, FeedbackResistionFactor, -1.0, 1.0, true,
+				FString::Printf(TEXT("%i%%"), int(FeedbackResistionFactor * 100)));
+
+			Canvas->DrawText(RenderFont, TEXT("AutocenterFactor:"), 16, YPos + 4);
+			YPos += USodaStatics::DrawProgress(Canvas, 120, YPos + 4, 120, 16, FeedbackAutocenterFactor, -1.0, 1.0, true,
+				FString::Printf(TEXT("%i%%"), int(FeedbackAutocenterFactor * 100)));
+
+			Canvas->DrawText(RenderFont, TEXT("FullFactor:"), 16, YPos + 4);
+			YPos += USodaStatics::DrawProgress(Canvas, 120, YPos + 4, 120, 16, FeedbackFullFactor, -1.0, 1.0, true,
+				FString::Printf(TEXT("%i%%"), int(FeedbackFullFactor * 100)));
+
+			Canvas->DrawText(RenderFont, TEXT("DriverTension:"), 16, YPos + 4);
+			YPos += USodaStatics::DrawProgress(Canvas, 120, YPos + 4, 120, 16, FeedbackDriverSteerTension, -1.0, 1.0, true,
+				FString::Printf(TEXT("%i%%"), int(FeedbackDriverSteerTension * 100)));
+		}
 	}
 }

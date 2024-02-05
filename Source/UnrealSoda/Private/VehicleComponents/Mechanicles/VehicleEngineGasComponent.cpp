@@ -56,7 +56,7 @@ void UVehicleEngineGasComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	{
 		if (UVehicleInputComponent* VehicleInput = GetWheeledVehicle()->GetActiveVehicleInput())
 		{
-			PedalPos = VehicleInput->GetThrottleInput();
+			PedalPos = VehicleInput->GetInputState().Throttle;
 		}
 		else
 		{

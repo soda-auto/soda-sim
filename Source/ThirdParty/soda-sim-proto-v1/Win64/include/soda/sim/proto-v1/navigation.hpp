@@ -10,7 +10,7 @@ namespace sim
 namespace proto_v1 
 {
 
-#pragma pack(push, 8)
+#pragma pack(push, 1)
 
 struct NavigationState 
 {
@@ -27,7 +27,7 @@ struct NavigationState
     double latitude;  // [Deg]
     double altitude;  // [m]
 
-    int64 timestamp; // [ns]
+    std::uint64_t timestamp; // [ns]
 };
 #pragma pack (pop)
 

@@ -313,7 +313,7 @@ public:
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
-	virtual void GetRemark(FString& Info) const override {};
+	//virtual FString GetRemark() const override;
 	virtual bool GenerateFOVMesh(TArray<FSensorFOVMesh>& Meshes) override;
 	virtual bool NeedRenderSensorFOV() const;
 

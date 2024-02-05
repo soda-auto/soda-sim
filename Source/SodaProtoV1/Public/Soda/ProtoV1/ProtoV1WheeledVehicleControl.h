@@ -28,8 +28,9 @@ public:
 	virtual bool StartListen(UVehicleBaseComponent* Parent) override;
 	virtual void StopListen() override;
 	virtual bool IsOk() const { return !!ListenSocket; }
-	//virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) overiide
-	virtual bool GetControl(soda::FWheeledVehiclControl& Control) const override;
+	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
+	virtual bool GetControl(soda::FWheeledVehiclControlMode1& Control) const override;
+	virtual FString GetRemark() const override;
 
 protected:
 	void Recv(const FArrayReaderPtr& ArrayReaderPtr, const FIPv4Endpoint& EndPt);
@@ -37,7 +38,7 @@ protected:
 protected:
 	FSocket* ListenSocket = nullptr;
 	FUdpSocketReceiver* UDPReceiver = nullptr;
-	soda::sim::proto_v1::GenericVehicleControl Msg;
+	soda::sim::proto_v1::GenericVehicleControlMode1 Msg;
 	TTimestamp RecvTimestamp;
 };
 

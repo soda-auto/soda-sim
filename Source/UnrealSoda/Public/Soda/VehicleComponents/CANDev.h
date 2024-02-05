@@ -46,7 +46,7 @@ class UNREALSODA_API UCANDevComponent : public UVehicleBaseComponent
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActorr, AllowedClasses = "/Script/UnrealSoda.CANBusComponent"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "/Script/UnrealSoda.CANBusComponent"))
 	FSubobjectReference LinkToCANBus;
 
 public:
@@ -59,7 +59,7 @@ public:
 	virtual void OnDeactivateVehicleComponent() override;
 
 public:
-	virtual void GetRemark(FString& Info) const override;
+	virtual FString GetRemark() const override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 
 protected:

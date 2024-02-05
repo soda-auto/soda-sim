@@ -35,7 +35,7 @@ public:
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
-	virtual void GetRemark(FString& Info) const override;
+	virtual FString GetRemark() const override;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = V2X, SaveGame, meta = (EditInRuntime))

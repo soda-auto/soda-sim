@@ -27,6 +27,7 @@ public:
 	virtual bool IsInitializing() const { return false; }
 	virtual bool IsOk() const { return false; }
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) {}
+	virtual FString GetRemark() const { return ""; }
 };
 
 
@@ -44,6 +45,7 @@ public:
 	virtual void StopListen() {}
 	virtual bool IsOk() const { return false; }
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) {}
+	virtual FString GetRemark() const { return ""; }
 };
 
 
@@ -117,10 +119,17 @@ public:
 			{
 				GenericObject->MarkAsGarbage();
 			}
-			if (TGenericObject* NewPublisher = NewObject< TGenericObject>(VehicleComponent.Get(), GenericClass.Get()))
+			if (VehicleComponent.IsValid())
 			{
-				NewPublisher->SetFlags(RF_Transactional | RF_ArchetypeObject | RF_Public);
-				GenericObject = NewPublisher;
+				if (TGenericObject* NewPublisher = NewObject< TGenericObject>(VehicleComponent.Get(), GenericClass.Get()))
+				{
+					NewPublisher->SetFlags(RF_Transactional | RF_ArchetypeObject | RF_Public);
+					GenericObject = NewPublisher;
+				}
+				else
+				{
+					GenericObject = nullptr;
+				}
 			}
 			else
 			{

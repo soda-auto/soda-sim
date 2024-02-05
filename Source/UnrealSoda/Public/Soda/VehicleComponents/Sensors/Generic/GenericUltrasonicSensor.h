@@ -14,16 +14,18 @@ class UNREALSODA_API UGenericUltrasonicHubSensor : public UUltrasonicHubSensor
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	TSubclassOf<UGenericUltrasoncPublisher> PublisherClass;
+	TSubclassOf<UGenericUltrasoncHubPublisher> PublisherClass;
 
 	UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
-	TObjectPtr<UGenericUltrasoncPublisher> Publisher;
+	TObjectPtr<UGenericUltrasoncHubPublisher> Publisher;
 
 protected:
 	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual bool IsVehicleComponentInitializing() const override;
+	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
+	virtual FString GetRemark() const override;
 	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const TArray < FUltrasonicEchos >& InEchoCollections) override;
 
 protected:
@@ -34,5 +36,5 @@ protected:
 	virtual void PostInitProperties() override;
 #endif
 
-	FGenericPublisherHelper<UGenericUltrasonicHubSensor, UGenericUltrasoncPublisher> PublisherHelper{ this, &UGenericUltrasonicHubSensor::PublisherClass, &UGenericUltrasonicHubSensor::Publisher };
+	FGenericPublisherHelper<UGenericUltrasonicHubSensor, UGenericUltrasoncHubPublisher> PublisherHelper{ this, &UGenericUltrasonicHubSensor::PublisherClass, &UGenericUltrasonicHubSensor::Publisher };
 };

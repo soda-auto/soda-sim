@@ -1,7 +1,7 @@
 
 #include "Interfaces/IPluginManager.h"
 
-class FProtoV1Module : public IModuleInterface
+class FSodaProtoV1Module : public IModuleInterface
 {
 	virtual void StartupModule() override
 	{
@@ -13,4 +13,4 @@ class FProtoV1Module : public IModuleInterface
 };
 
 
-IMPLEMENT_MODULE(FProtoV1Module, ProtoV1)
+IMPLEMENT_MODULE(FSodaProtoV1Module, SodaProtoV1)

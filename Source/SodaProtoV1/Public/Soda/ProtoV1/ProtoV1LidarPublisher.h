@@ -51,6 +51,7 @@ public:
 	virtual void Shutdown() override;
 	virtual bool IsOk() const override { return !!Socket; }
 	virtual bool Publish(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarScan& Scan) override;
+	virtual FString GetRemark() const override;
 
 protected:
 	bool Publish(const soda::sim::proto_v1::LidarScan& Scan);

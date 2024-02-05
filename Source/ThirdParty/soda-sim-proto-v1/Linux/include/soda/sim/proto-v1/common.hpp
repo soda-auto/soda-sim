@@ -22,7 +22,7 @@ inline auto chrono_timestamp(typename Clock::rep u) noexcept
     using TDuration = typename Clock::duration;
     return TPoint(duration_cast<TDuration>(Units(u)));
 }
-#pragma pack(push, 8)
+#pragma pack(push, 1)
 struct Vector 
 {
     double x;

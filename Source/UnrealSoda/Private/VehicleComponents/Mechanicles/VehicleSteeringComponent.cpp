@@ -119,7 +119,7 @@ void UVehicleSteeringRackSimpleComponent::TickComponent(float DeltaTime, enum EL
 	{
 		if (UVehicleInputComponent* VehicleInput = GetWheeledVehicle()->GetActiveVehicleInput())
 		{
-			SteerInputRatio = VehicleInput->GetSteeringInput();
+			SteerInputRatio = VehicleInput->GetInputState().Steering;
 		}
 		else
 		{

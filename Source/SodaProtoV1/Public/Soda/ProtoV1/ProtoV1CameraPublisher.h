@@ -36,6 +36,7 @@ public:
 	//virtual bool Publish(const void* ImgBGRA8Ptr, const FCameraFrame& CameraFrame, uint32 ImageStride) override;
 	//virtual TArray<FColor> & LockBuffer() override;
 	//virtual void UnlockBuffer(const FCameraFrame& CameraFrame) override;
+	virtual FString GetRemark() const override;
 
 protected:
 	bool Publish(const void* DataPtr, uint32 Size);
