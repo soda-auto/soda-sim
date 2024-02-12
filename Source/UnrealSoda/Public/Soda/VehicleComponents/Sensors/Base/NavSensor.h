@@ -5,7 +5,7 @@
 #include "Soda/VehicleComponents/VehicleSensorComponent.h"
 #include "Soda/Misc/PhysBodyKinematic.h"
 #include <random>
-#include "ImuGnssSensor.generated.h"
+#include "NavSensor.generated.h"
 
 
 /**
@@ -177,7 +177,7 @@ struct UNREALSODA_API FImuNoiseParams
  * Base abstract class for all IMU sensors
  */
 UCLASS(abstract, ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UImuGnssSensor : public USensorComponent
+class UNREALSODA_API UNavSensor : public USensorComponent
 {
 	GENERATED_UCLASS_BODY()
 

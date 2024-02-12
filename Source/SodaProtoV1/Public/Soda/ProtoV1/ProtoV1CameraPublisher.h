@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Soda/VehicleComponents/GenericPublishers/GenericCameraPublisher.h"
+#include "Soda/GenericPublishers/GenericCameraPublisher.h"
 #include "soda/sim/proto-v1/camera.hpp"
 #include "Soda/Misc/AsyncTaskManager.h"
 #include "Soda/SodaTypes.h"

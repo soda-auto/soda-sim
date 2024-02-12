@@ -81,18 +81,6 @@ void UProtoV1WheeledVehiclePublisher::Shutdown()
 
 bool UProtoV1WheeledVehiclePublisher::Publish(float DeltaTime, const FSensorDataHeader& Header, const FWheeledVehicleStateExtra& VehicleStateExtra)
 {
-	FTransform WorldPose;
-	FVector WorldVel;
-	FVector LocalAcc;
-	FVector Gyro;
-	VehicleStateExtra.BodyKinematic.CalcIMU(VehicleStateExtra.RelativeTransform, WorldPose, WorldVel, LocalAcc, Gyro);
-	FRotator WorldRot = WorldPose.Rotator();
-	FVector WorldLoc = WorldPose.GetTranslation();
-	FVector LocVel = WorldRot.UnrotateVector(WorldVel);
-
-	static auto ToSodaVec = [](const FVector& V) { return soda::sim::proto_v1::Vector{ V.X, -V.Y, V.Z }; };
-	static auto ToSodaRot = [](const FVector& V) { return soda::sim::proto_v1::Vector{ -V.X, V.Y, -V.Z }; };
-
 	soda::sim::proto_v1::GenericVehicleState Msg{};
 	Msg.gear_state = soda::sim::proto_v1::EGearState(VehicleStateExtra.GearState);
 	Msg.gear_num = VehicleStateExtra.GearNum;

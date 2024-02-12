@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Soda/VehicleComponents/Sensors/Base/V2XSensor.h"
-#include "Soda/VehicleComponents/GenericPublishers/GenericV2XPublisher.h"
+#include "Soda/GenericPublishers/GenericV2XPublisher.h"
 #include "GenericV2XSensor.generated.h"
 
 UCLASS(ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))

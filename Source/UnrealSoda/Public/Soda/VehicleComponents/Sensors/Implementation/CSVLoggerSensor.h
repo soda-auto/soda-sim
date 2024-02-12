@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Soda/VehicleComponents/Sensors/Base/ImuGnssSensor.h"
+#include "Soda/VehicleComponents/Sensors/Base/NavSensor.h"
 #include <fstream>
 #include "CSVLoggerSensor.generated.h"
 
@@ -11,7 +11,7 @@
  * UCSVLoggerSensorComponent
  */
 UCLASS(ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UCSVLoggerSensorComponent : public UImuGnssSensor
+class UNREALSODA_API UCSVLoggerSensorComponent : public UNavSensor
 {
 	GENERATED_UCLASS_BODY()
 

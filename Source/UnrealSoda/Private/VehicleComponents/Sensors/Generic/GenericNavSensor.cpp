@@ -1,29 +1,29 @@
 // Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
-#include "Soda/VehicleComponents/Sensors/Generic/GenericImuGnssSensor.h"
+#include "Soda/VehicleComponents/Sensors/Generic/GenericNavSensor.h"
 #include "Soda/UnrealSoda.h"
 #include <iomanip>
 
-UGenericImuGnssSensor::UGenericImuGnssSensor(const FObjectInitializer& ObjectInitializer)
+UGenericNavSensor::UGenericNavSensor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	GUI.ComponentNameOverride = TEXT("Generic IMU & GNSS");
 	GUI.bIsPresentInAddMenu = true;
 }
 
-void UGenericImuGnssSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+void UGenericNavSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
 	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
 	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
 }
 
-void UGenericImuGnssSensor::Serialize(FArchive& Ar)
+void UGenericNavSensor::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
 	PublisherHelper.OnSerialize(Ar);
 }
 
-bool UGenericImuGnssSensor::OnActivateVehicleComponent()
+bool UGenericNavSensor::OnActivateVehicleComponent()
 {
 	if (Super::OnActivateVehicleComponent())
 	{
@@ -32,38 +32,38 @@ bool UGenericImuGnssSensor::OnActivateVehicleComponent()
 	return true;
 }
 
-void UGenericImuGnssSensor::OnDeactivateVehicleComponent()
+void UGenericNavSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
 	PublisherHelper.Shutdown();
 }
 
-bool UGenericImuGnssSensor::IsVehicleComponentInitializing() const
+bool UGenericNavSensor::IsVehicleComponentInitializing() const
 {
 	return PublisherHelper.IsPublisherInitializing();
 }
 
-void UGenericImuGnssSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UGenericNavSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	PublisherHelper.Tick();
 }
 
 #if WITH_EDITOR
-void UGenericImuGnssSensor::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+void UGenericNavSensor::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
 }
 
-void UGenericImuGnssSensor::PostInitProperties()
+void UGenericNavSensor::PostInitProperties()
 {
 	Super::PostInitProperties();
 	PublisherHelper.RefreshClass();
 }
 #endif
 
-bool UGenericImuGnssSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FTransform& RelativeTransform, const FPhysBodyKinematic& VehicleKinematic)
+bool UGenericNavSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FTransform& RelativeTransform, const FPhysBodyKinematic& VehicleKinematic)
 {
 	if (Publisher && Publisher->IsOk())
 	{
@@ -72,13 +72,16 @@ bool UGenericImuGnssSensor::PublishSensorData(float DeltaTime, const FSensorData
 	return false;
 }
 
-void UGenericImuGnssSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
+void UGenericNavSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
 	Super::DrawDebug(Canvas, YL, YPos);
-	Publisher->DrawDebug(Canvas, YL, YPos);
+	if (Publisher)
+	{
+		Publisher->DrawDebug(Canvas, YL, YPos);
+	}
 }
 
-FString UGenericImuGnssSensor::GetRemark() const
+FString UGenericNavSensor::GetRemark() const
 {
 	return Publisher ? Publisher->GetRemark() : "null";
 }

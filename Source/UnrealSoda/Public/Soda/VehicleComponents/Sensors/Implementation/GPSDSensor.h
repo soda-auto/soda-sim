@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Soda/VehicleComponents/Sensors/Base/ImuGnssSensor.h"
+#include "Soda/VehicleComponents/Sensors/Base/NavSensor.h"
 #include "Runtime/Sockets/Public/IPAddress.h"
 #include "SocketSubsystem.h"
 #include "Sockets.h"
@@ -42,7 +42,7 @@ struct UNREALSODA_API FGpsDConnection
 };
 
 UCLASS(ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UGpsDSensorComponent : public UImuGnssSensor
+class UNREALSODA_API UGpsDSensorComponent : public UNavSensor
 {
 	GENERATED_UCLASS_BODY()
 

@@ -3,8 +3,8 @@
 #pragma once
 
 #include "Soda/VehicleComponents/VehicleDriverComponent.h"
-#include "Soda/VehicleComponents/GenericPublishers/GenericWheeledVehiclePublisher.h"
-#include "Soda/VehicleComponents/GenericPublishers/GenericWheeledVehicleControl.h"
+#include "Soda/GenericPublishers/GenericWheeledVehiclePublisher.h"
+#include "Soda/GenericPublishers/GenericWheeledVehicleControl.h"
 #include "GenericVehicleDriverComponent.generated.h"
 
 class UVehicleBrakeSystemBaseComponent;
@@ -38,11 +38,11 @@ class UNREALSODA_API UGenericVehicleDriverComponentComponent : public UVehicleDr
 {
 	GENERATED_UCLASS_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime))
-	TSubclassOf<UGenericWheeledVehiclePublisher> PublisherClass;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime))
+	//TSubclassOf<UGenericWheeledVehiclePublisher> PublisherClass;
 
-	UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
-	TObjectPtr<UGenericWheeledVehiclePublisher> Publisher;
+	//UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
+	//TObjectPtr<UGenericWheeledVehiclePublisher> Publisher;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime))
 	TSubclassOf<UGenericWheeledVehicleControlListener> VehicleControlClass;
@@ -95,11 +95,11 @@ protected:
 	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
-	virtual bool IsVehicleComponentInitializing() const override;
+	//virtual bool IsVehicleComponentInitializing() const override;
 	virtual void DrawDebug(UCanvas *Canvas, float &YL, float &YPos) override;
 	virtual FString GetRemark() const override;
 	virtual void PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
-	virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
+	//virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
 
 public:
 	virtual EGearState GetGearState() const override { return GearState; }
@@ -133,6 +133,6 @@ protected:
 	float WheelRadius;
 	bool bWheelRadiusValid = false;
 
-	FGenericPublisherHelper<UGenericVehicleDriverComponentComponent, UGenericWheeledVehiclePublisher> PublisherHelper { this, &UGenericVehicleDriverComponentComponent::PublisherClass, &UGenericVehicleDriverComponentComponent::Publisher };
+	//FGenericPublisherHelper<UGenericVehicleDriverComponentComponent, UGenericWheeledVehiclePublisher> PublisherHelper { this, &UGenericVehicleDriverComponentComponent::PublisherClass, &UGenericVehicleDriverComponentComponent::Publisher };
 	FGenericListenerHelper<UGenericVehicleDriverComponentComponent, UGenericWheeledVehicleControlListener> ListenerHelper { this, &UGenericVehicleDriverComponentComponent::VehicleControlClass, &UGenericVehicleDriverComponentComponent::VehicleControl, "VehicleControlClass", "VehicleControl", "VehicleControlRecord" };
 };

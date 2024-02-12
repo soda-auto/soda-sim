@@ -3,7 +3,7 @@
 #include "Dom/JsonObject.h"
 #include "Soda/Vehicles/ISodaVehicleExporter.h"
 
-class UImuGnssSensor;
+class UNavSensor;
 class UCameraFisheyeSensor;
 class UCameraSensor;
 class USensorComponent;
@@ -18,7 +18,7 @@ public:
 	static const FString ExporterName;
 	static const FString ExporterFileType;
 
-	static TSharedPtr<FJsonObject> GetImuIntrinsics(const UImuGnssSensor* Sensor);
+	static TSharedPtr<FJsonObject> GetImuIntrinsics(const UNavSensor* Sensor);
 	static TSharedPtr<FJsonObject> GetFisheyeIntrinsics(const UCameraFisheyeSensor* Sensor);
 	static TSharedPtr<FJsonObject> GetCameraIntrinsics(const UCameraSensor* Sensor);
 	static TSharedPtr<FJsonObject> GetSensorExtrinsics(const USensorComponent* Sensor);

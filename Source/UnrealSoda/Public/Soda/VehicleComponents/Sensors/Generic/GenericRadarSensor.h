@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Soda/VehicleComponents/Sensors/Base/RadarSensor.h"
-#include "Soda/VehicleComponents/GenericPublishers/GenericRadarPublisher.h"
+#include "Soda/GenericPublishers/GenericRadarPublisher.h"
 #include "GenericRadarSensor.generated.h"
 
 /**

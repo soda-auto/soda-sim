@@ -73,7 +73,10 @@ bool UGenericCameraPinholeSensor::PublishSensorData(float DeltaTime, const FSens
 void UGenericCameraPinholeSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
 	Super::DrawDebug(Canvas, YL, YPos);
-	Publisher->DrawDebug(Canvas, YL, YPos);
+	if (Publisher)
+	{
+		Publisher->DrawDebug(Canvas, YL, YPos);
+	}
 }
 
 FString UGenericCameraPinholeSensor::GetRemark() const

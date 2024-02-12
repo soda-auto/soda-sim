@@ -3,7 +3,7 @@
 #include "SodaVehicleCommonExporter.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/VehicleComponents/VehicleSensorComponent.h"
-#include "Soda/VehicleComponents/Sensors/Base/ImuGnssSensor.h"
+#include "Soda/VehicleComponents/Sensors/Base/NavSensor.h"
 #include "Soda/VehicleComponents/Sensors/Base/CameraFisheyeSensor.h"
 #include "Soda/UnrealSodaVersion.h"
 
@@ -36,7 +36,7 @@ bool FSodaVehicleCommonExporter::ExportToString(const ASodaVehicle* Vehicle, FSt
 			{
 				Int = GetCameraIntrinsics(CameraSensor);
 			}
-			else if (UImuGnssSensor* ImuSensor = Cast<UImuGnssSensor>(Sensor))
+			else if (UNavSensor* ImuSensor = Cast<UNavSensor>(Sensor))
 			{
 				Int = GetImuIntrinsics(ImuSensor);
 			}
@@ -153,7 +153,7 @@ TSharedPtr<FJsonObject> FSodaVehicleCommonExporter::GetFisheyeIntrinsics(const U
 	return JsonObject;
 }
 
-TSharedPtr<FJsonObject> FSodaVehicleCommonExporter::GetImuIntrinsics(const UImuGnssSensor* Sensor)
+TSharedPtr<FJsonObject> FSodaVehicleCommonExporter::GetImuIntrinsics(const UNavSensor* Sensor)
 {
 	TSharedPtr<FJsonObject> JsonObject = MakeShared<FJsonObject>();
 	TSharedPtr<FJsonObject> GyroBias = MakeShared<FJsonObject>();

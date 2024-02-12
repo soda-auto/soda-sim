@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Soda/VehicleComponents/Sensors/Base/UltrasonicSensor.h"
-#include "Soda/VehicleComponents/GenericPublishers/GenericUltrasoncPublisher.h"
+#include "Soda/GenericPublishers/GenericUltrasoncPublisher.h"
 #include "GenericUltrasonicSensor.generated.h"
 
 
