@@ -4,17 +4,16 @@
 
 #include "Soda/VehicleComponents/GenericVehicleComponentHelpers.h"
 #include "Soda/Misc/Time.h"
-#include "GenericImuGnssPublisher.generated.h"
-
+#include "GenericNavPublisher.generated.h"
 
 struct FImuNoiseParams;
 struct FPhysBodyKinematic;
 
 /**
- * UGenericImuGnssPublisher
+ * UGenericNavPublisher
  */
 UCLASS(abstract, ClassGroup = Soda)
-class UNREALSODA_API UGenericImuGnssPublisher: public UGenericPublisher
+class UNREALSODA_API UGenericNavPublisher: public UGenericPublisher
 {
 	GENERATED_BODY()
 

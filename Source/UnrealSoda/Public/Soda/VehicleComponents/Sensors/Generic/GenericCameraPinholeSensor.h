@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Soda/VehicleComponents/Sensors/Base/CameraPinholeSensor.h"
-#include "Soda/VehicleComponents/GenericPublishers/GenericCameraPublisher.h"
+#include "Soda/GenericPublishers/GenericCameraPublisher.h"
 #include "GenericCameraPinholeSensor.generated.h"
 
 UCLASS(ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))

@@ -105,7 +105,10 @@ bool UGenericLidarDepthCubeSensor::PublishSensorData(float DeltaTime, const FSen
 void UGenericLidarDepthCubeSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
 	Super::DrawDebug(Canvas, YL, YPos);
-	Publisher->DrawDebug(Canvas, YL, YPos);
+	if (Publisher)
+	{
+		Publisher->DrawDebug(Canvas, YL, YPos);
+	}
 }
 
 FString UGenericLidarDepthCubeSensor::GetRemark() const

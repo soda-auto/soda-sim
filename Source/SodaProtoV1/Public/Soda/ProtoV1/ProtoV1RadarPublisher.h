@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Soda/VehicleComponents/GenericPublishers/GenericRadarPublisher.h"
+#include "Soda/GenericPublishers/GenericRadarPublisher.h"
 #include "soda/sim/proto-v1/radar.hpp"
 #include "Soda/Misc/UDPAsyncTask.h"
 #include "Runtime/Sockets/Public/IPAddress.h"

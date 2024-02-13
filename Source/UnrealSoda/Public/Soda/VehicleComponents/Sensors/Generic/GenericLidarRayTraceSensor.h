@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Soda/VehicleComponents/Sensors/Base/LidarRayTraceSensor.h"
-#include "Soda/VehicleComponents/GenericPublishers/GenericLidarPublisher.h"
+#include "Soda/GenericPublishers/GenericLidarPublisher.h"
 #include "GenericLidarRayTraceSensor.generated.h"
 
 

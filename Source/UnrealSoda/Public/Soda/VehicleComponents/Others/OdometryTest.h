@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Soda/VehicleComponents/Sensors/Base/ImuGnssSensor.h"
+#include "Soda/VehicleComponents/Sensors/Base/NavSensor.h"
 #include "Soda/Misc/ExtraWindow.h"
 #include "Soda/Misc/TelemetryGraph.h"
 #include "OdometryTest.generated.h"
@@ -34,7 +34,7 @@ struct UNREALSODA_API FOdometryData
 };
 
 UCLASS(ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UOdometryTestComponent : public UImuGnssSensor
+class UNREALSODA_API UOdometryTestComponent : public UNavSensor
 {
 	GENERATED_UCLASS_BODY()
 

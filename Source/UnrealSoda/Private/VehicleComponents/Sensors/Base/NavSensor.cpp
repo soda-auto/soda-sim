@@ -1,10 +1,10 @@
 // Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
-#include "Soda/VehicleComponents/Sensors/Base/ImuGnssSensor.h"
+#include "Soda/VehicleComponents/Sensors/Base/NavSensor.h"
 #include "Soda/UnrealSoda.h"
 #include <iomanip>
 
-UImuGnssSensor::UImuGnssSensor(const FObjectInitializer& ObjectInitializer)
+UNavSensor::UNavSensor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	GUI.Category = TEXT("IMU & GNSS Sensors");
@@ -17,7 +17,7 @@ UImuGnssSensor::UImuGnssSensor(const FObjectInitializer& ObjectInitializer)
 	TickData.bAllowVehiclePostDeferredPhysTick = true;
 }
 
-bool UImuGnssSensor::OnActivateVehicleComponent()
+bool UNavSensor::OnActivateVehicleComponent()
 {
 	if (!Super::OnActivateVehicleComponent())
 	{
@@ -29,12 +29,12 @@ bool UImuGnssSensor::OnActivateVehicleComponent()
 	return true;
 }
 
-void UImuGnssSensor::OnDeactivateVehicleComponent()
+void UNavSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
 }
 
-void UImuGnssSensor::SetImuNoiseParams(const FImuNoiseParams & NewImuNoiseParams)
+void UNavSensor::SetImuNoiseParams(const FImuNoiseParams & NewImuNoiseParams)
 {
 	if (!bIsStoredParams)
 	{
@@ -45,7 +45,7 @@ void UImuGnssSensor::SetImuNoiseParams(const FImuNoiseParams & NewImuNoiseParams
 	NoiseParams.UpdateParameters();
 }
 
-void UImuGnssSensor::RestoreBaseImuNoiseParams()
+void UNavSensor::RestoreBaseImuNoiseParams()
 {
 	if (bIsStoredParams)
 	{
@@ -55,7 +55,7 @@ void UImuGnssSensor::RestoreBaseImuNoiseParams()
 	}
 }
 
-void UImuGnssSensor::PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
+void UNavSensor::PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
 {
 	Super::PostPhysicSimulationDeferred(DeltaTime,  VehicleKinematic, Timestamp);
 

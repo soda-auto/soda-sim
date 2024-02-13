@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Soda/VehicleComponents/Sensors/Base/CameraFisheyeSensor.h"
-#include "Soda/VehicleComponents/GenericPublishers/GenericCameraPublisher.h"
+#include "Soda/GenericPublishers/GenericCameraPublisher.h"
 #include "GenericCameraFisheyeSensor.generated.h"
 
 /**

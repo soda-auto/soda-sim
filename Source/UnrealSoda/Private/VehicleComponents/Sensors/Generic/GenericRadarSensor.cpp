@@ -116,7 +116,10 @@ bool UGenericRadarSensor::PublishSensorData(float DeltaTime, const FSensorDataHe
 void UGenericRadarSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
 	Super::DrawDebug(Canvas, YL, YPos);
-	Publisher->DrawDebug(Canvas, YL, YPos);
+	if (Publisher)
+	{
+		Publisher->DrawDebug(Canvas, YL, YPos);
+	}
 }
 
 FString UGenericRadarSensor::GetRemark() const

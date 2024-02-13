@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Soda/VehicleComponents/GenericPublishers/GenericUltrasoncPublisher.h"
+#include "Soda/GenericPublishers/GenericUltrasoncPublisher.h"
 #include "soda/sim/proto-v1/ultrasonic.hpp"
 #include "Soda/Misc/UDPAsyncTask.h"
 #include "Runtime/Sockets/Public/IPAddress.h"

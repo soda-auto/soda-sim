@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Soda/VehicleComponents/GenericPublishers/GenericLidarPublisher.h"
+#include "Soda/GenericPublishers/GenericLidarPublisher.h"
 #include "soda/sim/proto-v1/lidar.hpp"
 #include "Soda/Misc/Time.h"
 #include "Soda/Misc/UDPAsyncTask.h"

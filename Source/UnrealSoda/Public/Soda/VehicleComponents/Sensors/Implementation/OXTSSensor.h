@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Soda/VehicleComponents/Sensors/Base/ImuGnssSensor.h"
+#include "Soda/VehicleComponents/Sensors/Base/NavSensor.h"
 #include "Soda/VehicleComponents/Sensors/Implementation/OXTS/OXTS.hpp"
 #include "Soda/Misc/BitStream.hpp"
 #include "Soda/Misc/UDPAsyncTask.h"
@@ -13,7 +13,7 @@
 
 
 UCLASS(ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UOXTSSensorComponent : public UImuGnssSensor
+class UNREALSODA_API UOXTSSensorComponent : public UNavSensor
 {
 	GENERATED_UCLASS_BODY()
 

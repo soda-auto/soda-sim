@@ -2,25 +2,25 @@
 
 #pragma once
 
-#include "Soda/VehicleComponents/Sensors/Base/ImuGnssSensor.h"
-#include "Soda/VehicleComponents/GenericPublishers/GenericImuGnssPublisher.h"
-#include "GenericImuGnssSensor.generated.h"
+#include "Soda/VehicleComponents/Sensors/Base/NavSensor.h"
+#include "Soda/GenericPublishers/GenericNavPublisher.h"
+#include "GenericNavSensor.generated.h"
 
 
 /**
- * UGenericImuGnssSensor
+ * UGenericNavSensor
  */
-UCLASS(abstract, ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UGenericImuGnssSensor : public UImuGnssSensor
+UCLASS(ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))
+class UNREALSODA_API UGenericNavSensor : public UNavSensor
 {
 	GENERATED_UCLASS_BODY()
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	TSubclassOf<UGenericImuGnssPublisher> PublisherClass;
+	TSubclassOf<UGenericNavPublisher> PublisherClass;
 
 	UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
-	TObjectPtr<UGenericImuGnssPublisher> Publisher;
+	TObjectPtr<UGenericNavPublisher> Publisher;
 
 protected:
 	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
@@ -39,6 +39,6 @@ protected:
 	virtual void PostInitProperties() override;
 #endif
 
-	FGenericPublisherHelper<UGenericImuGnssSensor, UGenericImuGnssPublisher> PublisherHelper{ this, &UGenericImuGnssSensor::PublisherClass, &UGenericImuGnssSensor::Publisher };
+	FGenericPublisherHelper<UGenericNavSensor, UGenericNavPublisher> PublisherHelper{ this, &UGenericNavSensor::PublisherClass, &UGenericNavSensor::Publisher };
 
 };

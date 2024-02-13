@@ -74,7 +74,10 @@ bool UGenericUltrasonicHubSensor::PublishSensorData(float DeltaTime, const FSens
 void UGenericUltrasonicHubSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
 	Super::DrawDebug(Canvas, YL, YPos);
-	Publisher->DrawDebug(Canvas, YL, YPos);
+	if (Publisher)
+	{
+		Publisher->DrawDebug(Canvas, YL, YPos);
+	}
 }
 
 FString UGenericUltrasonicHubSensor::GetRemark() const

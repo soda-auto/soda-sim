@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Soda/VehicleComponents/GenericPublishers/GenericWheeledVehiclePublisher.h"
+#include "Soda/GenericPublishers/GenericWheeledVehiclePublisher.h"
 #include "soda/sim/proto-v1/vehicleState.hpp"
 #include "Soda/Misc/UDPAsyncTask.h"
 #include "Runtime/Sockets/Public/IPAddress.h"

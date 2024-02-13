@@ -73,7 +73,10 @@ bool UGenericV2XReceiverSensor::PublishSensorData(float DeltaTime, const FSensor
 void UGenericV2XReceiverSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
 	Super::DrawDebug(Canvas, YL, YPos);
-	Publisher->DrawDebug(Canvas, YL, YPos);
+	if (Publisher)
+	{
+		Publisher->DrawDebug(Canvas, YL, YPos);
+	}
 }
 
 FString UGenericV2XReceiverSensor::GetRemark() const

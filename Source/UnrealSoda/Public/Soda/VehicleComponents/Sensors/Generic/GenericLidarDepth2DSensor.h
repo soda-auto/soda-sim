@@ -3,8 +3,8 @@
 #pragma once
 
 #include "Soda/VehicleComponents/Sensors/Base/LidarDepth2DSensor.h"
-#include "Soda/VehicleComponents/GenericPublishers/GenericLidarPublisher.h"
-#include "Soda/VehicleComponents/GenericPublishers/GenericCameraPublisher.h"
+#include "Soda/GenericPublishers/GenericLidarPublisher.h"
+#include "Soda/GenericPublishers/GenericCameraPublisher.h"
 #include "GenericLidarDepth2DSensor.generated.h"
 
 

@@ -11,9 +11,10 @@
 UGenericWheeledVehicleSensor::UGenericWheeledVehicleSensor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	GUI.Category = TEXT("Wheeled Vehicle");
 	GUI.ComponentNameOverride = TEXT("Generic Wheeled Vehicle Sensor");
 	GUI.bIsPresentInAddMenu = true;
-	GUI.IcanName = TEXT("SodaIcons.GPS");
+	GUI.IcanName = TEXT("SodaIcons.Tire");
 }
 
 void UGenericWheeledVehicleSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
@@ -178,7 +179,10 @@ void UGenericWheeledVehicleSensor::PostPhysicSimulationDeferred(float DeltaTime,
 void UGenericWheeledVehicleSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
 	Super::DrawDebug(Canvas, YL, YPos);
-	Publisher->DrawDebug(Canvas, YL, YPos);
+	if (Publisher)
+	{
+		Publisher->DrawDebug(Canvas, YL, YPos);
+	}
 }
 
 FString UGenericWheeledVehicleSensor::GetRemark() const

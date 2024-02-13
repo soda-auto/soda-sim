@@ -91,7 +91,7 @@ bool UGenericVehicleDriverComponentComponent::OnActivateVehicleComponent()
 		AddDebugMessage(EVehicleComponentHealth::Error, TEXT("Can't estimate wheel radius"));
 	}
 
-	PublisherHelper.Advertise();
+	//PublisherHelper.Advertise();
 	ListenerHelper.StartListen();
 
 	return true;
@@ -102,10 +102,11 @@ void UGenericVehicleDriverComponentComponent::OnDeactivateVehicleComponent()
 	Super::OnDeactivateVehicleComponent();
 
 
-	PublisherHelper.Shutdown();
+	//PublisherHelper.Shutdown();
 	ListenerHelper.StopListen();
 }
 
+/*
 void UGenericVehicleDriverComponentComponent::PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
 {
 	Super::PostPhysicSimulationDeferred(DeltaTime, VehicleKinematic, Timestamp);
@@ -145,6 +146,7 @@ void UGenericVehicleDriverComponentComponent::PostPhysicSimulationDeferred(float
 	}
 
 }
+*/
 
 void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
 {
@@ -303,12 +305,14 @@ void UGenericVehicleDriverComponentComponent::DrawDebug(UCanvas* Canvas, float& 
 	const FColor SubCaption(170, 170, 170);
 	UFont* RenderFont = GEngine->GetSmallFont();
 
+	/*
 	if (Publisher)
 	{
 		Canvas->SetDrawColor(SubCaption);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Publisher :")), 16, YPos);
 		Publisher->DrawDebug(Canvas, YL, YPos);
 	}
+	*/
 	if (VehicleControl)
 	{
 		Canvas->SetDrawColor(SubCaption);
@@ -324,7 +328,7 @@ FString UGenericVehicleDriverComponentComponent::GetRemark() const
 
 void UGenericVehicleDriverComponentComponent::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
+	//PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
 	ListenerHelper.OnPropertyChanged(PropertyChangedEvent);
 	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
 }
@@ -332,34 +336,35 @@ void UGenericVehicleDriverComponentComponent::RuntimePostEditChangeChainProperty
 void UGenericVehicleDriverComponentComponent::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
-	PublisherHelper.OnSerialize(Ar);
+	//PublisherHelper.OnSerialize(Ar);
 	ListenerHelper.OnSerialize(Ar);
 }
 
-
+/*
 bool UGenericVehicleDriverComponentComponent::IsVehicleComponentInitializing() const
 {
 	return PublisherHelper.IsPublisherInitializing();
 }
+*/
 
 void UGenericVehicleDriverComponentComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	PublisherHelper.Tick();
+	//PublisherHelper.Tick();
 }
 
 #if WITH_EDITOR
 void UGenericVehicleDriverComponentComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
+	//PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
 	ListenerHelper.OnPropertyChanged(PropertyChangedEvent);
 }
 
 void UGenericVehicleDriverComponentComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
-	PublisherHelper.RefreshClass();
+	//PublisherHelper.RefreshClass();
 	ListenerHelper.RefreshClass();
 }
 #endif

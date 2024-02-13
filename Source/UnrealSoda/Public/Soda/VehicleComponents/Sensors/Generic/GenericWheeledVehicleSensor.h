@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Soda/VehicleComponents/VehicleSensorComponent.h"
-#include "Soda/VehicleComponents/GenericPublishers/GenericWheeledVehiclePublisher.h"
+#include "Soda/GenericPublishers/GenericWheeledVehiclePublisher.h"
 #include "Soda/VehicleComponents/VehicleDriverComponent.h"
 #include "Soda/Vehicles/VehicleBaseTypes.h"
 #include "GenericWheeledVehicleSensor.generated.h"

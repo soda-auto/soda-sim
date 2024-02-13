@@ -95,7 +95,10 @@ bool UGenericLidarRayTraceSensor::PublishSensorData(float DeltaTime, const FSens
 void UGenericLidarRayTraceSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
 	Super::DrawDebug(Canvas, YL, YPos);
-	Publisher->DrawDebug(Canvas, YL, YPos);
+	if (Publisher)
+	{
+		Publisher->DrawDebug(Canvas, YL, YPos);
+	}
 }
 
 FString UGenericLidarRayTraceSensor::GetRemark() const

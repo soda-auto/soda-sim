@@ -127,7 +127,7 @@ void ANoiseBox::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Othe
 		{
 			for (auto& Component : Vehicle->GetVehicleComponents())
 			{
-				if (UImuGnssSensor* Sensor = Cast<UImuGnssSensor>(Component))
+				if (UNavSensor* Sensor = Cast<UNavSensor>(Component))
 				{
 					Sensor->SetImuNoiseParams(DefaultNoiseParams);
 				}
@@ -145,7 +145,7 @@ void ANoiseBox::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other,
 		{
 			for (auto& Component : Vehicle->GetVehicleComponents())
 			{
-				if (UImuGnssSensor* Sensor = Cast<UImuGnssSensor>(Component))
+				if (UNavSensor* Sensor = Cast<UNavSensor>(Component))
 				{
 					Sensor->RestoreBaseImuNoiseParams();
 				}
