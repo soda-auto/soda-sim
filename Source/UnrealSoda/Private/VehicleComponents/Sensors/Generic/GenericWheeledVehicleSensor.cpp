@@ -15,6 +15,11 @@ UGenericWheeledVehicleSensor::UGenericWheeledVehicleSensor(const FObjectInitiali
 	GUI.ComponentNameOverride = TEXT("Generic Wheeled Vehicle Sensor");
 	GUI.bIsPresentInAddMenu = true;
 	GUI.IcanName = TEXT("SodaIcons.Tire");
+
+	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.TickGroup = TG_PostPhysics;
+
+	TickData.bAllowVehiclePostDeferredPhysTick = true;
 }
 
 void UGenericWheeledVehicleSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
