@@ -143,7 +143,7 @@ void UGenericWheeledVehicleSensor::PostPhysicSimulationDeferred(float DeltaTime,
 {
 	Super::PostPhysicSimulationDeferred(DeltaTime, VehicleKinematic, Timestamp);
 
-	if (!Publisher->IsOk())
+	if (!Publisher || !Publisher->IsOk())
 	{
 		return;
 	}

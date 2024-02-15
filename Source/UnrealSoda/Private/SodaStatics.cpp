@@ -156,6 +156,11 @@ USodaGameModeComponent* USodaStatics::GetSodaGameMode()
 	return USodaGameModeComponent::Get();
 }
 
+USodaUserSettings* USodaStatics::GetSodaUserSettings()
+{
+	return SodaApp.GetSodaUserSettings();
+}
+
 FName USodaStatics::GetLevelName(const UObject* WorldContextObject)
 {
 	if (UWorld* World = GetGameWorld(WorldContextObject))
@@ -180,7 +185,7 @@ TArray<FString> USodaStatics::GetAllMapPaths()
 
 		FString LevelName = AssetData.AssetName.ToString();
 
-		if (LevelName.StartsWith(TEXT("tr_"), ESearchCase::CaseSensitive))
+		if (LevelName.StartsWith(TEXT("__"), ESearchCase::CaseSensitive))
 		{
 			continue;
 		}

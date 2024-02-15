@@ -55,7 +55,7 @@ find_library (BSON_STATIC_LIBRARY bson-static-1.0 PATHS "${PACKAGE_PREFIX_DIR}/l
 
 set (BSON_STATIC_LIBRARIES ${BSON_STATIC_LIBRARY})
 
-foreach (LIB  C:/UnrealToolchains/v20_clang-13.0.1-centos7/x86_64-unknown-linux-gnu/usr/lib64/librt.so -lpthread)
+foreach (LIB  C:/UnrealToolchains/v22_clang-16.0.6-centos7/x86_64-unknown-linux-gnu/usr/lib64/librt.so -lpthread)
     list (APPEND BSON_STATIC_LIBRARIES ${LIB})
 endforeach ()
 

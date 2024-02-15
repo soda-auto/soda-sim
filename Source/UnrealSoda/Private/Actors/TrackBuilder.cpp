@@ -27,6 +27,7 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Widgets/SWindow.h"
 #include "SodaStyleSet.h"
+#include "Widgets/Layout/SBorder.h"
 #include <map>
 
 struct FPolyline;

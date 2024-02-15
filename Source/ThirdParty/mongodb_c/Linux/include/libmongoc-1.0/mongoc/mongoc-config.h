@@ -38,10 +38,10 @@
  * used to compile mongoc */
 #define MONGOC_USER_SET_CFLAGS ""
 
-#define MONGOC_USER_SET_LDFLAGS "-nodefaultlibs -stdlib=libc++ -lc -lm -lgcc_s -lgcc C:/UE/UE_5.1/Engine/Source/ThirdParty/Unix/LibCxx/lib/Unix/x86_64-unknown-linux-gnu/libc++.a C:/UE/UE_5.1/Engine/Source/ThirdParty/Unix/LibCxx/lib/Unix/x86_64-unknown-linux-gnu/libc++abi.a"
+#define MONGOC_USER_SET_LDFLAGS "-nodefaultlibs -stdlib=libc++ -lc -lm -lgcc_s -lgcc C:/UE/UE_5.3/Engine/Source/ThirdParty/Unix/LibCxx/lib/Unix/x86_64-unknown-linux-gnu/libc++.a C:/UE/UE_5.3/Engine/Source/ThirdParty/Unix/LibCxx/lib/Unix/x86_64-unknown-linux-gnu/libc++abi.a"
 
 /* MONGOC_CC is used to determine what C compiler was used to compile mongoc */
-#define MONGOC_CC "C:/UnrealToolchains/v20_clang-13.0.1-centos7/x86_64-unknown-linux-gnu/bin/clang.exe"
+#define MONGOC_CC "C:/UnrealToolchains/v22_clang-16.0.6-centos7/x86_64-unknown-linux-gnu/bin/clang.exe"
 
 /*
  * MONGOC_ENABLE_SSL_SECURE_CHANNEL is set from configure to determine if we are

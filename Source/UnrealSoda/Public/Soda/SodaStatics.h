@@ -10,6 +10,7 @@
 
 class UProceduralMeshComponent;
 class USodaGameModeComponent;
+class USodaUserSettings;
 
 UENUM(BlueprintType)
 enum class ETriangulationPlane : uint8
@@ -41,11 +42,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Soda")
 	static USodaGameModeComponent* GetSodaGameMode();
 
+	UFUNCTION(BlueprintPure, Category = "Soda")
+	static USodaUserSettings* GetSodaUserSettings();
+
 	/**Get current level name */
 	UFUNCTION(BlueprintCallable, Category = "Soda")
 	static FName GetLevelName(const UObject* WorldContextObject);
 
-	/** Get all maps for project */
+	/** Get all maps for project. Maps starting with "__" will be excluded  */
 	UFUNCTION(BlueprintCallable, Category=Soda)
 	static TArray<FString> GetAllMapPaths();
 

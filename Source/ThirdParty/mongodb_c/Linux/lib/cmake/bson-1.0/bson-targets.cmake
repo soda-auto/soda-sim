@@ -69,7 +69,7 @@ set_target_properties(mongo::bson_static PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "BSON_STATIC"
   INTERFACE_COMPILE_OPTIONS "-fPIC"
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include/libbson-1.0"
-  INTERFACE_LINK_LIBRARIES "-lpthread;C:/UnrealToolchains/v20_clang-13.0.1-centos7/x86_64-unknown-linux-gnu/usr/lib64/librt.so"
+  INTERFACE_LINK_LIBRARIES "-lpthread;C:/UnrealToolchains/v22_clang-16.0.6-centos7/x86_64-unknown-linux-gnu/usr/lib64/librt.so"
 )
 
 if(CMAKE_VERSION VERSION_LESS 2.8.12)
