@@ -7,5 +7,5 @@ mkdir %INSTALL_DIR%
 
 if not exist src\build_win mkdir src\build_win
 pushd src\build_win
-cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% -Dbuild_tests=OFF -Dbuild_examples=OFF .. && nmake install
+cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% -Dbuild_tests=OFF -Dbuild_examples=OFF -Dbuild_tools=OFF -Dbuild_kcd=OFF ..\dbcppp && nmake install
 popd
