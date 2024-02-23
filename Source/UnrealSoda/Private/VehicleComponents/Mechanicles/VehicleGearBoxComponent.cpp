@@ -141,16 +141,16 @@ void UVehicleGearBoxSimpleComponent::OnDeactivateVehicleComponent()
 
 void UVehicleGearBoxSimpleComponent::PassTorque(float InTorque)
 {
-	DebugInTorq = InTorque;
+	InTorq = InTorque;
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		DebugOutTorq = InTorque * Ratio;
-		OutputTorqueTransmission->PassTorque(DebugOutTorq);
+		OutTorq = InTorque * Ratio;
+		OutputTorqueTransmission->PassTorque(OutTorq);
 	}
 	else
 	{
-		DebugInTorq = 0;
-		DebugOutTorq = 0;
+		InTorq = 0;
+		OutTorq = 0;
 	}
 }
 
@@ -158,14 +158,14 @@ float UVehicleGearBoxSimpleComponent::ResolveAngularVelocity() const
 {
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		DebugInAngularVelocity = OutputTorqueTransmission->ResolveAngularVelocity();
-		DebugOutAngularVelocity = DebugInAngularVelocity * Ratio;
-		return DebugOutAngularVelocity;
+		InAngularVelocity = OutputTorqueTransmission->ResolveAngularVelocity();
+		OutAngularVelocity = InAngularVelocity * Ratio;
+		return OutAngularVelocity;
 	}
 	else
 	{
-		DebugInAngularVelocity = 0;
-		DebugOutAngularVelocity = 0;
+		InAngularVelocity = 0;
+		OutAngularVelocity = 0;
 		return 0;
 	}
 }
@@ -261,6 +261,26 @@ void UVehicleGearBoxSimpleComponent::TickComponent(float DeltaTime, enum ELevelT
 			AcceptGearFromVehicleInput(VehicleInput);
 		}
 	}
+
+	if (bUseAutomaticGears && GetGearState() == EGearState::Drive)
+	{
+		if (FMath::Abs(OutAngularVelocity) * ANG2RPM > ChangeUpRPM)
+		{
+			if (GetGearNum() < ForwardGearRatios.Num())
+			{
+				SetGearByNum(GetGearNum() + 1);
+				OutAngularVelocity = InAngularVelocity * Ratio;
+			}
+		}
+		else if (FMath::Abs(OutAngularVelocity) * ANG2RPM < ChangeDownRPM)
+		{
+			if (GetGearNum() > 1)
+			{
+				SetGearByNum(GetGearNum() - 1);
+				OutAngularVelocity = InAngularVelocity * Ratio;
+			}
+		}
+	}
 }
 
 void UVehicleGearBoxSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
@@ -273,10 +293,10 @@ void UVehicleGearBoxSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, float
 		Canvas->SetDrawColor(FColor::White);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Gear: %s "), *GetGearChar()), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Ratio: %.2f "), GetGearRatio()), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InTorq: %.2f "), DebugInTorq), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutTorq: %.2f "), DebugOutTorq), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InAngVel: %.2f "), DebugInAngularVelocity), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutAngVel: %.2f "), DebugOutAngularVelocity), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InTorq: %.2f "), InTorq), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutTorq: %.2f "), OutTorq), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InAngVel: %.2f "), InAngularVelocity), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutAngVel: %.2f "), OutAngularVelocity), 16, YPos);
 	}
 }
 

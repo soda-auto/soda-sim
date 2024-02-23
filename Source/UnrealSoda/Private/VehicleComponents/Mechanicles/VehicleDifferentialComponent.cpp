@@ -48,26 +48,26 @@ void UVehicleDifferentialSimpleComponent::PassTorque(float InTorque)
 {
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		DebugInTorq = InTorque;
-		DebugOutTorq = InTorque * Ratio * 0.5;
+		InTorq = InTorque;
+		OutTorq = InTorque * Ratio * 0.5;
 
 		switch (DifferentialType)
 		{
 		case EVehicleDifferentialType::Open_FrontDrive:
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->ReqTorq += DebugOutTorq;
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->ReqTorq += DebugOutTorq;
+			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->ReqTorq += OutTorq;
+			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->ReqTorq += OutTorq;
 			break;
 
 		case EVehicleDifferentialType::Open_RearDrive:
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->ReqTorq += DebugOutTorq;
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->ReqTorq += DebugOutTorq;
+			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->ReqTorq += OutTorq;
+			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->ReqTorq += OutTorq;
 			break;
 		}
 	}
 	else
 	{
-		DebugInTorq = 0;
-		DebugOutTorq = 0;
+		InTorq = 0;
+		OutTorq = 0;
 	}
 }
 
@@ -78,14 +78,14 @@ float UVehicleDifferentialSimpleComponent::ResolveAngularVelocity() const
 		switch (DifferentialType)
 		{
 		case EVehicleDifferentialType::Open_FrontDrive:
-			DebugInAngularVelocity = std::max(GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->AngularVelocity, GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->AngularVelocity);
+			InAngularVelocity = std::max(GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->AngularVelocity, GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->AngularVelocity);
 			break;
 		case EVehicleDifferentialType::Open_RearDrive:
-			DebugInAngularVelocity = std::max(GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->AngularVelocity, GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->AngularVelocity);
+			InAngularVelocity = std::max(GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->AngularVelocity, GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->AngularVelocity);
 			break;
 		}
-		DebugOutAngularVelocity = DebugInAngularVelocity * Ratio;
-		return DebugOutAngularVelocity;
+		OutAngularVelocity = InAngularVelocity * Ratio;
+		return OutAngularVelocity;
 	}
 	return 0;
 }
@@ -115,9 +115,9 @@ void UVehicleDifferentialSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, 
 	{
 		UFont* RenderFont = GEngine->GetSmallFont();
 		Canvas->SetDrawColor(FColor::White);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InTorq: %.2f "), DebugInTorq), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutTorq: %.2f "), DebugOutTorq), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InAngVel: %.2f "), DebugInAngularVelocity), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutAngVel: %.2f "), DebugOutAngularVelocity), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InTorq: %.2f "), InTorq), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutTorq: %.2f "), OutTorq), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InAngVel: %.2f "), InAngularVelocity), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutAngVel: %.2f "), OutAngularVelocity), 16, YPos);
 	}
 }

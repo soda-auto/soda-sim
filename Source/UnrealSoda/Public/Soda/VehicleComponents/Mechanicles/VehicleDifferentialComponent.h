@@ -61,9 +61,9 @@ public:
 	virtual bool FindToWheelRatio(float& OutRatio) const override { OutRatio = Ratio; return true; }
 
 protected:
-	mutable float DebugInTorq = 0;
-	mutable float DebugOutTorq = 0;
-	mutable float DebugInAngularVelocity = 0;
-	mutable float DebugOutAngularVelocity = 0;
+	mutable float InTorq = 0;
+	mutable float OutTorq = 0;
+	mutable float InAngularVelocity = 0;
+	mutable float OutAngularVelocity = 0;
 };
 

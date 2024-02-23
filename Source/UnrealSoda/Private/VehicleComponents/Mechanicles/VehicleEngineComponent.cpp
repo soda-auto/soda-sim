@@ -71,6 +71,22 @@ bool UVehicleEngineBaseComponent::FindToWheelRatio(float& OutRatio) const
 	return false;
 }
 
+float UVehicleEngineBaseComponent::GetEngineLoad() const
+{ 
+	float MaxTorque = GetMaxTorque();
+
+	//UE_LOG(LogSoda, Log, TEXT("************** %f %f"), MaxTorque, GetTorque());
+
+	if (FMath::IsNearlyZero(MaxTorque))
+	{
+		return 1.0;
+	}
+	else
+	{
+		return std::fabsf(GetTorque() / MaxTorque);
+	}
+}
+
 /********************************************************************************************************/
 
 UVehicleEngineSimpleComponent::UVehicleEngineSimpleComponent(const FObjectInitializer& ObjectInitializer)
@@ -178,7 +194,7 @@ void UVehicleEngineSimpleComponent::PostPhysicSimulation(float DeltaTime, const 
 
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		AngularVelocity = OutputTorqueTransmission->ResolveAngularVelocity() * Ratio;
+		AngularVelocity = OutputTorqueTransmission->ResolveAngularVelocity() * Ratio * (bFlipAngularVelocity ?  -1.0 : 1.0);
 		if (bVerboseLog)
 		{
 			UE_LOG(LogSoda, Log, TEXT("UVehicleEngineBaseComponent::PostPhysicSimulation(); AngularVelocity: %f; MaxTorq: %f Name: %s"), AngularVelocity, MaxTorq, *GetFName().ToString());
@@ -196,7 +212,7 @@ void UVehicleEngineSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, float&
 		Canvas->SetDrawColor(FColor::White);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Req/Act/Max Torq: %.2f / %.2f / %.2f H/m"), RequestedTorque, ActualTorque, MaxTorq), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Load: %d"), int(GetEngineLoad() * 100 + 0.5)), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("AngVel: %.2f rad/s"), AngularVelocity), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("AngVel: %.2f rpm"), AngularVelocity * ANG2RPM), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Pedal Pos: %.2f"), PedalPos), 16, YPos);
 	}
 }

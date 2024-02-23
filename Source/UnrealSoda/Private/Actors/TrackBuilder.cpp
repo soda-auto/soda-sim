@@ -1395,6 +1395,103 @@ void ATrackBuilder::ClearStartLine()
 	}
 }
 
+static FVector SegmentIntersection2D(TArray<FVector> & Vertices, bool bIsClosed, const FVector& PointA, const FVector& PointB)
+{
+	check(Vertices.Num() > 0);
+	const int Num = Vertices.Num() - 1 + int(bIsClosed);
+	float NearestDist = (Vertices[0] - PointA).Size();
+	FVector NearestIntersection = Vertices[0];
+	for (int i = 0; i < Num; ++i)
+	{
+		const FVector& Pt0 = Vertices[i];
+		const FVector& Pt1 = Vertices[(i + 1) % Vertices.Num()];
+
+		FVector Intersection;
+		if (FMath::SegmentIntersection2D(Pt0, Pt1, PointA, PointB, Intersection))
+		{
+			float Dist = (PointA - Intersection).Size();
+			if (Dist < NearestDist)
+			{
+				NearestDist = Dist;
+				NearestIntersection = Intersection;
+			}
+		}
+	}
+	return NearestIntersection;
+}
+
+static float ClosestPointOnPolyline2D(const TArray<FVector>& Vertices, bool bIsClosed, const FVector2D & Point, FVector2D& Out)
+{
+	check(Vertices.Num())
+	float NearestDist = (FVector2D(Vertices[0]) - Point).Size();
+	const int Num = Vertices.Num() - 1 + int(bIsClosed);
+	FVector2D ClosestPoint = FVector2D(Vertices[0]);
+	for (int i = 0; i < Num; ++i)
+	{
+		const FVector2D& Pt0 = FVector2D(Vertices[i]);
+		const FVector2D& Pt1 = FVector2D(Vertices[(i + 1) % Vertices.Num()]);
+		const FVector2D Pt3 = FMath::ClosestPointOnSegment2D(Point, Pt0, Pt1);
+		const float Dist = (Point - Pt3).Size();
+		if (Dist < NearestDist)
+		{
+			ClosestPoint = Pt3;
+			NearestDist = Dist;
+		}
+	}
+
+	Out = ClosestPoint;
+	return NearestDist;
+}
+
+bool ATrackBuilder::FindNearestBorder(const FTransform& Transform, float& OutLeftOffset, float& OutRightOffset, float& OutCenterLineYaw) const
+{
+	const FVector2D Pose = FVector2D(Transform.GetLocation());
+	const FVector2D Dir = FVector2D(Transform.GetRotation().GetForwardVector());
+
+	FVector2D OutsidePoint;
+	const float OutsideDist =  ClosestPointOnPolyline2D(OutsidePoints, true, Pose, OutsidePoint);
+	const FVector2D OutsideDir = OutsidePoint - Pose;
+	const float OutsideDot = Dir ^ OutsideDir;
+
+	FVector2D InsidePoint;
+	const float InsideDist = ClosestPointOnPolyline2D(InsidePoints, true, Pose, InsidePoint);
+	const FVector2D InsideDir = InsidePoint - Pose;
+	const float InsideDot = Dir ^ InsideDir;
+
+	FVector2D CenterLineDir = (OutsideDir - InsideDir).GetSafeNormal();
+
+	if (OutsideDot > 0 && InsideDot > 0)
+	{
+		OutLeftOffset = 0;
+		OutRightOffset = 0;
+		return false;
+	}
+	else if (OutsideDot < 0 && InsideDot < 0)
+	{
+		OutLeftOffset = 0;
+		OutRightOffset = 0;
+		return false;
+	}
+	else if (OutsideDot > 0 && InsideDot < 0)
+	{
+		OutLeftOffset = InsideDist;
+		OutRightOffset = OutsideDist;
+	}
+	else // OutsideDot < 0 && InsideDot > 0
+	{
+		OutLeftOffset = OutsideDist;
+		OutRightOffset = InsideDist;
+
+		CenterLineDir = -CenterLineDir;
+	}
+
+	OutCenterLineYaw = FMath::Atan2(CenterLineDir.Y, CenterLineDir.X);
+
+	//UE_LOG(LogSoda, Warning, TEXT("ATrackBuilder::FindNearestBorder(); %f %f %f %f"), OutLeftOffset, OutRightOffset, OutsideDot, InsideDot);
+
+	return true;;
+}
+
 const FSodaActorDescriptor* ATrackBuilder::GenerateActorDescriptor() const
 {
 	static FSodaActorDescriptor Desc{

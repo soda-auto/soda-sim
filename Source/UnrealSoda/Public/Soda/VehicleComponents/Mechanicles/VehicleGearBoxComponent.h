@@ -67,8 +67,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime))
 	bool bAcceptGearFromVehicleInput = true;
 
-	//UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ReactivateActor))
-	//bool bUseAutomaticGears;
+	UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	bool bUseAutomaticGears = false;
 
 	//UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ReactivateActor))
 	//bool bUseAutoReverse;
@@ -82,12 +82,12 @@ public:
 	TArray<float> ReverseGearRatios;
 
 	/** Engine Revs at which gear up change ocurrs */
-	//UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ClampMin = "0.0", UIMin = "0.0", ClampMax = "50000.0", UIMax = "50000.0"))
-	//float ChangeUpRPM = 4500.0f;
+	UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ClampMin = "0.0", UIMin = "0.0", ClampMax = "50000.0", UIMax = "50000.0"))
+	float ChangeUpRPM = 4500.0f;
 
 	/** Engine Revs at which gear down change ocurrs */
-	//UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ClampMin = "0.0", UIMin = "0.0", ClampMax = "50000.0", UIMax = "50000.0"))
-	//float ChangeDownRPM = 2000.0f;
+	UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ClampMin = "0.0", UIMin = "0.0", ClampMax = "50000.0", UIMax = "50000.0"))
+	float ChangeDownRPM = 2000.0f;
 
 	/** Time it takes to switch gears (seconds) */
 	//UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ClampMin = "0.0", UIMin = "0.0"))
@@ -128,9 +128,9 @@ protected:
 	UPROPERTY()
 	TScriptInterface<ITorqueTransmission> OutputTorqueTransmission;
 
-	mutable float DebugInTorq = 0;
-	mutable float DebugOutTorq = 0;
-	mutable float DebugInAngularVelocity = 0;
-	mutable float DebugOutAngularVelocity = 0;
+	mutable float InTorq = 0;
+	mutable float OutTorq = 0;
+	mutable float InAngularVelocity = 0;
+	mutable float OutAngularVelocity = 0;
 };
 

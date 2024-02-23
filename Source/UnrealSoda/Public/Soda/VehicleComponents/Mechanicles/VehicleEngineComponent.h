@@ -55,7 +55,7 @@ public:
 	virtual float GetTorque() const { return 0; }
 
 	/** [0...1] */
-	virtual float GetEngineLoad() { return std::fabsf( GetTorque() / GetMaxTorque()); }
+	virtual float GetEngineLoad() const;
 
 	/** Try to find wheel(s) radius to which set this torque [cm] */
 	virtual bool FindWheelRadius(float& OutRadius) const;
@@ -88,6 +88,9 @@ public:
 	/** Allow set engine torque from default the UVhicleInputComponent */
 	UPROPERTY(EditAnywhere, Category = VehicleEngine, SaveGame, meta = (EditInRuntime))
 	bool bAcceptPedalFromVehicleInput = true;
+
+	UPROPERTY(EditAnywhere, Category = VehicleEngine, SaveGame, meta = (EditInRuntime))
+	bool bFlipAngularVelocity = false;
 
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

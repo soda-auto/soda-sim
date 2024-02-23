@@ -24,7 +24,7 @@ public:
 	int Port = 8500;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publisher, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	FString Address = "239.0.0.230";
+	FString Address = "127.0.0.1";
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publisher, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	bool bIsBroadcast = false;

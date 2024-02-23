@@ -132,7 +132,7 @@ bool UProtoV1V2XPublisher::Publish(const soda::sim::proto_v1::V2XRenderObject& M
 	{
 		if (!AsyncTask->Publish(&Msg, sizeof(Msg)))
 		{
-			UE_LOG(LogSoda, Warning, TEXT("FGenericLidarPublisher::PublishAsync(). Skipped one frame"));
+			UE_LOG(LogSoda, Warning, TEXT("UProtoV1V2XPublisher::PublishAsync(). Skipped one frame"));
 		}
 		SodaApp.EthTaskManager.Trigger();
 		return true;

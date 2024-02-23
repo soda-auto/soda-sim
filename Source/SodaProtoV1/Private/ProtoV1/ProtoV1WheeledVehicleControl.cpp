@@ -56,13 +56,22 @@ void UProtoV1WheeledVehicleControl::Recv(const FArrayReaderPtr& ArrayReaderPtr, 
 	}
 }
 
-bool UProtoV1WheeledVehicleControl::GetControl(soda::FWheeledVehiclControlMode1& Control) const
+bool UProtoV1WheeledVehicleControl::GetControl(soda::FGenericWheeledVehiclControl& Control) const
 {
-	Control.SteerReq = Msg.steer_req;
-	Control.AccDecelReq = Msg.acc_decel_req;
+	Control.SteerReq.ByRatio = -Msg.steer_req.by_ratio;
+	Control.DriveEffortReq.ByRatio = Msg.drive_effort_req.by_ratio;
+	Control.TargetSpeedReq = Msg.target_speed_req * 100.0;
 	Control.GearStateReq = EGearState(Msg.gear_state_req);
 	Control.GearNumReq = Msg.gear_num_req;
-	Control.RecvTimestamp = RecvTimestamp;
+	Control.SteerReqMode = soda::FGenericWheeledVehiclControl::ESteerReqMode(Msg.steer_req_mode);
+	Control.DriveEffortReqMode = soda::FGenericWheeledVehiclControl::EDriveEffortReqMode(Msg.drive_effort_req_mode);
+	Control.Timestamp = RecvTimestamp;
+
+	if (Control.DriveEffortReqMode == soda::FGenericWheeledVehiclControl::EDriveEffortReqMode::ByAcc)
+	{
+		Control.DriveEffortReq.ByAcc *= 100;
+	}
+
 	return true;
 }
 
@@ -80,10 +89,12 @@ void UProtoV1WheeledVehicleControl::DrawDebug(UCanvas* Canvas, float& YL, float&
 	const uint64 dt = std::chrono::duration_cast<std::chrono::milliseconds>(SodaApp.GetRealtimeTimestamp() - RecvTimestamp).count();
 
 	Canvas->SetDrawColor(FColor::White);
-	YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("steer_req: %.2f"), Msg.steer_req), 16, YPos);
-	YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("acc_decel_req: %.1f"), Msg.acc_decel_req), 16, YPos);
+	YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("steer_req: %.2f"), Msg.steer_req.by_ratio), 16, YPos);
+	YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("drive_effort_req: %.2f"), Msg.drive_effort_req.by_ratio), 16, YPos);
 	YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("gear_state_req: %d"), (int)Msg.gear_state_req), 16, YPos);
 	YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("gear_num_req: %d"), (int)Msg.gear_num_req), 16, YPos);
+	YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("steer_req_mode: %d"), (int)Msg.steer_req_mode), 16, YPos);
+	YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("drive_effort_req_mode: %d"), (int)Msg.drive_effort_req_mode), 16, YPos);
 
 	if (dt > 10000)
 	{
