@@ -84,17 +84,22 @@ bool UGenericVehicleDriverComponentComponent::OnActivateVehicleComponent()
 		SetHealth(EVehicleComponentHealth::Warning);
 	}
 
+	bWheelRadiusValid = false;
+
+	//PublisherHelper.Advertise();
+	ListenerHelper.StartListen();
+
+	return true;
+}
+
+void UGenericVehicleDriverComponentComponent::OnPostActivateVehicleComponent()
+{
 	bWheelRadiusValid = (Engine) && (Engine->FindWheelRadius(WheelRadius)) && (WheelRadius > 1.0);
 	if (!bWheelRadiusValid)
 	{
 		SetHealth(EVehicleComponentHealth::Warning);
 		AddDebugMessage(EVehicleComponentHealth::Error, TEXT("Can't estimate wheel radius"));
 	}
-
-	//PublisherHelper.Advertise();
-	ListenerHelper.StartListen();
-
-	return true;
 }
 
 void UGenericVehicleDriverComponentComponent::OnDeactivateVehicleComponent()
@@ -154,13 +159,13 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 
 	static const std::chrono::nanoseconds Timeout(500000000ll); // 500ms
 
-	soda::FWheeledVehiclControlMode1 Control;
+	soda::FGenericWheeledVehiclControl Control;
 
 	bVapiPing = bIsVehicleDriveDebugMode;
 
 	if (VehicleControl && VehicleControl->GetControl(Control))
 	{
-		bVapiPing = ((SodaApp.GetRealtimeTimestamp() - Control.RecvTimestamp < Timeout));
+		bVapiPing = ((SodaApp.GetRealtimeTimestamp() - Control.Timestamp < Timeout));
 	}
 
 	UVehicleInputComponent* VehicleInput = GetWheeledVehicle()->GetActiveVehicleInput();
@@ -216,38 +221,9 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 		GearState = Control.GearStateReq;
 		GearNum = Control.GearNumReq;
 
-		float SteerReq = Control.SteerReq;
-		float AccReq = 0;
-		float DeaccReq = 0;
-		float HandBrakeReq = 0;
-
-		if (Control.AccDecelReq >= 0)
-		{
-			AccReq = Control.AccDecelReq;
-		}
-		else
-		{
-			DeaccReq = -Control.AccDecelReq;
-		}
-
-		switch (GearState)
-		{
-		case EGearState::Neutral:
-			AccReq = 0;
-			break;
-		case EGearState::Drive:
-		case EGearState::Reverse:
-			break;
-		case EGearState::Park:
-			AccReq = 0;
-			DeaccReq = 0;
-			HandBrakeReq = 1;
-			break;
-		}
-
 		if (GearBox)
 		{
-			if (GearState == EGearState::Drive && GearNum != 0)
+			if ((GearState == EGearState::Drive || GearState == EGearState::Reverse) && GearNum != 0)
 			{
 				GearBox->SetGearByNum(GearNum);
 			}
@@ -256,18 +232,94 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 				GearBox->SetGearByState(GearState);
 			}
 		}
+
 		if (Engine)
 		{
-			float EngineToWheelsRatio;
-			const bool bRatioValid = Engine->FindToWheelRatio(EngineToWheelsRatio) && !FMath::IsNearlyZero(EngineToWheelsRatio, 0.01);
-			if (bRatioValid && bWheelRadiusValid)
+			if (GearState == EGearState::Drive || GearState == EGearState::Reverse)
 			{
-				Engine->RequestByTorque(AccReq / EngineToWheelsRatio * WheelRadius / 100.0 * GetWheeledComponentInterface()->GetVehicleMass());
+				if (Control.DriveEffortReqMode == soda::FGenericWheeledVehiclControl::EDriveEffortReqMode::ByAcc)
+				{
+					if (Control.DriveEffortReq.ByAcc >= 0)
+					{
+						float EngineToWheelsRatio;
+						const bool bRatioValid = Engine->FindToWheelRatio(EngineToWheelsRatio) && !FMath::IsNearlyZero(EngineToWheelsRatio, 0.01);
+						if (bRatioValid && bWheelRadiusValid)
+						{
+							Engine->RequestByTorque(Control.DriveEffortReq.ByAcc / EngineToWheelsRatio * WheelRadius / 100.0 * GetWheeledComponentInterface()->GetVehicleMass());
+						}
+					}
+					else
+					{
+						Engine->RequestByRatio(0);
+					}
+				}
+				else if (Control.DriveEffortReqMode == soda::FGenericWheeledVehiclControl::EDriveEffortReqMode::ByRatio)
+				{
+					if (Control.DriveEffortReq.ByRatio >= 0)
+					{
+						Engine->RequestByRatio(Control.DriveEffortReq.ByRatio);
+					}
+					else
+					{
+						Engine->RequestByRatio(0);
+					}
+				}
+			}
+			else
+			{
+				Engine->RequestByRatio(0);
 			}
 		}
-		if (BrakeSystem) BrakeSystem->RequestByAcceleration(DeaccReq, DeltaTime);
-		if (SteeringRack) SteeringRack->RequestByAngle(SteerReq);
-		if (HandBrake) HandBrake->RequestByRatio(HandBrakeReq);
+
+		if (BrakeSystem)
+		{
+			if (Control.DriveEffortReqMode == soda::FGenericWheeledVehiclControl::EDriveEffortReqMode::ByAcc)
+			{
+				if (Control.DriveEffortReq.ByAcc < 0)
+				{
+					BrakeSystem->RequestByAcceleration(-Control.DriveEffortReq.ByAcc, DeltaTime);
+				}
+				else
+				{
+					BrakeSystem->RequestByRatio(0, DeltaTime);
+				}
+			}
+			else if (Control.DriveEffortReqMode == soda::FGenericWheeledVehiclControl::EDriveEffortReqMode::ByRatio)
+			{
+				if (Control.DriveEffortReq.ByRatio < 0)
+				{
+					BrakeSystem->RequestByRatio(-Control.DriveEffortReq.ByRatio, DeltaTime);
+				}
+				else
+				{
+					BrakeSystem->RequestByRatio(0, DeltaTime);
+				}
+			}
+		}
+
+		if (SteeringRack)
+		{
+			if (Control.SteerReqMode == soda::FGenericWheeledVehiclControl::ESteerReqMode::ByAngle)
+			{
+				SteeringRack->RequestByAngle(Control.SteerReq.ByAngle);
+			} 
+			else if (Control.SteerReqMode == soda::FGenericWheeledVehiclControl::ESteerReqMode::ByRatio)
+			{
+				SteeringRack->RequestByRatio(Control.SteerReq.ByRatio);
+			}
+		}
+
+		if (HandBrake)
+		{
+			if (GearState == EGearState::Park)
+			{
+				HandBrake->RequestByRatio(1.0);
+			}
+			else
+			{
+				HandBrake->RequestByRatio(0.0);
+			}
+		}
 	}
 }
 

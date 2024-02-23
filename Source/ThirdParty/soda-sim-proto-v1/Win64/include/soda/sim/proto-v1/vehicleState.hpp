@@ -34,12 +34,38 @@ enum class EControlMode : std::uint8_t
 
 };
 
+enum class ESteerReqMode: std::int8_t
+{
+	ByRatio,
+	ByAngle
+};
+
+enum class EDriveEffortReqMode : std::int8_t
+{
+	ByRatio,
+	ByAcc
+};
+
 #pragma pack(push, 1)
 
 struct GenericVehicleControlMode1
 {
-	float steer_req; // [rad]
-	float acc_decel_req; // [m/s^2]
+	union
+	{
+		float by_angle; // [rad]
+		float by_ratio; // [-1..1]
+	} steer_req;
+	
+	/** Zero value means change speed as quickly as possible to TargetSpeed */
+	union
+	{
+		float by_acc; // [m/s^2]
+		float by_ratio; // [-1..1]
+	} drive_effort_req;
+	
+	/** [cm/s]. Zero TargetSpeed means don't used  */
+	float target_speed_req;	
+	
 	EGearState gear_state_req; 
 	
 	/** 
@@ -49,6 +75,9 @@ struct GenericVehicleControlMode1
 	 *   - others   - desire gear number;
 	 */
 	std::int8_t gear_num_req; 
+
+	ESteerReqMode steer_req_mode;
+	EDriveEffortReqMode drive_effort_req_mode;
 };
 
 // State estimated by localization.
@@ -65,6 +94,9 @@ struct GenericVehicleState
 	EGearState gear_state; 
 	std::int8_t gear_num;
 	EControlMode mode;
+	
+	// [ns]
+	std::int64_t timestemp; 
 };
 
 static_assert(sizeof(float) == 4);

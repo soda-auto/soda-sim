@@ -15,19 +15,49 @@ class UVehicleGearBoxBaseComponent;
 
 namespace soda
 {
-	struct FWheeledVehiclControlMode1
+	struct FGenericWheeledVehiclControl
 	{
-		float SteerReq;
-		float AccDecelReq;
+		union
+		{
+			float ByAngle; // [rad]
+			float ByRatio; // [-1..1]
+		} SteerReq;
+
+		/** Zero value means change speed as quickly as possible to TargetSpeed */
+		union
+		{
+			float ByAcc; // [cm/s^2]
+			float ByRatio; // [-1..1]
+		} DriveEffortReq;
+
+		/** [cm/s]. Zero TargetSpeed means don't used  */
+		float TargetSpeedReq;
+
 		EGearState GearStateReq;
 		/**
-		 * Desire gear number for the drive and revers gear;
+		 * Desire gear number for the DRIVE and REVERSE gear only;
 		 * Values:
 		 *   - 0        - automatic/undefined;
-		 *   - others   - desire gear number;
+		 *   - others
 		 */
 		int8 GearNumReq;
-		TTimestamp RecvTimestamp;
+
+		enum class ESteerReqMode: uint8
+		{
+			ByRatio,
+			ByAngle
+		};
+
+		enum class EDriveEffortReqMode : uint8
+		{
+			ByRatio,
+			ByAcc
+		};
+
+		ESteerReqMode SteerReqMode;
+		EDriveEffortReqMode DriveEffortReqMode;
+
+		TTimestamp Timestamp;
 	};
 
 } // namespace soda
@@ -94,6 +124,7 @@ public:
 protected:
 	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	virtual bool OnActivateVehicleComponent() override;
+	virtual void OnPostActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	//virtual bool IsVehicleComponentInitializing() const override;
 	virtual void DrawDebug(UCanvas *Canvas, float &YL, float &YPos) override;

@@ -234,6 +234,9 @@ public:
 	UFUNCTION(CallInEditor, BlueprintCallable, Category = StartPoint, meta = (CallInRuntime))
 	void ClearStartLine();
 
+	UFUNCTION(BlueprintCallable)
+	bool FindNearestBorder(const FTransform& Pose, float& OutLeftOffset, float& OutRightOffset, float & OutCenterLineYaw) const;
+
 public:
 	/* Override from ISodaActor */
 	//virtual void OnSelect_Implementation() override;

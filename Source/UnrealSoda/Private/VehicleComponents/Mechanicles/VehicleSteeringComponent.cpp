@@ -66,6 +66,11 @@ void UVehicleSteeringRackSimpleComponent::OnDeactivateVehicleComponent()
 	SteerInputRatio = 0;
 }
 
+void UVehicleSteeringRackSimpleComponent::RequestByAngle(float Angle)
+{
+	TargetSteerAng = FMath::Clamp(Angle, -MaxSteerAngle / 180.0 * M_PI, MaxSteerAngle / 180.0 * M_PI);
+}
+
 void UVehicleSteeringRackSimpleComponent::UpdateSteer(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
 {
 	float ForwardSpeed = Chaos::CmSToKmH(VehicleKinematic.Curr.GetLocalVelocity().X);

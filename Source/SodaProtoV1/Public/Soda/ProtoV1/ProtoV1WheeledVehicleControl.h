@@ -29,7 +29,7 @@ public:
 	virtual void StopListen() override;
 	virtual bool IsOk() const { return !!ListenSocket; }
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
-	virtual bool GetControl(soda::FWheeledVehiclControlMode1& Control) const override;
+	virtual bool GetControl(soda::FGenericWheeledVehiclControl& Control) const override;
 	virtual FString GetRemark() const override;
 
 protected:

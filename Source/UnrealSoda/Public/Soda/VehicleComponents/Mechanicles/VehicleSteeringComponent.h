@@ -55,7 +55,7 @@ public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
-	virtual void RequestByAngle(float InAngle) override { TargetSteerAng = InAngle; }
+	virtual void RequestByAngle(float InAngle) override;
 	virtual float GetCurrentSteer() const override { return CurrentSteerAng; }
 	virtual float GetMaxSteer() const override { return MaxSteerAngle / 180 * M_PI; }
 

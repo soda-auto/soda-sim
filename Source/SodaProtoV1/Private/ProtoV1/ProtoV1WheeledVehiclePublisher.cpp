@@ -92,7 +92,7 @@ bool UProtoV1WheeledVehiclePublisher::Publish(float DeltaTime, const FSensorData
 		Msg.wheels_state[i].torq = VehicleStateExtra.WheelStates[i].Torq;
 		Msg.wheels_state[i].brake_torq = VehicleStateExtra.WheelStates[i].BrakeTorq;
 	}
-	
+	Msg.timestemp = soda::RawTimestamp<std::chrono::nanoseconds>(Header.Timestamp);
 	return Publish(Msg);
 }
 
