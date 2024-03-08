@@ -21,7 +21,9 @@ public:
 		if (!TimerThread.joinable())
 		{
 			bIsTimerThreadWorking = true;
-			TimerThread = std::thread([this, Deltatime, StartupDelay]() {
+			TimerThread = std::thread([this, 
+									   Deltatime=std::chrono::duration_cast<std::chrono::nanoseconds>(Deltatime), 
+									   StartupDelay=std::chrono::duration_cast<std::chrono::nanoseconds>(StartupDelay)]() {
 				std::this_thread::sleep_for(StartupDelay);
 				auto SleepUntil = std::chrono::high_resolution_clock::now();
 				while (bIsTimerThreadWorking)

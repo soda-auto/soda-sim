@@ -18,4 +18,5 @@ public:
 public:
 	virtual const FWheeledVehicleInputState& GetInputState() const override { return InputState; }
 	virtual FWheeledVehicleInputState& GetInputState() override { return InputState; }
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 };

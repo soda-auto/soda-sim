@@ -6,6 +6,13 @@
 #include "Engine/Engine.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
+#include "Soda/DBGateway.h"
+
+#include "bsoncxx/builder/stream/helpers.hpp"
+#include "bsoncxx/exception/exception.hpp"
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/builder/stream/array.hpp"
+#include "bsoncxx/json.hpp"
 
 UVehicleGearBoxBaseComponent::UVehicleGearBoxBaseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -300,3 +307,30 @@ void UVehicleGearBoxSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, float
 	}
 }
 
+void UVehicleGearBoxSimpleComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
+{
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::open_array;
+	using bsoncxx::builder::stream::close_array;
+
+	try
+	{
+		Dataset.GetRowDoc()
+			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
+			<< "GearNum" << GetGearNum()
+			<< "GearState" << int(GetGearState())
+			<< "GearRatio" << GetGearRatio()
+			<< "InTorq" << InTorq
+			<< "OutTorq" << OutTorq
+			<< "InAngVel" << InAngularVelocity
+			<< "OutAngVel" << OutAngularVelocity
+			<< close_document;
+	}
+	catch (const std::system_error& e)
+	{
+		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
+	}
+}

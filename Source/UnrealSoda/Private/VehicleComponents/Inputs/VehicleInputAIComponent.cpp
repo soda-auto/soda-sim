@@ -17,6 +17,13 @@
 #include "VehicleUtility.h"
 #include "WheeledVehiclePawn.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
+#include "Soda/DBGateway.h"
+
+#include "bsoncxx/builder/stream/helpers.hpp"
+#include "bsoncxx/exception/exception.hpp"
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/builder/stream/array.hpp"
+#include "bsoncxx/json.hpp"
 
 #define _DEG2RAD(a) ((a) / (180.0 / M_PI))
 #define _RAD2DEG(a) ((a) * (180.0 / M_PI))
@@ -690,7 +697,7 @@ void UVehicleInputAIComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos
 	{
 		UFont* RenderFont = GEngine->GetSmallFont();
 		Canvas->SetDrawColor(FColor::White);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("TargetLocations: %i"), TargetLocations.Num()), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("TargetLocationsNum: %i"), TargetLocations.Num()), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("SideError: %f"), SideError), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("ObstacleDistance: %f"), CurrentObstacleDistance), 16, YPos);
 	}
@@ -704,4 +711,35 @@ bool UVehicleInputAIComponent::AssignRoute(const ANavigationRoute* RoutePlanner)
 		SetFixedRouteBySpline(Route, RoutePlanner->bDriveBackvard, false);
 	}
 	return false;
+}
+
+void UVehicleInputAIComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
+{
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::open_array;
+	using bsoncxx::builder::stream::close_array;
+
+	try
+	{
+		Dataset.GetRowDoc()
+			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
+			<< "Throttle" << GetInputState().Throttle
+			<< "Brake" << GetInputState().Brake
+			<< "Steering" << GetInputState().Steering
+			<< "GearState" << int(GetInputState().GearState)
+			<< "GearNum" << GetInputState().GearNum
+			<< "bADModeEnbaled" << GetInputState().bADModeEnbaled
+			<< "bSafeStopEnbaled" << GetInputState().bSafeStopEnbaled
+			<< "TargetLocationsNum" << TargetLocations.Num()
+			<< "SideError" << SideError
+			<< "ObstacleDistance" << CurrentObstacleDistance
+			<< close_document;
+	}
+	catch (const std::system_error& e)
+	{
+		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
+	}
 }

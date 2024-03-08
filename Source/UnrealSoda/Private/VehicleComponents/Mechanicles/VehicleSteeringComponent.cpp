@@ -10,6 +10,13 @@
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include <algorithm>
+#include "Soda/DBGateway.h"
+
+#include "bsoncxx/builder/stream/helpers.hpp"
+#include "bsoncxx/exception/exception.hpp"
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/builder/stream/array.hpp"
+#include "bsoncxx/json.hpp"
 
 UVehicleSteeringRackBaseComponent::UVehicleSteeringRackBaseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -19,6 +26,7 @@ UVehicleSteeringRackBaseComponent::UVehicleSteeringRackBaseComponent(const FObje
 	Common.Activation = EVehicleComponentActivation::OnStartScenario;
 }
 
+// ------------------------------------------------------------------------------------------------
 UVehicleSteeringRackSimpleComponent::UVehicleSteeringRackSimpleComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -132,5 +140,29 @@ void UVehicleSteeringRackSimpleComponent::TickComponent(float DeltaTime, enum EL
 		}
 	}
 }
+
+void UVehicleSteeringRackSimpleComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
+{
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::open_array;
+	using bsoncxx::builder::stream::close_array;
+
+	try
+	{
+		Dataset.GetRowDoc()
+			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
+			<< "CurrentSteer" << CurrentSteerAng
+			<< "TargetSteer" << TargetSteerAng
+			<< close_document;
+	}
+	catch (const std::system_error& e)
+	{
+		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
+	}
+}
+
 
 

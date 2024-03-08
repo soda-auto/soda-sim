@@ -50,6 +50,7 @@ protected:
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 	float CurrentRatio = 0;

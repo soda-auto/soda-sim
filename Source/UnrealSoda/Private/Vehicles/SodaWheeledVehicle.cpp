@@ -407,15 +407,15 @@ void ASodaWheeledVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) cons
 	Super::OnPushDataset(InDataset);
 
 	InDataset.GetRowDoc()
-		<< "load" << GetEnginesLoad();
+		<< "EngineLoad" << GetEnginesLoad();
 
 	if (UVehicleInputComponent* Input = GetActiveVehicleInput())
 	{
-		InDataset.GetRowDoc() << "inputs" << open_document
-			<< "break" << Input->GetInputState().Brake
-			<< "steer" << Input->GetInputState().Steering
-			<< "throttle" << Input->GetInputState().Throttle
-			<< "gear" << int(Input->GetInputState().GearState)
+		InDataset.GetRowDoc() << "Inputs" << open_document
+			<< "Break" << Input->GetInputState().Brake
+			<< "Steer" << Input->GetInputState().Steering
+			<< "Throttle" << Input->GetInputState().Throttle
+			<< "Gear" << int(Input->GetInputState().GearState)
 		<< close_document;
 	}
 
@@ -426,18 +426,18 @@ void ASodaWheeledVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) cons
 		{
 			const auto& Wheel = Wheels[i];
 			WheelsArray << open_document
-				<< "4wd_ind" << int(Wheel->WheelIndex4WD)
-				<< "ang_vel" << Wheel->ResolveAngularVelocity()
-				<< "req_torq" << Wheel->ReqTorq
-				<< "req_brake_torq" << Wheel->ReqBrakeTorque
-				<< "steer" << Wheel->Steer
-				<< "sus" << Wheel->SuspensionOffset
-				<< "long_slip" << Wheel->Slip.X
-				<< "lat_slip" << Wheel->Slip.Y
+				<< "4wdInd" << int(Wheel->WheelIndex4WD)
+				<< "AngVel" << Wheel->ResolveAngularVelocity()
+				<< "ReqTorq" << Wheel->ReqTorq
+				<< "ReqBrakeTorq" << Wheel->ReqBrakeTorque
+				<< "Steer" << Wheel->Steer
+				<< "Sus" << Wheel->SuspensionOffset
+				<< "LongSlip" << Wheel->Slip.X
+				<< "LatSlip" << Wheel->Slip.Y
 			<< close_document;
 		}
 
-		InDataset.GetRowDoc() << "wheels" << WheelsArray;
+		InDataset.GetRowDoc() << "Wheels" << WheelsArray;
 	}
 }
 
@@ -453,21 +453,21 @@ void ASodaWheeledVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) c
 	if (GetWheeledComponentInterface())
 	{
 		(*Doc)
-			<< "track_width" << GetWheeledComponentInterface()->GetTrackWidth()
-			<< "wheel_base_width" << GetWheeledComponentInterface()->GetWheelBaseWidth()
-			<< "mass" << GetWheeledComponentInterface()->GetVehicleMass();
+			<< "TrackWidth" << GetWheeledComponentInterface()->GetTrackWidth()
+			<< "WheelBaseWidth" << GetWheeledComponentInterface()->GetWheelBaseWidth()
+			<< "Mass" << GetWheeledComponentInterface()->GetVehicleMass();
 
 		bsoncxx::builder::stream::array WheelsArray;
 		for (int i = 0; i < Wheels.Num(); ++i)
 		{
 			const auto& Wheel = Wheels[i];
 			WheelsArray << open_document
-				<< "4wd_ind" << int(Wheel->WheelIndex4WD)
-				<< "radius" << Wheel->Radius
-				<< "location" << open_array << Wheel->RestingLocation.X << Wheel->RestingLocation.Y << Wheel->RestingLocation.Z << close_array
+				<< "4wdInd" << int(Wheel->WheelIndex4WD)
+				<< "Radius" << Wheel->Radius
+				<< "Location" << open_array << Wheel->RestingLocation.X << Wheel->RestingLocation.Y << Wheel->RestingLocation.Z << close_array
 			<< close_document;
 		}
-		(*Doc) << "wheels" << WheelsArray;
+		(*Doc) << "Wheels" << WheelsArray;
 	}
 }
 

@@ -19,31 +19,6 @@
 
 class DynamicCar;
 
-USTRUCT(BlueprintType, Blueprintable)
-struct FSodaVehicleWheel2WDSetup
-{
-	GENERATED_USTRUCT_BODY()
-
-	/** [cm] */
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
-	float SuspensionFall = 5;
-
-	/** [cm] */
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
-	float SuspensionRise = 5;
-
-	/** Suspension  distribution [0..1]*/
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
-	float SuspensionDist = 0.25;
-
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
-	float DampingRiseFactor = 0.1;
-
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
-	float DampingFallFactor = 0.03;
-};
-
-
 
 /**
  * The USoda2DWheeledVehicleMovementComponent provides a physical vehicle simulation in 2D space.
@@ -128,29 +103,23 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float MomentOfInertiaRearTrain = 2.06;
 
-	/** [cm/s^2] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuspensionSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float Gravity = 980.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
+	bool bPullToGround = true;
 
-	/** Wheels setup [FL, FR, RL, RR]*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SuspensionSetup)
-	TArray<FSodaVehicleWheel2WDSetup> WheelSetups;
+	/** [cm] from center of promotive */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
+	float PullToGroundOffset = 30;
 
-	UPROPERTY(EditAnywhere, Instanced, Category = SuspensionSetup, meta = (EditInRuntime))
-	TObjectPtr<UGroundScaner> GroundScaner = nullptr;
+	/** Experemental featuer */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
+	bool bEnableCollisions = false;
 
-	UPROPERTY(EditAnywhere, Category = SuspensionSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	bool bUseGroundScaner = true;
-
-	UPROPERTY(EditAnywhere, Category = SuspensionSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	bool bDisableCollisions = false;
-
-	UPROPERTY(EditAnywhere, Category = SuspensionSetup, SaveGame, meta = (EditInRuntime))
-	float GlobalDampingFactor = 0.3;
-
-	/** Time of integration in msec*/
+	/** Time of integration in milliseconds */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime))
-	int TimeStep = 10;
+	int IntegrationTimeStep = 10;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime))
+	double SpeedFactor = 1.0;
 
 	/** If 1 then drag forces being taked into account*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
@@ -186,24 +155,10 @@ public:
 	int CorrImplStep = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	bool bDrawTelemetry = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	bool bLogPhysStemp = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Vehicle, SaveGame, meta = (EditInRuntime))
 	float ModelStartUpDelay = 0.5;
-	
-public:
-	struct FWheelData
-	{
-		float ToGround = 0; /** [cm] */
-		float ToGroundVelocity = 0;
-		float SpringForce = 0; /** [kg*cm/s^2] */
-		float DampingForce = 0; /** [kg*cm/s^2] */
-	};
-
-	FWheelData WheelsData[4];
 
 public:
 	virtual void BeginPlay() override;
@@ -231,21 +186,8 @@ public:
 
 protected:
 	FVehicleSimData VehicleSimData;
-
+	std::mutex Mutex;
 	TSharedPtr<DynamicCar> DynCar;
 	FPrecisionTimer PrecisionTimer;
-
-	float ZDotDot =  0;
-	float PitchDotDot = 0;
-	float RollDotDot = 0;
-
-	float ZDot = 0;
-	float PitchDot = 0;
-	float RollDot = 0;
-
-	FVector Euler;
-	
-	FTelemetryGraphGrid TelemetryGrid;
-
 	bool bSynchronousMode = false;
 };

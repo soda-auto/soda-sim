@@ -15,6 +15,13 @@
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 #include "Soda/LevelState.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
+#include "Soda/DBGateway.h"
+
+#include "bsoncxx/builder/stream/helpers.hpp"
+#include "bsoncxx/exception/exception.hpp"
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/builder/stream/array.hpp"
+#include "bsoncxx/json.hpp"
 #include <cmath>
 
 
@@ -123,7 +130,7 @@ void UGenericVehicleDriverComponentComponent::PostPhysicSimulationDeferred(float
 
 	if (Publisher && Publisher->IsOk())
 	{
-		FWheeledVehicleStateExtra Extra{ VehicleKinematic, GetRelativeTransform() };
+		FWheeledVehicleSensorData Extra{ VehicleKinematic, GetRelativeTransform() };
 
 		if (GearBox)
 		{
@@ -158,8 +165,6 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 	Super::PrePhysicSimulation(DeltaTime, VehicleKinematic, Timestamp);
 
 	static const std::chrono::nanoseconds Timeout(500000000ll); // 500ms
-
-	soda::FGenericWheeledVehiclControl Control;
 
 	bVapiPing = bIsVehicleDriveDebugMode;
 
@@ -420,3 +425,39 @@ void UGenericVehicleDriverComponentComponent::PostInitProperties()
 	ListenerHelper.RefreshClass();
 }
 #endif
+
+void UGenericVehicleDriverComponentComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
+{
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::open_array;
+	using bsoncxx::builder::stream::close_array;
+
+	try
+	{
+		Dataset.GetRowDoc()
+			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
+			<< "bVapiPing" << bVapiPing
+			<< "bADModeEnbaled" << bADModeEnbaled
+			<< "bSafeStopEnbaled" << bSafeStopEnbaled
+			<< "GearState" << int(GearState)
+			<< "GearNum" << int(GearNum)
+			<< "Control" << open_document
+			<< "SteerReq" << Control.SteerReq.ByRatio
+			<< "DriveEffortReq" << Control.DriveEffortReq.ByRatio
+			<< "TargetSpeedReq" << Control.TargetSpeedReq
+			<< "GearStateReq" << int(Control.GearStateReq)
+			<< "GearNumReq" << int(Control.GearNumReq)
+			<< "SteerReqMode" << int(Control.SteerReqMode)
+			<< "DriveEffortReqMode" << int(Control.DriveEffortReqMode)
+			<< "TimestampUs" << soda::RawTimestamp<std::chrono::microseconds>(Control.Timestamp)
+			<< close_document // Control
+			<< close_document;
+	}
+	catch (const std::system_error& e)
+	{
+		UE_LOG(LogSoda, Error, TEXT("UGenericVehicleDriverComponentComponent::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
+	}
+}

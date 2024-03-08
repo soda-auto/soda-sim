@@ -204,8 +204,10 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 	FImuNoiseParams StoredParams;
 	bool bIsStoredParams = false;
+	FPhysBodyKinematic StoredBodyKinematic;
 };

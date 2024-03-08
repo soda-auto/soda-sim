@@ -2,6 +2,9 @@
 
 #include "Soda/ProtoV1/ProtoV1WheeledVehiclePublisher.h"
 #include "Soda/VehicleComponents/Sensors/Generic/GenericWheeledVehicleSensor.h"
+#include "Soda/VehicleComponents/VehicleDriverComponent.h"
+#include "Soda/VehicleComponents/Mechanicles/VehicleGearBoxComponent.h"
+#include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaApp.h"
 #include "Common/TcpSocketBuilder.h"
@@ -79,18 +82,24 @@ void UProtoV1WheeledVehiclePublisher::Shutdown()
 	}
 }
 
-bool UProtoV1WheeledVehiclePublisher::Publish(float DeltaTime, const FSensorDataHeader& Header, const FWheeledVehicleStateExtra& VehicleStateExtra)
+bool UProtoV1WheeledVehiclePublisher::Publish(float DeltaTime, const FSensorDataHeader& Header, const FWheeledVehicleSensorData& SensorData)
 {
 	soda::sim::proto_v1::GenericVehicleState Msg{};
-	Msg.gear_state = soda::sim::proto_v1::EGearState(VehicleStateExtra.GearState);
-	Msg.gear_num = VehicleStateExtra.GearNum;
-	Msg.mode = soda::sim::proto_v1::EControlMode(VehicleStateExtra.DriveMode);
-	Msg.steer = -(VehicleStateExtra.WheelStates[0].Steer + VehicleStateExtra.WheelStates[1].Steer) / 2;
-	for (int i = 0; i < 4; i++)
+	Msg.gear_state = soda::sim::proto_v1::EGearState(SensorData.GearBox ? SensorData.GearBox->GetGearState() : EGearState::Neutral);
+	Msg.gear_num = SensorData.GearBox ? SensorData.GearBox->GetGearNum() : 0;
+	Msg.mode = soda::sim::proto_v1::EControlMode(SensorData.VehicleDriver ? SensorData.VehicleDriver->GetDriveMode() : ESodaVehicleDriveMode::Manual);
+	Msg.steer = SensorData.WheeledVehicle->Is4WDVehicle()
+		? -(SensorData.WheeledVehicle->GetWheel4WD(E4WDWheelIndex::FL)->Steer + SensorData.WheeledVehicle->GetWheel4WD(E4WDWheelIndex::FR)->Steer) / 2
+		: 0;
+	if (SensorData.WheeledVehicle->Is4WDVehicle())
 	{
-		Msg.wheels_state[i].ang_vel = VehicleStateExtra.WheelStates[i].AngularVelocity;
-		Msg.wheels_state[i].torq = VehicleStateExtra.WheelStates[i].Torq;
-		Msg.wheels_state[i].brake_torq = VehicleStateExtra.WheelStates[i].BrakeTorq;
+		for (int i = 0; i < 4; i++)
+		{
+			const auto & Wheel = SensorData.WheeledVehicle->GetWheels4WD()[i];
+			Msg.wheels_state[i].ang_vel = Wheel->AngularVelocity;
+			Msg.wheels_state[i].torq = Wheel->ReqTorq;
+			Msg.wheels_state[i].brake_torq = Wheel->ReqBrakeTorque;
+		}
 	}
 	Msg.timestemp = soda::RawTimestamp<std::chrono::nanoseconds>(Header.Timestamp);
 	return Publish(Msg);

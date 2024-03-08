@@ -16,14 +16,36 @@ class UVehicleGearBoxBaseComponent;
 //class UVehicleHandBrakeBaseComponent;
 
 
-struct FWheeledVehicleStateExtra
+struct UNREALSODA_API FWheeledVehicleSensorData
 {
-	FPhysBodyKinematic BodyKinematic{};
-	FTransform RelativeTransform{};
-	EGearState GearState{};
-	int GearNum{};
-	ESodaVehicleDriveMode DriveMode{};
-	FWheeledVehicleWheelState WheelStates[4];
+	FWheeledVehicleSensorData()
+		: BodyKinematic(nullptr)
+		, RelativeTransform(FTransform())
+		, WheeledVehicle(nullptr)
+		, GearBox(nullptr)
+		, VehicleDriver(nullptr)
+	{}
+
+	FWheeledVehicleSensorData(
+		const FPhysBodyKinematic * InBodyKinematic,
+		const FTransform & InRelativeTransform,
+		const ASodaWheeledVehicle* InWheeledVehicle,
+		const UVehicleGearBoxBaseComponent* InGearBox,
+		const UVehicleDriverComponent * InVehicleDriver)
+		: BodyKinematic(InBodyKinematic)
+		, RelativeTransform(InRelativeTransform)
+		, WheeledVehicle(InWheeledVehicle)
+		, GearBox(InGearBox)
+		, VehicleDriver(InVehicleDriver)
+	{}
+
+
+
+	const FPhysBodyKinematic* BodyKinematic;
+	FTransform RelativeTransform;
+	const ASodaWheeledVehicle* WheeledVehicle;
+	const UVehicleGearBoxBaseComponent* GearBox;
+	const UVehicleDriverComponent* VehicleDriver;
 };
 
 UCLASS(ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))
@@ -81,7 +103,7 @@ protected:
 
 
 protected:
-	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header,const FWheeledVehicleStateExtra& VehicleState);
+	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header,const FWheeledVehicleSensorData& VehicleState);
 
 protected:
 	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
@@ -91,6 +113,7 @@ protected:
 	virtual FString GetRemark() const override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 	virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 	virtual void Serialize(FArchive& Ar) override;
@@ -102,4 +125,5 @@ protected:
 
 protected:
 	FGenericPublisherHelper<UGenericWheeledVehicleSensor, UGenericWheeledVehiclePublisher> PublisherHelper{ this, &UGenericWheeledVehicleSensor::PublisherClass, &UGenericWheeledVehicleSensor::Publisher };
+	FWheeledVehicleSensorData SensorData;
 };

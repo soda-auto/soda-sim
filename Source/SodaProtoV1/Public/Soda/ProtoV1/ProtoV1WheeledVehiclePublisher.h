@@ -36,7 +36,7 @@ public:
 	virtual void Shutdown() override;
 	virtual bool IsOk() const override { return !!Socket; }
 	//virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
-	virtual bool Publish(float DeltaTime, const FSensorDataHeader& Header, const FWheeledVehicleStateExtra& VehicleState) override;
+	virtual bool Publish(float DeltaTime, const FSensorDataHeader& Header, const FWheeledVehicleSensorData& SensorData) override;
 	virtual FString GetRemark() const override;
 
 protected:

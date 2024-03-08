@@ -61,6 +61,7 @@ public:
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 

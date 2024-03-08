@@ -29,6 +29,7 @@ class UNREALSODA_API UVehicleSteeringRackBaseComponent  : public UWheeledVehicle
 	/** [Rad] */
 	UFUNCTION(BlueprintCallable, Category = SteeringRack)
 	virtual float GetMaxSteer() const { return 0; }
+
 };
 
 /**
@@ -66,6 +67,7 @@ public:
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 	virtual void UpdateSteer(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp);
 

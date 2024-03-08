@@ -60,6 +60,7 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 	virtual void OnLapCounterTriggerBeginOverlap(ALapCounter* LapCounter, const FHitResult& SweepResult) override;
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 	//virtual void OnTriggerLapCpounter();

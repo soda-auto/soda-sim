@@ -131,6 +131,7 @@ protected:
 	virtual FString GetRemark() const override;
 	virtual void PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
 	//virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 public:
 	virtual EGearState GetGearState() const override { return GearState; }
@@ -163,6 +164,8 @@ protected:
 
 	float WheelRadius;
 	bool bWheelRadiusValid = false;
+
+	soda::FGenericWheeledVehiclControl Control;
 
 	//FGenericPublisherHelper<UGenericVehicleDriverComponentComponent, UGenericWheeledVehiclePublisher> PublisherHelper { this, &UGenericVehicleDriverComponentComponent::PublisherClass, &UGenericVehicleDriverComponentComponent::Publisher };
 	FGenericListenerHelper<UGenericVehicleDriverComponentComponent, UGenericWheeledVehicleControlListener> ListenerHelper { this, &UGenericVehicleDriverComponentComponent::VehicleControlClass, &UGenericVehicleDriverComponentComponent::VehicleControl, "VehicleControlClass", "VehicleControl", "VehicleControlRecord" };

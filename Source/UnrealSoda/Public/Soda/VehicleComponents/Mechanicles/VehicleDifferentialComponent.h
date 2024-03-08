@@ -59,6 +59,7 @@ public:
 	virtual float ResolveAngularVelocity() const override;
 	virtual bool FindWheelRadius(float& OutRadius) const override;
 	virtual bool FindToWheelRatio(float& OutRatio) const override { OutRatio = Ratio; return true; }
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 	mutable float InTorq = 0;

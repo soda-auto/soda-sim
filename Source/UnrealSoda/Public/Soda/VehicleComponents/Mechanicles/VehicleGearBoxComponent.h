@@ -101,6 +101,7 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 public:
 	virtual void PassTorque(float InTorque) override;

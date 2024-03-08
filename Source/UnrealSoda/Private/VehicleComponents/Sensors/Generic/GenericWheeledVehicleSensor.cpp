@@ -7,6 +7,13 @@
 #include "DrawDebugHelpers.h"
 #include "Soda/LevelState.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
+#include "Soda/DBGateway.h"
+
+#include "bsoncxx/builder/stream/helpers.hpp"
+#include "bsoncxx/exception/exception.hpp"
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/builder/stream/array.hpp"
+#include "bsoncxx/json.hpp"
 
 UGenericWheeledVehicleSensor::UGenericWheeledVehicleSensor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -130,7 +137,7 @@ void UGenericWheeledVehicleSensor::PostInitProperties()
 }
 #endif
 
-bool UGenericWheeledVehicleSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FWheeledVehicleStateExtra& VehicleStateExtra)
+bool UGenericWheeledVehicleSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FWheeledVehicleSensorData& VehicleStateExtra)
 {
 	if (Publisher && Publisher->IsOk())
 	{
@@ -143,42 +150,9 @@ void UGenericWheeledVehicleSensor::PostPhysicSimulationDeferred(float DeltaTime,
 {
 	Super::PostPhysicSimulationDeferred(DeltaTime, VehicleKinematic, Timestamp);
 
-	if (!Publisher || !Publisher->IsOk())
-	{
-		return;
-	}
+	SensorData = FWheeledVehicleSensorData(&VehicleKinematic, GetRelativeTransform(), WheeledVehicle, GearBox, VehicleDriver);
 
-	FWheeledVehicleStateExtra Extra { VehicleKinematic, GetRelativeTransform() };
-
-	if (VehicleDriver)
-	{
-		Extra.DriveMode = VehicleDriver->GetDriveMode();
-	}
-
-	if (GearBox)
-	{
-		Extra.GearState = GearBox->GetGearState();
-		Extra.GearNum = GearBox->GetGearNum();
-	}
-
-	if (WheeledVehicle->Is4WDVehicle())
-	{
-		auto WheelDataConv = [](const USodaVehicleWheelComponent& In, FWheeledVehicleWheelState& Out)
-		{
-			Out.AngularVelocity = In.AngularVelocity;
-			Out.Torq = In.ReqTorq;
-			Out.BrakeTorq = In.ReqBrakeTorque;
-			Out.Steer = In.Steer;
-		};
-
-		WheelDataConv(*WheeledVehicle->GetWheel4WD(E4WDWheelIndex::FL), Extra.WheelStates[0]);
-		WheelDataConv(*WheeledVehicle->GetWheel4WD(E4WDWheelIndex::FR), Extra.WheelStates[1]);
-		WheelDataConv(*WheeledVehicle->GetWheel4WD(E4WDWheelIndex::RL), Extra.WheelStates[2]);
-		WheelDataConv(*WheeledVehicle->GetWheel4WD(E4WDWheelIndex::RR), Extra.WheelStates[3]);
-	}
-
-	PublishSensorData(DeltaTime, GetHeaderVehicleThread(),  Extra);
-
+	PublishSensorData(DeltaTime, GetHeaderVehicleThread(), SensorData);
 }
 
 void UGenericWheeledVehicleSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
@@ -193,4 +167,54 @@ void UGenericWheeledVehicleSensor::DrawDebug(UCanvas* Canvas, float& YL, float& 
 FString UGenericWheeledVehicleSensor::GetRemark() const
 {
 	return Publisher ? Publisher->GetRemark() : "null";
+}
+
+void UGenericWheeledVehicleSensor::OnPushDataset(soda::FActorDatasetData& Dataset) const
+{
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::open_array;
+	using bsoncxx::builder::stream::close_array;
+
+	try
+	{
+		auto DriveMode = VehicleDriver ? VehicleDriver->GetDriveMode() : ESodaVehicleDriveMode::Manual;
+		auto GearState = GearBox ? GearBox->GetGearState() : EGearState::Neutral;
+		int GearNum = GearBox ? GearBox->GetGearNum() : 0;
+		float Steer = WheeledVehicle->Is4WDVehicle() 
+			? (WheeledVehicle->GetWheel4WD(E4WDWheelIndex::FL)->Steer + WheeledVehicle->GetWheel4WD(E4WDWheelIndex::FR)->Steer) / 2 
+			: 0;
+
+		bsoncxx::builder::stream::document& Doc = Dataset.GetRowDoc();
+		Doc << std::string(TCHAR_TO_UTF8(*GetName())) << open_document
+			<< "DriveMode" << int(DriveMode)
+			<< "GearState" << int(GearState)
+			<< "GearNum" << GearNum
+			<< "bIs4WDVehicle" << WheeledVehicle->Is4WDVehicle()
+			<< "Steer" << Steer;
+
+		auto WheelsArray = Doc << "Wheels" << open_array;
+		for (auto & Wheel : WheeledVehicle->GetWheels())
+		{
+			WheelsArray
+				<< open_document
+				<< "WheelIndex4WD" << int(Wheel->WheelIndex4WD)
+				<< "ReqTorq" << Wheel->ReqTorq
+				<< "ReqBrakeTorque" << Wheel->ReqBrakeTorque
+				<< "ReqSteer" << Wheel->ReqSteer
+				<< "Steer" << Wheel->Steer
+				<< "Pitch" << Wheel->Pitch
+				<< "AngularVelocity" << Wheel->AngularVelocity
+				<< "SuspensionOffset" << Wheel->SuspensionOffset
+				<< "Slip" << open_array << Wheel->Slip.X << Wheel->Slip.Y << close_array
+				<< close_document;
+		}
+		WheelsArray << close_array << close_document;
+	}
+	catch (const std::system_error& e)
+	{
+		UE_LOG(LogSoda, Error, TEXT("UGenericWheeledVehicleSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
+	}
 }

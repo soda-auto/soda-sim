@@ -31,20 +31,11 @@ float Trapezoid(float dy0, float dy1, float dx)
 USoda2DWheeledVehicleMovementComponent::USoda2DWheeledVehicleMovementComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	GUI.ComponentNameOverride = TEXT("Soda 2WD Vehicle");
+	GUI.ComponentNameOverride = TEXT("Soda 2D Vehicle");
 
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.TickGroup = TG_PostPhysics;
 	bWantsInitializeComponent = true;
-
-	TelemetryGrid.InitGrid(4, 4, 120, 120, 500);
-	for(int i = 0; i < 4; ++i)
-	{
-		TelemetryGrid.InitCell(0, i, -5, 5, "", FString::Printf(TEXT("ToGround[%i]"), i));
-		TelemetryGrid.InitCell(1, i , -1, 1, "", FString::Printf(TEXT("Tension[%i]"), i));
-		TelemetryGrid.InitCell(2, i, -1, 1, "", FString::Printf(TEXT("ZVel[%i]"),     i));
-		TelemetryGrid.InitCell(3, i , -1, 1, "", FString::Printf(TEXT("Damping[%i]"), i));
-	}
 }
 
 void USoda2DWheeledVehicleMovementComponent::InitializeComponent()
@@ -76,9 +67,6 @@ void USoda2DWheeledVehicleMovementComponent::OnPreActivateVehicleComponent()
 	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->Radius = RearWheelRadius * 100;
 	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->Radius = RearWheelRadius * 100;
 
-
-	GroundScaner = NewObject< UGroundScaner>(this);
-
 	OnSetActiveMovement();
 }
 
@@ -106,16 +94,9 @@ bool USoda2DWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 		return false;
 	}
 
-	if (WheelSetups.Num() != 4)
-	{
-		SetHealth(EVehicleComponentHealth::Error);
-		UE_LOG(LogSoda, Error, TEXT("WheelSetups.Num() != 4 in USoda2DWheeledVehicleMovementComponent"));
-		return false;
-	}
-
 	Mesh->SetEnableGravity(false);
 
-	if (bDisableCollisions)
+	if (!bEnableCollisions)
 	{
 		Mesh->SetSimulatePhysics(false);
 		Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
@@ -161,13 +142,10 @@ bool USoda2DWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 	FVector WorldLoc = Transform.TransformPosition(FVector(B * 100.0, 0.0, 0.0));
 	VehicleSimData.VehicleKinematic.Curr.GlobalPose = FTransform(WorldRot, WorldLoc, FVector(1.0, 1.0, 1.0));
 	DynCar->init_nav(WorldLoc.X / 100.0, -WorldLoc.Y / 100.0, -WorldRot.Yaw / 180.0 * M_PI, 0.0);
-	GroundScaner->WheelBase = GetWheelBaseWidth();
-	GroundScaner->TrackWidth = GetTrackWidth();
-	GroundScaner->CollisionQueryParams = FCollisionQueryParams(NAME_None, false, GetOwner());
 	bSynchronousMode = SodaApp.IsSynchronousMode();
-	PrecisionTimer.TimerDelegate.BindLambda([this](const std::chrono::nanoseconds& Deltatime, const std::chrono::nanoseconds& Elapsed)
+	PrecisionTimer.TimerDelegate.BindLambda([this](const std::chrono::nanoseconds& InDeltatime, const std::chrono::nanoseconds& Elapsed)
 	{
-		UpdateSimulation(Deltatime, Elapsed);
+		UpdateSimulation(std::chrono::nanoseconds(IntegrationTimeStep * 1000000), Elapsed);
 	});	
 
 	return true;
@@ -194,7 +172,7 @@ void USoda2DWheeledVehicleMovementComponent::TickComponent(float DeltaTime, enum
 	{
 		if (!PrecisionTimer.IsJoinable())
 		{
-			PrecisionTimer.TimerStart(std::chrono::milliseconds(TimeStep), std::chrono::duration<float>(ModelStartUpDelay));
+			PrecisionTimer.TimerStart(std::chrono::duration<double>(double(IntegrationTimeStep) / 1000.0 / SpeedFactor), std::chrono::duration<float>(ModelStartUpDelay));
 			return;
 		}
 	}
@@ -204,76 +182,70 @@ void USoda2DWheeledVehicleMovementComponent::TickComponent(float DeltaTime, enum
 		UpdateSimulation(dt, std::chrono::nanoseconds::zero());
 	}
 
+	FScopeLock ScopeLock(&WheeledVehicle->PhysicMutex);
+
 	VehicleSimData.RenderStep = VehicleSimData.SimulatedStep;
 	VehicleSimData.RenderTimestamp = VehicleSimData.SimulatedTimestamp;
 
-	FVehicleSimData VehicleSimDataCopy = VehicleSimData;
-
-	FVector NewLoc = VehicleSimDataCopy.VehicleKinematic.Curr.GlobalPose.GetTranslation();
-	FRotator NewRot = VehicleSimDataCopy.VehicleKinematic.Curr.GlobalPose.Rotator();
-	float Steer = GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->Steer / M_PI * 180;
-
-	if (bLogPhysStemp)
+	if (bPullToGround)
 	{
-		UE_LOG(LogSoda, Warning, TEXT("2WDVehicle, RenderStep: %i, RenderTimestamp: %s , Pos: %s"),
-			VehicleSimData.RenderStep,
-			*soda::ToString(VehicleSimData.RenderTimestamp),
-			*NewLoc.ToString());
+		FVector CoFWorld = VehicleSimData.VehicleKinematic.Curr.GlobalPose.TransformPosition(VehicleSimData.VehicleKinematic.Curr.CenterOfMassLocal);
+
+		FHitResult Hit;
+		GetWorld()->LineTraceSingleByChannel(Hit, CoFWorld + FVector(0, 0, 50), CoFWorld + FVector(0, 0, -100),
+			ECollisionChannel::ECC_WorldDynamic,
+			FCollisionQueryParams(NAME_None, false, GetOwner()));
+
+		if (Hit.bBlockingHit)
+		{
+			float ZOffset = Hit.Location.Z - CoFWorld.Z + PullToGroundOffset;
+			VehicleSimData.VehicleKinematic.Curr.GlobalPose.AddToTranslation(FVector(0, 0, ZOffset));
+		}
 	}
 
 	if (UpdatedPrimitive)
 	{
-		FScopeLock ScopeLock(&WheeledVehicle->PhysicMutex);
+		const FVector NewLoc = VehicleSimData.VehicleKinematic.Curr.GlobalPose.GetTranslation();
+		const FRotator NewRot = VehicleSimData.VehicleKinematic.Curr.GlobalPose.Rotator();
 
-		FVector AngVel0 = UpdatedPrimitive->GetPhysicsAngularVelocityInRadians();
-		FVector LineerVel0 = UpdatedPrimitive->GetPhysicsLinearVelocity();
+		const FVector AngVel0 = UpdatedPrimitive->GetPhysicsAngularVelocityInRadians();
+		const FVector LineerVel0 = UpdatedPrimitive->GetPhysicsLinearVelocity();
 
 		FHitResult Hit;
-		UpdatedPrimitive->SetPhysicsLinearVelocity(VehicleSimDataCopy.VehicleKinematic.Curr.GlobalVelocityOfCenterMass);
-		UpdatedPrimitive->SetPhysicsAngularVelocityInRadians(VehicleSimDataCopy.VehicleKinematic.Curr.AngularVelocity);
+		UpdatedPrimitive->SetPhysicsLinearVelocity(VehicleSimData.VehicleKinematic.Curr.GlobalVelocityOfCenterMass);
+		UpdatedPrimitive->SetPhysicsAngularVelocityInRadians(VehicleSimData.VehicleKinematic.Curr.AngularVelocity);
 		UpdatedPrimitive->SetWorldLocationAndRotation(NewLoc, NewRot, true, &Hit, ETeleportType::TeleportPhysics);
 
-		FVector NewLoc1 = UpdatedPrimitive->GetComponentToWorld().GetLocation();
-		FQuat NewRot1 = UpdatedPrimitive->GetComponentToWorld().GetRotation();
-
-		FVector DiffLoc = NewLoc - NewLoc1;
-		FQuat DiffRot = NewRot.Quaternion() - NewRot1;
-		FVector LocalVel = NewRot1.UnrotateVector(LineerVel0);
-
-		if (DiffLoc.Size() > 1.0 || Hit.bBlockingHit)
+		if (bEnableCollisions)
 		{
-			UE_LOG(LogSoda, Warning, TEXT("Bicycle hit detected"));
+			const FVector NewLoc1 = UpdatedPrimitive->GetComponentToWorld().GetLocation();
+			const FQuat NewRot1 = UpdatedPrimitive->GetComponentToWorld().GetRotation();
 
-			FTransform Transform = UpdatedPrimitive->GetComponentTransform();
-			FVector WorldLoc = Transform.TransformPosition(FVector(B * 100.0, 0.0, 0.0));
+			const FVector DiffLoc = NewLoc - NewLoc1;
+			const FQuat DiffRot = NewRot.Quaternion() - NewRot1;
+			const FVector LocalVel = NewRot1.UnrotateVector(LineerVel0);
 
-			DynCar->car_state.x = WorldLoc.X / 100.0;
-			DynCar->car_state.y = -WorldLoc.Y / 100.0;
-			DynCar->car_state.psi = -NewRot1.Rotator().Yaw / 180.0 * M_PI;
+			if (DiffLoc.Size() > 1.0 || Hit.bBlockingHit)
+			{
+				UE_LOG(LogSoda, Warning, TEXT("Bicycle hit detected"));
 
-			DynCar->car_state.Vx = LocalVel.X / 100;
-			DynCar->car_state.Vy = -LocalVel.Y / 100;
-			DynCar->car_state.Om = -AngVel0.Z;
+				FTransform Transform = UpdatedPrimitive->GetComponentTransform();
+				FVector WorldLoc = Transform.TransformPosition(FVector(B * 100.0, 0.0, 0.0));
 
-			VehicleSimData.VehicleKinematic.Curr.AngularVelocity = AngVel0;
-			VehicleSimData.VehicleKinematic.Curr.GlobalVelocityOfCenterMass = LineerVel0;
-			VehicleSimData.VehicleKinematic.Curr.GlobalPose = UpdatedPrimitive->GetComponentToWorld();
+				DynCar->car_state.x = WorldLoc.X / 100.0;
+				DynCar->car_state.y = -WorldLoc.Y / 100.0;
+				DynCar->car_state.psi = -NewRot1.Rotator().Yaw / 180.0 * M_PI;
 
-			ZDotDot = 0;
-			PitchDotDot = 0;
-			RollDotDot = 0;
+				DynCar->car_state.Vx = LocalVel.X / 100;
+				DynCar->car_state.Vy = -LocalVel.Y / 100;
+				DynCar->car_state.Om = -AngVel0.Z;
 
-			ZDot = LineerVel0.Z;
-			PitchDot = AngVel0.Y;
-			RollDot = AngVel0.X;
-			
+				VehicleSimData.VehicleKinematic.Curr.AngularVelocity = AngVel0;
+				VehicleSimData.VehicleKinematic.Curr.GlobalVelocityOfCenterMass = LineerVel0;
+				VehicleSimData.VehicleKinematic.Curr.GlobalPose = UpdatedPrimitive->GetComponentToWorld();
+			}
 		}
 	}
-
-
-
-	if(bUseGroundScaner)
-		GroundScaner->Scan(VehicleSimDataCopy.VehicleKinematic, DeltaTime);
 }
 
 void USoda2DWheeledVehicleMovementComponent::UpdateSimulation(const std::chrono::nanoseconds& InDeltatime, const std::chrono::nanoseconds& Elapsed)
@@ -314,12 +286,12 @@ void USoda2DWheeledVehicleMovementComponent::UpdateSimulation(const std::chrono:
 		DynCar->dynamicNav_ev_Base(DeltaTime, Steer, FrontTorq, RearTorq, BrakeFrontTorq, BrakeRearTorq);
 	}
 
-	FVector2D V_FL(DynCar->car_state.Vx - TrackWidth / 2 * DynCar->car_state.Om, DynCar->car_state.Vy + A * DynCar->car_state.Om);
-	FVector2D V_RL(DynCar->car_state.Vx - TrackWidth / 2 * DynCar->car_state.Om, DynCar->car_state.Vy - B * DynCar->car_state.Om);
-	FVector2D V_RR(DynCar->car_state.Vx + TrackWidth / 2 * DynCar->car_state.Om, DynCar->car_state.Vy - B * DynCar->car_state.Om);
-	FVector2D V_FR(DynCar->car_state.Vx + TrackWidth / 2 * DynCar->car_state.Om, DynCar->car_state.Vy + A * DynCar->car_state.Om);
-	float Vt_FL = V_FL.GetRotated(-DynCar->car_state.steer_alpha / M_PI * 180.0).X;
-	float Vt_FR = V_FR.GetRotated(-DynCar->car_state.steer_alpha / M_PI * 180.0).X;
+	const FVector2D V_FL(DynCar->car_state.Vx - TrackWidth / 2 * DynCar->car_state.Om, DynCar->car_state.Vy + A * DynCar->car_state.Om);
+	const FVector2D V_RL(DynCar->car_state.Vx - TrackWidth / 2 * DynCar->car_state.Om, DynCar->car_state.Vy - B * DynCar->car_state.Om);
+	const FVector2D V_RR(DynCar->car_state.Vx + TrackWidth / 2 * DynCar->car_state.Om, DynCar->car_state.Vy - B * DynCar->car_state.Om);
+	const FVector2D V_FR(DynCar->car_state.Vx + TrackWidth / 2 * DynCar->car_state.Om, DynCar->car_state.Vy + A * DynCar->car_state.Om);
+	const float Vt_FL = V_FL.GetRotated(-DynCar->car_state.steer_alpha / M_PI * 180.0).X;
+	const float Vt_FR = V_FR.GetRotated(-DynCar->car_state.steer_alpha / M_PI * 180.0).X;
 
 	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->AngularVelocity = CalcWheelSpeed(Vt_FL, DynCar->car_state.long_slip_f, FrontWheelRadius );
 	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->AngularVelocity = CalcWheelSpeed(Vt_FR, DynCar->car_state.long_slip_f, FrontWheelRadius );
@@ -330,6 +302,7 @@ void USoda2DWheeledVehicleMovementComponent::UpdateSimulation(const std::chrono:
 	{
 		USodaVehicleWheelComponent * Wheel = GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex(i));
 		Wheel->Pitch = NormAngRad(Wheel->Pitch - Wheel->AngularVelocity * DeltaTime);
+		Wheel->SuspensionOffset = 0;
 	}
 
 	FVector Pos = VehicleSimData.VehicleKinematic.Curr.GlobalPose.GetTranslation();
@@ -340,91 +313,8 @@ void USoda2DWheeledVehicleMovementComponent::UpdateSimulation(const std::chrono:
 	Pos.Y = -DynCar->car_state.yc * 100;
 	Rot.Yaw = -DynCar->car_state.psi / M_PI * 180.f;
 
-	const float DZ = ZDot * DeltaTime;
-	const float DPitch = (PitchDot * DeltaTime / M_PI * 180.f);
-	const float DRoll = (RollDot * DeltaTime / M_PI * 180.f);
 
 	const FVector CoF = FVector(B * 100.0, 0.0, 0.0);
-
-	if(bUseGroundScaner)
-	{
-		FTransform GlobalPose = FTransform(Rot, Pos, FVector(1.0, 1.0, 1.0));
-
-		float R =-Mass * Gravity;
-		FVector M(0);
-
-		for(int i = 0; i < 4; i++)
-		{
-			USodaVehicleWheelComponent * SodaWheel = GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex(i));
-
-			FVector Pt = GlobalPose.TransformPosition(SodaWheel->RestingLocation);
-			
-			float GroundLevel;
-			if(!GroundScaner->GetHeight(Pt.X, Pt.Y, GroundLevel))  GroundLevel = -FLT_MAX;
-
-			float PrevToGround = WheelsData[i].ToGround;
-			WheelsData[i].ToGround = SodaWheel->Radius - (Pt.Z - GroundLevel);
-			SodaWheel->SuspensionOffset = FMath::Clamp(WheelsData[i].ToGround, -WheelSetups[i].SuspensionRise, WheelSetups[i].SuspensionFall);
-			WheelsData[i].ToGroundVelocity = FMath::Clamp( float((PrevToGround - WheelsData[i].ToGround ) / DeltaTime), -300.f, 300.f);
-			
-			float TensionFactor = 0;
-			float DampingFactor = 0;
-
-			if (WheelsData[i].ToGround < SodaWheel->Radius  + WheelSetups[i].SuspensionRise )
-			{
-				TensionFactor = FMath::Clamp(float((WheelsData[i].ToGround - WheelSetups[i].SuspensionRise) / (WheelSetups[i].SuspensionFall + WheelSetups[i].SuspensionRise) + 1.f) * 2.f, 0.f, 2.f) * WheelSetups[i].SuspensionDist;
-				if (WheelsData[i].ToGroundVelocity >= 0)
-				{
-					if (WheelsData[i].ToGround > -WheelSetups[i].SuspensionFall && WheelsData[i].ToGround < WheelSetups[i].SuspensionRise)
-					{
-						DampingFactor = -WheelSetups[i].DampingFallFactor;
-					}
-				}
-				else
-				{
-					if (WheelsData[i].ToGround > -WheelSetups[i].SuspensionFall)
-					{
-						DampingFactor = WheelSetups[i].DampingRiseFactor;
-					}
-					/*
-					if (Wheels[i].ToGround > WheelSetups[i].SuspensionRise)
-					{
-						DampingFactor += 0.05 * (Wheels[i].ToGround -  WheelSetups[i].SuspensionRise);
-						DampingFactor = FMath::Clamp(DampingFactor, 0.f, 0.5f);
-					}*/
-				}
-			}
-
-			WheelsData[i].SpringForce = Mass * Gravity * TensionFactor;
-			WheelsData[i].DampingForce = std::abs(WheelsData[i].ToGroundVelocity ) * Mass / DeltaTime * DampingFactor;
-
-			float FullRorce = WheelsData[i].SpringForce + WheelsData[i].DampingForce;
-
-			FVector r = SodaWheel->RestingLocation - CoF;
-
-			R += FullRorce;
-			M += (r ^ FVector(0.0f, 0.0, FullRorce));
-
-			//UE_LOG(LogSoda, Error, TEXT("ind: %i; M: %s R: %f: FullRorce: %f"), i, *M.ToString(), R, FullRorce);
-
-			if(bDrawTelemetry)
-			{
-				TelemetryGrid.AddPoint(0, i, WheelsData[i].ToGround);
-				TelemetryGrid.AddPoint(1, i, TensionFactor);
-				TelemetryGrid.AddPoint(2, i, WheelsData[i].ToGroundVelocity  / 100);
-				TelemetryGrid.AddPoint(3, i, DampingFactor);
-			}
-		}
-
-		ZDotDot = ZDotDot * GlobalDampingFactor  +  R/Mass * (1.f - GlobalDampingFactor);
-		ZDot += (ZDotDot * DeltaTime);
-
-		PitchDotDot =  PitchDotDot * GlobalDampingFactor - M.Y / MomentOfInertia.Y / 100000 * (1.f - GlobalDampingFactor);
-		PitchDot += (PitchDotDot * DeltaTime);
-
-		RollDotDot =  RollDotDot * GlobalDampingFactor - M.X / MomentOfInertia.X / 100000 * (1.f - GlobalDampingFactor);
-		RollDot += (RollDotDot * DeltaTime);
-	}
 
 	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->Steer = -DynCar->car_state.steer_alpha;
 	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->Steer = -DynCar->car_state.steer_alpha;
@@ -432,14 +322,10 @@ void USoda2DWheeledVehicleMovementComponent::UpdateSimulation(const std::chrono:
 	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->Slip = GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->Slip = FVector2D(DynCar->car_state.long_slip_f, DynCar->car_state.slipAng_f);
 	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->Slip = GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->Slip = FVector2D(DynCar->car_state.long_slip_r, DynCar->car_state.slipAng_r);
 
-	Pos.Z += DZ;
-	Rot.Pitch += DPitch;
-	Rot.Roll += DRoll;
 
 	VehicleSimData.VehicleKinematic.Push(DeltaTime);
-	VehicleSimData.VehicleKinematic.Curr.GlobalPose = FTransform(Rot, Pos - FRotator(DPitch, 0, DRoll).RotateVector(CoF) + CoF, FVector(1.0, 1.0, 1.0));
-	VehicleSimData.VehicleKinematic.Curr.GlobalVelocityOfCenterMass = FVector(DynCar->car_state.Vx * 100, -DynCar->car_state.Vy * 100, ZDot).RotateAngleAxis(
-		-DynCar->car_state.psi / M_PI * 180.0, FVector(0.f, 0.f, 1.f));
+	VehicleSimData.VehicleKinematic.Curr.GlobalPose = FTransform(Rot, Pos + CoF, FVector(1.0, 1.0, 1.0));
+	VehicleSimData.VehicleKinematic.Curr.GlobalVelocityOfCenterMass = FVector(DynCar->car_state.Vx * 100, -DynCar->car_state.Vy * 100, 0).RotateAngleAxis(-DynCar->car_state.psi / M_PI * 180.0, FVector(0.f, 0.f, 1.f));
 	VehicleSimData.VehicleKinematic.Curr.CenterOfMassLocal = CoF;
 	//VehicleKinematic.Curr.AngularVelocity = QLog((PreQuat.Inverse() * Rot.Quaternion()).GetNormalized()) / DeltaTime;
 	VehicleSimData.VehicleKinematic.ComputeAngularVelocity();
@@ -467,12 +353,11 @@ void USoda2DWheeledVehicleMovementComponent::DrawDebug(UCanvas* Canvas, float& Y
 
 	if (Common.bDrawDebugCanvas && GetHealth() != EVehicleComponentHealth::Disabled)
 	{
-
 		UFont* RenderFont = GEngine->GetSmallFont();
 		// draw drive data
 
 		Canvas->SetDrawColor(FColor::Green);
-		YPos += Canvas->DrawText(RenderFont, TEXT("Bicycle Vehicle:"), 4, YPos + 4);
+		YPos += Canvas->DrawText(RenderFont, TEXT("2D Vehicle:"), 4, YPos + 4);
 
 		Canvas->SetDrawColor(FColor::White);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Vx (km/h): %.1f"), DynCar->car_state.Vx * 3.6), 16, YPos);
@@ -480,11 +365,6 @@ void USoda2DWheeledVehicleMovementComponent::DrawDebug(UCanvas* Canvas, float& Y
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Acc x (m/s^2): %.1f"), DynCar->car_state.dVxdt), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Acc y (m/s^2): %.1f"), DynCar->car_state.dVydt), 16, YPos);
 
-		if (bDrawTelemetry)
-		{
-			float XPos = SodaApp.GetSodaUserSettings()->VehicleDebugAreaWidth + 10;
-			TelemetryGrid.Draw(Canvas, XPos, 10);
-		}
 	}
 }
 

@@ -512,13 +512,13 @@ void AGhostVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) const
 
 	FExtent Extent = USodaStatics::CalculateActorExtent(this);
 	*Doc
-		<< "extents" << open_document
-		<< "forward" << Extent.Forward
-		<< "backward" << Extent.Backward
-		<< "left" << Extent.Left
-		<< "right" << Extent.Right
-		<< "up" << Extent.Up
-		<< "down" << Extent.Down
+		<< "Extents" << open_document
+		<< "Forward" << Extent.Forward
+		<< "Backward" << Extent.Backward
+		<< "Left" << Extent.Left
+		<< "Right" << Extent.Right
+		<< "Up" << Extent.Up
+		<< "Down" << Extent.Down
 		<< close_document;
 }
 
@@ -542,11 +542,11 @@ void AGhostVehicle::OnPushDataset() const
 			//FVector AngVel = FVector(0, 0, 0);
 
 			Dataset->GetRowDoc()
-				<< "ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SodaApp.GetSimulationTimestamp()))
-				<< "loc" << open_array << Location.X << Location.Y << Location.Z << close_array
-				<< "rot" << open_array << Rotation.Pitch << Rotation.Yaw << Rotation.Roll << close_array
-				<< "vel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array
-				<< "acc" << open_array << Acc.X << Acc.Y << Acc.Z << close_array;
+				<< "Ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SodaApp.GetSimulationTimestamp()))
+				<< "Loc" << open_array << Location.X << Location.Y << Location.Z << close_array
+				<< "Rot" << open_array << Rotation.Pitch << Rotation.Yaw << Rotation.Roll << close_array
+				<< "Vel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array
+				<< "Acc" << open_array << Acc.X << Acc.Y << Acc.Z << close_array;
 				//<< "ang_vel" << open_array << AngVel.X << AngVel.Y << AngVel.Z << close_array;
 
 			auto RouteDoc = Dataset->GetRowDoc() << "route" << open_document;
@@ -554,16 +554,16 @@ void AGhostVehicle::OnPushDataset() const
 			{
 				if (WayPoint->OwndedRoute.IsValid())
 				{
-					RouteDoc << "name" << TCHAR_TO_UTF8(*WayPoint->OwndedRoute->GetName());
+					RouteDoc << "Name" << TCHAR_TO_UTF8(*WayPoint->OwndedRoute->GetName());
 				}
 				else
 				{
-					RouteDoc << "name" << "";
+					RouteDoc << "Name" << "";
 				}
 			}
 			else
 			{
-				RouteDoc << "name" << "";
+				RouteDoc << "Name" << "";
 			}
 			RouteDoc << close_document;
 				

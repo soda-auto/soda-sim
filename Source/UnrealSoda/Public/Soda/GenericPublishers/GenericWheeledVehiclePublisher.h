@@ -7,7 +7,7 @@
 #include "GenericWheeledVehiclePublisher.generated.h"
 
 
-struct FWheeledVehicleStateExtra;
+struct FWheeledVehicleSensorData;
 
 /**
  * UGenericWheeledVehiclePublisher
@@ -18,7 +18,7 @@ class UNREALSODA_API UGenericWheeledVehiclePublisher: public UGenericPublisher
 	GENERATED_BODY()
 
 public:
-	virtual bool Publish(float DeltaTime, const FSensorDataHeader& Header, const FWheeledVehicleStateExtra& VehicleState) { return false; }
+	virtual bool Publish(float DeltaTime, const FSensorDataHeader& Header, const FWheeledVehicleSensorData& VehicleState) { return false; }
 };
 
 

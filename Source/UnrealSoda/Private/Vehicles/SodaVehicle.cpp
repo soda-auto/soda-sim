@@ -1570,14 +1570,16 @@ void ASodaVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) const
 	try
 	{
 		InDataset.GetRowDoc()
-			<< "sim_ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.SimulatedTimestamp))
-			<< "render_ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.RenderTimestamp))
-			<< "step" << SimData.SimulatedStep
-			<< "loc" << open_array << Location.X << Location.Y << Location.Z << close_array
-			<< "rot" << open_array << Rotation.Pitch << Rotation.Yaw << Rotation.Roll << close_array
-			<< "vel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array
-			<< "acc" << open_array << Acc.X << Acc.Y << Acc.Z << close_array
-			<< "ang_vel" << open_array << AngVel.X << AngVel.Y << AngVel.Z << close_array;
+			<< "CommonData" << open_document
+			<< "SimTsUs" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.SimulatedTimestamp))
+			<< "RenderTsUs" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.RenderTimestamp))
+			<< "Step" << SimData.SimulatedStep
+			<< "Loc" << open_array << Location.X << Location.Y << Location.Z << close_array
+			<< "Rot" << open_array << Rotation.Roll << Rotation.Pitch << Rotation.Yaw << close_array
+			<< "Bel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array
+			<< "Acc" << open_array << Acc.X << Acc.Y << Acc.Z << close_array
+			<< "AngVel" << open_array << AngVel.X << AngVel.Y << AngVel.Z << close_array
+			<< close_document;
 	}
 	catch (const std::system_error& e)
 	{
@@ -1596,13 +1598,13 @@ void ASodaVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) const
 
 	const FExtent& Extent = GetVehicleExtent();
 	*Doc
-		<< "extents" << open_document
-		<< "forward" << Extent.Forward
-		<< "backward" << Extent.Backward
-		<< "left" << Extent.Left
-		<< "right" << Extent.Right
-		<< "up" << Extent.Up
-		<< "down" << Extent.Down
+		<< "Extents" << open_document
+		<< "Forward" << Extent.Forward
+		<< "Backward" << Extent.Backward
+		<< "Left" << Extent.Left
+		<< "Right" << Extent.Right
+		<< "Up" << Extent.Up
+		<< "Down" << Extent.Down
 		<< close_document;
 }
 

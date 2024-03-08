@@ -92,6 +92,7 @@ public class UnrealSoda : ModuleRules
 		SetupModulePhysicsSupport(Target);
 		//bUsePrecompiled = true;
 		bUseUnity = false;
+        //bUseRTTI = false;
 
         // The Shipping configuration isn't supported yet
         /*
