@@ -82,13 +82,15 @@ void UProtoV1LidarPublisher::Shutdown()
 	ScanID = 0;
 }
 
-bool UProtoV1LidarPublisher::Publish(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarScan& Scan)
+bool UProtoV1LidarPublisher::Publish(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& Scan)
 {
 	Msg.device_id = DeviceID;
 	Msg.device_timestamp = soda::RawTimestamp<std::chrono::milliseconds>(Header.Timestamp);
 	Msg.scan_id = ScanID++;
 	Msg.block_id = 0;
 	Msg.block_count = (Scan.Points.Num() / PointsPerDatagram) + ((Scan.Points.Num() % PointsPerDatagram) ? 1 : 0);
+
+	const bool bIsSizeOk = Scan.Size.IsSet() && Scan.Size->X > 0 && Scan.Size->Y > 0;
 
 	for (int k = 0; k < Scan.Points.Num(); )
 	{
@@ -104,7 +106,7 @@ bool UProtoV1LidarPublisher::Publish(float DeltaTime, const FSensorDataHeader& H
 			Dst.coords.x = Src.Location.X / 100;
 			Dst.coords.y = -Src.Location.Y / 100;
 			Dst.coords.z = Src.Location.Z / 100;
-			Dst.layer = Src.Layer;
+			Dst.layer = bIsSizeOk ? Scan.Points.Num() / Scan.Size->X : -1;
 			Dst.properties = (Src.Status == soda::ELidarPointStatus::Valid 
 				? soda::sim::proto_v1::LidarScanPoint::Properties::Valid 
 				: soda::sim::proto_v1::LidarScanPoint::Properties::None);

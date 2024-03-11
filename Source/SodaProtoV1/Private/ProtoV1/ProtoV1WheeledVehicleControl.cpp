@@ -61,8 +61,10 @@ bool UProtoV1WheeledVehicleControl::GetControl(soda::FGenericWheeledVehiclContro
 	Control.SteerReq.ByRatio = -Msg.steer_req.by_ratio;
 	Control.DriveEffortReq.ByRatio = Msg.drive_effort_req.by_ratio;
 	Control.TargetSpeedReq = Msg.target_speed_req * 100.0;
+	Control.SteeringAngleVelocity = 0;
 	Control.GearStateReq = EGearState(Msg.gear_state_req);
 	Control.GearNumReq = Msg.gear_num_req;
+	Control.bGearIsSet = true;
 	Control.SteerReqMode = soda::FGenericWheeledVehiclControl::ESteerReqMode(Msg.steer_req_mode);
 	Control.DriveEffortReqMode = soda::FGenericWheeledVehiclControl::EDriveEffortReqMode(Msg.drive_effort_req_mode);
 	Control.Timestamp = RecvTimestamp;

@@ -83,6 +83,13 @@ void ULidarRayTraceSensor::TickComponent(float DeltaTime, ELevelTick TickType, F
 	check(OutHits.Num() == Rays.Num());
 
 	Scan.Points.SetNum(Rays.Num(), false);
+	Scan.HorizontalAngleMax = GetFOVHorizontMax();
+	Scan.HorizontalAngleMin = GetFOVHorizontMin();
+	Scan.VerticalAngleMin = GetFOVVerticalMin();
+	Scan.VerticalAngleMax = GetFOVVerticalMax();
+	Scan.RangeMin = GetLidarMinDistance();
+	Scan.RangeMax = GetLidarMaxDistance();
+	Scan.Size = GetLidarSize();
 
 	for (int k = 0; k < Rays.Num(); ++k)
 	{
@@ -106,7 +113,6 @@ void ULidarRayTraceSensor::TickComponent(float DeltaTime, ELevelTick TickType, F
 		}
 	}
 
-	PostProcessSensorData(Scan);
 	{
 		SCOPE_CYCLE_COUNTER(STAT_PublishResults);
 		PublishSensorData(DeltaTime, GetHeaderGameThread(), Scan);

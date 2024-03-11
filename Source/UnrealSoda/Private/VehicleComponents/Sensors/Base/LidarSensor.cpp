@@ -53,9 +53,9 @@ bool ULidarSensor::GenerateFOVMesh(TArray<FSensorFOVMesh>& Meshes)
 	}
 }
 
-void ULidarSensor::DrawLidarPoints(const soda::FLidarScan& Scan, bool bDrawInGameThread)
+void ULidarSensor::DrawLidarPoints(const soda::FLidarSensorData& Scan, bool bDrawInGameThread)
 {
-	static auto DrawLidarPointsImpl = [](UWorld * World, const FVector & Loc, const FRotator& Rot, const soda::FLidarScan& Scan)
+	static auto DrawLidarPointsImpl = [](UWorld * World, const FVector & Loc, const FRotator& Rot, const soda::FLidarSensorData& Scan)
 	{
 		for (auto& Pt : Scan.Points)
 		{

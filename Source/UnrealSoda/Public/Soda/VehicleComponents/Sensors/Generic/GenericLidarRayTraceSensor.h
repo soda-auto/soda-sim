@@ -58,9 +58,9 @@ protected:
 	virtual float GetFOVVerticalMin() const override { return FOV_VerticalMin; }
 	virtual float GetLidarMinDistance() const override { return DistanseMin; }
 	virtual float GetLidarMaxDistance() const override { return DistanseMax; }
+	virtual TOptional<FUintVector2> GetLidarSize() const { return TOptional<FUintVector2>({ uint32(Step), uint32(Channels) }); }
 	virtual const TArray<FVector>& GetLidarRays() const override { return LidarRays; }
-	virtual void PostProcessSensorData(soda::FLidarScan& Scan) override;
-	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarScan& Scan) override;
+	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& Scan) override;
 
 protected:
 	virtual void Serialize(FArchive& Ar) override;

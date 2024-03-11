@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "SodaVehicle.h"
-#include "SodaVehicleWheel.h"
+#include "Soda/Vehicles/SodaVehicle.h"
+#include "Soda/VehicleComponents/SodaVehicleWheel.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "SodaWheeledVehicle.generated.h"
 

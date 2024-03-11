@@ -55,6 +55,13 @@ public:
 		check(LidarRays.Num() == UVs.Num());
 
 		Scan.Points.SetNum(LidarRays.Num());
+		Scan.HorizontalAngleMax = Sensor->GetFOVHorizontMax();
+		Scan.HorizontalAngleMin = Sensor->GetFOVHorizontMin();
+		Scan.VerticalAngleMin = Sensor->GetFOVVerticalMin();
+		Scan.VerticalAngleMax = Sensor->GetFOVVerticalMax();
+		Scan.RangeMin = Sensor->GetLidarMinDistance();
+		Scan.RangeMax = Sensor->GetLidarMaxDistance();
+		Scan.Size = Sensor->GetLidarSize();
 
 		for (int k = 0; k < LidarRays.Num(); ++k)
 		{
@@ -122,7 +129,6 @@ public:
 			}
 		}
 
-		Sensor->PostProcessSensorData(Scan);
 		Sensor->PublishSensorData(DeltaTime, Header, Scan);
 		Sensor->DrawLidarPoints(Scan, true);
 		bIsDone = true;
@@ -155,7 +161,7 @@ protected:
 protected:
 	bool bIsDone = true;
 	TArray<float> Map;
-	soda::FLidarScan Scan;
+	soda::FLidarSensorData Scan;
 };
 
 

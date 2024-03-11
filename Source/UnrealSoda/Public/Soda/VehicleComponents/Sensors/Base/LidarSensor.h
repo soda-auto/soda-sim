@@ -19,15 +19,37 @@ struct FLidarScanPoint
 {
 	FVector Location {}; // [cm]
 	float Depth{}; // [cm]
-	int Layer = -1;
+	float Intensitie{}; // TODO
 	ELidarPointStatus Status = ELidarPointStatus::Invalid;
 };
 
-struct FLidarScan
+struct FLidarSensorData
 {
-	//TTimestamp Timestamp;
-	//int64 Index;
-	TArray<FLidarScanPoint> Points;
+
+	/** [deg] */
+	float HorizontalAngleMin{};
+
+	/** [deg] */
+	float HorizontalAngleMax{};
+
+	/** [deg] */
+	float VerticalAngleMin{};
+
+	/** [deg] */
+	float VerticalAngleMax{};
+
+	/** minimum range value [cm] */
+	float RangeMin{};
+
+	/** maximum range value [cm] */
+	float RangeMax{};
+
+	/** 2D structure of the point cloud */
+	TOptional<FUintVector2> Size {};
+
+	bool bIntensitieIsValid = false;
+
+	TArray<FLidarScanPoint> Points{};
 };
 
 } // namespace soda
@@ -54,18 +76,18 @@ public:
 	FSensorFOVRenderer FOVSetup;
 
 public:
-	virtual float GetFOVHorizontMax() const { return 0; }
-	virtual float GetFOVHorizontMin() const { return 0; }
-	virtual float GetFOVVerticalMax() const { return 0; }
-	virtual float GetFOVVerticalMin() const { return 0; }
-	virtual float GetLidarMinDistance() const { return 0; }
-	virtual float GetLidarMaxDistance() const { return 0; }
+	virtual float GetFOVHorizontMax() const { return 0; } // [deg]
+	virtual float GetFOVHorizontMin() const { return 0; } // [deg]
+	virtual float GetFOVVerticalMax() const { return 0; } // [deg]
+	virtual float GetFOVVerticalMin() const { return 0; } // [deg]
+	virtual float GetLidarMinDistance() const { return 0; } // [cm]
+	virtual float GetLidarMaxDistance() const { return 0; } // [cm]
+	virtual TOptional<FUintVector2> GetLidarSize() const { return TOptional<FUintVector2>{}; }
 	virtual const TArray<FVector>& GetLidarRays() const { static TArray<FVector> Rays; return Rays; }
-	virtual void PostProcessSensorData(soda::FLidarScan& Scan) {}
-	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarScan& Scan) { return false; }
+	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& Scan) { return false; }
 
 public:
-	virtual void DrawLidarPoints(const soda::FLidarScan& Scan, bool bDrawInGameThread);
+	virtual void DrawLidarPoints(const soda::FLidarSensorData& Scan, bool bDrawInGameThread);
 
 protected:
 	virtual bool GenerateFOVMesh(TArray<FSensorFOVMesh>& Meshes) override;

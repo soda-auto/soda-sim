@@ -106,17 +106,7 @@ void UGenericLidarDepth2DSensor::PostInitProperties()
 }
 #endif
 
-void UGenericLidarDepth2DSensor::PostProcessSensorData(soda::FLidarScan& InScan)
-{
-	check(InScan.Points.Num() == Channels * Step);
-
-	for (int k = 0; k < Channels * Step; ++k)
-	{
-		InScan.Points[k].Layer = Channels - k / Step - 1;
-	}
-}
-
-bool UGenericLidarDepth2DSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarScan& Scan)
+bool UGenericLidarDepth2DSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& Scan)
 {
 	if (Publisher && Publisher->IsOk())
 	{

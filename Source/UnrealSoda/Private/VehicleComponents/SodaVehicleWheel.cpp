@@ -1,6 +1,6 @@
 // Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
-#include "Soda/Vehicles/SodaVehicleWheel.h"
+#include "Soda/VehicleComponents/SodaVehicleWheel.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Engine/Engine.h"
 #include "Engine/Canvas.h"

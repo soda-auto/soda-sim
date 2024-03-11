@@ -41,7 +41,7 @@ private:
 	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FSaveAllWindowItem> Item, const TSharedRef< STableViewBase >& OwnerTable);
 	FReply OnQuit();
 	FReply OnRestart();
-	FReply OnCancle();
+	FReply OnCancel();
 
 	TArray<TSharedPtr<FSaveAllWindowItem>> Source;
 	//SListView<TSharedPtr<FSaveAllWindowItem>> ListView;

@@ -10,6 +10,7 @@
 #include "Soda/Misc/Utils.h"
 #include "Soda/SodaApp.h"
 #include "Soda/SodaUserSettings.h"
+#include "Components/SkeletalMeshComponent.h"
 
 DECLARE_CYCLE_STAT(TEXT("BicycleCompute"), STAT_BicycleCompute, STATGROUP_SodaVehicle);
 DECLARE_CYCLE_STAT(TEXT("SimulationTick"), STAT_UpdateSimulationTick, STATGROUP_SodaVehicle);
@@ -147,6 +148,12 @@ bool USoda2DWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 	{
 		UpdateSimulation(std::chrono::nanoseconds(IntegrationTimeStep * 1000000), Elapsed);
 	});	
+
+	if (USkeletalMeshComponent* SkeletalMesh = Cast<USkeletalMeshComponent>(UpdatedComponent))
+	{
+		SkeletalMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
+		SkeletalMesh->InitAnim(true);
+	}
 
 	return true;
 }
@@ -321,7 +328,6 @@ void USoda2DWheeledVehicleMovementComponent::UpdateSimulation(const std::chrono:
 
 	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->Slip = GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->Slip = FVector2D(DynCar->car_state.long_slip_f, DynCar->car_state.slipAng_f);
 	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->Slip = GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->Slip = FVector2D(DynCar->car_state.long_slip_r, DynCar->car_state.slipAng_r);
-
 
 	VehicleSimData.VehicleKinematic.Push(DeltaTime);
 	VehicleSimData.VehicleKinematic.Curr.GlobalPose = FTransform(Rot, Pos + CoF, FVector(1.0, 1.0, 1.0));

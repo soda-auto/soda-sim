@@ -99,7 +99,7 @@ void SMessageBox::Construct( const FArguments& InArgs )
 		.AutoWidth()
 		[
 			SNew(SButton)
-			.Text(FText::FromString("Cancle"))
+			.Text(FText::FromString("Cancl"))
 			.OnClicked(FOnClicked::CreateLambda([this]() {
 				ExecuteOnMessageBox(EMessageBoxButton::CANCEL);
 				return FReply::Handled();

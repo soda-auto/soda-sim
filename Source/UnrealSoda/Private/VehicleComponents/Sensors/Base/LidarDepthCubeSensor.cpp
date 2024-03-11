@@ -173,7 +173,7 @@ protected:
 protected:
 	bool bIsDone = true;
 	TArray<float> Map;
-	soda::FLidarScan Scan;
+	soda::FLidarSensorData Scan;
 };
 
 

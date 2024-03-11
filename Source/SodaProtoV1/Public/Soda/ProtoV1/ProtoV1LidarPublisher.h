@@ -50,7 +50,7 @@ public:
 	virtual bool Advertise(UVehicleBaseComponent* Parent) override;
 	virtual void Shutdown() override;
 	virtual bool IsOk() const override { return !!Socket; }
-	virtual bool Publish(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarScan& Scan) override;
+	virtual bool Publish(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& Scan) override;
 	virtual FString GetRemark() const override;
 
 protected:

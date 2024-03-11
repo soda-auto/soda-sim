@@ -113,52 +113,8 @@ void UGenericVehicleDriverComponentComponent::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
 
-
-	//PublisherHelper.Shutdown();
 	ListenerHelper.StopListen();
 }
-
-/*
-void UGenericVehicleDriverComponentComponent::PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
-{
-	Super::PostPhysicSimulationDeferred(DeltaTime, VehicleKinematic, Timestamp);
-
-	if (!HealthIsWorkable())
-	{
-		return;
-	}
-
-	if (Publisher && Publisher->IsOk())
-	{
-		FWheeledVehicleSensorData Extra{ VehicleKinematic, GetRelativeTransform() };
-
-		if (GearBox)
-		{
-			Extra.GearState = GearBox->GetGearState();
-			Extra.GearNum = GearBox->GetGearNum();
-		}
-
-		if (GetWheeledVehicle()->Is4WDVehicle())
-		{
-			auto WheelDataConv = [](const USodaVehicleWheelComponent& In, FWheeledVehicleWheelState& Out)
-				{
-					Out.AngularVelocity = In.AngularVelocity;
-					Out.Torq = In.ReqTorq;
-					Out.BrakeTorq = In.ReqBrakeTorque;
-					Out.Steer = In.Steer;
-				};
-
-			WheelDataConv(*GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL), Extra.WheelStates[0]);
-			WheelDataConv(*GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR), Extra.WheelStates[1]);
-			WheelDataConv(*GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL), Extra.WheelStates[2]);
-			WheelDataConv(*GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR), Extra.WheelStates[3]);
-		}
-
-		Publisher->Publish(DeltaTime, GetHeaderVehicleThread(), Extra);
-	}
-
-}
-*/
 
 void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
 {
@@ -223,8 +179,29 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 	}
 	else // AD mode
 	{
-		GearState = Control.GearStateReq;
-		GearNum = Control.GearNumReq;
+		if (Control.bGearIsSet)
+		{
+			GearState = Control.GearStateReq;
+			GearNum = Control.GearNumReq;
+		}
+		else
+		{
+			if (!FMath::IsNearlyZero(Control.TargetSpeedReq))
+			{
+				if (Control.TargetSpeedReq > 0)
+				{
+					GearState = EGearState::Drive;
+				}
+				else
+				{
+					GearState = EGearState::Reverse;
+				}
+			}
+			else
+			{
+				GearState = EGearState::Drive;
+			}
+		}
 
 		if (GearBox)
 		{
@@ -452,7 +429,7 @@ void UGenericVehicleDriverComponentComponent::OnPushDataset(soda::FActorDatasetD
 			<< "GearNumReq" << int(Control.GearNumReq)
 			<< "SteerReqMode" << int(Control.SteerReqMode)
 			<< "DriveEffortReqMode" << int(Control.DriveEffortReqMode)
-			<< "TimestampUs" << soda::RawTimestamp<std::chrono::microseconds>(Control.Timestamp)
+			<< "TimestampUs" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(Control.Timestamp))
 			<< close_document // Control
 			<< close_document;
 	}

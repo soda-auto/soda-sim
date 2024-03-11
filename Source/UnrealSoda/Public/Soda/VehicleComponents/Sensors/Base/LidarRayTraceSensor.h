@@ -43,7 +43,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
-	soda::FLidarScan Scan;
+	soda::FLidarSensorData Scan;
 	TArray<FVector> BatchStart;
 	TArray<FVector> BatchEnd;
 };

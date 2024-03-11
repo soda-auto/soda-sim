@@ -8,7 +8,7 @@
 
 namespace soda
 {
-	struct FLidarScan;
+	struct FLidarSensorData;
 }
 
 /**
@@ -20,7 +20,7 @@ class UNREALSODA_API UGenericLidarPublisher : public UGenericPublisher
 	GENERATED_BODY()
 
 public:
-	virtual bool Publish(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarScan& Scan) { return false; }
+	virtual bool Publish(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& Scan) { return false; }
 };
 
 

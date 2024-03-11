@@ -23,7 +23,7 @@ public:
 protected:
 	FReply OnResave();
 	FReply OnSaveAs();
-	FReply OnCancle();
+	FReply OnCancel();
 
 	TWeakObjectPtr<ASodaVehicle> Vehicle;
 };

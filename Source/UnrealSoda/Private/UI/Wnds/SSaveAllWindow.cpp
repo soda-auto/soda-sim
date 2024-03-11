@@ -273,8 +273,8 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 				.AutoWidth()
 				[
 					SNew(SButton)
-					.Text(FText::FromString("Cancle"))
-					.OnClicked(this, &SSaveAllWindow::OnCancle)
+					.Text(FText::FromString("Cancel"))
+					.OnClicked(this, &SSaveAllWindow::OnCancel)
 				]
 			]
 		]
@@ -304,7 +304,7 @@ FReply SSaveAllWindow::OnRestart()
 	return FReply::Handled();
 }
 
-FReply SSaveAllWindow::OnCancle()
+FReply SSaveAllWindow::OnCancel()
 {
 	CloseWindow();
 	return FReply::Handled();

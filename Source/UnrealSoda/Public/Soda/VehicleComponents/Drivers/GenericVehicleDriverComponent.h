@@ -30,7 +30,10 @@ namespace soda
 			float ByRatio; // [-1..1]
 		} DriveEffortReq;
 
-		/** [cm/s]. Zero TargetSpeed means don't used  */
+		/** [rad/s] Zero value means change speed as quickly as possible to SteerReq.ByAngle */
+		float SteeringAngleVelocity;
+
+		/** [cm/s] Zero TargetSpeed means don't used  */
 		float TargetSpeedReq;
 
 		EGearState GearStateReq;
@@ -54,6 +57,7 @@ namespace soda
 			ByAcc
 		};
 
+		bool bGearIsSet;
 		ESteerReqMode SteerReqMode;
 		EDriveEffortReqMode DriveEffortReqMode;
 
