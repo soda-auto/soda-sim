@@ -595,6 +595,7 @@ private:
 	};
 
 	/** Materials and colors to be used when drawing the items for each axis */
+	UMaterialInterface* AxisMaterialBase;
 	UMaterialInterface* TransparentPlaneMaterialXY;
 	UMaterialInterface* GridMaterial;
 
