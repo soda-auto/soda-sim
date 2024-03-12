@@ -34,10 +34,10 @@ void USoda2DWheeledVehicleMovementComponent::OnPreActivateVehicleComponent()
 {
 	Super::OnPreActivateVehicleComponent();
 
-	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->Radius = FrontWheelRadius * 100;
-	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->Radius = FrontWheelRadius * 100;
-	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->Radius = RearWheelRadius * 100;
-	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->Radius = RearWheelRadius * 100;
+	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->Radius = FrontWheelRadius;
+	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->Radius = FrontWheelRadius;
+	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->Radius = RearWheelRadius;
+	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->Radius = RearWheelRadius;
 
 	OnSetActiveMovement();
 }
@@ -90,19 +90,19 @@ bool USoda2DWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 	DynCar->culc_par.implicit_solver = ImplicitSolver;
 	DynCar->culc_par.num_impl_nonlin_it = NumImpLonlinIt;
 	DynCar->culc_par.corr_impl_step = CorrImplStep;
-	DynCar->car_par.a = A;
-	DynCar->car_par.b = B;
-	DynCar->car_par.L = A + B;
+	DynCar->car_par.a = CoGToForwardWheel / 100.0;
+	DynCar->car_par.b = CoGToRearWheel / 100.0;
+	DynCar->car_par.L = (CoGToForwardWheel + CoGToRearWheel) / 100.0;
 	DynCar->car_par.mass = Mass;
 	DynCar->car_par.moment_inertia = MomentOfInertia;
-	DynCar->car_par.CGvert = CGvert;
+	DynCar->car_par.CGvert = CoGVert / 100;
 	DynCar->car_par.mu = Friction;
 	DynCar->car_par.Cy_r = RearWheelLatStiff;
 	DynCar->car_par.Cy_f = ForwardWheelLatStiff;
 	DynCar->car_par.Cx_r = RearWheelLonStiff;
 	DynCar->car_par.Cx_f = ForwardWheelLonStiff;
-	DynCar->car_par.rearWheelRad = RearWheelRadius;
-	DynCar->car_par.frontWheelRad = FrontWheelRadius;
+	DynCar->car_par.rearWheelRad = RearWheelRadius / 100;
+	DynCar->car_par.frontWheelRad = FrontWheelRadius / 100;
 	DynCar->car_par.rollingResistance = DragRollingResistance;
 	DynCar->car_par.rollingResistanceSpeedDepended = DragRollingResistanceSpeedDepended;
 	DynCar->car_par.Cxx = DragCxx;
@@ -114,7 +114,7 @@ bool USoda2DWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 	const FTransform Transform = UpdatedPrimitive->GetComponentTransform();
 	const FVector CoFWorld = Transform.TransformPosition(CoF);
 
-	CoF = RearWheelOffset + FVector(B * 100.0, 0.0, CGvert * 100.0);
+	CoF = RearWheelOffset + FVector(CoGToRearWheel, 0.0, CoGVert);
 	ZOffset = Transform.GetTranslation().Z;
 	VehicleSimData.VehicleKinematic.Curr.GlobalPose = Transform; 
 
@@ -173,7 +173,7 @@ void USoda2DWheeledVehicleMovementComponent::TickComponent(float DeltaTime, enum
 
 	if (bPullToGround)
 	{
-		const FVector RefPoint = VehicleSimData.VehicleKinematic.Curr.GlobalPose.TransformPosition(RearWheelOffset + FVector(B * 100.0, 0.0, 0.0));
+		const FVector RefPoint = VehicleSimData.VehicleKinematic.Curr.GlobalPose.TransformPosition(RearWheelOffset + FVector(CoGToRearWheel, 0.0, 0.0));
 
 		FHitResult Hit;
 		GetWorld()->LineTraceSingleByChannel(Hit, RefPoint + FVector(0, 0, 50), RefPoint + FVector(0, 0, -100),
@@ -214,7 +214,7 @@ void USoda2DWheeledVehicleMovementComponent::TickComponent(float DeltaTime, enum
 				UE_LOG(LogSoda, Warning, TEXT("Bicycle hit detected"));
 
 				FTransform Transform = UpdatedPrimitive->GetComponentTransform();
-				FVector WorldLoc = Transform.TransformPosition(FVector(B * 100.0, 0.0, 0.0));
+				FVector WorldLoc = Transform.TransformPosition(FVector(CoGToRearWheel, 0.0, 0.0));
 
 				DynCar->car_state.x = WorldLoc.X / 100.0;
 				DynCar->car_state.y = -WorldLoc.Y / 100.0;
@@ -270,17 +270,17 @@ void USoda2DWheeledVehicleMovementComponent::UpdateSimulation(const std::chrono:
 		DynCar->dynamicNav_ev_Base(DeltaTime, Steer, FrontTorq, RearTorq, BrakeFrontTorq, BrakeRearTorq);
 	}
 
-	const FVector2D V_FL(DynCar->car_state.Vx - TrackWidth / 2 * DynCar->car_state.Om, DynCar->car_state.Vy + A * DynCar->car_state.Om);
-	const FVector2D V_RL(DynCar->car_state.Vx - TrackWidth / 2 * DynCar->car_state.Om, DynCar->car_state.Vy - B * DynCar->car_state.Om);
-	const FVector2D V_RR(DynCar->car_state.Vx + TrackWidth / 2 * DynCar->car_state.Om, DynCar->car_state.Vy - B * DynCar->car_state.Om);
-	const FVector2D V_FR(DynCar->car_state.Vx + TrackWidth / 2 * DynCar->car_state.Om, DynCar->car_state.Vy + A * DynCar->car_state.Om);
+	const FVector2D V_FL(DynCar->car_state.Vx - TrackWidth / 100.0 / 2.0 * DynCar->car_state.Om, DynCar->car_state.Vy + CoGToForwardWheel * DynCar->car_state.Om / 100.0);
+	const FVector2D V_RL(DynCar->car_state.Vx - TrackWidth / 100.0 / 2.0 * DynCar->car_state.Om, DynCar->car_state.Vy - CoGToRearWheel * DynCar->car_state.Om / 100.0);
+	const FVector2D V_RR(DynCar->car_state.Vx + TrackWidth / 100.0 / 2.0 * DynCar->car_state.Om, DynCar->car_state.Vy - CoGToRearWheel * DynCar->car_state.Om / 100.0);
+	const FVector2D V_FR(DynCar->car_state.Vx + TrackWidth / 100.0 / 2.0 * DynCar->car_state.Om, DynCar->car_state.Vy + CoGToForwardWheel * DynCar->car_state.Om / 100.0);
 	const float Vt_FL = V_FL.GetRotated(-DynCar->car_state.steer_alpha / M_PI * 180.0).X;
 	const float Vt_FR = V_FR.GetRotated(-DynCar->car_state.steer_alpha / M_PI * 180.0).X;
 
-	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->AngularVelocity = CalcWheelSpeed(Vt_FL, DynCar->car_state.long_slip_f, FrontWheelRadius );
-	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->AngularVelocity = CalcWheelSpeed(Vt_FR, DynCar->car_state.long_slip_f, FrontWheelRadius );
-	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->AngularVelocity = CalcWheelSpeed(V_RL.X, DynCar->car_state.long_slip_r, RearWheelRadius );
-	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->AngularVelocity = CalcWheelSpeed(V_RR.X, DynCar->car_state.long_slip_r, RearWheelRadius );
+	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->AngularVelocity = CalcWheelSpeed(Vt_FL, DynCar->car_state.long_slip_f, FrontWheelRadius / 100.0);
+	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->AngularVelocity = CalcWheelSpeed(Vt_FR, DynCar->car_state.long_slip_f, FrontWheelRadius / 100.0);
+	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->AngularVelocity = CalcWheelSpeed(V_RL.X, DynCar->car_state.long_slip_r, RearWheelRadius / 100.0);
+	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->AngularVelocity = CalcWheelSpeed(V_RR.X, DynCar->car_state.long_slip_r, RearWheelRadius / 100.0);
 
 	for(int i = 0; i < 4; i++)
 	{

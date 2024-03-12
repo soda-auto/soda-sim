@@ -31,6 +31,7 @@ class UNREALSODA_API USoda2DWheeledVehicleMovementComponent : public UWheeledVeh
 	GENERATED_UCLASS_BODY()
 
 public:
+	/** Offset from center of the mesh to rear wheel, [cm] */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	FVector RearWheelOffset{};
 
@@ -42,33 +43,33 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float MomentOfInertia = 1260.0f;
 
-	/** Track Width [m]*/
+	/** Track Width [cm]*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float TrackWidth = 2;
+	float TrackWidth = 200;
 
-	/** Distance from CoG to forward wheel [m] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float A = 1.7;
+	/** Distance from CoG to forward wheel [cm] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (DisplayName="CoG to Forward Wheel", EditInRuntime, ReactivateComponent))
+	float CoGToForwardWheel = 170;
 
-	/** Distance from CoG to rear wheel [m] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float B = 1.168;
+	/** Distance from CoG to rear wheel [cm] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (DisplayName = "CoG to Rear Wheel", EditInRuntime, ReactivateComponent))
+	float CoGToRearWheel = 116.8;
 
-	/** High of CG [m] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float CGvert = 0.4;
+	/** High of CoG [cm] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (DisplayName = "CoG Vert", EditInRuntime, ReactivateComponent))
+	float CoGVert = 40;
 
 	/** Friction coefficient */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float Friction = 1.0;
 
-	/** Wheels radius [m]*/
+	/** Wheels radius [cm]*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float FrontWheelRadius = 0.31;
+	float FrontWheelRadius = 31;
 
-	/** Wheels radius [m]*/
+	/** Wheels radius [cm]*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float RearWheelRadius = 0.35;
+	float RearWheelRadius = 35;
 
 	/** Rear wheels stiffness of tyres in lateral direction */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
@@ -109,7 +110,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	bool bPullToGround = true;
 
-	/** [cm] from center of promotive */
+	/** From center of promotive [cm] */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float PullToGroundOffset = 30;
 
@@ -128,11 +129,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	int FlDragTaking = 1;
 
-	/** 0 || 1 || 2 ; 2 is default value (combined slip mode)*/
+	/** 0 || 1 || 2 ; 2 is default value (combined slip mode) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	int FlLongCirc = 3;
 
-	/** 1 for static case of loads on rear and forward wheel*/
+	/** 1 for static case of loads on rear and forward wheel */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	int FlStaticLoad = 0;
 
@@ -140,11 +141,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	int FlRunKut = 0;
 
-	/** sampling for integration on [t,t+dt] interval */
+	/** Sampling for integration on [t,t+dt] interval */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	int NSteps = 10;
 
-	/** Lawes for actuators;*/
+	/** Lawes for actuators */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	int FlActLow = 2;
 
