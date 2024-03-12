@@ -1570,7 +1570,7 @@ void ASodaVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) const
 	try
 	{
 		InDataset.GetRowDoc()
-			<< "CommonData" << open_document
+			<< "VehicleData" << open_document
 			<< "SimTsUs" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.SimulatedTimestamp))
 			<< "RenderTsUs" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.RenderTimestamp))
 			<< "Step" << SimData.SimulatedStep

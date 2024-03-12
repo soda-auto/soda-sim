@@ -31,23 +31,26 @@ class UNREALSODA_API USoda2DWheeledVehicleMovementComponent : public UWheeledVeh
 	GENERATED_UCLASS_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
+	FVector RearWheelOffset{};
+
 	/** Vehicle mass in kg */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float Mass = 1196.0;
 
-	/** Moment of inertia (Roll, Pitch, Yaw) for car [kg * m^2] */
+	/** Moment of inertia by Z axis for car [kg * m^2] */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	FVector MomentOfInertia{600.0f, 800.0f, 1260.0f};
+	float MomentOfInertia = 1260.0f;
 
 	/** Track Width [m]*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float TrackWidth = 2;
 
-	/** Distance from CG to forward wheel [m] */
+	/** Distance from CoG to forward wheel [m] */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float A = 1.7;
 
-	/** Distance from CG to rear wheel [m] */
+	/** Distance from CoG to rear wheel [m] */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float B = 1.168;
 
@@ -115,10 +118,10 @@ public:
 	bool bEnableCollisions = false;
 
 	/** Time of integration in milliseconds */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	int IntegrationTimeStep = 10;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	double SpeedFactor = 1.0;
 
 	/** If 1 then drag forces being taked into account*/
@@ -161,11 +164,7 @@ public:
 	float ModelStartUpDelay = 0.5;
 
 public:
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	virtual void InitializeComponent() override;
-	virtual void UninitializeComponent() override;
 
 public:
 	virtual void UpdateSimulation(const std::chrono::nanoseconds& Deltatime, const std::chrono::nanoseconds& Elapsed);
@@ -190,4 +189,6 @@ protected:
 	TSharedPtr<DynamicCar> DynCar;
 	FPrecisionTimer PrecisionTimer;
 	bool bSynchronousMode = false;
+	FVector CoF;
+	float ZOffset;
 };

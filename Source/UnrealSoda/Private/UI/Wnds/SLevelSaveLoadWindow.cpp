@@ -321,6 +321,7 @@ FReply SLevelSaveLoadWindow::OnSave()
 			this->UpdateSlots();
 		}
 	}
+	CloseWindow();
 	return FReply::Handled();
 }
 
@@ -338,6 +339,7 @@ FReply SLevelSaveLoadWindow::OnNewSave()
 		}
 		this->UpdateSlots();
 	}
+	CloseWindow();
 	return FReply::Handled();
 }
 
@@ -361,6 +363,7 @@ FReply SLevelSaveLoadWindow::OnLoad()
 			}
 		}
 	}
+	CloseWindow();
 	return FReply::Handled();
 }
 

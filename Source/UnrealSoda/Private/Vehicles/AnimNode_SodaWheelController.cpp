@@ -72,7 +72,7 @@ void FAnimNode_SodaWheelController::EvaluateSkeletalControl_AnyThread(FComponent
 				NewBoneTM.SetRotation(BoneQuat * NewBoneTM.GetRotation());
 
 				// Apply loc offset
-				NewBoneTM.AddToTranslation(WheelAnimData[Wheel.WheelIndex].LocOffset);
+				NewBoneTM.AddToTranslation(-WheelAnimData[Wheel.WheelIndex].LocOffset);
 
 				// Convert back to Component Space.
 				FAnimationRuntime::ConvertBoneSpaceTransformToCS(Output.AnimInstanceProxy->GetComponentTransform(), Output.Pose, NewBoneTM, WheelSimBoneIndex, BCS_ComponentSpace);

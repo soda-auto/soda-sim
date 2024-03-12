@@ -21,7 +21,7 @@ bool UCSVLoggerSensorComponent::OnActivateVehicleComponent()
 		return false;
 	}
 	OutFile.close();
-	OutFile.open(TCHAR_TO_UTF8(*CSVPath));
+	OutFile.open(TCHAR_TO_UTF8(*CSVPath), std::ios::trunc);
 
 	if (!OutFile.is_open())
 	{

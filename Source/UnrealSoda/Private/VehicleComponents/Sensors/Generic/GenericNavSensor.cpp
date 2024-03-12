@@ -7,7 +7,7 @@
 UGenericNavSensor::UGenericNavSensor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	GUI.ComponentNameOverride = TEXT("Generic IMU & GNSS");
+	GUI.ComponentNameOverride = TEXT("Generic Nav");
 	GUI.bIsPresentInAddMenu = true;
 }
 

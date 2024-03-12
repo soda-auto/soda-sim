@@ -397,6 +397,8 @@ const FSodaActorDescriptor* ASodaWheeledVehicle::GenerateActorDescriptor() const
 
 void ASodaWheeledVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) const
 {
+	Super::OnPushDataset(InDataset);
+
 	using bsoncxx::builder::stream::document;
 	using bsoncxx::builder::stream::finalize;
 	using bsoncxx::builder::stream::open_document;
@@ -404,14 +406,13 @@ void ASodaWheeledVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) cons
 	using bsoncxx::builder::stream::open_array;
 	using bsoncxx::builder::stream::close_array;
 
-	Super::OnPushDataset(InDataset);
+	auto Doc = InDataset.GetRowDoc() << "WheeledVehicleData" << open_document;
 
-	InDataset.GetRowDoc()
-		<< "EngineLoad" << GetEnginesLoad();
+	//Doc << "EngineLoad" << GetEnginesLoad();
 
 	if (UVehicleInputComponent* Input = GetActiveVehicleInput())
 	{
-		InDataset.GetRowDoc() << "Inputs" << open_document
+		Doc << "Inputs" << open_document
 			<< "Break" << Input->GetInputState().Brake
 			<< "Steer" << Input->GetInputState().Steering
 			<< "Throttle" << Input->GetInputState().Throttle
@@ -437,8 +438,10 @@ void ASodaWheeledVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) cons
 			<< close_document;
 		}
 
-		InDataset.GetRowDoc() << "Wheels" << WheelsArray;
+		Doc << "Wheels" << WheelsArray;
 	}
+
+	Doc << close_document;
 }
 
 void ASodaWheeledVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) const

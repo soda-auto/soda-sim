@@ -121,5 +121,10 @@ FReply SPinWidget::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEv
 	return FReply::Unhandled();
 }
 
+FReply SPinWidget::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
+{
+	return FReply::Handled();
+}
+
 
 } // namespace soda
