@@ -33,7 +33,7 @@ namespace soda
 		/** [rad/s] Zero value means change speed as quickly as possible to SteerReq.ByAngle */
 		float SteeringAngleVelocity;
 
-		/** [cm/s] Zero TargetSpeed means don't used  */
+		/** [cm/s] */
 		float TargetSpeedReq;
 
 		EGearState GearStateReq;
@@ -56,8 +56,9 @@ namespace soda
 			ByRatio,
 			ByAcc
 		};
-
+		bool bTargetSpeedIsSet;
 		bool bGearIsSet;
+		bool bSteeringAngleVelocitySet;
 		ESteerReqMode SteerReqMode;
 		EDriveEffortReqMode DriveEffortReqMode;
 
@@ -66,6 +67,11 @@ namespace soda
 
 } // namespace soda
 
+/**
+ * TODO: Support brake by Engine
+ * TODO: Support revers by Engine, without change gear (for electric engines)
+ * TODO: Support FGenericWheeledVehiclControl::bSteeringAngleVelocitySet
+ */
 
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API UGenericVehicleDriverComponentComponent : public UVehicleDriverComponent
@@ -124,6 +130,10 @@ public:
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleDriver)
 	//float VehicleWheelRadius = 35.0f;
+
+	/** [cm/s] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleDriver)
+	float TargetSpeedDelta = 10;
 
 protected:
 	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;

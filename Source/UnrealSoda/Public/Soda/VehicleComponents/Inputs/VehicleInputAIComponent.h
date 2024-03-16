@@ -6,67 +6,11 @@
 #include "Soda/UnrealSoda.h"
 #include "Soda/Vehicles/VehicleBaseTypes.h"
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
+#include "Soda/Misc/PIDController.h"
 #include "VehicleInputAIComponent.generated.h"
 
 class ASodaWheeledVehicle;
 class ANavigationRoute;
-
-/**
-* Soda PID controller
-*/
-USTRUCT(BlueprintType)
-struct UNREALSODA_API FSodaPID
-{
-	GENERATED_BODY()
-
-	/** PID FeedForward Coef*/
-	UPROPERTY(EditAnywhere, Category = "AI PID controller", BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
-	float FFCoef = 0.035f;
-
-	/** PID Proportional Coef*/
-	UPROPERTY(EditAnywhere, Category = "AI PID controller", BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
-	float PropCoef = 0.03f;
-
-	/** PID Integral Coef*/
-	UPROPERTY(EditAnywhere, Category = "AI PID controller", BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
-	float IntegrCoef = 0;
-
-	/** PID Derivative Coef*/
-	UPROPERTY(EditAnywhere, Category = "AI PID controller", BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
-	float DiffCoef = 0.003;
-
-	/** In case of low fps (under LowFPS limit) multiply proportional error on Coef to reduce oscillations*/
-	UPROPERTY(EditAnywhere, Category = "AI PID controller", BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
-	float LowFPSCoef = 0.2f;
-
-	/**If time step per Tick exceeds limit - use LowFPSCoef [s]*/
-	UPROPERTY(EditAnywhere, Category = "AI PID controller", BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
-	float LowFpsDtLimit = 0.05f;
-
-	/**Put PID debug info to log*/
-	UPROPERTY(EditAnywhere, Category = "AI PID controller", BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
-	bool bDebugOutput = false;
-
-	float CalculatePID(float FFVal, float Error, float Time)
-	{
-		float Diff = (Error - PrevVal) / Time;
-		Integrator += Error * Time;
-		PrevVal = Error;
-		if (Time > LowFpsDtLimit)
-			Error *= LowFPSCoef;
-		float Res = FFCoef * FFVal + PropCoef * Error + IntegrCoef * Integrator + DiffCoef * Diff;
-		if (bDebugOutput)
-		{
-			UE_LOG(LogSoda, Log, TEXT("PID: FFVal=%f, Error=%f, Integ=%f, Diff=%f, (FF+Prop+Integ+Diff)=(%f+%f+%f+%f=%f)"), FFVal, Error, Integrator, Diff, FFCoef * FFVal, PropCoef * Error, IntegrCoef * Integrator, DiffCoef * Diff, Res);
-		}
-
-		return Res;
-	}
-
-protected:
-	float Integrator = 0;
-	float PrevVal = 0;
-};
 
 /** 
 * Wheeled vehicle controller with optional AI.
@@ -167,7 +111,7 @@ public:
 
 	/** Steering PID controller*/
 	UPROPERTY(Category = "AI controller", EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
-	FSodaPID SteeringPID;
+	FPIDController SteeringPID;
 
 	/** Use Raycast to detect obstacles*/
 	UPROPERTY(Category = "AI controller", EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))

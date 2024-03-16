@@ -186,7 +186,7 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 		}
 		else
 		{
-			if (!FMath::IsNearlyZero(Control.TargetSpeedReq))
+			if (!Control.bTargetSpeedIsSet)
 			{
 				if (Control.TargetSpeedReq > 0)
 				{
@@ -215,11 +215,31 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 			}
 		}
 
+		//TODO: Set brake only if Engine Torque ==0
+
 		if (Engine)
 		{
+			
 			if (GearState == EGearState::Drive || GearState == EGearState::Reverse)
 			{
-				if (Control.DriveEffortReqMode == soda::FGenericWheeledVehiclControl::EDriveEffortReqMode::ByAcc)
+				bool bIsOverSpeed = false;
+				if (Control.bTargetSpeedIsSet)
+				{
+					if (GearState == EGearState::Drive && VehicleKinematic.GetForwardSpeed() > Control.TargetSpeedReq - TargetSpeedDelta)
+					{
+						bIsOverSpeed = true;
+					}
+					else if (GearState == EGearState::Reverse && VehicleKinematic.GetForwardSpeed() < Control.TargetSpeedReq + TargetSpeedDelta)
+					{
+						bIsOverSpeed = true;
+					}
+				}
+
+				if (bIsOverSpeed)
+				{
+					Engine->RequestByRatio(0);
+				} 
+				else if (Control.DriveEffortReqMode == soda::FGenericWheeledVehiclControl::EDriveEffortReqMode::ByAcc)
 				{
 					if (Control.DriveEffortReq.ByAcc >= 0)
 					{
@@ -255,7 +275,24 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 
 		if (BrakeSystem)
 		{
-			if (Control.DriveEffortReqMode == soda::FGenericWheeledVehiclControl::EDriveEffortReqMode::ByAcc)
+			bool bIsOverSpeed = false;
+			if (Control.bTargetSpeedIsSet)
+			{
+				if (GearState == EGearState::Drive && VehicleKinematic.GetForwardSpeed() < Control.TargetSpeedReq + TargetSpeedDelta)
+				{
+					bIsOverSpeed = true;
+				}
+				else if (GearState == EGearState::Reverse && VehicleKinematic.GetForwardSpeed() > Control.TargetSpeedReq - TargetSpeedDelta)
+				{
+					bIsOverSpeed = true;
+				}
+			}
+
+			if (bIsOverSpeed)
+			{
+				BrakeSystem->RequestByRatio(0, DeltaTime);
+			}
+			else if (Control.DriveEffortReqMode == soda::FGenericWheeledVehiclControl::EDriveEffortReqMode::ByAcc)
 			{
 				if (Control.DriveEffortReq.ByAcc < 0)
 				{
@@ -281,6 +318,7 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 
 		if (SteeringRack)
 		{
+			// TODO: Support of Control.SteeringAngleVelocity
 			if (Control.SteerReqMode == soda::FGenericWheeledVehiclControl::ESteerReqMode::ByAngle)
 			{
 				SteeringRack->RequestByAngle(Control.SteerReq.ByAngle);
