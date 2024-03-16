@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaApp.h"
@@ -57,6 +57,7 @@ const FString FSodaVehicleJSONExporter::ExporterFileType = TEXT("Soda JSON Vehic
 
 void FUnrealSodaModule::StartupModule()
 {
+
 #if PLATFORM_WINDOWS
 	FString DllDirectory = FPaths::Combine(IPluginManager::Get().FindPlugin(TEXT("SodaSim"))->GetBaseDir(), TEXT("/Binaries/Win64"));
 	TArray<FString> DllNames = { "libsodium.dll", "libzmq-v141-mt-4_3_2.dll", "SDL2.dll" };

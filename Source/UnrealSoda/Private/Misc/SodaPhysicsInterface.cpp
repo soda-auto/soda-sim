@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Misc/SodaPhysicsInterface.h"
 #include "Engine/World.h"
@@ -11,6 +11,7 @@
 #include "PhysicsEngine/ExternalSpatialAccelerationPayload.h"
 #include "Runtime/Engine/Private/PhysicsEngine/ScopedSQHitchRepeater.h"
 #include "Runtime/Engine/Private/Collision/CollisionDebugDrawing.h"
+//#include "Runtime/Engine/Private/PhysicsEngine/CollisionAnalyzerCapture.h"
 
 float DebugLineLifetime_ = 2.f;
 
@@ -270,7 +271,8 @@ struct TSQTraits
 	template <typename TGeomInputs>
 	static void CaptureTraces(const UWorld* World, const FVector& Start, const FVector& End, const TGeomInputs& GeomInputs, ECollisionChannel TraceChannel, const FCollisionQueryParams& Params, const FCollisionResponseParams& ResponseParams, const FCollisionObjectQueryParams& ObjectParams, const TArray<FHitResult>& Hits, bool bHaveBlockingHit, double StartTime)
 	{
-#if ENABLE_COLLISION_ANALYZER
+
+#if 0 //ENABLE_COLLISION_ANALYZER
 		ECAQueryMode::Type QueryMode = IsMulti() ? ECAQueryMode::Multi : (IsSingle() ? ECAQueryMode::Single : ECAQueryMode::Test);
 		if (IsRay())
 		{

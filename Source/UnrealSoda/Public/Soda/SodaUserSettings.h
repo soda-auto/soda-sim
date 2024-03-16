@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -38,6 +38,12 @@ public:
 
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, meta = (EditInRuntime))
 	FKey ParkGearKeyInput;
+
+	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, meta = (EditInRuntime))
+	FKey GearUpKeyInput;
+
+	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, meta = (EditInRuntime))
+	FKey GearDownKeyInput;
 
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, meta = (EditInRuntime))
 	FKey ChangeModeKeyInput;
@@ -83,6 +89,12 @@ public:
 
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, meta = (EditInRuntime))
 	FKey ParkGearJoyInput;
+
+	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, meta = (EditInRuntime))
+	FKey GearUpJoyInput;
+
+	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, meta = (EditInRuntime))
+	FKey GearDownJoyInput;
 
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = UI, meta = (EditInRuntime))
 	float DPIScale;

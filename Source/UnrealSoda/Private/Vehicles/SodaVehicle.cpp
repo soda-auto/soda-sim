@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/UnrealSoda.h"
@@ -309,6 +309,14 @@ void ASodaVehicle::BeginPlay()
 		}
 	}
 
+	for (auto& Component : GetVehicleComponents())
+	{
+		if (Component->IsVehicleComponentActiveted())
+		{
+			Component->OnPostActivateVehicleComponent();
+		}
+	}
+
 	PhysicMutex.Unlock();
 }
 
@@ -318,7 +326,25 @@ void ASodaVehicle::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		if (Component->IsVehicleComponentActiveted())
 		{
+			Component->OnPreDeactivateVehicleComponent();
+		}
+	}
+
+	TArray<ISodaVehicleComponent*> ComponentsToPostDeactivateVehicle;
+	for (auto& Component : GetVehicleComponents())
+	{
+		if (Component->IsVehicleComponentActiveted())
+		{
 			Component->OnDeactivateVehicleComponent();
+			ComponentsToPostDeactivateVehicle.Add(Component);
+		}
+	}
+
+	for (auto& Component : ComponentsToPostDeactivateVehicle)
+	{
+		if (Component->IsVehicleComponentActiveted())
+		{
+			Component->OnPostDeactivateVehicleComponent();
 		}
 	}
 
@@ -725,13 +751,15 @@ void ASodaVehicle::ReActivateVehicleComponents(bool bOnlyTopologyComponents)
 	{
 		if (!bOnlyTopologyComponents || It->GetVehicleComponentCommon().bIsTopologyComponent)
 		{
-			bool bIsNeedActivate =
+			const bool bNeedActivate =
 				(It->IsVehicleComponentActiveted() && It->GetDeferredTask() != EVehicleComponentDeferredTask::Deactivate) ||
 				It->GetDeferredTask() == EVehicleComponentDeferredTask::Activate;
-			ComponentsActive.Add(MakeTuple(It, bIsNeedActivate));
+			ComponentsActive.Add(MakeTuple(It, bNeedActivate));
 			if (It->IsVehicleComponentActiveted())
 			{
+				It->OnPreDeactivateVehicleComponent();
 				It->OnDeactivateVehicleComponent();
+				It->OnPostDeactivateVehicleComponent();
 			}
 		}
 	}
@@ -748,18 +776,12 @@ void ASodaVehicle::ReActivateVehicleComponents(bool bOnlyTopologyComponents)
 		if (It.Get<1>()) It.Get<0>()->OnActivateVehicleComponent();
 	}
 
-	bNotifyNeedReActivateComponents = false;
+	for (auto& It : ComponentsActive)
+	{
+		if (It.Get<1>()) It.Get<0>()->OnPostActivateVehicleComponent();
+	}
 }
 
-bool ASodaVehicle::ReActivateVehicleComponentsIfNeeded()
-{
-	if (bNotifyNeedReActivateComponents)
-	{
-		ReActivateVehicleComponents(true);
-		return true;
-	}
-	return false;
-}
 
 void ASodaVehicle::UpdateProperties()
 {
@@ -1548,14 +1570,16 @@ void ASodaVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) const
 	try
 	{
 		InDataset.GetRowDoc()
-			<< "sim_ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.SimulatedTimestamp))
-			<< "render_ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.RenderTimestamp))
-			<< "step" << SimData.SimulatedStep
-			<< "loc" << open_array << Location.X << Location.Y << Location.Z << close_array
-			<< "rot" << open_array << Rotation.Pitch << Rotation.Yaw << Rotation.Roll << close_array
-			<< "vel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array
-			<< "acc" << open_array << Acc.X << Acc.Y << Acc.Z << close_array
-			<< "ang_vel" << open_array << AngVel.X << AngVel.Y << AngVel.Z << close_array;
+			<< "VehicleData" << open_document
+			<< "SimTsUs" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.SimulatedTimestamp))
+			<< "RenderTsUs" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.RenderTimestamp))
+			<< "Step" << SimData.SimulatedStep
+			<< "Loc" << open_array << Location.X << Location.Y << Location.Z << close_array
+			<< "Rot" << open_array << Rotation.Roll << Rotation.Pitch << Rotation.Yaw << close_array
+			<< "Bel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array
+			<< "Acc" << open_array << Acc.X << Acc.Y << Acc.Z << close_array
+			<< "AngVel" << open_array << AngVel.X << AngVel.Y << AngVel.Z << close_array
+			<< close_document;
 	}
 	catch (const std::system_error& e)
 	{
@@ -1574,13 +1598,13 @@ void ASodaVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) const
 
 	const FExtent& Extent = GetVehicleExtent();
 	*Doc
-		<< "extents" << open_document
-		<< "forward" << Extent.Forward
-		<< "backward" << Extent.Backward
-		<< "left" << Extent.Left
-		<< "right" << Extent.Right
-		<< "up" << Extent.Up
-		<< "down" << Extent.Down
+		<< "Extents" << open_document
+		<< "Forward" << Extent.Forward
+		<< "Backward" << Extent.Backward
+		<< "Left" << Extent.Left
+		<< "Right" << Extent.Right
+		<< "Up" << Extent.Up
+		<< "Down" << Extent.Down
 		<< close_document;
 }
 

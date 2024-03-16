@@ -24,9 +24,7 @@ public class dbcppp : ModuleRules
 			PublicIncludePaths.Add(Path.Combine(InstallDir, "include"));
             //PublicAdditionalLibraries.Add(Path.Combine(InstallDir, "lib", "libdbcppp.lib"));
 
-            PublicAdditionalLibraries.Add(Path.Combine(InstallDir, "lib/libdbcppp.lib"));
-            PublicAdditionalLibraries.Add(Path.Combine(InstallDir, "lib/libxml2s.lib"));
-            PublicAdditionalLibraries.Add(Path.Combine(InstallDir, "lib/libxmlmm.lib"));
+            PublicAdditionalLibraries.Add(Path.Combine(InstallDir, "lib/dbcppp.lib"));
 
 
         }
@@ -41,8 +39,6 @@ public class dbcppp : ModuleRules
             //PublicAdditionalLibraries.Add(Path.Combine(BinariesPath, "libdbcppp.so"));
 
             PublicAdditionalLibraries.Add(Path.Combine(InstallDir, "lib/libdbcppp.a"));
-            PublicAdditionalLibraries.Add(Path.Combine(InstallDir, "lib/libxml2.a"));
-            PublicAdditionalLibraries.Add(Path.Combine(InstallDir, "lib/libxmlmm.a"));
         }
 	}
 }

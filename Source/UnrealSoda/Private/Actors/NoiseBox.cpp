@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Actors/NoiseBox.h"
 #include "Soda/UnrealSoda.h"
@@ -127,7 +127,7 @@ void ANoiseBox::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Othe
 		{
 			for (auto& Component : Vehicle->GetVehicleComponents())
 			{
-				if (UImuSensorComponent* Sensor = Cast<UImuSensorComponent>(Component))
+				if (UNavSensor* Sensor = Cast<UNavSensor>(Component))
 				{
 					Sensor->SetImuNoiseParams(DefaultNoiseParams);
 				}
@@ -145,7 +145,7 @@ void ANoiseBox::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other,
 		{
 			for (auto& Component : Vehicle->GetVehicleComponents())
 			{
-				if (UImuSensorComponent* Sensor = Cast<UImuSensorComponent>(Component))
+				if (UNavSensor* Sensor = Cast<UNavSensor>(Component))
 				{
 					Sensor->RestoreBaseImuNoiseParams();
 				}

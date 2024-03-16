@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "UI/Wnds/SSaveVehicleRequestWindow.h"
 #include "SodaStyleSet.h"
@@ -61,8 +61,8 @@ void SSaveVehicleRequestWindow::Construct( const FArguments& InArgs, TWeakObject
 				.AutoWidth()
 				[
 					SNew(SButton)
-					.Text(FText::FromString("Cancle"))
-					.OnClicked(this, &SSaveVehicleRequestWindow::OnCancle)
+					.Text(FText::FromString("Cancel"))
+					.OnClicked(this, &SSaveVehicleRequestWindow::OnCancel)
 				]
 			]
 		]
@@ -96,7 +96,7 @@ FReply SSaveVehicleRequestWindow::OnResave()
 	return FReply::Handled();
 }
 
-FReply SSaveVehicleRequestWindow::OnCancle()
+FReply SSaveVehicleRequestWindow::OnCancel()
 {
 	CloseWindow();
 	return FReply::Handled();

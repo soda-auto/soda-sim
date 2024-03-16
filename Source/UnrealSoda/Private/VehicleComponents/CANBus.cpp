@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/CANBus.h"
 #include "Soda/VehicleComponents/CANDev.h"
@@ -253,8 +253,9 @@ bool UCANBusComponent::ProcessRecvMessage(const TTimestamp& Timestamp, const dbc
 	}
 }
 
-void UCANBusComponent::GetRemark(FString& Info) const
+FString UCANBusComponent::GetRemark() const
 {
+	return "";
 }
 
 void UCANBusComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)

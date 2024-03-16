@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/UI/SVehicleComponentsList.h"
 #include "Soda/UnrealSoda.h"
@@ -37,6 +37,7 @@ namespace soda
 
 static const FName Column_CB_Enable("Enable");
 static const FName Column_CB_StartUp("StartUp");
+static const FName Column_CB_Dataset("Dataset");
 static const FName Column_CB_ItemName("ItemName");
 static const FName Column_CB_Remark("Remark");
 static const FName Column_CB_Health("Health");
@@ -311,6 +312,25 @@ public:
 				];
 		}
 
+		if (InColumnName == Column_CB_Dataset)
+		{
+			return
+				SNew(SBox)
+				.VAlign(VAlign_Center)
+				.HAlign(HAlign_Center)
+				[
+					SNew(SPinWidget)
+						.CheckedHoveredBrush(FSodaStyle::Get().GetBrush(TEXT("SodaIcons.Record")))
+						.CheckedNotHoveredBrush(FSodaStyle::Get().GetBrush(TEXT("SodaIcons.Record")))
+						.NotCheckedHoveredBrush(FSodaStyle::Get().GetBrush(TEXT("SodaIcons.Record")))
+						.NotCheckedNotHoveredBrush(FSodaStyle::Get().GetBrush(TEXT("SodaIcons.Record")))
+						.bHideUnchecked(true)
+						.IsChecked(TAttribute<bool>::CreateLambda([this]() { return Component->GetVehicleComponentCommon().bWriteDataset; }))
+						.OnClicked(FOnClicked::CreateLambda([this]() { Component->GetVehicleComponentCommon().bWriteDataset = !Component->GetVehicleComponentCommon().bWriteDataset; return FReply::Handled(); }))
+						.Row(SharedThis(this))
+				];
+		}
+
 		if (InColumnName == Column_CB_ItemName)
 		{
 			return
@@ -342,9 +362,7 @@ public:
 				SNew(STextBlock)
 				.Text_Lambda([this]() 
 				{
-					FString Remark;
-					Component->GetRemark(Remark);
-					return FText::FromString(Remark); 
+					return FText::FromString(Component->GetRemark());
 				})
 				.ColorAndOpacity(FLinearColor(0.3f, 0.3f, 0.3f));
 		}
@@ -712,7 +730,6 @@ void SVehicleComponentsList::Construct( const FArguments& InArgs, ASodaVehicle* 
 			.HeaderRow(
 				SNew(SHeaderRow)
 				+SHeaderRow::Column(Column_CB_Enable)
-				.ToolTipText(FText::FromString("Activate/deactivate vehicle Component"))
 				.FixedWidth(24)
 				.HAlignCell(HAlign_Center)
 				.HeaderContent()
@@ -724,10 +741,10 @@ void SVehicleComponentsList::Construct( const FArguments& InArgs, ASodaVehicle* 
 					[
 						SNew(SImage)
 						.Image(FSodaStyle::Get().GetBrush(TEXT("SodaIcons.Sensor")))
+						.ToolTipText(FText::FromString("Activate/deactivate vehicle Component"))
 					]
 				]
 				+SHeaderRow::Column(Column_CB_StartUp)
-				.ToolTipText(FText::FromString("Sensor auto-activation behavior (never / after creation / when scenario is run)"))
 				.FixedWidth(24)
 				.HAlignCell(HAlign_Center)
 				.HeaderContent()
@@ -739,6 +756,22 @@ void SVehicleComponentsList::Construct( const FArguments& InArgs, ASodaVehicle* 
 					[
 						SNew(SImage)
 						.Image(FSodaStyle::Get().GetBrush(TEXT("SodaIcons.LapCount")))
+						.ToolTipText(FText::FromString("Sensor auto-activation behavior (never / after creation / when scenario is run)"))
+					]
+				]
+				+SHeaderRow::Column(Column_CB_Dataset)
+				.FixedWidth(24)
+				.HAlignCell(HAlign_Center)
+				.HeaderContent()
+				[
+					SNew(SBox)
+					.VAlign(VAlign_Center)
+					.HAlign(HAlign_Center)
+					.Padding(0)
+					[
+						SNew(SImage)
+						.Image(FSodaStyle::Get().GetBrush(TEXT("SodaIcons.Record")))
+						.ToolTipText(FText::FromString("Enable record dataset for this component"))
 					]
 				]
 				+ SHeaderRow::Column(Column_CB_ItemName)
@@ -798,7 +831,7 @@ void SVehicleComponentsList::RebuildNodes()
 	bool bLastNodeIsDeleted = false;
 	if (CategoriesSorted.Remove("DELETED") > 0)
 	{
-		CategoriesSorted.Add("DELETED"); // Push "DELETED" to the ånd of the array
+		CategoriesSorted.Add("DELETED"); // Push "DELETED" to the and of the array
 		bLastNodeIsDeleted = true;
 	}
 	for (auto& It : CategoriesSorted)

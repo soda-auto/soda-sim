@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/VehicleDriverComponent.h"
 #include "Soda/UnrealSoda.h"
@@ -42,22 +42,22 @@ bool UVehicleDriverComponent::IsEnabledBrakeLight() const
 
 bool UVehicleDriverComponent::IsEnabledReversLights() const 
 {
-	return (GetGear() == ENGear::Reverse);
+	return (GetGearState() == EGearState::Reverse);
 }
 
 ESodaVehicleDriveMode UVehicleDriverComponent::GetDriveMode() const 
 {
-	bool bSafeStopInput = false;
-	bool bADModeInput = false;
+	bool bSafeStopEnbaled = false;
+	bool bADModeEnbaled = false;
 
 	if (UVehicleInputComponent* VehicleInput = GetWheeledVehicle()->GetActiveVehicleInput())
 	{
-		bSafeStopInput = VehicleInput->bSafeStopInput;
-		bADModeInput = VehicleInput->bADModeInput;
+		bSafeStopEnbaled = VehicleInput->GetInputState().bSafeStopEnbaled;
+		bADModeEnbaled = VehicleInput->GetInputState().bADModeEnbaled;
 	}
 
-	if(bSafeStopInput || (bADModeInput && !IsADPing())) return ESodaVehicleDriveMode::SafeStop;
-	if(bADModeInput) return ESodaVehicleDriveMode::AD;
+	if(bSafeStopEnbaled || (bADModeEnbaled && !IsADPing())) return ESodaVehicleDriveMode::SafeStop;
+	if(bADModeEnbaled) return ESodaVehicleDriveMode::AD;
 	return ESodaVehicleDriveMode::Manual; 	
 }
 

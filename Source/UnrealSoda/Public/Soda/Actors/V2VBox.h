@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -6,7 +6,7 @@
 #include "Components/BillboardComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Soda/ISodaActor.h"
-#include "Soda/VehicleComponents/Others/V2V.h"
+#include "Soda/VehicleComponents/Sensors/Base/V2XSensor.h"
 #include "V2VBox.generated.h"
 
 
@@ -14,7 +14,7 @@
   * ANoiseBox
   */
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API AV2VBox :
+class UNREALSODA_API AV2XBox :
 	public AActor,
 	public ISodaActor
 {
@@ -29,7 +29,7 @@ public:
 
 	/** Please add a variable description */
 	UPROPERTY(Category = Default, VisibleAnywhere, BlueprintReadOnly)
-	UV2VTransmitterComponent* V2VTransmitter;
+	UV2XMarkerSensor* V2XTransmitter;
 
 	UPROPERTY(Category = V2VBox, EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
 	FVector Extent = FVector(40.0f, 40.0f, 40.0f);
@@ -41,7 +41,7 @@ public:
 	bool bHideInScenario = false;
 
 public:
-	AV2VBox();
+	AV2XBox();
 
 	virtual void BeginPlay() override;
 

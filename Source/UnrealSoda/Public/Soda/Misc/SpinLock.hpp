@@ -1,4 +1,4 @@
-﻿// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+﻿// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #ifndef _UTIL_LOCK_SPINLOCK_H_
 #define _UTIL_LOCK_SPINLOCK_H_

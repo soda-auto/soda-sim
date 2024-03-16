@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/Mechanicles/VehicleEngineComponent.h"
 #include "Soda/UnrealSoda.h"
@@ -8,6 +8,13 @@
 #include "Engine/Engine.h"
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Soda/DBGateway.h"
+
+#include "bsoncxx/builder/stream/helpers.hpp"
+#include "bsoncxx/exception/exception.hpp"
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/builder/stream/array.hpp"
+#include "bsoncxx/json.hpp"
 
 UVehicleEngineBaseComponent::UVehicleEngineBaseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -46,36 +53,45 @@ void UVehicleEngineBaseComponent::OnDeactivateVehicleComponent()
 	Super::OnDeactivateVehicleComponent();
 }
 
-float UVehicleEngineBaseComponent::FindWheelRadius() const
+bool UVehicleEngineBaseComponent::FindWheelRadius(float& OutRadius) const
 {
-	float Ret = 0;
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		Ret = OutputTorqueTransmission->FindWheelRadius();
+		return OutputTorqueTransmission->FindWheelRadius(OutRadius);
 	}
 
-	if (bVerboseLog)
-	{
-		UE_LOG(LogSoda, Log, TEXT("UVehicleEngineBaseComponent::FindWheelRadius() return %f; Name: %s"), Ret, *GetFName().ToString());
-	}
-
-	return Ret;
+	return false;
 }
 
-float UVehicleEngineBaseComponent::FindToWheelRatio() const
+bool UVehicleEngineBaseComponent::FindToWheelRatio(float& OutRatio) const
 {
-	float Ret = 1;
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		Ret = OutputTorqueTransmission->FindToWheelRatio() * Ratio;
+		float PrevRatio;
+		if (OutputTorqueTransmission->FindToWheelRatio(PrevRatio))
+		{
+			OutRatio = PrevRatio * Ratio;
+			return true;
+		}
 	}
 
-	if (bVerboseLog)
+	return false;
+}
+
+float UVehicleEngineBaseComponent::GetEngineLoad() const
+{ 
+	float MaxTorque = GetMaxTorque();
+
+	//UE_LOG(LogSoda, Log, TEXT("************** %f %f"), MaxTorque, GetTorque());
+
+	if (FMath::IsNearlyZero(MaxTorque))
 	{
-		UE_LOG(LogSoda, Log, TEXT("UVehicleEngineBaseComponent::FindToWheelRatio() return %f; Name: %s"), Ret, *GetFName().ToString());
+		return 1.0;
 	}
-
-	return Ret;
+	else
+	{
+		return std::fabsf(GetTorque() / MaxTorque);
+	}
 }
 
 /********************************************************************************************************/
@@ -111,7 +127,7 @@ void UVehicleEngineSimpleComponent::TickComponent(float DeltaTime, ELevelTick Ti
 	{
 		if (UVehicleInputComponent* VehicleInput = GetWheeledVehicle()->GetActiveVehicleInput())
 		{
-			PedalPos = VehicleInput->GetThrottleInput();
+			PedalPos = VehicleInput->GetInputState().Throttle;
 		}
 		else
 		{
@@ -185,7 +201,7 @@ void UVehicleEngineSimpleComponent::PostPhysicSimulation(float DeltaTime, const 
 
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		AngularVelocity = OutputTorqueTransmission->ResolveAngularVelocity() * Ratio;
+		AngularVelocity = OutputTorqueTransmission->ResolveAngularVelocity() * Ratio * (bFlipAngularVelocity ?  -1.0 : 1.0);
 		if (bVerboseLog)
 		{
 			UE_LOG(LogSoda, Log, TEXT("UVehicleEngineBaseComponent::PostPhysicSimulation(); AngularVelocity: %f; MaxTorq: %f Name: %s"), AngularVelocity, MaxTorq, *GetFName().ToString());
@@ -203,7 +219,33 @@ void UVehicleEngineSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, float&
 		Canvas->SetDrawColor(FColor::White);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Req/Act/Max Torq: %.2f / %.2f / %.2f H/m"), RequestedTorque, ActualTorque, MaxTorq), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Load: %d"), int(GetEngineLoad() * 100 + 0.5)), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("AngVel: %.2f rad/s"), AngularVelocity), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("AngVel: %.2f rpm"), AngularVelocity * ANG2RPM), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Pedal Pos: %.2f"), PedalPos), 16, YPos);
+	}
+}
+
+void UVehicleEngineSimpleComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
+{
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::open_array;
+	using bsoncxx::builder::stream::close_array;
+
+	try
+	{
+		Dataset.GetRowDoc()
+			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
+			<< "AngVel" << AngularVelocity
+			<< "MaxTorq" << MaxTorq
+			<< "ReqTorq" << RequestedTorque
+			<< "ActTor" << ActualTorque
+			<< "PedalPos" << PedalPos
+			<< close_document;
+	}
+	catch (const std::system_error& e)
+	{
+		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
 	}
 }

@@ -1,10 +1,10 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
 #include "Curves/CurveFloat.h"
 #include "Soda/VehicleComponents/VehicleDriverComponent.h"
-#include "Soda/VehicleComponents/Sensors/ImuSensor.h"
+//#include "Soda/VehicleComponents/Sensors/ImuSensor.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
 #include "VehicleAnimationInstance.h"
 #include "Soda/ISodaVehicleComponent.h"
@@ -20,13 +20,13 @@ struct UNREALSODA_API FSodaChaosWheelSetup
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
+	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
 	FSubobjectReference ConnectedSodaWheel;
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup, meta = (EditCondition = "bOverrideRadius"))
+	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditCondition = "bOverrideRadius", EditInRuntime))
 	float OverrideRadius = 25;
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
+	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
 	bool bOverrideRadius = false;
 
 	UPROPERTY()
@@ -83,7 +83,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
 	bool bLogPhysStemp = false;
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup, EditFixedSize)
+	UPROPERTY(EditAnywhere, Category = WheelSetup, EditFixedSize, SaveGame, meta = (EditInRuntime))
 	TArray<FSodaChaosWheelSetup> SodaWheelSetups;
 
 public:
@@ -117,6 +117,7 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual void OnPreActivateVehicleComponent() override;
+	virtual void OnPreDeactivateVehicleComponent() override;
 
 public:
 	/** Override IWheeledVehicleMovementInterface */

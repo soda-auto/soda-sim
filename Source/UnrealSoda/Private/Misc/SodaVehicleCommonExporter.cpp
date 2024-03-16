@@ -1,10 +1,10 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "SodaVehicleCommonExporter.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/VehicleComponents/VehicleSensorComponent.h"
-#include "Soda/VehicleComponents/Sensors/ImuSensor.h"
-#include "Soda/VehicleComponents/Sensors/FisheyeCameraSensor.h"
+#include "Soda/VehicleComponents/Sensors/Base/NavSensor.h"
+#include "Soda/VehicleComponents/Sensors/Base/CameraFisheyeSensor.h"
 #include "Soda/UnrealSodaVersion.h"
 
 const FString FSodaVehicleCommonExporter::ExporterName = TEXT("Soda Sensors Common");
@@ -28,15 +28,15 @@ bool FSodaVehicleCommonExporter::ExportToString(const ASodaVehicle* Vehicle, FSt
 			TSharedPtr<FJsonObject> SensorObject = MakeShared<FJsonObject>();
 			TSharedPtr<FJsonObject> Int;
 			TSharedPtr<FJsonObject> Ext = GetSensorExtrinsics(Sensor);
-			if (UFisheyeCameraSensorComponent* FisheyeCameraSensor = Cast<UFisheyeCameraSensorComponent>(Sensor))
+			if (UCameraFisheyeSensor* FisheyeCameraSensor = Cast<UCameraFisheyeSensor>(Sensor))
 			{
 				Int = GetFisheyeIntrinsics(FisheyeCameraSensor);
 			}
-			else if (UCameraBaseSensorComponent* CameraSensor = Cast<UCameraBaseSensorComponent>(Sensor))
+			else if (UCameraSensor* CameraSensor = Cast<UCameraSensor>(Sensor))
 			{
 				Int = GetCameraIntrinsics(CameraSensor);
 			}
-			else if (UImuSensorComponent* ImuSensor = Cast<UImuSensorComponent>(Sensor))
+			else if (UNavSensor* ImuSensor = Cast<UNavSensor>(Sensor))
 			{
 				Int = GetImuIntrinsics(ImuSensor);
 			}
@@ -103,7 +103,7 @@ TSharedPtr<FJsonObject> FSodaVehicleCommonExporter::GetSensorExtrinsics(const US
 	return JsonObject;
 }
 
-TSharedPtr<FJsonObject> FSodaVehicleCommonExporter::GetCameraIntrinsics(const UCameraBaseSensorComponent* Sensor)
+TSharedPtr<FJsonObject> FSodaVehicleCommonExporter::GetCameraIntrinsics(const UCameraSensor* Sensor)
 {
 	FCameraIntrinsics Intrinsics = Sensor->GetCameraIntrinsics();
 
@@ -145,7 +145,7 @@ TSharedPtr<FJsonObject> FSodaVehicleCommonExporter::GetCameraIntrinsics(const UC
 	return JsonObject;
 }
 
-TSharedPtr<FJsonObject> FSodaVehicleCommonExporter::GetFisheyeIntrinsics(const UFisheyeCameraSensorComponent* Sensor)
+TSharedPtr<FJsonObject> FSodaVehicleCommonExporter::GetFisheyeIntrinsics(const UCameraFisheyeSensor* Sensor)
 {
 	TSharedPtr<FJsonObject> JsonObject = GetCameraIntrinsics(Sensor);
 	check(JsonObject);
@@ -153,7 +153,7 @@ TSharedPtr<FJsonObject> FSodaVehicleCommonExporter::GetFisheyeIntrinsics(const U
 	return JsonObject;
 }
 
-TSharedPtr<FJsonObject> FSodaVehicleCommonExporter::GetImuIntrinsics(const UImuSensorComponent* Sensor)
+TSharedPtr<FJsonObject> FSodaVehicleCommonExporter::GetImuIntrinsics(const UNavSensor* Sensor)
 {
 	TSharedPtr<FJsonObject> JsonObject = MakeShared<FJsonObject>();
 	TSharedPtr<FJsonObject> GyroBias = MakeShared<FJsonObject>();

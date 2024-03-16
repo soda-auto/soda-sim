@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -115,7 +115,7 @@ struct FWheelBrakeSetup
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = BrakeSetup, SaveGame, meta = (EditInRuntime))
 	float MaxTorque = 1500.0f;
 
-	UPROPERTY(EditAnywhere, Category = BrakeSetup, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "/Script/SodaSim.SodaVehicleWheelComponent"))
+	UPROPERTY(EditAnywhere, Category = BrakeSetup, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "/Script/UnrealSoda.SodaVehicleWheelComponent"))
 	FSubobjectReference ConnectedWheel;
 };
 
@@ -159,7 +159,7 @@ class UNREALSODA_API UVehicleBrakeSystemSimpleComponent : public UVehicleBrakeSy
 	UPROPERTY(EditAnywhere, Category = BrakeSystem, SaveGame, meta = (EditInRuntime))
 	FInputRate MechanicalBrakeRate {3000, 3000};
 
-	UPROPERTY(EditAnywhere, Category = BrakeSystem, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, Category = BrakeSystem, SaveGame, meta = (EditInRuntime))
 	TArray<FWheelBrakeSetup> WheelBrakesSetup;
 
 	/** Allow set brake from default the UVhicleInputComponent */
@@ -184,7 +184,7 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
-
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 	UPROPERTY()

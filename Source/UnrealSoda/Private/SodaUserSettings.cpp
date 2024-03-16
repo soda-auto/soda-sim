@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/SodaUserSettings.h"
 //#include "HAL/FileManager.h"
@@ -65,6 +65,8 @@ void USodaUserSettings::SetToDefaults()
 	DriveGearKeyInput = FKey("Two");
 	ReverseGearKeyInput = FKey("Three");
 	ParkGearKeyInput = FKey("Four");
+	GearUpKeyInput = FKey("E");
+	GearDownKeyInput = FKey("Q");
 	ChangeModeKeyInput = FKey("M");
 	SafeStopKeyInput = FKey("K");
 	HeadlightsKeyInput = FKey("P");
@@ -79,6 +81,8 @@ void USodaUserSettings::SetToDefaults()
 	DriveGearJoyInput = FKey("SodaButton1");
 	ReverseGearJoyInput = FKey("SodaButton2");
 	ParkGearJoyInput = FKey("SodaButton3");
+	GearUpJoyInput = FKey("SodaButton4");
+	GearDownJoyInput = FKey("SodaButton5");
 
 	DPIScale = 1.0f;
 	VehicleDebugAreaWidth = 400;

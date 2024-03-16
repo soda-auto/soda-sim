@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -93,5 +93,5 @@ public:
 	virtual FColor GetLED() const;
 
 	UFUNCTION(BlueprintCallable, Category = VehicleInput)
-	virtual ENGear GetGear() const { return ENGear::Park; }
+	virtual EGearState GetGearState() const { return EGearState::Neutral; }
 };

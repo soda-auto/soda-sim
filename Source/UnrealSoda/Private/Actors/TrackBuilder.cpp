@@ -1,8 +1,8 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Actors/TrackBuilder.h"
 #include "Soda/UnrealSoda.h"
-#include "Soda/Misc/MathUtils.hpp"
+#include "Soda/Misc/Utils.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Serialization/JsonReader.h"
@@ -20,6 +20,14 @@
 #include "Soda/LevelState.h"
 #include "DesktopPlatformModule.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/Material.h"
+#include "Styling/StyleColors.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "Framework/Commands/UIAction.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Widgets/SWindow.h"
+#include "SodaStyleSet.h"
+#include "Widgets/Layout/SBorder.h"
 #include <map>
 
 struct FPolyline;
@@ -351,7 +359,18 @@ static float SimplifyPlolylane(const TArray<FVector>& In, float MinSegmentLength
 ATrackBuilder::ATrackBuilder()
 {
 	RouteOffset = FVector(0, 0, 100);
-	RootComponent = CreateDefaultSubobject< USceneComponent >(TEXT("Root"));;
+	RootComponent = CreateDefaultSubobject< USceneComponent >(TEXT("Root"));
+
+	static ConstructorHelpers::FObjectFinder< UMaterial > DefMat(TEXT("/SodaSim/Assets/SimpleMat/VertexColorMat"));
+	if (DefMat.Succeeded())
+	{
+		TrackMaterial = DefMat.Object;
+		MarkingsMaterial = DefMat.Object;
+		DecalMaterial = DefMat.Object;
+	}
+
+	PrimaryActorTick.bCanEverTick = true;
+
 }
 
 bool ATrackBuilder::JSONReadLine(const TSharedPtr<FJsonObject>& JSON, const FString& FieldName, TArray<FVector>& OutPoints, bool ImportAltitude)
@@ -462,6 +481,29 @@ void ATrackBuilder::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ATrackBuilder::TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction)
 {
 	Super::TickActor(DeltaTime, TickType, ThisTickFunction);
+
+	if (bDrawDebug)
+	{
+		for (int i = 0; i < OutsidePoints.Num() -1; ++i)
+		{
+			DrawDebugLine(GetWorld(), OutsidePoints[i], OutsidePoints[i + 1], FColor(0, 0, 255), false, -1,0, 2);
+		}
+
+		for (int i = 0; i < InsidePoints.Num() - 1; ++i)
+		{
+			DrawDebugLine(GetWorld(), InsidePoints[i], InsidePoints[i + 1], FColor(0, 0, 255), false, -1, 0, 2);
+		}
+
+		for (int i = 0; i < CentrePoints.Num() - 1; ++i)
+		{
+			DrawDebugLine(GetWorld(), CentrePoints[i], CentrePoints[i + 1], FColor(0, 255, 0), false, -1, 0, 2);
+		}
+
+		for (int i = 0; i < RacingPoints.Num() - 1; ++i)
+		{
+			DrawDebugLine(GetWorld(), RacingPoints[i], RacingPoints[i + 1], FColor(255, 0, 0), false, -1, 0, 2);
+		}
+	}
 }
 
 void ATrackBuilder::OnConstruction(const FTransform& Transform)
@@ -470,14 +512,14 @@ void ATrackBuilder::OnConstruction(const FTransform& Transform)
 	//GenerateMesh();
 }
 
-bool ATrackBuilder::LoadJson(const FString & InFileName)
+bool ATrackBuilder::LoadJsonFromFile(const FString & InFileName)
 {
 	UnloadJson();
 
 	FString JsonString;
 	if (!FFileHelper::LoadFileToString(JsonString, *InFileName))
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson(); Can't read file"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJsonFromFile(); Can't read file"));
 		return false;
 	}
 
@@ -485,7 +527,7 @@ bool ATrackBuilder::LoadJson(const FString & InFileName)
 	TSharedRef<TJsonReader<TCHAR>> Reader = TJsonReaderFactory<TCHAR>::Create(JsonString);
 	if (!FJsonSerializer::Deserialize(Reader, JSON))
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson(); Can't JSON deserialize"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJsonFromFile(); Can't JSON deserialize"));
 		return false;
 	}
 
@@ -493,7 +535,7 @@ bool ATrackBuilder::LoadJson(const FString & InFileName)
 		!JSONReadLine(JSON, TEXT("Outside"), OutsidePoints, bImportAltitude) ||
 		!JSONReadLine(JSON, TEXT("Centre"), CentrePoints, bImportAltitude))
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson(); Can't parse Inside or Outside or Centre node"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJsonFromFile(); Can't parse Inside or Outside or Centre node"));
 		return false;
 	}
 
@@ -501,11 +543,12 @@ bool ATrackBuilder::LoadJson(const FString & InFileName)
 
 	if (CentrePoints.Num() < 3 && OutsidePoints.Num() < 3 && CentrePoints.Num() < 3)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson(); Size of track line < 3"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJsonFromFile(); Size of track line < 3"));
 		return false;
 	}
 
 	//Align the lines
+	/*
 	int Ind;
 	Ind = FindNearestPoint2D(CentrePoints[0], InsidePoints);
 	InsidePoints.Append(InsidePoints.GetData(), Ind);
@@ -513,6 +556,7 @@ bool ATrackBuilder::LoadJson(const FString & InFileName)
 	Ind = FindNearestPoint2D(CentrePoints[0], OutsidePoints);
 	OutsidePoints.Append(OutsidePoints.GetData(), Ind);
 	OutsidePoints.RemoveAt(0, Ind);
+	*/
 
 	if (bIsClosedTrack)
 	{
@@ -522,7 +566,7 @@ bool ATrackBuilder::LoadJson(const FString & InFileName)
 
 		if (CentrePointsDir != InsidePointsDir || CentrePointsDir != OutsidePointsDir)
 		{
-			UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson(); Direction of Inside, Outside and Centre line are not matched"));
+			UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJsonFromFile(); Direction of Inside, Outside and Centre line are not matched"));
 			return false;
 		}
 
@@ -545,13 +589,13 @@ bool ATrackBuilder::LoadJson(const FString & InFileName)
 	}
 	else
 	{
-		UE_LOG(LogSoda, Warning, TEXT("ATrackBuilder::LoadJson(); Can't parse 'ReferencePoint' node"));
+		UE_LOG(LogSoda, Warning, TEXT("ATrackBuilder::LoadJsonFromFile(); Can't parse 'ReferencePoint' node"));
 	}
 
 	bJSONLoaded = true;
 	LoadedFileName = InFileName;
 
-	UE_LOG(LogSoda, Log, TEXT(" ATrackBuilder::LoadJson(); %s sucessful loaded"), *FileName);
+	UE_LOG(LogSoda, Log, TEXT(" ATrackBuilder::LoadJsonFromFile(); %s sucessful loaded"), *FileName);
 
 	return true;
 }
@@ -582,12 +626,12 @@ void ATrackBuilder::GenerateAll()
 	UpdateGlobalRefpoint();
 }
 
-void ATrackBuilder::LoadJson_Editor()
+void ATrackBuilder::LoadJson()
 {
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
 	if (!DesktopPlatform)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson_Editor() Can't get the IDesktopPlatform ref"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson() Can't get the IDesktopPlatform ref"));
 		return;
 	}
 
@@ -597,11 +641,11 @@ void ATrackBuilder::LoadJson_Editor()
 	int32 FilterIndex = -1;
 	if (!DesktopPlatform->OpenFileDialog(nullptr, TEXT("Import track from JSON"), TEXT(""), TEXT(""), FileTypes, EFileDialogFlags::None, OpenFilenames, FilterIndex) || OpenFilenames.Num() <= 0)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson_Editor() Can't open file"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJson() Can't open file"));
 		return;
 	}
 
-	LoadJson(OpenFilenames[0]);
+	LoadJsonFromFile(OpenFilenames[0]);
 }
 
 
@@ -896,8 +940,9 @@ void ATrackBuilder::GenerateTrack()
 		bool bTriangulationSuccess = Triangulation.Triangulate();
 		if (!bTriangulationSuccess || Triangulation.Triangles.Num() == 0)
 		{
-			UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::GenerateMesh(); Can't triangulateh"));
-			break;
+			UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::GenerateMesh(); Can't triangulateh section %i"), MeshID);
+			++MeshID;
+			continue;
 		}
 
 		/*
@@ -924,9 +969,10 @@ void ATrackBuilder::GenerateTrack()
 			Triangles.Add(Tri.B);
 			Triangles.Add(Tri.C);
 		}
-
-		TArray<FVector> Normals;
 		TArray<FColor> Colors;
+		Colors.SetNum(Vertices.Num());
+		for (auto& It : Colors) It = FColor(50, 50, 50);
+		TArray<FVector> Normals;
 		TArray<FProcMeshTangent> Tangents;
 		UKismetProceduralMeshLibrary::CalculateTangentsForMesh(Vertices, Triangles, UVs, Normals, Tangents);
 
@@ -1084,7 +1130,7 @@ bool ATrackBuilder::GenerateMarkingsInner(const TArray<FVector>& Points)
 
 	if (Points.Num() < 3)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::GenerateRoadMarkings(); Input track is broken"));
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::GenerateMarkingsInner(); Input track is broken"));
 		return false;
 	}
 
@@ -1198,8 +1244,9 @@ bool ATrackBuilder::GenerateMarkingsInner(const TArray<FVector>& Points)
 		bool bTriangulationSuccess = Triangulation.Triangulate();
 		if (!bTriangulationSuccess || Triangulation.Triangles.Num() == 0)
 		{
-			UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::GenerateRoadMarkings(); Can't triangulateh"));
-			break;
+			UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::GenerateMarkingsInner(); Can't triangulateh section %i"), MeshID);
+			++MeshID;
+			continue;
 		}
 
 		/*
@@ -1223,8 +1270,10 @@ bool ATrackBuilder::GenerateMarkingsInner(const TArray<FVector>& Points)
 			Triangles.Add(Tri.C);
 		}
 
-		TArray<FVector> Normals;
 		TArray<FColor> Colors;
+		Colors.SetNum(Vertices.Num());
+		for (auto& It : Colors) It = FColor(255, 255, 255);
+		TArray<FVector> Normals;
 		TArray<FProcMeshTangent> Tangents;
 		UKismetProceduralMeshLibrary::CalculateTangentsForMesh(Vertices, Triangles, UVs, Normals, Tangents);
 
@@ -1346,6 +1395,103 @@ void ATrackBuilder::ClearStartLine()
 	}
 }
 
+static FVector SegmentIntersection2D(TArray<FVector> & Vertices, bool bIsClosed, const FVector& PointA, const FVector& PointB)
+{
+	check(Vertices.Num() > 0);
+	const int Num = Vertices.Num() - 1 + int(bIsClosed);
+	float NearestDist = (Vertices[0] - PointA).Size();
+	FVector NearestIntersection = Vertices[0];
+	for (int i = 0; i < Num; ++i)
+	{
+		const FVector& Pt0 = Vertices[i];
+		const FVector& Pt1 = Vertices[(i + 1) % Vertices.Num()];
+
+		FVector Intersection;
+		if (FMath::SegmentIntersection2D(Pt0, Pt1, PointA, PointB, Intersection))
+		{
+			float Dist = (PointA - Intersection).Size();
+			if (Dist < NearestDist)
+			{
+				NearestDist = Dist;
+				NearestIntersection = Intersection;
+			}
+		}
+	}
+	return NearestIntersection;
+}
+
+static float ClosestPointOnPolyline2D(const TArray<FVector>& Vertices, bool bIsClosed, const FVector2D & Point, FVector2D& Out)
+{
+	check(Vertices.Num())
+	float NearestDist = (FVector2D(Vertices[0]) - Point).Size();
+	const int Num = Vertices.Num() - 1 + int(bIsClosed);
+	FVector2D ClosestPoint = FVector2D(Vertices[0]);
+	for (int i = 0; i < Num; ++i)
+	{
+		const FVector2D& Pt0 = FVector2D(Vertices[i]);
+		const FVector2D& Pt1 = FVector2D(Vertices[(i + 1) % Vertices.Num()]);
+		const FVector2D Pt3 = FMath::ClosestPointOnSegment2D(Point, Pt0, Pt1);
+		const float Dist = (Point - Pt3).Size();
+		if (Dist < NearestDist)
+		{
+			ClosestPoint = Pt3;
+			NearestDist = Dist;
+		}
+	}
+
+	Out = ClosestPoint;
+	return NearestDist;
+}
+
+bool ATrackBuilder::FindNearestBorder(const FTransform& Transform, float& OutLeftOffset, float& OutRightOffset, float& OutCenterLineYaw) const
+{
+	const FVector2D Pose = FVector2D(Transform.GetLocation());
+	const FVector2D Dir = FVector2D(Transform.GetRotation().GetForwardVector());
+
+	FVector2D OutsidePoint;
+	const float OutsideDist =  ClosestPointOnPolyline2D(OutsidePoints, true, Pose, OutsidePoint);
+	const FVector2D OutsideDir = OutsidePoint - Pose;
+	const float OutsideDot = Dir ^ OutsideDir;
+
+	FVector2D InsidePoint;
+	const float InsideDist = ClosestPointOnPolyline2D(InsidePoints, true, Pose, InsidePoint);
+	const FVector2D InsideDir = InsidePoint - Pose;
+	const float InsideDot = Dir ^ InsideDir;
+
+	FVector2D CenterLineDir = (OutsideDir - InsideDir).GetSafeNormal();
+
+	if (OutsideDot > 0 && InsideDot > 0)
+	{
+		OutLeftOffset = 0;
+		OutRightOffset = 0;
+		return false;
+	}
+	else if (OutsideDot < 0 && InsideDot < 0)
+	{
+		OutLeftOffset = 0;
+		OutRightOffset = 0;
+		return false;
+	}
+	else if (OutsideDot > 0 && InsideDot < 0)
+	{
+		OutLeftOffset = InsideDist;
+		OutRightOffset = OutsideDist;
+	}
+	else // OutsideDot < 0 && InsideDot > 0
+	{
+		OutLeftOffset = OutsideDist;
+		OutRightOffset = InsideDist;
+
+		CenterLineDir = -CenterLineDir;
+	}
+
+	OutCenterLineYaw = FMath::Atan2(CenterLineDir.Y, CenterLineDir.X);
+
+	//UE_LOG(LogSoda, Warning, TEXT("ATrackBuilder::FindNearestBorder(); %f %f %f %f"), OutLeftOffset, OutRightOffset, OutsideDot, InsideDot);
+
+	return true;;
+}
+
 const FSodaActorDescriptor* ATrackBuilder::GenerateActorDescriptor() const
 {
 	static FSodaActorDescriptor Desc{
@@ -1358,4 +1504,80 @@ const FSodaActorDescriptor* ATrackBuilder::GenerateActorDescriptor() const
 		FVector(0, 0, 50), /*SpawnOffset*/
 	};
 	return &Desc;
+}
+
+TSharedPtr<SWidget> ATrackBuilder::GenerateToolBar()
+{
+	FUniformToolBarBuilder ToolbarBuilder(TSharedPtr<const FUICommandList>(), FMultiBoxCustomization::None);
+	ToolbarBuilder.SetStyle(&FSodaStyle::Get(), "PaletteToolBar");
+	ToolbarBuilder.BeginSection(NAME_None);
+	ToolbarBuilder.AddToolBarButton(
+		FUIAction(FExecuteAction::CreateLambda([this] {
+			LoadJson();
+		})),
+		NAME_None,
+		FText::FromString("Load"),
+		FText::FromString("Load JSON track"),
+		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaVehicleBar.Import"),
+		EUserInterfaceActionType::Button
+	);
+
+	ToolbarBuilder.AddToolBarButton(
+		FUIAction(FExecuteAction::CreateLambda([this] {
+			GenerateTrack();
+		})),
+		NAME_None,
+		FText::FromString("Track"),
+		FText::FromString("Generate Track"),
+		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.RaceTrack"),
+		EUserInterfaceActionType::Button
+	);
+
+	ToolbarBuilder.AddSeparator();
+	ToolbarBuilder.AddToolBarButton(
+		FUIAction(FExecuteAction::CreateLambda([this] {
+			GenerateMarkings();
+		})),
+		NAME_None,
+		FText::FromString("Marks"),
+		FText::FromString("Generate Border Marks"),
+		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.Road"),
+		EUserInterfaceActionType::Button
+	);
+
+	ToolbarBuilder.AddSeparator();
+	ToolbarBuilder.AddToolBarButton(
+		FUIAction(FExecuteAction::CreateLambda([this] {
+
+		})),
+		NAME_None,
+		FText::FromString("Center"),
+		FText::FromString("Generate Center Route"),
+		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.Route"),
+		EUserInterfaceActionType::Button
+	);
+
+	ToolbarBuilder.AddSeparator();
+	ToolbarBuilder.AddToolBarButton(
+		FUIAction(FExecuteAction::CreateLambda([this] {
+
+		})),
+		NAME_None,
+		FText::FromString("Race"),
+		FText::FromString("Generate Race Route"),
+		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.Route"),
+		EUserInterfaceActionType::Button
+	);
+
+
+	ToolbarBuilder.EndSection();
+
+	return 
+		SNew(SBorder)
+		.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+		.BorderBackgroundColor(FStyleColors::Panel)
+		.Padding(3)
+		[
+			ToolbarBuilder.MakeWidget()
+		];
 }

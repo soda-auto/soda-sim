@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 using System;
 using System.Diagnostics;
@@ -48,7 +48,6 @@ public class UnrealSoda : ModuleRules
 				"ToolMenus",
 				"TypedElementFramework",
 				"TypedElementRuntime",
-                "SodaSimProto",
                 "AnimGraphRuntime",
             }
 		);
@@ -93,6 +92,7 @@ public class UnrealSoda : ModuleRules
 		SetupModulePhysicsSupport(Target);
 		//bUsePrecompiled = true;
 		bUseUnity = false;
+        //bUseRTTI = false;
 
         // The Shipping configuration isn't supported yet
         /*

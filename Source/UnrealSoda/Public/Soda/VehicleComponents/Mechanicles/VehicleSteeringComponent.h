@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -29,6 +29,7 @@ class UNREALSODA_API UVehicleSteeringRackBaseComponent  : public UWheeledVehicle
 	/** [Rad] */
 	UFUNCTION(BlueprintCallable, Category = SteeringRack)
 	virtual float GetMaxSteer() const { return 0; }
+
 };
 
 /**
@@ -55,7 +56,7 @@ public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
-	virtual void RequestByAngle(float InAngle) override { TargetSteerAng = InAngle; }
+	virtual void RequestByAngle(float InAngle) override;
 	virtual float GetCurrentSteer() const override { return CurrentSteerAng; }
 	virtual float GetMaxSteer() const override { return MaxSteerAngle / 180 * M_PI; }
 
@@ -66,6 +67,7 @@ public:
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 	virtual void UpdateSteer(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp);
 

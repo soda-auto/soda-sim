@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "SPinWidget.h"
 #include "Widgets/Views/STableRow.h"
@@ -119,6 +119,11 @@ FReply SPinWidget::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEv
 	}
 
 	return FReply::Unhandled();
+}
+
+FReply SPinWidget::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
+{
+	return FReply::Handled();
 }
 
 

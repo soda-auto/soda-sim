@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/SodaActorFactory.h"
 #include "Soda/Vehicles/SodaVehicle.h"
@@ -105,7 +105,13 @@ void ASodaActorFactory::AddActor(AActor* Actor)
 
 void ASodaActorFactory::RemoveAllActors()
 {
-	for (auto& Actor : SpawnedActors) Actor->Destroy();
+	for (auto& Actor : SpawnedActors)
+	{
+		if (IsValid(Actor))
+		{
+			Actor->Destroy();
+		}
+	}
 	SpawnedActors.Empty();
 	OnInvalidateDelegate.Broadcast();
 }

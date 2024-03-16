@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "SodaStyle.h"
 #include "Misc/CommandLine.h"
@@ -469,6 +469,7 @@ void FStarshipSodaStyle::FStyle::SetupGeneralStyles()
 		Set("SodaIcons.IMU", new IMAGE_BRUSH_SVG("SodaIcons/imu", Icon16x16));
 		Set("SodaIcons.Motor", new IMAGE_BRUSH_SVG("SodaIcons/motor", Icon16x16));
 		Set("SodaIcons.Sensor", new IMAGE_BRUSH_SVG("SodaIcons/sensor", Icon16x16));
+		Set("SodaIcons.Record", new IMAGE_BRUSH_SVG("SodaIcons/record", Icon16x16));
 		Set("SodaIcons.Camera", new IMAGE_BRUSH_SVG("SodaIcons/camera", Icon16x16));
 		Set("SodaIcons.Joystick", new IMAGE_BRUSH_SVG("SodaIcons/joystick", Icon16x16));
 		Set("SodaIcons.Path", new IMAGE_BRUSH_SVG("SodaIcons/path", Icon16x16));

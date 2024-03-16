@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -20,7 +20,7 @@ public:
 	 * Name of the vehicle component to which need to connect the engine shaft (wheel, gearbox, transmission, etc).
 	 * Default wheels name: WheelFL, WheelFR, WheelRL, WheelRR.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActorr, AllowedClasses = "TorqueTransmission"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "TorqueTransmission"))
 	FSubobjectReference LinkToTorqueTransmission { TEXT("Differential") };
 
 
@@ -55,13 +55,13 @@ public:
 	virtual float GetTorque() const { return 0; }
 
 	/** [0...1] */
-	virtual float GetEngineLoad() { return std::fabsf( GetTorque() / GetMaxTorque()); }
+	virtual float GetEngineLoad() const;
 
 	/** Try to find wheel(s) radius to which set this torque [cm] */
-	virtual float FindWheelRadius() const;
+	virtual bool FindWheelRadius(float& OutRadius) const;
 
 	/** Try to find ratio beetwen this transmission and connected wheel(s) */
-	virtual float FindToWheelRatio() const;
+	virtual bool FindToWheelRatio(float& OutRatio) const;
 
 protected:
 	virtual bool OnActivateVehicleComponent() override;
@@ -89,6 +89,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = VehicleEngine, SaveGame, meta = (EditInRuntime))
 	bool bAcceptPedalFromVehicleInput = true;
 
+	UPROPERTY(EditAnywhere, Category = VehicleEngine, SaveGame, meta = (EditInRuntime))
+	bool bFlipAngularVelocity = false;
+
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -101,9 +104,9 @@ public:
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 public:
-	//void GetComponenUIÑomment(FString& Info) override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 	virtual void PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp & Timestamp) override;
 	virtual void PostPhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;

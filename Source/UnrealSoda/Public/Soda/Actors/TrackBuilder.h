@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -139,6 +139,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = StartPoint)
 	bool bGeneratStartLineOnBeginPlay = true;
 
+	UPROPERTY(EditAnywhere, Category = Debug, SaveGame, meta = (EditInRuntime))
+	bool bDrawDebug = false;
+
 public:
 	UPROPERTY(BlueprintReadOnly, Category = TrackBuilder, SaveGame)
 	TArray<FVector> OutsidePoints;
@@ -187,10 +190,10 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = LoadJsonTrack)
-	bool LoadJson(const FString& InFileName);
+	bool LoadJsonFromFile(const FString& InFileName);
 
 	UFUNCTION(CallInEditor, Category = LoadJsonTrack, meta = (DisplayName="Load JSON", CallInRuntime))
-	void LoadJson_Editor();
+	void LoadJson();
 
 	UFUNCTION(CallInEditor, BlueprintCallable, Category = LoadJsonTrack, meta = (CallInRuntime))
 	void UnloadJson();
@@ -231,6 +234,9 @@ public:
 	UFUNCTION(CallInEditor, BlueprintCallable, Category = StartPoint, meta = (CallInRuntime))
 	void ClearStartLine();
 
+	UFUNCTION(BlueprintCallable)
+	bool FindNearestBorder(const FTransform& Pose, float& OutLeftOffset, float& OutRightOffset, float & OutCenterLineYaw) const;
+
 public:
 	/* Override from ISodaActor */
 	//virtual void OnSelect_Implementation() override;
@@ -238,6 +244,7 @@ public:
 	virtual const FSodaActorDescriptor* GenerateActorDescriptor() const override;
 	//virtual bool OnSetPinnedActor(bool bIsPinnedActor) override;
 	//virtual bool IsPinnedActor() const override;
+	virtual TSharedPtr<SWidget> GenerateToolBar();
 
 public:
 	virtual void BeginPlay() override;

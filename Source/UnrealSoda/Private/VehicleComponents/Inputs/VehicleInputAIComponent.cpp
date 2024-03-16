@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/Inputs/VehicleInputAIComponent.h"
 #include "Soda/UnrealSoda.h"
@@ -17,6 +17,13 @@
 #include "VehicleUtility.h"
 #include "WheeledVehiclePawn.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
+#include "Soda/DBGateway.h"
+
+#include "bsoncxx/builder/stream/helpers.hpp"
+#include "bsoncxx/exception/exception.hpp"
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/builder/stream/array.hpp"
+#include "bsoncxx/json.hpp"
 
 #define _DEG2RAD(a) ((a) / (180.0 / M_PI))
 #define _RAD2DEG(a) ((a) * (180.0 / M_PI))
@@ -301,7 +308,7 @@ void UVehicleInputAIComponent::UpdateInputStatesInner(float DeltaTime)
 	//Compute Throttle, Steering, Gear
 	Throttle = 0;
 	Steering = TargetLocations.Num() ? CalcStreeringValue(DeltaTime) : 0.0f;
-	Gear = bDriveBackvard ? ENGear::Reverse : ENGear::Drive;
+	Gear = bDriveBackvard ? EGearState::Reverse : EGearState::Drive;
 
 	if (CurrentObstacleDistance > 0.f && CurrentObstacleDistance < ObstacleStopDistance * 100 && !bDriveBackvard) // Stop if Obstacle
 	{
@@ -318,7 +325,7 @@ void UVehicleInputAIComponent::UpdateInputStatesInner(float DeltaTime)
 		Steering = 0.0f;
 		if (AbsSpeed < 0.1f)
 		{
-			Gear = ENGear::Park;
+			Gear = EGearState::Park;
 		}
 
 	}
@@ -343,10 +350,10 @@ void UVehicleInputAIComponent::UpdateInputStates(float DeltaTime, float ForwardS
 
 	UpdateInputStatesInner(DeltaTime);
 
-	BrakeInput    = BrakeInputRate.InterpInputValue(DeltaTime, BrakeInput, FMath::Clamp(-1.f * Throttle, 0.f, 1.f)); 
-	ThrottleInput = ThrottleInputRate.InterpInputValue(DeltaTime, ThrottleInput, FMath::Min(FMath::Clamp(Throttle, 0.f, 1.f), ThrottlePedalLimit));
-	SteeringInput = SteerInputRate.InterpInputValue(DeltaTime, SteeringInput, Steering);
-	GearInput = Gear;
+	InputState.Brake    = BrakeInputRate.InterpInputValue(DeltaTime, InputState.Brake, FMath::Clamp(-1.f * Throttle, 0.f, 1.f));
+	InputState.Throttle = ThrottleInputRate.InterpInputValue(DeltaTime, InputState.Throttle, FMath::Min(FMath::Clamp(Throttle, 0.f, 1.f), ThrottlePedalLimit));
+	InputState.Steering = SteerInputRate.InterpInputValue(DeltaTime, InputState.Steering, Steering);
+	InputState.SetGearState(Gear);
 }
 
 float UVehicleInputAIComponent::CalcStreeringValue(float DeltaTime)
@@ -510,14 +517,17 @@ float UVehicleInputAIComponent::RayCast(const FVector& Start, const FVector& End
 {	
 	FHitResult OutHit;
 	static FName TraceTag = FName(TEXT("VehicleTrace"));
+	FCollisionObjectQueryParams QueryParams(ECollisionChannel::ECC_Vehicle);
 	FCollisionQueryParams CollisionParams(TraceTag, true);
 	CollisionParams.AddIgnoredActor(GetVehicle());
-	CollisionParams.bFindInitialOverlaps = true;
+	//CollisionParams.bFindInitialOverlaps = true;
 
-	const bool Success = GetVehicle()->GetWorld()->SweepSingleByChannel(
-		OutHit, Start, End, (End - Start).Rotation().Quaternion(),
-		ECollisionChannel::ECC_Visibility,
-		FCollisionShape::MakeBox(FVector(50, 150, 100)), CollisionParams);
+	const bool Success = GetVehicle()->GetWorld()->SweepSingleByObjectType(
+		OutHit, Start, End, 
+		(End - Start).Rotation().Quaternion(),
+		QueryParams,
+		FCollisionShape::MakeBox(FVector(50, 150, 100)), 
+		CollisionParams);
 
 	if (Success && OutHit.bBlockingHit)
 	{
@@ -681,21 +691,15 @@ void UVehicleInputAIComponent::DrawCurrentRoute()
 
 void UVehicleInputAIComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
-	if (GetWheeledVehicle() && (GetWheeledVehicle()->GetActiveVehicleInput() == this))
-	{
-		Super::DrawDebug(Canvas, YL, YPos);
+	Super::DrawDebug(Canvas, YL, YPos);
 
-		if (Common.bDrawDebugCanvas)
-		{
-			UFont* RenderFont = GEngine->GetSmallFont();
-			Canvas->SetDrawColor(FColor::White);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Steering: %.2f"), GetSteeringInput()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Throttle: %.2f"), GetThrottleInput()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Brake: %.2f"), GetBrakeInput()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("TargetLocations: %i"), TargetLocations.Num()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("SideError: %f"), SideError), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("ObstacleDistance: %f"), CurrentObstacleDistance), 16, YPos);
-		}
+	if (Common.bDrawDebugCanvas && GetWheeledVehicle() && (GetWheeledVehicle()->GetActiveVehicleInput() == this))
+	{
+		UFont* RenderFont = GEngine->GetSmallFont();
+		Canvas->SetDrawColor(FColor::White);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("TargetLocationsNum: %i"), TargetLocations.Num()), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("SideError: %f"), SideError), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("ObstacleDistance: %f"), CurrentObstacleDistance), 16, YPos);
 	}
 }
 
@@ -709,13 +713,33 @@ bool UVehicleInputAIComponent::AssignRoute(const ANavigationRoute* RoutePlanner)
 	return false;
 }
 
-void UVehicleInputAIComponent::CopyInputStates(UVehicleInputComponent* Previous)
+void UVehicleInputAIComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
 {
-	if (Previous)
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::open_array;
+	using bsoncxx::builder::stream::close_array;
+
+	try
 	{
-		SteeringInput = Previous->GetSteeringInput();
-		ThrottleInput = Previous->GetThrottleInput();
-		BrakeInput = Previous->GetBrakeInput();
-		GearInput = Previous->GetGearInput();
+		Dataset.GetRowDoc()
+			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
+			<< "Throttle" << GetInputState().Throttle
+			<< "Brake" << GetInputState().Brake
+			<< "Steering" << GetInputState().Steering
+			<< "GearState" << int(GetInputState().GearState)
+			<< "GearNum" << GetInputState().GearNum
+			<< "bADModeEnbaled" << GetInputState().bADModeEnbaled
+			<< "bSafeStopEnbaled" << GetInputState().bSafeStopEnbaled
+			<< "TargetLocationsNum" << TargetLocations.Num()
+			<< "SideError" << SideError
+			<< "ObstacleDistance" << CurrentObstacleDistance
+			<< close_document;
+	}
+	catch (const std::system_error& e)
+	{
+		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
 	}
 }

@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/VehicleBaseComponent.h"
 #include "Soda/UnrealSoda.h"
@@ -47,3 +47,14 @@ void UVehicleBaseComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 		OnDeactivateVehicleComponent();
 	}
 }
+
+FSensorDataHeader UVehicleBaseComponent::GetHeaderGameThread() const
+{
+	return FSensorDataHeader{ SodaApp.GetSimulationTimestamp(), SodaApp.GetFrameIndex() };
+}
+
+FSensorDataHeader UVehicleBaseComponent::GetHeaderVehicleThread() const
+{
+	return FSensorDataHeader{ GetVehicle()->GetSimData().SimulatedTimestamp, GetVehicle()->GetSimData().SimulatedStep };
+}
+

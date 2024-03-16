@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/Inputs/VehicleInputKeyboardComponent.h"
 #include "Soda/UnrealSoda.h"
@@ -9,6 +9,13 @@
 #include "Soda/SodaApp.h"
 #include "Soda/SodaUserSettings.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Soda/DBGateway.h"
+
+#include "bsoncxx/builder/stream/helpers.hpp"
+#include "bsoncxx/exception/exception.hpp"
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/builder/stream/array.hpp"
+#include "bsoncxx/json.hpp"
 
 UVehicleInputKeyboardComponent::UVehicleInputKeyboardComponent(const FObjectInitializer &ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -52,13 +59,10 @@ void UVehicleInputKeyboardComponent::UpdateInputStates(float DeltaTime, float Fo
 	USodaUserSettings* Settings = SodaApp.GetSodaUserSettings();
 
 	RawSteeringInput = -PlayerController->GetInputAnalogKeyState(Settings->SteeringLeftKeyInput) + PlayerController->GetInputAnalogKeyState(Settings->SteeringRigtKeyInput);
+	RawSteeringInput = FMath::Clamp(RawSteeringInput, -InputSteeringLimit, InputSteeringLimit);
 
-	if (PlayerController->IsInputKeyDown(Settings->NeutralGearKeyInput))
-		GearInput = ENGear::Neutral;
-	else if (PlayerController->IsInputKeyDown(Settings->ParkGearKeyInput))
-		GearInput = ENGear::Park;
 
-	if (bAutoGearBox)
+	if (bAutoReavers)
 	{
 		float Throttle = PlayerController->GetInputAnalogKeyState(Settings->ThrottleKeyInput);
 		float Brake = PlayerController->GetInputAnalogKeyState(Settings->BrakeKeyInput);
@@ -73,21 +77,21 @@ void UVehicleInputKeyboardComponent::UpdateInputStates(float DeltaTime, float Fo
 
 		if (Throttle > 0.1)
 		{
-			if (GearInput == ENGear::Drive)
+			if (InputState.IsForwardGear())
 			{
 				RawThrottleInput = Throttle;
 				RawBrakeInput = 0;
 			}
-			else if (GearInput == ENGear::Reverse)
+			else if (InputState.IsReversGear())
 			{
 				RawThrottleInput = 0;
 				RawBrakeInput = Throttle;
 				if (AutoGearBrakeTimeCounter > AutoGearChangeTime)
-					GearInput = ENGear::Drive;
+					InputState.SetGearState(EGearState::Drive);
 			}
 			else
 			{
-				GearInput = ENGear::Drive;
+				InputState.SetGearState(EGearState::Drive);
 				RawThrottleInput = Throttle;
 				RawBrakeInput = 0;
 			}
@@ -95,21 +99,23 @@ void UVehicleInputKeyboardComponent::UpdateInputStates(float DeltaTime, float Fo
 
 		if (Brake > 0.1)
 		{
-			if (GearInput == ENGear::Drive)
+			if (InputState.IsForwardGear())
 			{
 				RawThrottleInput = 0;
 				RawBrakeInput = Brake;
 				if (AutoGearBrakeTimeCounter > AutoGearChangeTime)
-					GearInput = ENGear::Reverse;
+				{
+					InputState.SetGearState(EGearState::Reverse);
+				}
 			}
-			else if (GearInput == ENGear::Reverse)
+			else if (InputState.IsReversGear())
 			{
 				RawThrottleInput = Brake;
 				RawBrakeInput = 0;
 			}
 			else
 			{
-				GearInput = ENGear::Reverse;
+				InputState.SetGearState(EGearState::Reverse);
 				RawThrottleInput = 0;
 				RawBrakeInput = Brake;
 			}
@@ -120,10 +126,18 @@ void UVehicleInputKeyboardComponent::UpdateInputStates(float DeltaTime, float Fo
 		RawThrottleInput = PlayerController->GetInputAnalogKeyState(Settings->ThrottleKeyInput);
 		RawBrakeInput = PlayerController->GetInputAnalogKeyState(Settings->BrakeKeyInput);
 		if (PlayerController->IsInputKeyDown(Settings->DriveGearKeyInput))
-			GearInput = ENGear::Drive;
+		{
+			InputState.SetGearState(EGearState::Drive);
+		}
 		else if (PlayerController->IsInputKeyDown(Settings->ReverseGearKeyInput))
-			GearInput = ENGear::Reverse;
+		{
+			InputState.SetGearState(EGearState::Reverse);
+		}
 	}
+
+	RawThrottleInput = FMath::Clamp(RawThrottleInput, 0.0f, InputThrottleLimit);
+	RawBrakeInput = FMath::Clamp(RawBrakeInput, 0.0f, InputBrakeLimit);
+	
 
 	if (std::abs(RawSteeringInput) > 0.1)
 	{
@@ -151,64 +165,59 @@ void UVehicleInputKeyboardComponent::UpdateInputStates(float DeltaTime, float Fo
 	{
 		SteerRate.RiseRate = InputSteeringSpeedCurve.ExternalCurve->GetFloatValue(ForwardSpeed);
 		SteerRate.FallRate = InputSteeringSpeedCurve.ExternalCurve->GetFloatValue(ForwardSpeed);
-		SteeringInput = SteerRate.InterpInputValue(DeltaTime, SteeringInput, SteerInputTarget);
+		InputState.Steering = SteerRate.InterpInputValue(DeltaTime, InputState.Steering, SteerInputTarget);
 	}
 	else
 	{
-		SteeringInput = SteerInputTarget;
+		InputState.Steering = SteerInputTarget;
 	}
 
 	/* Compute Throttle Input */
-	ThrottleInput = ThrottleInputRate.InterpInputValue(DeltaTime, ThrottleInput, RawThrottleInput);
+	InputState.Throttle = ThrottleInputRate.InterpInputValue(DeltaTime, InputState.Throttle, RawThrottleInput);
 
 	/* Compute Brake Input*/
-	BrakeInput = BrakeInputRate.InterpInputValue(DeltaTime, BrakeInput, RawBrakeInput);
-}
-
-float UVehicleInputKeyboardComponent::GetSteeringInput() const
-{
-	return SteeringInput * InputSteeringLimit;
-}
-
-float UVehicleInputKeyboardComponent::GetThrottleInput() const
-{ 
-	return GetCruiseControlModulatedThrottleInput(ThrottleInput * InputThrottleLimit);
-}
-
-float UVehicleInputKeyboardComponent::GetBrakeInput() const
-{
-	return BrakeInput *  InputBrakeLimit; 
+	InputState.Brake = BrakeInputRate.InterpInputValue(DeltaTime, InputState.Brake, RawBrakeInput);
 }
 
 void UVehicleInputKeyboardComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
-	if (GetWheeledVehicle() && (GetWheeledVehicle()->GetActiveVehicleInput() == this))
-	{
-		Super::DrawDebug(Canvas, YL, YPos);
+	Super::DrawDebug(Canvas, YL, YPos);
 
-		if (Common.bDrawDebugCanvas)
-		{
-			UFont* RenderFont = GEngine->GetSmallFont();
-			Canvas->SetDrawColor(FColor::White);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Steering: %.2f"), GetSteeringInput()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Throttle: %.2f"), GetThrottleInput()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Brake: %.2f"), GetBrakeInput()), 16, YPos);
-			Canvas->DrawText(RenderFont, TEXT("DriverTension:"), 16, YPos);
-			YPos += USodaStatics::DrawProgress(Canvas, 120, YPos + 4, 120, 16, FeedbackDriverSteerTension, -1.0, 1.0, true,
-				FString::Printf(TEXT("%i%%"), int(FeedbackDriverSteerTension * 100)));
-		}
+	if (Common.bDrawDebugCanvas && GetWheeledVehicle() && (GetWheeledVehicle()->GetActiveVehicleInput() == this))
+	{
+		UFont* RenderFont = GEngine->GetSmallFont();
+		Canvas->SetDrawColor(FColor::White);
+		Canvas->DrawText(RenderFont, TEXT("DriverTension:"), 16, YPos);
+		YPos += USodaStatics::DrawProgress(Canvas, 120, YPos + 4, 120, 16, FeedbackDriverSteerTension, -1.0, 1.0, true, FString::Printf(TEXT("%i%%"), int(FeedbackDriverSteerTension * 100)));
 	}
 }
 
-void UVehicleInputKeyboardComponent::CopyInputStates(UVehicleInputComponent* Previous)
+void UVehicleInputKeyboardComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
 {
-	if (Previous)
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::open_array;
+	using bsoncxx::builder::stream::close_array;
+
+	try
 	{
-		RawSteeringInput = SteeringInput = Previous->GetSteeringInput();
-		RawThrottleInput = ThrottleInput = Previous->GetThrottleInput();
-		RawBrakeInput = BrakeInput = Previous->GetBrakeInput();
-		GearInput = Previous->GetGearInput();
+		Dataset.GetRowDoc()
+			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
+			<< "Throttle" << GetInputState().Throttle
+			<< "Brake" << GetInputState().Brake
+			<< "Steering" << GetInputState().Steering
+			<< "GearState" << int(GetInputState().GearState)
+			<< "GearNum" << GetInputState().GearNum
+			<< "bADModeEnbaled" << GetInputState().bADModeEnbaled
+			<< "bSafeStopEnbaled" << GetInputState().bSafeStopEnbaled
+			<< "SteerTension" << FeedbackDriverSteerTension
+			<< close_document;
+	}
+	catch (const std::system_error& e)
+	{
+		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
 	}
 }
-
 

@@ -1,8 +1,8 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Actors/TileScanner.h"
 #include "Components/SceneCaptureComponent2D.h"
-#include "Soda/VehicleComponents/Sensors/CameraSensor.h"
+#include "Soda/VehicleComponents/Sensors/Base/CameraSensor.h"
 #include "ImagePixelData.h"
 #include "ImageWriteTask.h"
 #include "HighResScreenshot.h"

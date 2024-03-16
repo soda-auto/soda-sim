@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/SodaGameMode.h"
 #include "Soda/UnrealSoda.h"
@@ -147,7 +147,7 @@ void USodaGameModeComponent::InitGame(AGameModeBase* GameMode)
 	if (SodaApp.GetSodaUserSettings()->bTagActorsAtBeginPlay)
 	{
 		USodaStatics::TagActorsInLevel(this, true);
-		USodaStatics::AddV2VComponentToAllVehiclesInLevel(this, ASodaVehicle::StaticClass()->GetClass());
+		USodaStatics::AddV2XMarkerToAllVehiclesInLevel(this, ASodaVehicle::StaticClass()->GetClass());
 	}
 
 	/* Initialize LevelState */

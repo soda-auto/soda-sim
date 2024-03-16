@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/Mechanicles/VehicleBrakeSystemComponent.h"
 #include "Soda/UnrealSoda.h"
@@ -7,7 +7,13 @@
 #include "Engine/Engine.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
+#include "Soda/DBGateway.h"
 
+#include "bsoncxx/builder/stream/helpers.hpp"
+#include "bsoncxx/exception/exception.hpp"
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/builder/stream/array.hpp"
+#include "bsoncxx/json.hpp"
 
 UWheelBrake::UWheelBrake(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -251,7 +257,7 @@ void UVehicleBrakeSystemSimpleComponent::TickComponent(float DeltaTime, enum ELe
 	{
 		if (UVehicleInputComponent* VehicleInput = GetWheeledVehicle()->GetActiveVehicleInput())
 		{
-			PedalPos = VehicleInput->GetBrakeInput();
+			PedalPos = VehicleInput->GetInputState().Brake;
 		}
 		else
 		{
@@ -259,3 +265,40 @@ void UVehicleBrakeSystemSimpleComponent::TickComponent(float DeltaTime, enum ELe
 		}
 	}
 }
+
+void UVehicleBrakeSystemSimpleComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
+{
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::open_array;
+	using bsoncxx::builder::stream::close_array;
+
+	try
+	{
+		auto& Doc = Dataset.GetRowDoc();
+
+		Doc
+			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
+			<< "PedalPos" << PedalPos;
+
+		auto Array = Doc << "Wheels" << open_array;
+		for (auto& Wheel : WheelBrakes)
+		{
+			Array 
+				<< open_document
+				<< "Torque" << Wheel->GetTorque()
+				<< "Pressure" << Wheel->GetPressure()
+				<< "Load" << Wheel->GetLoad()
+				<< close_document;
+		}
+
+		Array << close_array << close_document;
+	}
+	catch (const std::system_error& e)
+	{
+		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
+	}
+}
+

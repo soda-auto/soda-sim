@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Misc/MeshGenerationUtils.h"
 #include "Soda/UnrealSoda.h"
@@ -7,7 +7,7 @@
 #include "KismetProceduralMeshLibrary.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Soda/Misc/SodaPhysicsInterface.h"
-#include "Soda/Misc/MathUtils.hpp"
+#include "Soda/Misc/Utils.h"
 #include "quickhull/QuickHull.hpp"
 #include "UObject/ConstructorHelpers.h"
 #include "ConstrainedDelaunay2.h"

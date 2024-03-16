@@ -19,10 +19,6 @@
 			"Type": "DeveloperTool"
 		},
 		{
-			"Name": "SodaSimProto",
-			"Type": "DeveloperTool"
-		},
-		{
 			"Name": "RuntimeEditor",
 			"Type": "DeveloperTool"
 		},
@@ -32,6 +28,10 @@
 		},
 		{
 			"Name": "UnrealSoda",
+			"Type": "DeveloperTool"
+		},
+		{
+			"Name": "SodaProtoV1",
 			"Type": "DeveloperTool"
 		},
 		{
