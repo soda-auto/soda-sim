@@ -9,7 +9,7 @@
 #include "TrackBuilder.generated.h"
 
 class FJsonObject;
-
+class ALapCounter;
 /**
  * ATrackBuilder (Experimental)
  * Procedural generation of racing tracks based on a JSON custom format.
@@ -176,6 +176,9 @@ public:
 	UPROPERTY(Category = RoutesBuilder, BlueprintReadOnly, Transient)
 	TArray<ANavigationRoute*> Routes;
 
+	UPROPERTY(Category = RoutesBuilder, BlueprintReadOnly, Transient)
+	ALapCounter* LapCounter = nullptr;
+
 	UPROPERTY(Category = StartPint, BlueprintReadOnly, Transient)
 	UDecalComponent * StartLineDecal = nullptr;
 
@@ -226,10 +229,13 @@ public:
 	void UpdateGlobalRefpoint();
 
 	UFUNCTION(CallInEditor, BlueprintCallable, Category = StartPoint, meta = (CallInRuntime))
-	void UpdateActorsFactory();
+	void GenerateStartLine();
 
 	UFUNCTION(CallInEditor, BlueprintCallable, Category = StartPoint, meta = (CallInRuntime))
-	void GenerateStartLine();
+	void GenerateLapCounter();
+
+	UFUNCTION(CallInEditor, BlueprintCallable, Category = StartPoint, meta = (CallInRuntime))
+	void ClearLapCounter();
 
 	UFUNCTION(CallInEditor, BlueprintCallable, Category = StartPoint, meta = (CallInRuntime))
 	void ClearStartLine();

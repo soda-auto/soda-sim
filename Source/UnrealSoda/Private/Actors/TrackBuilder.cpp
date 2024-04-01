@@ -15,6 +15,7 @@
 #include "Soda/SodaActorFactory.h"
 #include "EngineUtils.h"
 #include "Soda/Actors/SpawnPoint.h"
+#include "Soda/Actors/LapCounter.h"
 #include "Misc/Paths.h"
 #include "Components/DecalComponent.h"
 #include "Soda/LevelState.h"
@@ -622,7 +623,7 @@ void ATrackBuilder::GenerateAll()
 	GenerateMarkings();
 	GenerateLineRoutes();
 	GenerateStartLine();
-	UpdateActorsFactory();
+	GenerateLapCounter();
 	UpdateGlobalRefpoint();
 }
 
@@ -1320,41 +1321,6 @@ void ATrackBuilder::UpdateGlobalRefpoint()
 	}
 }
 
-void ATrackBuilder::UpdateActorsFactory()
-{
-	/*
-	if (!bJSONLoaded)
-	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::UpdateActorsFactory(); JSON isn't loaded"));
-		return;
-	}
-
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	ASodaActorFactory* ActorFactory = nullptr;
-
-	if (IsValid(GameMode))
-	{
-		ActorFactory = GameMode->GetActorFactory();
-	}
-
-	if (!IsValid(ActorFactory))
-	{
-		if (auto It = TActorIterator<ASodaActorFactory>(GetWorld()))ActorFactory = *It;
-	}
-
-	if (IsValid(ActorFactory))
-	{
-		for (auto& Actor : ActorFactory->GetActors()) Actor->Destroy();
-		const float Yaw = (CentrePoints[1] - CentrePoints[0]).HeadingAngle() / M_PI * 180.0;
-		ActorFactory->SpawnActor(ADefaultVehicleSpawnPoint::StaticClass(), FTransform(FRotator(0, Yaw, 0), CentrePoints[0] + FVector(0, 0, TrackElevation) + GetActorLocation()));
-	}
-	else
-	{
-		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::UpdateActorsFactory(); Can't find ActorFactory Actor"));
-	}
-	*/
-}
-
 void ATrackBuilder::GenerateStartLine()
 {
 	ClearStartLine();
@@ -1384,6 +1350,40 @@ void ATrackBuilder::GenerateStartLine()
 	StartLineDecal->SetRelativeRotation(FRotator(-90, Yaw, 0));
 	StartLineDecal->DecalSize = FVector(30, StartLineWidth, Length) / 2.0;
 	StartLineDecal->RegisterComponent();
+}
+
+void ATrackBuilder::GenerateLapCounter()
+{
+	ClearLapCounter();
+
+	if (!bJSONLoaded)
+	{
+		UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::GenerateLapCounter(); JSON isn't loaded"));
+		return;
+	}
+
+	USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
+	ASodaActorFactory* ActorFactory = GameMode->GetActorFactory();
+	check(ActorFactory);
+
+	FPolyline CentrePolyline(CentrePoints, true, TrackElevation);
+	const float Yaw = (CentrePoints[1] - CentrePoints[0]).HeadingAngle() / M_PI * 180.0 + 90.0;
+	const FTransform Transform(FRotator(0, Yaw, 0), CentrePolyline.GetPointByLength(StartLineOffset) + GetActorLocation());
+
+	LapCounter = Cast<ALapCounter>(ActorFactory->SpawnActor(ALapCounter::StaticClass(), Transform));
+
+}
+
+void ATrackBuilder::ClearLapCounter()
+{
+	if (IsValid(LapCounter))
+	{
+		USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
+		ASodaActorFactory* ActorFactory = GameMode->GetActorFactory();
+		check(ActorFactory);
+
+		ActorFactory->RemoveActor(LapCounter, true);
+	}
 }
 
 void ATrackBuilder::ClearStartLine()

@@ -198,7 +198,7 @@ void USoda2DWheeledVehicleMovementComponent::TickComponent(float DeltaTime, enum
 		FHitResult Hit;
 		UpdatedPrimitive->SetPhysicsLinearVelocity(VehicleSimData.VehicleKinematic.Curr.GlobalVelocityOfCenterMass);
 		UpdatedPrimitive->SetPhysicsAngularVelocityInRadians(VehicleSimData.VehicleKinematic.Curr.AngularVelocity);
-		UpdatedPrimitive->SetWorldLocationAndRotation(NewLoc, NewRot, true, &Hit, ETeleportType::TeleportPhysics);
+		UpdatedPrimitive->SetWorldLocationAndRotation(NewLoc, NewRot, false, &Hit, ETeleportType::TeleportPhysics);
 
 		if (bEnableCollisions)
 		{

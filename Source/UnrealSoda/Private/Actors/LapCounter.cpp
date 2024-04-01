@@ -8,7 +8,6 @@
 
 ALapCounter::ALapCounter()
 {
-	Extent = FVector(400.0f, 50.0f, 200.0f);
 	PrimaryActorTick.bCanEverTick = true;
 
 	ConstructorHelpers::FObjectFinderOptional<UTexture2D> IconTextureObject(TEXT("/SodaSim/Assets/CPP/ActorSprites/Finish"));
@@ -29,7 +28,7 @@ ALapCounter::ALapCounter()
 	//TriggerVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	//TriggerVolume->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 	//TriggerVolume->SetGenerateOverlapEvents(true);
-	TriggerVolume->SetBoxExtent(Extent);
+	TriggerVolume->InitBoxExtent(Extent);
 	//TriggerVolume->SetMobility(EComponentMobility::Movable);
 
 }
@@ -38,6 +37,8 @@ void ALapCounter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	TriggerVolume->SetBoxExtent(Extent);
+	TriggerVolume->SetHiddenInGame(!bDrawBox);
 	if (!TriggerVolume->OnComponentBeginOverlap.IsAlreadyBound(this, &ALapCounter::OnTriggerBeginOverlap))
 	{
 		TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &ALapCounter::OnTriggerBeginOverlap);
@@ -69,10 +70,19 @@ void ALapCounter::OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 	}
 }
 
-void ALapCounter::UpdatetActor()
+void ALapCounter::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
-	TriggerVolume->SetBoxExtent(Extent);
-	TriggerVolume->SetHiddenInGame(!bDrawBox);
+	ISodaActor::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
+
+	FProperty* MemberProperty = PropertyChangedEvent.PropertyChain.GetHead()->GetValue();
+	if (MemberProperty && MemberProperty->GetFName() == GET_MEMBER_NAME_CHECKED(ALapCounter, Extent))
+	{
+		TriggerVolume->SetBoxExtent(Extent);
+	}
+	if (MemberProperty && MemberProperty->GetFName() == GET_MEMBER_NAME_CHECKED(ALapCounter, bDrawBox))
+	{
+		TriggerVolume->SetHiddenInGame(!bDrawBox);
+	}
 }
 
 const FSodaActorDescriptor* ALapCounter::GenerateActorDescriptor() const

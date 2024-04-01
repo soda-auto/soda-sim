@@ -35,18 +35,14 @@ public:
 	UPROPERTY(Category = LapCounter, VisibleDefaultsOnly, BlueprintReadOnly)
 	class UBoxComponent* TriggerVolume;
 
-	UPROPERTY(Category = LapCounter, VisibleDefaultsOnly, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
-	FVector Extent;
+	UPROPERTY(Category = LapCounter, EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
+	FVector Extent = FVector(400.0f, 50.0f, 200.0f);
 
-	UPROPERTY(Category = LapCounter, VisibleDefaultsOnly, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(Category = LapCounter, EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
 	bool bDrawBox = true;
 
-	UPROPERTY(EditAnywhere, Category = Scenario, BlueprintReadOnly, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(Category = Scenario, EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
 	bool bHideInScenario = false;
-
-public:
-	UFUNCTION(BlueprintCallable, Category = LapCounter, meta = (CallInRuntime))
-	void UpdatetActor();
 	
 public:
 	/* Override from ISodaActor */
@@ -58,6 +54,7 @@ public:
 	//virtual bool OnSetPinnedActor(bool bIsPinnedActor) override;
 	//virtual bool IsPinnedActor() const override;
 	virtual bool ShowSelectBox() const override { return false; }
+	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 
 public:
 	ALapCounter();
