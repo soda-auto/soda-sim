@@ -61,7 +61,7 @@ protected:
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 	virtual void OnLapCounterTriggerBeginOverlap(ALapCounter* LapCounter, const FHitResult& SweepResult) override;
 	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
-
+	virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
 protected:
 	//virtual void OnTriggerLapCpounter();
 	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FRacingSensorData & OutSensorData) { return false; }
@@ -72,4 +72,5 @@ protected:
 protected:
 	FVector PrevLocation;
 	soda::FRacingSensorData SensorData;
+	bool bCapturedTrackBuilder;
 };

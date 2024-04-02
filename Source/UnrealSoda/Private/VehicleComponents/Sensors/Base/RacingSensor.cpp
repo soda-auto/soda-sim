@@ -31,6 +31,8 @@ URacingSensor::URacingSensor(const FObjectInitializer& ObjectInitializer)
 	GUI.IcanName = TEXT("SodaIcons.Modem");
 	//GUI.bIsPresentInAddMenu = true;
 
+	TickData.bAllowVehiclePostDeferredPhysTick = true;
+
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
@@ -40,6 +42,8 @@ bool URacingSensor::OnActivateVehicleComponent()
 	{
 		return false;
 	}
+
+	bCapturedTrackBuilder = CapturedTrackBuilder.IsValid();
 
 	PrevLocation = this->GetComponentTransform().GetLocation();
 	SensorData.CoveredDistanceCurrentLap = 0;
@@ -55,33 +59,17 @@ void URacingSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	if (!IsTickOnCurrentFrame() || !HealthIsWorkable()) return;
 
-
-	if (CapturedTrackBuilder.IsValid())
+	if (HealthIsWorkable())
 	{
-		SensorData.bBorderIsValid = CapturedTrackBuilder->FindNearestBorder(this->GetComponentTransform(), SensorData.LeftBorderOffset, SensorData.RightBorderOffset, SensorData.CenterLineYaw);
+		if (CapturedTrackBuilder.IsValid())
+		{
+			SensorData.bBorderIsValid = CapturedTrackBuilder->FindNearestBorder(this->GetComponentTransform(), SensorData.LeftBorderOffset, SensorData.RightBorderOffset, SensorData.CenterLineYaw);
+		}
+		else
+		{
+			SensorData.bBorderIsValid = false;
+		}
 	}
-	else
-	{
-		SensorData.bBorderIsValid = false;
-	}
-
-	const FVector Location = GetComponentTransform().GetLocation();
-	const float Dist = (PrevLocation - Location).Length();
-	PrevLocation = Location;
-
-	if (SensorData.LapCaunter >= 0)
-	{
-		SensorData.CoveredDistanceCurrentLap += Dist;
-		SensorData.bLapCounterIsValid = true;
-	}
-	else
-	{
-		SensorData.bLapCounterIsValid = false;
-	}
-
-	SensorData.CoveredDistanceFull += Dist;
-
-	PublishSensorData(DeltaTime, GetHeaderGameThread(), SensorData);
 }
 
 void URacingSensor::OnLapCounterTriggerBeginOverlap(ALapCounter* LapCounter, const FHitResult& SweepResult)
@@ -107,6 +95,32 @@ void URacingSensor::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("LapCaunter: %i"), SensorData.LapCaunter), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("CoveredDistanceCurrentLap: %f"), SensorData.CoveredDistanceCurrentLap), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("CoveredDistanceFull: %f"), SensorData.CoveredDistanceFull), 16, YPos);
+	}
+}
+
+void URacingSensor::PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
+{
+	Super::PostPhysicSimulationDeferred(DeltaTime, VehicleKinematic, Timestamp);
+
+	if (HealthIsWorkable())
+	{
+		const FVector Location = VehicleKinematic.Curr.GlobalPose.GetLocation();
+		const float Dist = (PrevLocation - Location).Length();
+		PrevLocation = Location;
+
+		if (SensorData.LapCaunter >= 0)
+		{
+			SensorData.CoveredDistanceCurrentLap += Dist;
+			SensorData.bLapCounterIsValid = true;
+		}
+		else
+		{
+			SensorData.bLapCounterIsValid = false;
+		}
+
+		SensorData.CoveredDistanceFull += Dist;
+
+		PublishSensorData(DeltaTime, GetHeaderGameThread(), SensorData);
 	}
 }
 
