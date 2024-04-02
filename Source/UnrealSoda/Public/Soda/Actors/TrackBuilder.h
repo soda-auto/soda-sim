@@ -259,6 +259,7 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void Serialize(FArchive& Ar) override { Super::Serialize(Ar); ToolActorSerialize(Ar); }
 
+
 protected:
 	static bool JSONReadLine(const TSharedPtr<FJsonObject>& JSON, const FString& FieldName, TArray<FVector>& OutPoints, bool ImportAltitude);
 	bool GenerateMarkingsInner(const TArray<FVector>& Points);

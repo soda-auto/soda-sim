@@ -477,6 +477,12 @@ void ATrackBuilder::BeginPlay()
 void ATrackBuilder::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
+
+	ClearTrack();
+	ClearRoutes();
+	ClearMarkings();
+	ClearLapCounter();
+	ClearStartLine();
 }
 
 void ATrackBuilder::TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction)
