@@ -6,6 +6,7 @@
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 #include "Soda/Vehicles/VehicleBaseTypes.h"
 #include "VehicleInputKeyboardComponent.generated.h"
+ 
 
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API UVehicleInputKeyboardComponent : public UVehicleInputComponent
@@ -13,44 +14,44 @@ class UNREALSODA_API UVehicleInputKeyboardComponent : public UVehicleInputCompon
 	GENERATED_UCLASS_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, Category = VehicleKeyInput, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, meta = (EditInRuntime))
 	FWheeledVehicleInputState InputState {};
 
 	/** Rate at which input throttle can rise and fall */
-	UPROPERTY(EditAnywhere, Category = VehicleKeyInput)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, SaveGame, meta = (EditInRuntime))
 	FInputRate ThrottleInputRate;
 
 	/** Rate at which input brake can rise and fall */
-	UPROPERTY(EditAnywhere, Category = VehicleKeyInput)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, SaveGame, meta = (EditInRuntime))
 	FInputRate BrakeInputRate;
 
 	/** Max steer angle (-1..1) versus forward speed (km/h)  */
-	UPROPERTY(EditAnywhere, Category = VehicleKeyInput)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput)
 	FRuntimeFloatCurve InputMaxSteerPerSpeedCurve;
 
 	/** Steering speed rate (steering(-1..1)/s) versus forward speed (km/h) */
-	UPROPERTY(EditAnywhere, Category = VehicleKeyInput)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput)
 	FRuntimeFloatCurve InputSteeringSpeedCurve;
 
 	/** Trunc the maximum input steering value [0..1] */
-	UPROPERTY(EditAnywhere, Category = VehicleKeyInput)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, SaveGame, meta = (EditInRuntime))
 	float InputSteeringLimit = 1;
 
 	/** Trunc the maximum input throttle value [0..1] */
-	UPROPERTY(EditAnywhere, Category = VehicleKeyInput)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, SaveGame, meta = (EditInRuntime))
 	float InputThrottleLimit = 1;
 
 	/** Trunc the maximum input brake value [0..1] */
-	UPROPERTY(EditAnywhere, Category = VehicleKeyInput)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, SaveGame, meta = (EditInRuntime))
 	float InputBrakeLimit = 1;
 
 	/** Automatic gear shifting when driving from the keyboard */
-	UPROPERTY(EditAnywhere, Category = VehicleKeyInput, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, SaveGame, meta = (EditInRuntime))
 	bool bAutoReavers = true;
 
 	/** Shift time if bAutoReavers is enbled (sec) */
-	UPROPERTY(EditAnywhere, Category = VehicleKeyInput)
-	float AutoGearChangeTime = 0.2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, SaveGame, meta = (EditInRuntime))
+	float GearChangeTime = 0.2;
 
 public:
 	virtual const FWheeledVehicleInputState& GetInputState() const override { return InputState; }
@@ -70,6 +71,6 @@ protected:
 	float RawBrakeInput = 0.f;
 
 	FInputRate SteerRate;
-	float AutoGearBrakeTimeCounter = 0.f;
+	float CurrentGearChangeTime = -1.f;
 	float FeedbackDriverSteerTension = 0.f;
 };

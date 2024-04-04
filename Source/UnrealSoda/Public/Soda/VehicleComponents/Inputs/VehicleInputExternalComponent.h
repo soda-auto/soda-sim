@@ -12,7 +12,7 @@ class UNREALSODA_API UVehicleInputExternalComponent : public UVehicleInputCompon
 	GENERATED_UCLASS_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, Category = VehicleInputExternal, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleInputExternal, meta = (EditInRuntime))
 	FWheeledVehicleInputState InputState{};
 
 public:

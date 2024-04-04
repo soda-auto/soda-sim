@@ -203,7 +203,12 @@ bool UVehicleGearBoxSimpleComponent::FindToWheelRatio(float& OutRatio) const
 
 bool UVehicleGearBoxSimpleComponent::SetGearByState(EGearState InGearState)
 {
-	GearState = InGearState;
+	if (InGearState == TargetGearState)
+	{
+		return true;
+	}
+
+	TargetGearState = InGearState;
 	switch(InGearState)
 	{
 	case EGearState::Drive:
@@ -222,15 +227,20 @@ bool UVehicleGearBoxSimpleComponent::SetGearByState(EGearState InGearState)
 
 bool UVehicleGearBoxSimpleComponent::SetGearByNum(int InGearNum)
 {
+	if (TargetGearNum == InGearNum)
+	{
+		return true;
+	}
+
 	if (InGearNum > 0) 
 	{
 		if (InGearNum > ForwardGearRatios.Num())
 		{
 			return false;
 		}
-		GearState = EGearState::Drive;
-		Ratio = ForwardGearRatios[InGearNum - 1];
-		GearNum = InGearNum;
+		TargetGearState = EGearState::Drive;
+		TargetGearNum = InGearNum;
+		CurrentGearChangeTime = GearChangeTime;
 		return true;
 	}
 	else if (InGearNum < 0)
@@ -239,20 +249,20 @@ bool UVehicleGearBoxSimpleComponent::SetGearByNum(int InGearNum)
 		{
 			return false;
 		}
-		GearState = EGearState::Reverse;
-		Ratio = -ReverseGearRatios[FMath::Abs(InGearNum) - 1];
-		GearNum = InGearNum;
+		TargetGearState = EGearState::Reverse;
+		TargetGearNum = InGearNum;
+		CurrentGearChangeTime = GearChangeTime;
 		return true;
 	}
 	else // InGearNum == 0
 	{
 
-		if (GearState != EGearState::Park)
+		if (TargetGearState != EGearState::Park)
 		{
-			GearState = EGearState::Neutral;
+			TargetGearState = EGearState::Neutral;
 		}
-		Ratio = 0.f;
-		GearNum = 0;
+		TargetGearNum = 0;
+		CurrentGearChangeTime = GearChangeTime;
 		return true;
 	}
 }
@@ -275,16 +285,43 @@ void UVehicleGearBoxSimpleComponent::TickComponent(float DeltaTime, enum ELevelT
 		{
 			if (GetGearNum() < ForwardGearRatios.Num())
 			{
+				//UE_LOG(LogSoda, Warning, TEXT("UVehicleGearBoxSimpleComponent::SetGearByNum(%i); Up "), GetGearNum() + 1);
 				SetGearByNum(GetGearNum() + 1);
 				OutAngularVelocity = InAngularVelocity * Ratio;
+				
 			}
 		}
 		else if (FMath::Abs(OutAngularVelocity) * ANG2RPM < ChangeDownRPM)
 		{
 			if (GetGearNum() > 1)
 			{
+				//UE_LOG(LogSoda, Warning, TEXT("UVehicleGearBoxSimpleComponent::SetGearByNum(%i); Down"), GetGearNum() - 1);
 				SetGearByNum(GetGearNum() - 1);
 				OutAngularVelocity = InAngularVelocity * Ratio;
+			}
+		}
+	}
+
+	if (CurrentGearNum != TargetGearNum || TargetGearState != CurrentGearState)
+	{
+		CurrentGearChangeTime -= DeltaTime;
+		if (CurrentGearChangeTime <= 0.f)
+		{
+			CurrentGearChangeTime = 0.f;
+			CurrentGearNum = TargetGearNum;
+			CurrentGearState = TargetGearState;
+
+			if (CurrentGearNum > 0)
+			{
+				Ratio = ForwardGearRatios[CurrentGearNum - 1];
+			}
+			else if (CurrentGearNum < 0)
+			{
+				Ratio = -ReverseGearRatios[FMath::Abs(CurrentGearNum) - 1];
+			}
+			else // CurrentGearNum == 0
+			{
+				Ratio = 0.f;
 			}
 		}
 	}

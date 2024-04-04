@@ -64,60 +64,79 @@ void UVehicleInputKeyboardComponent::UpdateInputStates(float DeltaTime, float Fo
 
 	if (bAutoReavers)
 	{
-		float Throttle = PlayerController->GetInputAnalogKeyState(Settings->ThrottleKeyInput);
-		float Brake = PlayerController->GetInputAnalogKeyState(Settings->BrakeKeyInput);
+		const float Up = PlayerController->GetInputAnalogKeyState(Settings->ThrottleKeyInput);
+		const float Down = PlayerController->GetInputAnalogKeyState(Settings->BrakeKeyInput);
 
-		if (std::abs(ForwardSpeed) < 2.0)
-			AutoGearBrakeTimeCounter += DeltaTime;
-		else
-			AutoGearBrakeTimeCounter = 0;
+		//if (std::abs(ForwardSpeed) < 2.0)
+		//	CurrentGearChangeTime += DeltaTime;
+		//else
+		//	CurrentGearChangeTime = 0;
 
 		RawThrottleInput = 0.f;
 		RawBrakeInput = 0.f;
 
-		if (Throttle > 0.1)
+		if (Up > 0.1)
 		{
 			if (InputState.IsForwardGear())
 			{
-				RawThrottleInput = Throttle;
-				RawBrakeInput = 0;
-			}
-			else if (InputState.IsReversGear())
-			{
-				RawThrottleInput = 0;
-				RawBrakeInput = Throttle;
-				if (AutoGearBrakeTimeCounter > AutoGearChangeTime)
-					InputState.SetGearState(EGearState::Drive);
+				if (ForwardSpeed >= -1.0)
+				{
+					RawThrottleInput = Up;
+					RawBrakeInput = 0;
+				}
+				else
+				{
+					RawThrottleInput = 0;
+					RawBrakeInput = Up;
+				}
 			}
 			else
 			{
 				InputState.SetGearState(EGearState::Drive);
-				RawThrottleInput = Throttle;
-				RawBrakeInput = 0;
+				CurrentGearChangeTime = GearChangeTime;
+
+				if (ForwardSpeed >= -1.0)
+				{
+					RawThrottleInput = Up;
+					RawBrakeInput = 0;
+				}
+				else
+				{
+					RawThrottleInput = 0;
+					RawBrakeInput = Up;
+				}
 			}
 		}
 
-		if (Brake > 0.1)
+		if (Down > 0.1)
 		{
-			if (InputState.IsForwardGear())
+			if (InputState.IsReversGear())
 			{
-				RawThrottleInput = 0;
-				RawBrakeInput = Brake;
-				if (AutoGearBrakeTimeCounter > AutoGearChangeTime)
+				if (ForwardSpeed >= 1.0)
 				{
-					InputState.SetGearState(EGearState::Reverse);
+					RawThrottleInput = 0;
+					RawBrakeInput = Down;
 				}
-			}
-			else if (InputState.IsReversGear())
-			{
-				RawThrottleInput = Brake;
-				RawBrakeInput = 0;
+				else
+				{
+					RawThrottleInput = Down;
+					RawBrakeInput = 0;
+				}
 			}
 			else
 			{
 				InputState.SetGearState(EGearState::Reverse);
-				RawThrottleInput = 0;
-				RawBrakeInput = Brake;
+				CurrentGearChangeTime = GearChangeTime;
+				if (ForwardSpeed >= 1.0)
+				{
+					RawThrottleInput = 0;
+					RawBrakeInput = Down;
+				}
+				else
+				{
+					RawThrottleInput = Down;
+					RawBrakeInput = 0;
+				}
 			}
 		}
 	}
@@ -172,10 +191,16 @@ void UVehicleInputKeyboardComponent::UpdateInputStates(float DeltaTime, float Fo
 		InputState.Steering = SteerInputTarget;
 	}
 
-	/* Compute Throttle Input */
-	InputState.Throttle = ThrottleInputRate.InterpInputValue(DeltaTime, InputState.Throttle, RawThrottleInput);
+	if (CurrentGearChangeTime > 0)
+	{
+		CurrentGearChangeTime -= DeltaTime;
+		InputState.Throttle = 0;
+	}
+	else
+	{
+		InputState.Throttle = ThrottleInputRate.InterpInputValue(DeltaTime, InputState.Throttle, RawThrottleInput);
+	}
 
-	/* Compute Brake Input*/
 	InputState.Brake = BrakeInputRate.InterpInputValue(DeltaTime, InputState.Brake, RawBrakeInput);
 }
 

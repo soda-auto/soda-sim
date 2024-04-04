@@ -74,7 +74,7 @@ void USodaChaosWheeledVehicleSimulation::UpdateSimulation(float DeltaTime, const
 		
 		SodaChaosWheelSetup[i].SodaWheel->Pitch = -ChaosWheels[i].GetAngularPosition();
 		SodaChaosWheelSetup[i].SodaWheel->Steer = ChaosWheels[i].GetSteeringAngle() / 180 * M_PI;
-		SodaChaosWheelSetup[i].SodaWheel->AngularVelocity = -ChaosWheels[i].GetAngularVelocity();
+		SodaChaosWheelSetup[i].SodaWheel->AngularVelocity = ChaosWheels[i].GetAngularVelocity();
 		SodaChaosWheelSetup[i].SodaWheel->Slip = FVector2D(std::cos(ChaosWheels[i].GetSlipAngle()), std::sin(ChaosWheels[i].GetSlipAngle())) * ChaosWheels[i].GetSlipMagnitude();
 		SodaChaosWheelSetup[i].SodaWheel->SuspensionOffset = PVehicle->Suspension[i].GetSuspensionOffset();
 	}

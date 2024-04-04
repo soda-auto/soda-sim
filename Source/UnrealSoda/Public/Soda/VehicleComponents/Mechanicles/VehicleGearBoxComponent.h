@@ -90,8 +90,8 @@ public:
 	float ChangeDownRPM = 2000.0f;
 
 	/** Time it takes to switch gears (seconds) */
-	//UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ClampMin = "0.0", UIMin = "0.0"))
-	//float GearChangeTime = 0.0;
+	UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ClampMin = "0.0", UIMin = "0.0"))
+	float GearChangeTime = 0.2;
 
 	/** Mechanical frictional losses mean transmission might operate at 0.94 (94% efficiency) */
 	//UPROPERTY(EditAnywhere, Category = GearBox, SaveGame, meta = (EditInRuntime, ReactivateActor))
@@ -115,16 +115,19 @@ public:
 public:
 	virtual bool SetGearByState(EGearState GearState) override;
 	virtual bool SetGearByNum(int GearNum) override;
-	virtual EGearState GetGearState() const override { return GearState; };
-	virtual int GetGearNum() const override { return GearNum; }
+	virtual EGearState GetGearState() const override { return CurrentGearState; };
+	virtual int GetGearNum() const override { return CurrentGearNum; }
 	virtual float GetGearRatio() const override { return Ratio; }
 	virtual int GetForwardGearsCount() const { return ForwardGearRatios.Num(); }
 	virtual int GetReversGearsCount() const { return ReverseGearRatios.Num(); }
 
 protected:
 	float Ratio = 0;
-	EGearState GearState = EGearState::Neutral;
-	int GearNum = 0;
+	EGearState CurrentGearState = EGearState::Neutral;
+	EGearState TargetGearState = EGearState::Neutral;
+	int CurrentGearNum = 0;
+	int TargetGearNum = 0;
+	float CurrentGearChangeTime = 0; // Time to change gear, no power transmitted to the wheels during change
 
 	UPROPERTY()
 	TScriptInterface<ITorqueTransmission> OutputTorqueTransmission;

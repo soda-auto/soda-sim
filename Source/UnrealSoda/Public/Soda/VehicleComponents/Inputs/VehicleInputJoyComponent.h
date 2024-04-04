@@ -13,29 +13,29 @@ class UNREALSODA_API UVehicleInputJoyComponent : public UVehicleInputComponent
 	GENERATED_UCLASS_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, Category = VehicleJoyInput, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, meta = (EditInRuntime))
 	FWheeledVehicleInputState InputState{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/UnrealSoda.VehicleSteeringRackBaseComponent"))
 	FSubobjectReference LinkToSteering { TEXT("SteeringRack") };
 
 	/** In the dead zone the break input will be zero. [0..1] */
-	UPROPERTY(EditAnywhere, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
 	float InputBrakeDeadzone = 0.02f;
 
 	/** 
 	 * Сontinue driving at a low speed when the accelerator pedal is released.
 	 * This is an imitation of the behavior of a real automatic transmission.
 	 */
-	UPROPERTY(EditAnywhere, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
 	bool bCreepMode = false;
 
 	/** Vehicle speed when the accelerator pedal is released and bCreepMode is enabled [km/h] */
-	UPROPERTY(EditAnywhere, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
 	float CreepSpeed = 7.f;
 
 	/** Maximum throttle input available for creep mode [0..1] */
-	UPROPERTY(EditAnywhere, Category = VehicleJoyInput)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
 	float MaxCreepThrottle = 0.2f;
 
 	/** Enable the effect of returning the steering wheel to the center position in relation to vehicle speed. */
