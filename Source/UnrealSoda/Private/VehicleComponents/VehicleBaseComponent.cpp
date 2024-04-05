@@ -58,3 +58,20 @@ FSensorDataHeader UVehicleBaseComponent::GetHeaderVehicleThread() const
 	return FSensorDataHeader{ GetVehicle()->GetSimData().SimulatedTimestamp, GetVehicle()->GetSimData().SimulatedStep };
 }
 
+#if WITH_EDITOR
+void UVehicleBaseComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	if (!HasBegunPlay())
+	{
+		PostEditChangeProperty(PropertyChangedEvent);
+	}
+}
+
+void UVehicleBaseComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	if (!HasBegunPlay())
+	{
+		PostEditChangeChainProperty(PropertyChangedEvent);
+	}
+}
+#endif

@@ -1550,6 +1550,25 @@ void ASodaVehicle::ScenarioEnd()
 	VehicleComponensForDataset.Empty();
 }
 
+#if WITH_EDITOR
+void ASodaVehicle::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	if (!HasActorBegunPlay())
+	{
+		PostEditChangeProperty(PropertyChangedEvent);
+	}
+}
+
+void ASodaVehicle::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	if (!HasActorBegunPlay())
+	{
+		PostEditChangeChainProperty(PropertyChangedEvent);
+	}
+}
+#endif
+
+
 void ASodaVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) const
 {
 	using bsoncxx::builder::stream::document;

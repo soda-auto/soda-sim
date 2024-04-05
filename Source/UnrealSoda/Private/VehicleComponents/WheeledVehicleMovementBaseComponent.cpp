@@ -46,3 +46,21 @@ void UWheeledVehicleMovementBaseComponent::OnDeactivateVehicleComponent()
 {
 	ISodaVehicleComponent::OnDeactivateVehicleComponent();
 }
+
+#if WITH_EDITOR
+void UWheeledVehicleMovementBaseComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	if (!HasBegunPlay())
+	{
+		PostEditChangeProperty(PropertyChangedEvent);
+	}
+}
+
+void UWheeledVehicleMovementBaseComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	if (!HasBegunPlay())
+	{
+		PostEditChangeChainProperty(PropertyChangedEvent);
+	}
+}
+#endif

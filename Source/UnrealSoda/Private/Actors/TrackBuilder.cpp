@@ -690,9 +690,9 @@ void ATrackBuilder::GenerateTrack()
 	/*
 	 * Initialization and simplify  of inside, otside and centre track's polylines 
 	 */
-	FPolyline InsidePolyline(InsidePoints, true, TrackElevation);
-	FPolyline OutsidePolyline(OutsidePoints, true, TrackElevation);
-	FPolyline CentrePolyline(CentrePoints, true, TrackElevation);
+	FPolyline InsidePolyline(InsidePoints, bIsClosedTrack, TrackElevation);
+	FPolyline OutsidePolyline(OutsidePoints, bIsClosedTrack, TrackElevation);
+	FPolyline CentrePolyline(CentrePoints, bIsClosedTrack, TrackElevation);
 
 	if (bRelax)
 	{
@@ -760,11 +760,12 @@ void ATrackBuilder::GenerateTrack()
 	int InsideLineInd = 0;
 	int OutsideLineInd = 0;
 	int MeshID = 0;
+	bool IsLastSegment = false;
 
 	/*
 	 * Split the track into segments, loop until we reach the last segment
 	 */
-	while (true)
+	while (!IsLastSegment && !(TrackBuildSegmentCount > 0 && (TrackBuildSegmentCount - 1) < MeshID))
 	{
 		/*
 		 * Find the segment of track
@@ -774,7 +775,7 @@ void ATrackBuilder::GenerateTrack()
 		FPolyline CentreSegment(false);
 
 		const int PointsLeft = CentrePolyline.Num() - CenterLineInd;
-		const bool IsLastSegment = PointsLeft < (TrackSegmentStep + TrackSegmentStep / 2);
+		IsLastSegment = PointsLeft < (TrackSegmentStep + TrackSegmentStep / 2);
 
 		int CenterSegmEndInd;
 		int InsideSegmEndInd;
@@ -1002,8 +1003,6 @@ void ATrackBuilder::GenerateTrack()
 
 		UE_LOG(LogSoda, Log, TEXT(" ATrackBuilder::GenerateMesh(); ID: %i; Vertices: %i, Triangles: %i"), MeshID, Vertices.Num(), Triangles.Num() / 3);
 
-		if (IsLastSegment || (TrackBuildSegmentCount > 0 && (TrackBuildSegmentCount - 1) < MeshID)) break;
-
 		++MeshID;
 	}
 
@@ -1141,7 +1140,7 @@ bool ATrackBuilder::GenerateMarkingsInner(const TArray<FVector>& Points)
 		return false;
 	}
 
-	FPolyline Polyline(Points, true, TrackElevation + 3); // + 3 cm under road
+	FPolyline Polyline(Points, bIsClosedTrack, TrackElevation + 3); // + 3 cm under road
 
 	if (bRelax)
 	{

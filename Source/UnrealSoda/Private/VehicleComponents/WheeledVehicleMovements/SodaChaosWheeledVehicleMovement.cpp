@@ -447,29 +447,35 @@ bool USodaChaosWheeledVehicleMovementComponent::ShouldCreatePhysicsState() const
 
 void USodaChaosWheeledVehicleMovementComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
+	if (!HasBegunPlay())
+	{
+		PostEditChangeProperty(PropertyChangedEvent);
+	}
 }
 
 void USodaChaosWheeledVehicleMovementComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-
-	if ((PropertyChangedEvent.Property != nullptr) && (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UChaosWheeledVehicleMovementComponent, WheelSetups)))
+	if (!HasBegunPlay())
 	{
-		if (PropertyChangedEvent.ChangeType == EPropertyChangeType::ArrayAdd)
-		{
-			//const int32 AddedAtIndex = PropertyChangedEvent.GetArrayIndex(PropertyChangedEvent.Property->GetFName().ToString());
-			//check(AddedAtIndex != INDEX_NONE);
-			SodaWheelSetups.Add({});
-		}
-		else if (PropertyChangedEvent.ChangeType == EPropertyChangeType::ArrayRemove)
-		{
-			SodaWheelSetups.RemoveAt(SodaWheelSetups.Num() - 1);
-		}
+		Super::PostEditChangeChainProperty(PropertyChangedEvent);
 
-		if (SodaWheelSetups.Num() != WheelSetups.Num())
+		if ((PropertyChangedEvent.Property != nullptr) && (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UChaosWheeledVehicleMovementComponent, WheelSetups)))
 		{
-			SodaWheelSetups.SetNum(WheelSetups.Num());
+			if (PropertyChangedEvent.ChangeType == EPropertyChangeType::ArrayAdd)
+			{
+				//const int32 AddedAtIndex = PropertyChangedEvent.GetArrayIndex(PropertyChangedEvent.Property->GetFName().ToString());
+				//check(AddedAtIndex != INDEX_NONE);
+				SodaWheelSetups.Add({});
+			}
+			else if (PropertyChangedEvent.ChangeType == EPropertyChangeType::ArrayRemove)
+			{
+				SodaWheelSetups.RemoveAt(SodaWheelSetups.Num() - 1);
+			}
+
+			if (SodaWheelSetups.Num() != WheelSetups.Num())
+			{
+				SodaWheelSetups.SetNum(WheelSetups.Num());
+			}
 		}
 	}
 }

@@ -38,54 +38,54 @@ struct FWheeledVehicleInputState
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	float Steering = 0.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	float Throttle = 0.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	float Brake = 0.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	EGearInputMode GearInputMode = EGearInputMode::ByState;
 
 	/** Valid only if  GearInputMode==EGearInputMode::ByState */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	EGearState GearState = EGearState::Neutral;
 
 	/** Valid only if  GearInputMode==EGearInputMode::ByNum */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	int GearNum = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	bool bWasGearUpPressed = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	bool bWasGearDownPressed = false;
 
 	/** External request to enable the AD mode. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	bool bADModeEnbaled = false;
 
 	/** External request to enable the safe stop mode. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	bool bSafeStopEnbaled = false;
 
 	/** External request to enable the daytime running lights. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	bool bDaytimeRunningLightsEnabled = false;
 
 	/** External request to enable the revers lights. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	bool bHeadlightsEnabled = false;
 
 	/** External request to enable the horn. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	bool bHornEnabled = false;
 
 	/** Cruise Control / Speed Limiter mode */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	ECruiseControlMode CruiseControlMode = ECruiseControlMode::Off;
 
 	TTimestamp UpdateTimestamp;
