@@ -63,7 +63,7 @@ void UVehicleBaseComponent::PostEditChangeProperty(FPropertyChangedEvent& Proper
 {
 	if (!HasBegunPlay())
 	{
-		PostEditChangeProperty(PropertyChangedEvent);
+		Super::PostEditChangeProperty(PropertyChangedEvent);
 	}
 }
 
@@ -71,7 +71,7 @@ void UVehicleBaseComponent::PostEditChangeChainProperty(FPropertyChangedChainEve
 {
 	if (!HasBegunPlay())
 	{
-		PostEditChangeChainProperty(PropertyChangedEvent);
+		Super::PostEditChangeChainProperty(PropertyChangedEvent);
 	}
 }
 #endif

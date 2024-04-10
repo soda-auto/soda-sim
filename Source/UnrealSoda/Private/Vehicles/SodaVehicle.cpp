@@ -1555,7 +1555,7 @@ void ASodaVehicle::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 {
 	if (!HasActorBegunPlay())
 	{
-		PostEditChangeProperty(PropertyChangedEvent);
+		Super::PostEditChangeProperty(PropertyChangedEvent);
 	}
 }
 
@@ -1563,7 +1563,7 @@ void ASodaVehicle::PostEditChangeChainProperty(FPropertyChangedChainEvent& Prope
 {
 	if (!HasActorBegunPlay())
 	{
-		PostEditChangeChainProperty(PropertyChangedEvent);
+		Super::PostEditChangeChainProperty(PropertyChangedEvent);
 	}
 }
 #endif

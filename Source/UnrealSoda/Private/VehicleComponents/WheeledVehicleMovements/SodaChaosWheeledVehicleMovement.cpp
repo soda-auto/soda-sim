@@ -449,7 +449,7 @@ void USodaChaosWheeledVehicleMovementComponent::PostEditChangeProperty(FProperty
 {
 	if (!HasBegunPlay())
 	{
-		PostEditChangeProperty(PropertyChangedEvent);
+		Super::PostEditChangeProperty(PropertyChangedEvent);
 	}
 }
 

@@ -175,7 +175,7 @@ bool SerializeUStruct(FArchive& Ar, UStruct * Struct, uint8* StructMemory, bool 
 
 					if (ArgsEnd - ArgsBegin != NumSerializedBytesFromArchive)
 					{
-						UE_LOG(LogSoda, Warning, TEXT("Arguments size mismatch from size serialized in asset. Expected %d, Actual: %d"), NumSerializedBytesFromArchive, ArgsEnd - ArgsBegin);
+						UE_LOG(LogSoda, Warning, TEXT("SerializeUStruct(), Arguments size mismatch from size serialized in asset. Expected %d, Actual: %d"), NumSerializedBytesFromArchive, ArgsEnd - ArgsBegin);
 						Ar.SetError();
 					}
 					else
@@ -185,7 +185,7 @@ bool SerializeUStruct(FArchive& Ar, UStruct * Struct, uint8* StructMemory, bool 
 				}
 				else
 				{
-					UE_LOG(LogSoda, Warning, TEXT("%s could not be loaded while deserialzing."), *Struct->GetStructPathName().ToString());
+					UE_LOG(LogSoda, Warning, TEXT("SerializeUStruct(), Could not be loaded while deserialzing"));
 					Ar.Seek(Ar.Tell() + NumSerializedBytesFromArchive);
 					Ar.SetError();
 				}

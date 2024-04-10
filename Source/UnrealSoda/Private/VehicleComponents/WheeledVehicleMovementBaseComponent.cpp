@@ -52,7 +52,7 @@ void UWheeledVehicleMovementBaseComponent::PostEditChangeProperty(FPropertyChang
 {
 	if (!HasBegunPlay())
 	{
-		PostEditChangeProperty(PropertyChangedEvent);
+		Super::PostEditChangeProperty(PropertyChangedEvent);
 	}
 }
 
@@ -60,7 +60,7 @@ void UWheeledVehicleMovementBaseComponent::PostEditChangeChainProperty(FProperty
 {
 	if (!HasBegunPlay())
 	{
-		PostEditChangeChainProperty(PropertyChangedEvent);
+		Super::PostEditChangeChainProperty(PropertyChangedEvent);
 	}
 }
 #endif
