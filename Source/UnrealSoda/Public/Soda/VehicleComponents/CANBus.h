@@ -18,7 +18,7 @@ class UCANDevComponent;
  * UCANBusComponent
  * CAN bus or network imitation
  */
-UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable)
+UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API UCANBusComponent : public UVehicleBaseComponent
 {
 	GENERATED_UCLASS_BODY()

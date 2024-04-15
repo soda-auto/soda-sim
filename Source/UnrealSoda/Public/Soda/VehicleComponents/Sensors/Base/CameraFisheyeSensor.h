@@ -70,6 +70,7 @@ public:
 /**
  * UCameraFisheyeSensor
  * TODO: Make easy way to parametrisation of Fisheye projection construction  for user 
+ * TODO: May be use FOpenCVLensDistortionParameters insted of Intrinsics***
  */
 UCLASS(abstract, ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API UCameraFisheyeSensor : public UCameraSensor
