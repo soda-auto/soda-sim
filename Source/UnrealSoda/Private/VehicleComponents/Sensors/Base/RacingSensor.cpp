@@ -139,7 +139,7 @@ void URacingSensor::OnPushDataset(soda::FActorDatasetData& Dataset) const
 			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
 			<< "bBorderIsValid" << SensorData.bBorderIsValid
 			<< "bLapCounterIsValid" << SensorData.bLapCounterIsValid
-			<< "CenterLineYaw" << SensorData.CenterLineYaw
+			<< "CenterLineYaw" << SensorData.CenterLineYaw / M_PI * 180
 			<< "CoveredDistanceCurrentLap" << SensorData.CoveredDistanceCurrentLap
 			<< "CoveredDistanceFull" << SensorData.CoveredDistanceFull
 			<< "LapCaunter" << SensorData.LapCaunter
