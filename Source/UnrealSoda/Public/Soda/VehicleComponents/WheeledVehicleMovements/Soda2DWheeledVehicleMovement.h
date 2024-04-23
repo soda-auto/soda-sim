@@ -165,6 +165,10 @@ public:
 	float ModelStartUpDelay = 0.5;
 
 public:
+	UFUNCTION(BlueprintCallable, Category = Vehicle)
+	void SetVehicleVelocity(float InVelocity);
+
+public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
@@ -181,8 +185,8 @@ protected:
 public:
 	/* Overrides from  IWheeledVehicleMovementInterface  */
 	virtual float GetVehicleMass() const override { return Mass; }
-	virtual const FVehicleSimData& GetSimData() const { return VehicleSimData; }
-	virtual bool SetVehiclePosition(const FVector& NewLocation, const FRotator& NewRotation);
+	virtual const FVehicleSimData& GetSimData() const override { return VehicleSimData; }
+	virtual bool SetVehiclePosition(const FVector& NewLocation, const FRotator& NewRotation) override;
 
 protected:
 	FVehicleSimData VehicleSimData;
