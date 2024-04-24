@@ -118,6 +118,8 @@ void FSodaLoadingScreenModule::StartupModule()
 
 		SetupLoadingScreen();
 	}	
+
+	FCommandLine::Append(TEXT(" -RCWebControlEnable"));
 }
 
 void FSodaLoadingScreenModule::ShutdownModule()

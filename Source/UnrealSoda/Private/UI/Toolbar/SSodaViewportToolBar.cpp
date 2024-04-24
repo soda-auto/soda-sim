@@ -44,6 +44,7 @@
 #include "Soda/SodaUserSettings.h"
 #include "JoystickGameSettings.h"
 #include "SodaJoystick.h"
+#include "RemoteControlSettings.h"
 
 #define LOCTEXT_NAMESPACE "SodaViewportToolBar"
 
@@ -572,6 +573,66 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 			FText::FromString("Joystic Settings"),
 			FText::FromString("Joystic Settings"),
 			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.Joystick"),
+			Action);
+	}
+
+	{
+		FUIAction Action;
+		Action.ExecuteAction.BindLambda([]() 
+		{
+			USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
+			FRuntimeEditorModule& RuntimeEditorModule = FModuleManager::LoadModuleChecked<FRuntimeEditorModule>("RuntimeEditor");
+			soda::FDetailsViewArgs Args;
+			Args.bHideSelectionTip = true;
+			Args.bLockable = false;
+			TSharedPtr<soda::IDetailsView> DetailView = RuntimeEditorModule.CreateDetailView(Args);
+			DetailView->SetObject(GetMutableDefault<URemoteControlSettings>());
+			GameMode->PushToolBox(
+				SNew(SToolBox)
+				.Caption(FText::FromString("RC Settings"))
+				[
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot()
+					.FillHeight(1)
+					
+					[
+						DetailView.ToSharedRef()
+					]
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					.VAlign(VAlign_Top)
+					.HAlign(HAlign_Center)
+					[
+						SNew(SHorizontalBox)
+						+ SHorizontalBox::Slot()
+						.Padding(5)
+						[
+							SNew(SButton)
+							.Text(FText::FromString(TEXT("Save")))
+							.OnClicked(FOnClicked::CreateLambda([]()
+							{
+								GetMutableDefault<URemoteControlSettings>()->SaveConfig();
+								return FReply::Handled();
+							}))
+						]
+						+ SHorizontalBox::Slot()
+						.Padding(5)
+						[
+							SNew(SButton)
+							.Text(FText::FromString(TEXT("Reset")))
+							.OnClicked(FOnClicked::CreateLambda([]()
+							{
+								GetMutableDefault<URemoteControlSettings>()->LoadConfig();
+								return FReply::Handled();
+							}))
+						]
+					]
+				]);
+		});
+		MenuBuilder.AddMenuEntry(
+			FText::FromString("RC Settings"),
+			FText::FromString("RC Settings"),
+			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.World"),
 			Action);
 	}
 
