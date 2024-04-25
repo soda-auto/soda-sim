@@ -1484,7 +1484,7 @@ bool ATrackBuilder::FindNearestBorder(const FTransform& Transform, float& OutLef
 
 	float InsideDist;
 	const int InsideInd = ClosestPointOnPolyline2D(InsidePoints, bIsClosedTrack, Pose, InsideDist);
-	const FVector2D InsidePoint(InsidePoints[InsideDist]);
+	const FVector2D InsidePoint(InsidePoints[InsideInd]);
 	const FVector2D InsideDir = InsidePoint - Pose;
 	const float InsideDot = Dir ^ InsideDir;
 
