@@ -357,7 +357,12 @@ bool USoda2DWheeledVehicleMovementComponent::SetVehiclePosition(const FVector& N
 	return false;
 }
 
-void USoda2DWheeledVehicleMovementComponent::SetVehicleVelocity(float InVelocity)
+bool USoda2DWheeledVehicleMovementComponent::SetVehicleVelocity(float InVelocity)
 {
-	DynCar->init_nav(DynCar->car_state.x, DynCar->car_state.y, DynCar->car_state.psi, InVelocity / 100.0);
+	if (DynCar != nullptr)
+	{
+		DynCar->init_nav(DynCar->car_state.x, DynCar->car_state.y, DynCar->car_state.psi, InVelocity / 100.0);
+		return true;
+	}
+	return false;
 }

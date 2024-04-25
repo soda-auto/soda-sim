@@ -166,7 +166,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
-	void SetVehicleVelocity(float InVelocity);
+	bool SetVehicleVelocity(float InVelocity);
 
 public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
