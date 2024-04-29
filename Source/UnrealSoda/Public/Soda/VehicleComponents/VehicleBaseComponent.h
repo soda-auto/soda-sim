@@ -40,6 +40,13 @@ public:
 	FVehicleComponentTick TickData;
 
 public:
+	UFUNCTION(BlueprintImplementableEvent, Category = VehicleComponent, meta = (DisplayName = "ActivateVehicleComponen"))
+	void ReceiveActivateVehicleComponent();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = VehicleComponent, meta = (DisplayName = "DeactivateVehicleComponent"))
+	void ReceiveDeactivateVehicleComponent();
+
+public:
 	/* Override ISodaVehicleComponent */
 	virtual UActorComponent* AsActorComponent() override { return this; }
 	virtual ASodaVehicle* GetVehicle() const override { return Vehicle; }
@@ -52,6 +59,9 @@ public:
 	virtual const FVehicleComponentGUI& GetVehicleComponentGUI() const override { return GUI; }
 	virtual const FVehicleComponentCommon& GetVehicleComponentCommon() const override { return Common; }
 	virtual const FVehicleComponentTick& GetVehicleComponentTick() const override { return TickData; }
+
+	virtual bool OnActivateVehicleComponent() override;
+	virtual void OnDeactivateVehicleComponent() override;
 
 public:
 	/* Override AActorComponent */

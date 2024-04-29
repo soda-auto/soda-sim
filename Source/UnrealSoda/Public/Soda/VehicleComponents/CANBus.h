@@ -38,6 +38,7 @@ public:
 	virtual bool ProcessRecvMessage(const TTimestamp& Timestamp, const dbc::FCanFrame& CanFrame);
 	virtual int SendFrame(const dbc::FCanFrame& CanFrame);
 	virtual void RegisterCanDev(UCANDevComponent* CANDev);
+	virtual bool UnregisterCanDev(UCANDevComponent* CANDev);
 
 public:
 	virtual void OnPreActivateVehicleComponent() override;

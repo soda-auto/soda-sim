@@ -48,6 +48,23 @@ void UVehicleBaseComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 	}
 }
 
+bool UVehicleBaseComponent::OnActivateVehicleComponent()
+{
+	if (!ISodaVehicleComponent::OnActivateVehicleComponent())
+	{
+		return false;
+	}
+
+	ReceiveActivateVehicleComponent();
+	return true;
+}
+
+void UVehicleBaseComponent::OnDeactivateVehicleComponent()
+{
+	ISodaVehicleComponent::OnDeactivateVehicleComponent();
+	ReceiveDeactivateVehicleComponent();
+}
+
 FSensorDataHeader UVehicleBaseComponent::GetHeaderGameThread() const
 {
 	return FSensorDataHeader{ SodaApp.GetSimulationTimestamp(), SodaApp.GetFrameIndex() };

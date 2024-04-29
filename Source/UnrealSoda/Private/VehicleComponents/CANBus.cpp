@@ -39,6 +39,8 @@ void UCANBusComponent::OnDeactivateVehicleComponent()
 
 	//RecvMessages.clear();
 	//SendMessages.clear();
+
+	RegistredCANDev.Reset();
 }
 
 void UCANBusComponent::RegisterCanDev(UCANDevComponent* CANDev)
@@ -47,6 +49,15 @@ void UCANBusComponent::RegisterCanDev(UCANDevComponent* CANDev)
 	{
 		RegistredCANDev.Add(CANDev);
 	}
+}
+
+bool UCANBusComponent::UnregisterCanDev(UCANDevComponent* CANDev)
+{
+	if (IsValid(CANDev))
+	{
+		return RegistredCANDev.Remove(CANDev) > 0;
+	}
+	return false;
 }
 
 int UCANBusComponent::SendFrame(const dbc::FCanFrame& CanFrame)

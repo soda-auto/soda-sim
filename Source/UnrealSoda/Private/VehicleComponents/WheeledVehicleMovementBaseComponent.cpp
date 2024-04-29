@@ -39,12 +39,15 @@ bool UWheeledVehicleMovementBaseComponent::OnActivateVehicleComponent()
 		return false;
 	}
 
+	ReceiveActivateVehicleComponent();
+
 	return true;
 }
 
 void UWheeledVehicleMovementBaseComponent::OnDeactivateVehicleComponent()
 {
 	ISodaVehicleComponent::OnDeactivateVehicleComponent();
+	ReceiveDeactivateVehicleComponent();
 }
 
 #if WITH_EDITOR

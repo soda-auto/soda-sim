@@ -422,6 +422,8 @@ bool USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 
 	bSynchronousMode = SodaApp.IsSynchronousMode();
 
+	ReceiveActivateVehicleComponent();
+
 	return true;
 }
 
@@ -431,6 +433,8 @@ void USodaChaosWheeledVehicleMovementComponent::OnPreDeactivateVehicleComponent(
 
 	DestroyPhysicsState();
 	bAllowCreatePhysicsState = false;
+
+	ReceiveDeactivateVehicleComponent();
 }
 
 void USodaChaosWheeledVehicleMovementComponent::OnDeactivateVehicleComponent()
