@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -7,18 +7,20 @@
 #include "Http.h"
 #include "HttpJsonComponent.generated.h"
 
+
 /**
  * 
  */
-UCLASS()
+UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API UHttpJsonComponent : public UWheeledVehicleComponent
 {
-	GENERATED_BODY()
+	GENERATED_UCLASS_BODY()
+
 
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	
 private:
-	void OnResponceRecieved(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+	void OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
 };
