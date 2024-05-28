@@ -5,17 +5,20 @@
 #include "CoreMinimal.h"
 #include "Soda/VehicleComponents/WheeledVehicleComponent.h"
 #include "Http.h"
-#include "HttpJsonComponent.generated.h"
+#include "AutoWiringComponent.generated.h"
 
 
 /**
  * 
  */
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UHttpJsonComponent : public UWheeledVehicleComponent
+class UNREALSODA_API UAutoWiringComponent : public UVehicleBaseComponent
 {
 	GENERATED_UCLASS_BODY()
 
+public:
+	UFUNCTION(BlueprintCallable, Category = Debug, meta = (CallInRuntime))
+	virtual void SendRequest();
 
 protected:
 	virtual bool OnActivateVehicleComponent() override;
