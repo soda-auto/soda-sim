@@ -1,6 +1,7 @@
 // Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/Others/AutoWiringComponent.h"
+#include "Json.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
 
 
@@ -27,7 +28,13 @@ void UAutoWiringComponent::OnResponseReceived(FHttpRequestPtr Request, FHttpResp
 {
 	if (bConnectedSuccessfully && Response.IsValid())
 	{
+		TSharedPtr<FJsonObject> ResponseObj;
+		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+		FJsonSerializer::Deserialize(Reader, ResponseObj);
+		
+
 		UE_LOG(LogTemp, Display, TEXT("Response: %s"), *Response->GetContentAsString());
+		UE_LOG(LogTemp, Display, TEXT("Title: %s"), *ResponseObj->GetStringField("title"));
 	}
 	else
 	{
