@@ -14,7 +14,6 @@ UAutoWiringComponent::UAutoWiringComponent(const FObjectInitializer& ObjectIniti
 
 }
 
-
 void UAutoWiringComponent::SendRequest()
 {
 	FHttpRequestPtr Request = FHttpModule::Get().CreateRequest();
@@ -32,9 +31,10 @@ void UAutoWiringComponent::OnResponseReceived(FHttpRequestPtr Request, FHttpResp
 		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 		FJsonSerializer::Deserialize(Reader, ResponseObj);
 		
-
 		UE_LOG(LogTemp, Display, TEXT("Response: %s"), *Response->GetContentAsString());
 		UE_LOG(LogTemp, Display, TEXT("Title: %s"), *ResponseObj->GetStringField("title"));
+
+		//ResponseObj->
 	}
 	else
 	{

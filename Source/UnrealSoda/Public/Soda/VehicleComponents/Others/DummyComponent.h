@@ -4,28 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "Soda/VehicleComponents/WheeledVehicleComponent.h"
-#include "Http.h"
-#include "AutoWiringComponent.generated.h"
+#include "DummyComponent.generated.h"
 
-
-/**
- * 
- */
+class UStaticMesh;
+ /**
+  *
+  */
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UAutoWiringComponent : public UVehicleBaseComponent
+class UNREALSODA_API UDummyComponent : public UWheeledVehicleComponent
 {
 	GENERATED_UCLASS_BODY()
 
 public:
 
-	UFUNCTION(BlueprintCallable, Category = Debug, meta = (CallInRuntime))
-	virtual void SendRequest();
-
-
+	/** Custom static dummy mesh  */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = DummyRendering)
+	UStaticMesh* DummyMesh;
+	
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
-	
-private:
-	void OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+
+	void SetDummyMesh(UStaticMesh* NewMesh);
 };
