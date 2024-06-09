@@ -1,8 +1,6 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "Soda/VehicleComponents/Others/DummyComponent.h"
+﻿#include "Soda/VehicleComponents/Others/DummyComponent.h"
 #include "Engine/StaticMesh.h"
+#include "ConstructorHelpers.h"
 
 UDummyComponent::UDummyComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -15,6 +13,7 @@ UDummyComponent::UDummyComponent(const FObjectInitializer& ObjectInitializer)
 	DummyMesh->SetupAttachment(this);
 
 	InitializeDummyMeshMap();
+	CurrentMeshComponent = nullptr;
 }
 
 bool UDummyComponent::OnActivateVehicleComponent()
@@ -24,10 +23,7 @@ bool UDummyComponent::OnActivateVehicleComponent()
 		return false;
 	}
 
-	if (DummyMeshMap.Contains(DummyType))
-	{
-		check(DummyMesh->SetStaticMesh(*DummyMeshMap.Find(DummyType)));
-	}
+	CreateAndAttachStaticMesh();
 
 	return true;
 }
@@ -35,9 +31,8 @@ bool UDummyComponent::OnActivateVehicleComponent()
 void UDummyComponent::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
-	DummyMesh->SetStaticMesh(nullptr);
+	RemoveCurrentMeshComponent();
 }
-
 
 void UDummyComponent::InitializeDummyMeshMap()
 {
@@ -50,6 +45,31 @@ void UDummyComponent::InitializeDummyMeshMap()
 	if (Mesh3.Succeeded()) DummyMeshMap.Add(EDummyType::DummyType3, Mesh3.Object);
 }
 
+void UDummyComponent::CreateAndAttachStaticMesh()
+{
+	RemoveCurrentMeshComponent();
+
+	if (DummyMeshMap.Contains(DummyType))
+	{
+		CurrentMeshComponent = NewObject<UStaticMeshComponent>(this);
+		if (CurrentMeshComponent)
+		{
+			CurrentMeshComponent->SetStaticMesh(*DummyMeshMap.Find(DummyType));
+			CurrentMeshComponent->SetupAttachment(this);
+			CurrentMeshComponent->RegisterComponent();
+			CurrentMeshComponent->SetVisibility(true);
+		}
+	}
+}
+
+void UDummyComponent::RemoveCurrentMeshComponent()
+{
+	if (CurrentMeshComponent)
+	{
+		CurrentMeshComponent->DestroyComponent();
+		CurrentMeshComponent = nullptr;
+	}
+}
 
 void UDummyComponent::RuntimePostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
@@ -60,27 +80,19 @@ void UDummyComponent::RuntimePostEditChangeProperty(FPropertyChangedEvent& Prope
 
 	if (PropertyName == GET_MEMBER_NAME_CHECKED(UDummyComponent, DummyType))
 	{
-		if (DummyMeshMap.Contains(DummyType))
-		{
-			DummyMesh->SetStaticMesh(*DummyMeshMap.Find(DummyType));
-		}
+		CreateAndAttachStaticMesh();
 	}
-
 }
 
 void UDummyComponent::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
-	Super::RuntimePostEditChangeProperty(PropertyChangedEvent);
+	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
 
 	FProperty* Property = PropertyChangedEvent.Property;
 	const FName PropertyName = Property ? Property->GetFName() : NAME_None;
 
 	if (PropertyName == GET_MEMBER_NAME_CHECKED(UDummyComponent, DummyType))
 	{
-		if (DummyMeshMap.Contains(DummyType))
-		{
-			DummyMesh->SetStaticMesh(*DummyMeshMap.Find(DummyType));
-		}
+		CreateAndAttachStaticMesh();
 	}
-
 }

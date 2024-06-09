@@ -1,14 +1,8 @@
-﻿// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Soda/VehicleComponents/WheeledVehicleComponent.h"
 #include "DummyComponent.generated.h"
-
- /**
-  *
-  */
 
 UENUM(BlueprintType)
 enum class EDummyType : uint8
@@ -31,7 +25,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Mesh)
 	UStaticMeshComponent* DummyMesh;
 
-	
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
@@ -39,10 +32,13 @@ protected:
 	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 
 private:
-
-
 	UPROPERTY()
 	TMap<EDummyType, UStaticMesh*> DummyMeshMap;
 
+	UPROPERTY()
+	UStaticMeshComponent* CurrentMeshComponent;
+
 	void InitializeDummyMeshMap();
+	void CreateAndAttachStaticMesh();
+	void RemoveCurrentMeshComponent();
 };
