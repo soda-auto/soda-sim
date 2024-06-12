@@ -1,5 +1,6 @@
 ﻿#include "Soda/VehicleComponents/Others/DummyComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Components/StaticMeshComponent.h"
 #include "ConstructorHelpers.h"
 
 UDummyComponent::UDummyComponent(const FObjectInitializer& ObjectInitializer)
@@ -12,16 +13,15 @@ UDummyComponent::UDummyComponent(const FObjectInitializer& ObjectInitializer)
    DummyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DummyMesh"));
    DummyMesh->SetupAttachment(this);
 
+   UUID = "";
+
    InitializeDummyMeshMap();
    CurrentMeshComponent = nullptr;
 }
 
 void UDummyComponent::UpdateDummyLocation(const FVector& NewLocation)
 {
-   if (CurrentMeshComponent)
-   {
-      CurrentMeshComponent->SetRelativeLocation(NewLocation);
-   }
+   SetRelativeLocation(NewLocation);
 }
 
 bool UDummyComponent::OnActivateVehicleComponent()
@@ -66,6 +66,7 @@ void UDummyComponent::CreateAndAttachStaticMesh()
       {
          CurrentMeshComponent->SetStaticMesh(*DummyMeshMap.Find(DummyType));
          CurrentMeshComponent->SetupAttachment(this);
+         CurrentMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
          CurrentMeshComponent->RegisterComponent();
          CurrentMeshComponent->SetVisibility(true);
       }

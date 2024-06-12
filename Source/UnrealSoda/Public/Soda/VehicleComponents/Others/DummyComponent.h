@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
+
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Soda/VehicleComponents/WheeledVehicleComponent.h"
@@ -24,6 +26,9 @@ public:
 
    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Mesh)
    UStaticMeshComponent* DummyMesh;
+
+   UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Identification)
+   FString UUID; 
 
    void UpdateDummyLocation(const FVector& NewLocation);
 
