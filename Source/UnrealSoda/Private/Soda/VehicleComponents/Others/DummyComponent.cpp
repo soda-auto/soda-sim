@@ -3,96 +3,112 @@
 #include "ConstructorHelpers.h"
 
 UDummyComponent::UDummyComponent(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+   : Super(ObjectInitializer), bIsActivated(false)
 {
-	GUI.Category = TEXT("Other");
-	GUI.ComponentNameOverride = TEXT("Dummy component");
-	GUI.bIsPresentInAddMenu = true;
+   GUI.Category = TEXT("Other");
+   GUI.ComponentNameOverride = TEXT("Dummy component");
+   GUI.bIsPresentInAddMenu = true;
 
-	DummyMesh = CreateDefaultSubobject<UStaticMeshComponent>("DummyMesh");
-	DummyMesh->SetupAttachment(this);
+   DummyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DummyMesh"));
+   DummyMesh->SetupAttachment(this);
 
-	InitializeDummyMeshMap();
-	CurrentMeshComponent = nullptr;
+   InitializeDummyMeshMap();
+   CurrentMeshComponent = nullptr;
+}
+
+void UDummyComponent::UpdateDummyLocation(const FVector& NewLocation)
+{
+   if (CurrentMeshComponent)
+   {
+      CurrentMeshComponent->SetRelativeLocation(NewLocation);
+   }
 }
 
 bool UDummyComponent::OnActivateVehicleComponent()
 {
-	if (!Super::OnActivateVehicleComponent())
-	{
-		return false;
-	}
+   if (!Super::OnActivateVehicleComponent())
+   {
+      return false;
+   }
 
-	CreateAndAttachStaticMesh();
+   bIsActivated = true;
+   CreateAndAttachStaticMesh();
 
-	return true;
+   return true;
 }
 
 void UDummyComponent::OnDeactivateVehicleComponent()
 {
-	Super::OnDeactivateVehicleComponent();
-	RemoveCurrentMeshComponent();
+   Super::OnDeactivateVehicleComponent();
+   bIsActivated = false;
+   RemoveCurrentMeshComponent();
 }
 
 void UDummyComponent::InitializeDummyMeshMap()
 {
-	ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh1(TEXT("/SodaSim/DummyComponents/Cube.Cube"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh2(TEXT("/SodaSim/DummyComponents/Sphere.Sphere"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh3(TEXT("/SodaSim/DummyComponents/Cylinder.Cylinder"));
+   ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh1(TEXT("/SodaSim/DummyComponents/Cube.Cube"));
+   ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh2(TEXT("/SodaSim/DummyComponents/Sphere.Sphere"));
+   ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh3(TEXT("/SodaSim/DummyComponents/Cylinder.Cylinder"));
 
-	if (Mesh1.Succeeded()) DummyMeshMap.Add(EDummyType::DummyType1, Mesh1.Object);
-	if (Mesh2.Succeeded()) DummyMeshMap.Add(EDummyType::DummyType2, Mesh2.Object);
-	if (Mesh3.Succeeded()) DummyMeshMap.Add(EDummyType::DummyType3, Mesh3.Object);
+   if (Mesh1.Succeeded()) DummyMeshMap.Add(EDummyType::DummyType1, Mesh1.Object);
+   if (Mesh2.Succeeded()) DummyMeshMap.Add(EDummyType::DummyType2, Mesh2.Object);
+   if (Mesh3.Succeeded()) DummyMeshMap.Add(EDummyType::DummyType3, Mesh3.Object);
 }
 
 void UDummyComponent::CreateAndAttachStaticMesh()
 {
-	RemoveCurrentMeshComponent();
+   RemoveCurrentMeshComponent();
 
-	if (DummyMeshMap.Contains(DummyType))
-	{
-		CurrentMeshComponent = NewObject<UStaticMeshComponent>(this);
-		if (CurrentMeshComponent)
-		{
-			CurrentMeshComponent->SetStaticMesh(*DummyMeshMap.Find(DummyType));
-			CurrentMeshComponent->SetupAttachment(this);
-			CurrentMeshComponent->RegisterComponent();
-			CurrentMeshComponent->SetVisibility(true);
-		}
-	}
+   if (DummyMeshMap.Contains(DummyType))
+   {
+      CurrentMeshComponent = NewObject<UStaticMeshComponent>(this);
+      if (CurrentMeshComponent)
+      {
+         CurrentMeshComponent->SetStaticMesh(*DummyMeshMap.Find(DummyType));
+         CurrentMeshComponent->SetupAttachment(this);
+         CurrentMeshComponent->RegisterComponent();
+         CurrentMeshComponent->SetVisibility(true);
+      }
+   }
 }
 
 void UDummyComponent::RemoveCurrentMeshComponent()
 {
-	if (CurrentMeshComponent)
-	{
-		CurrentMeshComponent->DestroyComponent();
-		CurrentMeshComponent = nullptr;
-	}
+   if (CurrentMeshComponent)
+   {
+      CurrentMeshComponent->DestroyComponent();
+      CurrentMeshComponent = nullptr;
+   }
 }
 
 void UDummyComponent::RuntimePostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	Super::RuntimePostEditChangeProperty(PropertyChangedEvent);
+   Super::RuntimePostEditChangeProperty(PropertyChangedEvent);
 
-	FProperty* Property = PropertyChangedEvent.Property;
-	const FName PropertyName = Property ? Property->GetFName() : NAME_None;
+   if (bIsActivated)
+   {
+      FProperty* Property = PropertyChangedEvent.Property;
+      const FName PropertyName = Property ? Property->GetFName() : NAME_None;
 
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(UDummyComponent, DummyType))
-	{
-		CreateAndAttachStaticMesh();
-	}
+      if (PropertyName == GET_MEMBER_NAME_CHECKED(UDummyComponent, DummyType))
+      {
+         CreateAndAttachStaticMesh();
+      }
+   }
 }
 
 void UDummyComponent::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
+   Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
 
-	FProperty* Property = PropertyChangedEvent.Property;
-	const FName PropertyName = Property ? Property->GetFName() : NAME_None;
+   if (bIsActivated)
+   {
+      FProperty* Property = PropertyChangedEvent.Property;
+      const FName PropertyName = Property ? Property->GetFName() : NAME_None;
 
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(UDummyComponent, DummyType))
-	{
-		CreateAndAttachStaticMesh();
-	}
+      if (PropertyName == GET_MEMBER_NAME_CHECKED(UDummyComponent, DummyType))
+      {
+         CreateAndAttachStaticMesh();
+      }
+   }
 }
