@@ -9,8 +9,8 @@
 UENUM(BlueprintType)
 enum class EDummyType : uint8
 {
-   DummyType1 UMETA(DisplayName = "Dummy Type 1"),
-   DummyType2 UMETA(DisplayName = "Dummy Type 2"),
+   ECU UMETA(DisplayName = "ECU"),
+   Emotor UMETA(DisplayName = "Emotor"),
    DummyType3 UMETA(DisplayName = "Dummy Type 3")
 };
 

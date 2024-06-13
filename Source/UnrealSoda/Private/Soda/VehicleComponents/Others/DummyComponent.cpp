@@ -46,12 +46,12 @@ void UDummyComponent::OnDeactivateVehicleComponent()
 
 void UDummyComponent::InitializeDummyMeshMap()
 {
-   ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh1(TEXT("/SodaSim/DummyComponents/Cube.Cube"));
-   ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh2(TEXT("/SodaSim/DummyComponents/Sphere.Sphere"));
+   ConstructorHelpers::FObjectFinder<UStaticMesh> ECUMesh(TEXT("/SodaSim/DummyComponents/Mesh/ECU.ECU"));
+   ConstructorHelpers::FObjectFinder<UStaticMesh> Emotor(TEXT("/SodaSim/DummyComponents/Mesh/Emotor.Emotor"));
    ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh3(TEXT("/SodaSim/DummyComponents/Cylinder.Cylinder"));
 
-   if (Mesh1.Succeeded()) DummyMeshMap.Add(EDummyType::DummyType1, Mesh1.Object);
-   if (Mesh2.Succeeded()) DummyMeshMap.Add(EDummyType::DummyType2, Mesh2.Object);
+   if (ECUMesh.Succeeded()) DummyMeshMap.Add(EDummyType::ECU, ECUMesh.Object);
+   if (Emotor.Succeeded()) DummyMeshMap.Add(EDummyType::Emotor, Emotor.Object);
    if (Mesh3.Succeeded()) DummyMeshMap.Add(EDummyType::DummyType3, Mesh3.Object);
 }
 
