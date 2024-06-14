@@ -11,6 +11,7 @@ UAutoWiringComponent::UAutoWiringComponent(const FObjectInitializer& ObjectIniti
    GUI.Category = TEXT("Other");
    GUI.ComponentNameOverride = TEXT("Auto wiring");
    GUI.bIsPresentInAddMenu = true;
+   PrimaryComponentTick.bCanEverTick = true;
 }
 
 void UAutoWiringComponent::SendRequest()
@@ -21,6 +22,7 @@ void UAutoWiringComponent::SendRequest()
    Request->SetVerb("GET");
    Request->ProcessRequest();
 }
+
 
 void UAutoWiringComponent::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
 {
@@ -148,6 +150,8 @@ void UAutoWiringComponent::UpdateDummies(const TSharedPtr<FJsonObject>& JsonObje
 
 void UAutoWiringComponent::DrawConnections(const TSharedPtr<FJsonObject>& JsonObject)
 {
+   ConnectionIDs.Empty();
+
    const TArray<TSharedPtr<FJsonValue>>* ConnectionsArray;
    if (JsonObject->TryGetArrayField(TEXT("connections"), ConnectionsArray))
    {
@@ -157,54 +161,48 @@ void UAutoWiringComponent::DrawConnections(const TSharedPtr<FJsonObject>& JsonOb
          FString SourceId = ConnectionObject->GetStringField(TEXT("sourceId"));
          FString DestinationId = ConnectionObject->GetStringField(TEXT("destinationId"));
 
-         AActor* OwnerActor = GetOwner();
-         TArray<UDummyComponent*> DummyComponents;
-         OwnerActor->GetComponents(DummyComponents);
+         ConnectionIDs.Add(TPair<FString, FString>(SourceId, DestinationId));
+      }
+   }
+}
 
-         FVector SourceLocation, DestinationLocation;
-         bool bSourceFound = false, bDestinationFound = false;
+void UAutoWiringComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+   Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-         for (UDummyComponent* DummyComponent : DummyComponents)
+   for (const auto& ConnectionID : ConnectionIDs)
+   {
+      FVector SourceLocation, DestinationLocation;
+      bool bSourceFound = false, bDestinationFound = false;
+
+      AActor* OwnerActor = GetOwner();
+      TArray<UDummyComponent*> DummyComponents;
+      OwnerActor->GetComponents(DummyComponents);
+
+      for (UDummyComponent* DummyComponent : DummyComponents)
+      {
+         if (DummyComponent->UUID == ConnectionID.Key)
          {
-            UE_LOG(LogTemp, Display, TEXT("Checking DummyComponent UUID: %s against SourceId: %s and DestinationId: %s"), *DummyComponent->UUID, *SourceId, *DestinationId);
-            if (DummyComponent->UUID == SourceId)
-            {
-               SourceLocation = DummyComponent->GetComponentLocation();
-               bSourceFound = true;
-               UE_LOG(LogTemp, Display, TEXT("Found Source: %s at Location: %s"), *SourceId, *SourceLocation.ToString());
-            }
-            else if (DummyComponent->UUID == DestinationId)
-            {
-               DestinationLocation = DummyComponent->GetComponentLocation();
-               bDestinationFound = true;
-               UE_LOG(LogTemp, Display, TEXT("Found Destination: %s at Location: %s"), *DestinationId, *DestinationLocation.ToString());
-            }
-
-            if (bSourceFound && bDestinationFound)
-            {
-               DrawDebugLine(
-                  GetWorld(),
-                  SourceLocation,
-                  DestinationLocation,
-                  FColor::Green,
-                  false, 100000.0f, 0.0,
-                  5
-               );
-               UE_LOG(LogTemp, Display, TEXT("Drawing debug line from %s to %s"), *SourceId, *DestinationId);
-               break;
-            }
+            SourceLocation = DummyComponent->GetComponentLocation();
+            bSourceFound = true;
+         }
+         if (DummyComponent->UUID == ConnectionID.Value)
+         {
+            DestinationLocation = DummyComponent->GetComponentLocation();
+            bDestinationFound = true;
          }
 
-         if (!bSourceFound || !bDestinationFound)
+         if (bSourceFound && bDestinationFound)
          {
-            if (!bSourceFound)
-            {
-               UE_LOG(LogTemp, Warning, TEXT("Source ID: %s not found"), *SourceId);
-            }
-            if (!bDestinationFound)
-            {
-               UE_LOG(LogTemp, Warning, TEXT("Destination ID: %s not found"), *DestinationId);
-            }
+            DrawDebugLine(
+               GetWorld(),
+               SourceLocation,
+               DestinationLocation,
+               FColor::Green,
+               false, -1.0f, 0,
+               5.0f
+            );
+            break;
          }
       }
    }
@@ -223,4 +221,5 @@ bool UAutoWiringComponent::OnActivateVehicleComponent()
 void UAutoWiringComponent::OnDeactivateVehicleComponent()
 {
    Super::OnDeactivateVehicleComponent();
+   ConnectionIDs.Empty();
 }

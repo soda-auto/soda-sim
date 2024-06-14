@@ -14,6 +14,8 @@ public:
    UFUNCTION(BlueprintCallable, Category = Debug, meta = (CallInRuntime))
    virtual void SendRequest();
 
+   virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 protected:
    virtual bool OnActivateVehicleComponent() override;
    virtual void OnDeactivateVehicleComponent() override;
@@ -22,4 +24,6 @@ private:
    void OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
    void UpdateDummies(const TSharedPtr<FJsonObject>& JsonObject);
    void DrawConnections(const TSharedPtr<FJsonObject>& JsonObject);
+
+   TArray<TPair<FString, FString>> ConnectionIDs;
 };

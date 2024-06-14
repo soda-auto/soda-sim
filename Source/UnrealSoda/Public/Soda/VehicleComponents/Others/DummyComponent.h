@@ -11,7 +11,15 @@ enum class EDummyType : uint8
 {
    ECU UMETA(DisplayName = "ECU"),
    Emotor UMETA(DisplayName = "Emotor"),
-   DummyType3 UMETA(DisplayName = "Dummy Type 3")
+   FrontLeftLight UMETA(DisplayName = "Front left light"),
+   FrontRightLight UMETA(DisplayName = "Front right light"),
+   RearLeftPositionLight UMETA(DisplayName = "Rear left position light"),
+   RearLeftReverseLight UMETA(DisplayName = "Rear left reverse light"),
+   RearLeftTurnIndicator UMETA(DisplayName = "Rear left turn indicator"),
+   RearRightPositionLight UMETA(DisplayName = "Rear right position light"),
+   RearRightReverseLight UMETA(DisplayName = "Rear right reverse light"),
+   RearRightTurnIndicator UMETA(DisplayName = "Rear right turn indicator"),
+   RoofLight UMETA(DisplayName = "Roof light")
 };
 
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
@@ -33,10 +41,13 @@ public:
    void UpdateDummyLocation(const FVector& NewLocation);
 
 protected:
+   //virtual void BeginPlay() override;
+   virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
    virtual bool OnActivateVehicleComponent() override;
    virtual void OnDeactivateVehicleComponent() override;
    virtual void RuntimePostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
    virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+
 
 private:
    UPROPERTY()
