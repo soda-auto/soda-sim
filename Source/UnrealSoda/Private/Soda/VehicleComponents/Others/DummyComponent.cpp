@@ -2,9 +2,10 @@
 #include "Engine/StaticMesh.h"
 #include "Components/StaticMeshComponent.h"
 #include "ConstructorHelpers.h"
+#include "DrawDebugHelpers.h"
 
 UDummyComponent::UDummyComponent(const FObjectInitializer& ObjectInitializer)
-   : Super(ObjectInitializer), bIsActivated(false)
+   : Super(ObjectInitializer), bIsActivated(false), bShouldMove(false), TargetLocation(FVector::ZeroVector)
 {
    GUI.Category = TEXT("Other");
    GUI.ComponentNameOverride = TEXT("Dummy component");
@@ -19,23 +20,46 @@ UDummyComponent::UDummyComponent(const FObjectInitializer& ObjectInitializer)
    CurrentMeshComponent = nullptr;
 
    PrimaryComponentTick.bCanEverTick = true;
+
+   TargetLocation = GetRelativeLocation();
 }
 
 void UDummyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-   if (bIsActivated)
+   if (bIsActivated && bShouldMove)
+   {
+      FVector CurrentLocation = GetRelativeLocation();
+      if (!CurrentLocation.Equals(TargetLocation, 0.1f))
+      {
+         FVector NewLocation = FMath::VInterpTo(CurrentLocation, TargetLocation, DeltaTime, 0.4f);
+         SetRelativeLocation(NewLocation);
+      }
+      else
+      {
+         bShouldMove = false;
+      }
+
+   }
+
+   if (bIsActivated && !LabelText.IsEmpty()) // Add check for LabelText
    {
       FVector ComponentLocation = GetComponentLocation();
-      FString DebugText = "X1.1\t->\tFront Left ECU X1.2 (Analogue)\nX1.10\t->\tRear ECU X1.2 (Analogue)";
-      DrawDebugString(GetWorld(), ComponentLocation + FVector(0, 0, 10), DebugText, nullptr, FColor::White, 0.0005, false);
+      float Scale = 1.0f;
+      DrawDebugString(GetWorld(), ComponentLocation + FVector(0, 0, 10), LabelText, nullptr, FColor::White, 0.0001f, false, Scale);
    }
 }
 
 void UDummyComponent::UpdateDummyLocation(const FVector& NewLocation)
 {
-   SetRelativeLocation(NewLocation);
+   TargetLocation = NewLocation;
+   bShouldMove = true;
+}
+
+void UDummyComponent::SetLabelText(const FString& NewLabelText)
+{
+   LabelText = NewLabelText;
 }
 
 bool UDummyComponent::OnActivateVehicleComponent()
@@ -73,7 +97,7 @@ void UDummyComponent::InitializeDummyMeshMap()
    ConstructorHelpers::FObjectFinder<UStaticMesh> RearRightPositionLightMesh(TEXT("/SodaSim/DummyComponents/Mesh/RearRightPositionLight.RearRightPositionLight"));
    ConstructorHelpers::FObjectFinder<UStaticMesh> RearRightReverseLightMesh(TEXT("/SodaSim/DummyComponents/Mesh/RearRightReverseLight.RearRightReverseLight"));
    ConstructorHelpers::FObjectFinder<UStaticMesh> RearRightTurnIndicatorMesh(TEXT("/SodaSim/DummyComponents/Mesh/RearRightTurnIndicator.RearRightTurnIndicator"));
-   
+
    ConstructorHelpers::FObjectFinder<UStaticMesh> RoofLightMesh(TEXT("/SodaSim/DummyComponents/Mesh/RoofLight.RoofLight"));
 
 
@@ -92,7 +116,6 @@ void UDummyComponent::InitializeDummyMeshMap()
    if (RearRightTurnIndicatorMesh.Succeeded()) DummyMeshMap.Add(EDummyType::RearRightTurnIndicator, RearRightTurnIndicatorMesh.Object);
 
    if (RoofLightMesh.Succeeded()) DummyMeshMap.Add(EDummyType::RoofLight, RoofLightMesh.Object);
-
 }
 
 void UDummyComponent::CreateAndAttachStaticMesh()

@@ -36,18 +36,17 @@ public:
    UStaticMeshComponent* DummyMesh;
 
    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Identification)
-   FString UUID; 
+   FString UUID;
 
    void UpdateDummyLocation(const FVector& NewLocation);
+   void SetLabelText(const FString& NewLabelText);
 
 protected:
-   //virtual void BeginPlay() override;
    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
    virtual bool OnActivateVehicleComponent() override;
    virtual void OnDeactivateVehicleComponent() override;
    virtual void RuntimePostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
    virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
-
 
 private:
    UPROPERTY()
@@ -57,8 +56,13 @@ private:
    UStaticMeshComponent* CurrentMeshComponent;
 
    bool bIsActivated;
+   bool bShouldMove;
+
+   FVector TargetLocation;
+   FString LabelText;
 
    void InitializeDummyMeshMap();
    void CreateAndAttachStaticMesh();
    void RemoveCurrentMeshComponent();
 };
+

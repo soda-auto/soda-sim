@@ -23,37 +23,286 @@ void UAutoWiringComponent::SendRequest()
    Request->ProcessRequest();
 }
 
-
 void UAutoWiringComponent::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
 {
    if (bConnectedSuccessfully && Response.IsValid())
    {
       // JSON string
-      FString JsonString = TEXT(R"(
-        {
-            "peripherals": [
-                {
-                    "id": "78444252-fe3b-4d9c-826c-d84bddb1a8dc",
-                    "kind": 0,
-                    "coordinates": [1.1, 2.2, 3.3]
-                }
-            ],
-            "ioModules": [
-                {
-                    "id": "ae3b7d03-986c-4d09-8b06-632caf0abe00",
-                    "kind": 1,
-                    "coordinates": [4.4, 5.5, 6.6]
-                }
-            ],
-            "connections": [
-                {
-                    "sourceId": "78444252-fe3b-4d9c-826c-d84bddb1a8dc",
-                    "sourcePin": "X1.2",
-                    "destinationId": "ae3b7d03-986c-4d09-8b06-632caf0abe00",
-                    "destinationPin": "X2.3"
-                }
-            ]
-        })");
+      FString JsonString =
+         TEXT("{")
+         TEXT("\"peripherals\": [")
+         TEXT("{")
+         TEXT("\"id\": \"78444252-fe3b-4d9c-826c-d84bddb1a8dc\",")
+         TEXT("\"kind\": 1,")
+         TEXT("\"title\": \"Drive Unit\",")
+         TEXT("\"coordinates\": [2.9, 0.13, 0.14],")
+         TEXT("\"labelText\": \"X1.1 -> X1.1 of FR ECU A\\nX1.2 -> X1.2 of FR ECU A\\nX1.3 -> X1.3 of FR ECU A\"")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"id\": \"a726d50f-8dda-4d0a-aa0a-000f156b32ec\",")
+         TEXT("\"kind\": 2,")
+         TEXT("\"title\": \"Front Left Light\",")
+         TEXT("\"coordinates\": [3.13, -0.7, 0.5],")
+         TEXT("\"labelText\": \"X1.1 -> X1.1 of FL ECU A\\nX1.2 -> X1.2 of FL ECU A\"")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"id\": \"bf9842cc-4f36-44c0-9d35-f02f8cc65061\",")
+         TEXT("\"kind\": 3,")
+         TEXT("\"title\": \"Front Right Light\",")
+         TEXT("\"coordinates\": [3.13, 0.7, 0.5],")
+         TEXT("\"labelText\": \"X1.1 -> X1.4 of FR ECU A\\nX1.2 -> X1.5 of FR ECU A\"")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"id\": \"431db986-946e-48a6-8fd7-99f3129313f1\",")
+         TEXT("\"kind\": 4,")
+         TEXT("\"title\": \"Rear Left Position Light\",")
+         TEXT("\"coordinates\": [-0.44, -0.66, 0.97],")
+         TEXT("\"labelText\": \"\"")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"id\": \"426e91e7-c5aa-4de7-9641-8312336c30a0\",")
+         TEXT("\"kind\": 5,")
+         TEXT("\"title\": \"Rear Left Reverse Light\",")
+         TEXT("\"coordinates\": [-0.4, -0.69, 0.97],")
+         TEXT("\"labelText\": \"\"")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"id\": \"c029a8b7-865e-4337-8901-364f345c1ca0\",")
+         TEXT("\"kind\": 6,")
+         TEXT("\"title\": \"Rear Left Turn Indicator\",")
+         TEXT("\"coordinates\": [-0.46, -0.67, 1.0],") 
+         TEXT("\"labelText\": \"\"")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"id\": \"5f5595b8-38c5-4e71-9791-36ea67c5268e\",")
+         TEXT("\"kind\": 7,")
+         TEXT("\"title\": \"Rear Right Position Light\",") 
+         TEXT("\"coordinates\": [-0.44, 0.66, 0.97],")
+         TEXT("\"labelText\": \"\"")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"id\": \"1d913ac6-6ff5-4f91-8c8a-c141759681ff\",")
+         TEXT("\"kind\": 8,")
+         TEXT("\"title\": \"Rear Right Reverse Light\",") 
+         TEXT("\"coordinates\": [-0.41, 0.695, 0.97],")
+         TEXT("\"labelText\": \"\"")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"id\": \"954682ea-403f-452c-b9cb-06c71e52031b\",")
+         TEXT("\"kind\": 9,")
+         TEXT("\"title\": \"Rear Right Turn Indicator\",")
+         TEXT("\"coordinates\": [-0.46, 0.67, 1.0],")
+         TEXT("\"labelText\": \"\"")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"id\": \"dd9fb6cb-38bb-456a-8c8d-982619560190\",")
+         TEXT("\"kind\": 10,")
+         TEXT("\"title\": \"Roof Light\",")
+         TEXT("\"coordinates\": [1.1, 2.2, 3.3],")
+         TEXT("\"labelText\": \"\"")
+         TEXT("}")
+         TEXT("],")
+         TEXT("\"ioModules\": [")
+         TEXT("{")
+         TEXT("\"id\": \"ae3b7d03-986c-4d09-8b06-632caf0abe00\",")
+         TEXT("\"kind\": 0,")
+         TEXT("\"title\": \"FL ECU\",")
+         TEXT("\"coordinates\": [2.7, -0.47, 0.47],")
+         TEXT("\"labelText\": \"\"")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"id\": \"f70de327-0caa-4d25-994e-d68dfe26807e\",")
+         TEXT("\"kind\": 0,")
+         TEXT("\"title\": \"FR ECU\",")
+         TEXT("\"coordinates\": [2.7, 0.47, 0.47],")
+         TEXT("\"labelText\": \"\"")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"id\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"kind\": 0,")
+         TEXT("\"title\": \"Rear ECU\",")
+         TEXT("\"coordinates\": [-0.26, 0.0, 0.14],")
+         TEXT("\"labelText\": \"\"")
+         TEXT("}")
+         TEXT("],")
+         TEXT("\"connections\": [")
+         TEXT("{")
+         TEXT("\"sourceId\": \"78444252-fe3b-4d9c-826c-d84bddb1a8dc\",")
+         TEXT("\"sourcePin\": \"X1.1\",")
+         TEXT("\"destinationId\": \"f70de327-0caa-4d25-994e-d68dfe26807e\",")
+         TEXT("\"destinationPin\": \"X1.1\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"78444252-fe3b-4d9c-826c-d84bddb1a8dc\",")
+         TEXT("\"sourcePin\": \"X1.2\",")
+         TEXT("\"destinationId\": \"f70de327-0caa-4d25-994e-d68dfe26807e\",")
+         TEXT("\"destinationPin\": \"X1.2\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"78444252-fe3b-4d9c-826c-d84bddb1a8dc\",")
+         TEXT("\"sourcePin\": \"X1.3\",")
+         TEXT("\"destinationId\": \"f70de327-0caa-4d25-994e-d68dfe26807e\",")
+         TEXT("\"destinationPin\": \"X1.3\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"a726d50f-8dda-4d0a-aa0a-000f156b32ec\",")
+         TEXT("\"sourcePin\": \"X1.1\",")
+         TEXT("\"destinationId\": \"ae3b7d03-986c-4d09-8b06-632caf0abe00\",")
+         TEXT("\"destinationPin\": \"X1.1\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"a726d50f-8dda-4d0a-aa0a-000f156b32ec\",")
+         TEXT("\"sourcePin\": \"X1.2\",")
+         TEXT("\"destinationId\": \"ae3b7d03-986c-4d09-8b06-632caf0abe00\",")
+         TEXT("\"destinationPin\": \"X1.2\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"bf9842cc-4f36-44c0-9d35-f02f8cc65061\",")
+         TEXT("\"sourcePin\": \"X1.1\",")
+         TEXT("\"destinationId\": \"f70de327-0caa-4d25-994e-d68dfe26807e\",")
+         TEXT("\"destinationPin\": \"X1.4\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"bf9842cc-4f36-44c0-9d35-f02f8cc65061\",")
+         TEXT("\"sourcePin\": \"X1.2\",")
+         TEXT("\"destinationId\": \"f70de327-0caa-4d25-994e-d68dfe26807e\",")
+         TEXT("\"destinationPin\": \"X1.5\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"431db986-946e-48a6-8fd7-99f3129313f1\",")
+         TEXT("\"sourcePin\": \"X1.1\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.1\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"431db986-946e-48a6-8fd7-99f3129313f1\",")
+         TEXT("\"sourcePin\": \"X1.2\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.2\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"426e91e7-c5aa-4de7-9641-8312336c30a0\",")
+         TEXT("\"sourcePin\": \"X1.1\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.3\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"426e91e7-c5aa-4de7-9641-8312336c30a0\",")
+         TEXT("\"sourcePin\": \"X1.2\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.4\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"c029a8b7-865e-4337-8901-364f345c1ca0\",")
+         TEXT("\"sourcePin\": \"X1.1\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.5\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"c029a8b7-865e-4337-8901-364f345c1ca0\",")
+         TEXT("\"sourcePin\": \"X1.2\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.6\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"5f5595b8-38c5-4e71-9791-36ea67c5268e\",")
+         TEXT("\"sourcePin\": \"X1.1\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.7\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"5f5595b8-38c5-4e71-9791-36ea67c5268e\",")
+         TEXT("\"sourcePin\": \"X1.2\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.8\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"1d913ac6-6ff5-4f91-8c8a-c141759681ff\",")
+         TEXT("\"sourcePin\": \"X1.1\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.9\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"1d913ac6-6ff5-4f91-8c8a-c141759681ff\",")
+         TEXT("\"sourcePin\": \"X1.2\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.10\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"954682ea-403f-452c-b9cb-06c71e52031b\",")
+         TEXT("\"sourcePin\": \"X1.1\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.11\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"954682ea-403f-452c-b9cb-06c71e52031b\",")
+         TEXT("\"sourcePin\": \"X1.2\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.12\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"dd9fb6cb-38bb-456a-8c8d-982619560190\",")
+         TEXT("\"sourcePin\": \"X1.1\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.13\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"dd9fb6cb-38bb-456a-8c8d-982619560190\",")
+         TEXT("\"sourcePin\": \"X1.2\",")
+         TEXT("\"destinationId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"destinationPin\": \"X1.14\",")
+         TEXT("\"kind\": 0")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"ae3b7d03-986c-4d09-8b06-632caf0abe00\",")
+         TEXT("\"sourcePin\": \"X2.1\",")
+         TEXT("\"destinationId\": \"f70de327-0caa-4d25-994e-d68dfe26807e\",")
+         TEXT("\"destinationPin\": \"X2.1\",")
+         TEXT("\"kind\": 1")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"ae3b7d03-986c-4d09-8b06-632caf0abe00\",")
+         TEXT("\"sourcePin\": \"X2.2\",")
+         TEXT("\"destinationId\": \"f70de327-0caa-4d25-994e-d68dfe26807e\",")
+         TEXT("\"destinationPin\": \"X2.2\",")
+         TEXT("\"kind\": 1")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"sourcePin\": \"X2.1\",")
+         TEXT("\"destinationId\": \"f70de327-0caa-4d25-994e-d68dfe26807e\",")
+         TEXT("\"destinationPin\": \"X2.3\",")
+         TEXT("\"kind\": 1")
+         TEXT("},")
+         TEXT("{")
+         TEXT("\"sourceId\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
+         TEXT("\"sourcePin\": \"X2.2\",")
+         TEXT("\"destinationId\": \"f70de327-0caa-4d25-994e-d68dfe26807e\",")
+         TEXT("\"destinationPin\": \"X2.4\",")
+         TEXT("\"kind\": 1")
+         TEXT("}")
+         TEXT("]")
+         TEXT("}");
 
       // Json object create
       TSharedPtr<FJsonObject> ResponseObj;
@@ -112,26 +361,29 @@ void UAutoWiringComponent::UpdateDummies(const TSharedPtr<FJsonObject>& JsonObje
                (*CoordinatesArray)[2]->AsNumber() * 100.0f
             );
 
-            UE_LOG(LogTemp, Display, TEXT("Processing Component with ID: %s, Kind: %d, NewLocation: %s"), *Id, Kind, *NewLocation.ToString());
+            FString LabelText = ComponentObject->GetStringField(TEXT("labelText"));
+
+            UE_LOG(LogTemp, Display, TEXT("Processing Component with ID: %s, Kind: %d, NewLocation: %s, LabelText: %s"), *Id, Kind, *NewLocation.ToString(), *LabelText);
+
+            bool bComponentUpdated = false;
 
             for (UDummyComponent* DummyComponent : DummyComponents)
             {
-               if (DummyComponent)
+               if (DummyComponent && DummyComponent->DummyType == static_cast<EDummyType>(Kind) && DummyComponent->UUID.IsEmpty())
                {
-                  UE_LOG(LogTemp, Display, TEXT("Checking DummyComponent with Kind: %d against JSON kind: %d"), static_cast<int32>(DummyComponent->DummyType), Kind);
-                  if (DummyComponent->DummyType == static_cast<EDummyType>(Kind))
-                  {
-                     DummyComponent->UUID = Id; 
-                     DummyComponent->UpdateDummyLocation(NewLocation);
-                     UE_LOG(LogTemp, Display, TEXT("Assigned UUID: %s to DummyComponent"), *Id);
-                     UE_LOG(LogTemp, Display, TEXT("Updated DummyComponent with ID: %s, Kind: %d to new location: %s"), *Id, Kind, *NewLocation.ToString());
-                     break; 
-                  }
-                  else
-                  {
-                     UE_LOG(LogTemp, Display, TEXT("DummyComponent Kind: %d does not match JSON kind: %d"), static_cast<int32>(DummyComponent->DummyType), Kind);
-                  }
+                  DummyComponent->UUID = Id;
+                  DummyComponent->UpdateDummyLocation(NewLocation);
+                  DummyComponent->SetLabelText(LabelText);
+                  bComponentUpdated = true;
+                  UE_LOG(LogTemp, Display, TEXT("Assigned UUID: %s to DummyComponent"), *Id);
+                  UE_LOG(LogTemp, Display, TEXT("Updated DummyComponent with ID: %s, Kind: %d to new location: %s"), *Id, Kind, *NewLocation.ToString());
+                  break;
                }
+            }
+
+            if (!bComponentUpdated)
+            {
+               UE_LOG(LogTemp, Warning, TEXT("No available DummyComponent found for ID: %s, Kind: %d"), *Id, Kind);
             }
          }
       }
@@ -148,6 +400,7 @@ void UAutoWiringComponent::UpdateDummies(const TSharedPtr<FJsonObject>& JsonObje
    }
 }
 
+
 void UAutoWiringComponent::DrawConnections(const TSharedPtr<FJsonObject>& JsonObject)
 {
    ConnectionIDs.Empty();
@@ -162,6 +415,7 @@ void UAutoWiringComponent::DrawConnections(const TSharedPtr<FJsonObject>& JsonOb
          FString DestinationId = ConnectionObject->GetStringField(TEXT("destinationId"));
 
          ConnectionIDs.Add(TPair<FString, FString>(SourceId, DestinationId));
+         UE_LOG(LogTemp, Display, TEXT("Connection added: %s -> %s"), *SourceId, *DestinationId);
       }
    }
 }
@@ -170,14 +424,14 @@ void UAutoWiringComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 {
    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+   AActor* OwnerActor = GetOwner();
+   TArray<UDummyComponent*> DummyComponents;
+   OwnerActor->GetComponents(DummyComponents);
+
    for (const auto& ConnectionID : ConnectionIDs)
    {
       FVector SourceLocation, DestinationLocation;
       bool bSourceFound = false, bDestinationFound = false;
-
-      AActor* OwnerActor = GetOwner();
-      TArray<UDummyComponent*> DummyComponents;
-      OwnerActor->GetComponents(DummyComponents);
 
       for (UDummyComponent* DummyComponent : DummyComponents)
       {
@@ -185,28 +439,41 @@ void UAutoWiringComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
          {
             SourceLocation = DummyComponent->GetComponentLocation();
             bSourceFound = true;
+            UE_LOG(LogTemp, Display, TEXT("Found source DummyComponent: %s"), *ConnectionID.Key);
          }
          if (DummyComponent->UUID == ConnectionID.Value)
          {
             DestinationLocation = DummyComponent->GetComponentLocation();
             bDestinationFound = true;
+            UE_LOG(LogTemp, Display, TEXT("Found destination DummyComponent: %s"), *ConnectionID.Value);
          }
 
          if (bSourceFound && bDestinationFound)
          {
+            UE_LOG(LogTemp, Display, TEXT("Drawing line from %s to %s"), *ConnectionID.Key, *ConnectionID.Value);
             DrawDebugLine(
                GetWorld(),
                SourceLocation,
                DestinationLocation,
                FColor::Green,
                false, -1.0f, 0,
-               5.0f
+               1.0f
             );
             break;
          }
       }
+
+      if (!bSourceFound)
+      {
+         UE_LOG(LogTemp, Warning, TEXT("Source DummyComponent with UUID: %s not found"), *ConnectionID.Key);
+      }
+      if (!bDestinationFound)
+      {
+         UE_LOG(LogTemp, Warning, TEXT("Destination DummyComponent with UUID: %s not found"), *ConnectionID.Value);
+      }
    }
 }
+
 
 bool UAutoWiringComponent::OnActivateVehicleComponent()
 {
