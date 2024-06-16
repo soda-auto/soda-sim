@@ -33,7 +33,7 @@ void UDummyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
       FVector CurrentLocation = GetRelativeLocation();
       if (!CurrentLocation.Equals(TargetLocation, 0.1f))
       {
-         FVector NewLocation = FMath::VInterpTo(CurrentLocation, TargetLocation, DeltaTime, 0.4f);
+         FVector NewLocation = FMath::VInterpTo(CurrentLocation, TargetLocation, DeltaTime, 0.8f);
          SetRelativeLocation(NewLocation);
       }
       else
@@ -179,5 +179,8 @@ void UDummyComponent::RuntimePostEditChangeChainProperty(FPropertyChangedChainEv
 
 bool UDummyComponent::IsInPlace() const
 {
-   return GetComponentLocation().Equals(TargetLocation, 0.1f);
+   FVector CurrentLocation = GetRelativeLocation();
+   return CurrentLocation.Equals(TargetLocation, 1.0f);
 }
+
+

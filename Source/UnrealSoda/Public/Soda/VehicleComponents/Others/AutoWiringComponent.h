@@ -29,4 +29,5 @@ private:
    TOptional<TPair<FString, FString>> LastRoofLightConnection;
    void UpdateRoofLightConnection();
    bool AreComponentsInPlace() const;
+   bool bOtherComponentsInPlaceChecked;
 };

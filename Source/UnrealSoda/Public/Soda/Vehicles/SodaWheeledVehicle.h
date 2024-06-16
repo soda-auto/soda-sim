@@ -107,6 +107,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual UPawnMovementComponent* GetMovementComponent() const;
 	virtual FVector GetVelocity() const override;
+	virtual bool ShowSelectBox() const override { return false; }
 
 public:
 	/* Override from ISodaActor */

@@ -107,14 +107,14 @@ void UAutoWiringComponent::OnResponseReceived(FHttpRequestPtr Request, FHttpResp
          TEXT("\"id\": \"ae3b7d03-986c-4d09-8b06-632caf0abe00\",")
          TEXT("\"kind\": 0,")
          TEXT("\"title\": \"FL ECU\",")
-         TEXT("\"coordinates\": [2.7, -0.47, 0.47],")
+         TEXT("\"coordinates\": [2.7, -0.47, 0.14],")
          TEXT("\"labelText\": \"ECU2.Pin8 <-> L DRL\\nECU2.Pin9 <-> DU.Pin4\"")
          TEXT("},")
          TEXT("{")
          TEXT("\"id\": \"f70de327-0caa-4d25-994e-d68dfe26807e\",")
          TEXT("\"kind\": 0,")
          TEXT("\"title\": \"FR ECU\",")
-         TEXT("\"coordinates\": [2.7, 0.47, 0.47],")
+         TEXT("\"coordinates\": [2.7, 0.47, 0.14],")
          TEXT("\"labelText\": \"ECU1.Pin4 <-> R Low Beam\\nECU1.Pin5 <-> R Turn Ind\"")
          TEXT("},")
          TEXT("{")
@@ -514,10 +514,7 @@ void UAutoWiringComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 {
    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-   if (!AreComponentsInPlace())
-   {
-      UpdateRoofLightConnection();
-   }
+   UpdateRoofLightConnection();
 
    AActor* OwnerActor = GetOwner();
    TArray<UDummyComponent*> DummyComponents;
@@ -550,9 +547,9 @@ void UAutoWiringComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
                GetWorld(),
                SourceLocation,
                DestinationLocation,
-               FColor::Blue,
+               FColor(171, 196, 197), //171, 196, 197
                false, -1.0f, 0,
-               1.0f
+               0.5f
             );
             break;
          }
@@ -567,29 +564,6 @@ void UAutoWiringComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
          UE_LOG(LogTemp, Warning, TEXT("Destination DummyComponent with UUID: %s not found"), *ConnectionID.Value);
       }
    }
-}
-
-bool UAutoWiringComponent::AreComponentsInPlace() const
-{
-   AActor* OwnerActor = GetOwner();
-   if (!OwnerActor)
-   {
-      UE_LOG(LogTemp, Error, TEXT("Owner actor is not valid"));
-      return false;
-   }
-
-   TArray<UDummyComponent*> DummyComponents;
-   OwnerActor->GetComponents(DummyComponents);
-
-   for (UDummyComponent* DummyComponent : DummyComponents)
-   {
-      if (DummyComponent && !DummyComponent->IsInPlace())
-      {
-         return false;
-      }
-   }
-
-   return true;
 }
 
 
