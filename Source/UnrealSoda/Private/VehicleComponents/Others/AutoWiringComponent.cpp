@@ -36,21 +36,21 @@ void UAutoWiringComponent::OnResponseReceived(FHttpRequestPtr Request, FHttpResp
          TEXT("\"kind\": 1,")
          TEXT("\"title\": \"Drive Unit\",")
          TEXT("\"coordinates\": [2.9, 0.13, 0.14],")
-         TEXT("\"labelText\": \"X1.1 -> X1.1 of FR ECU A\\nX1.2 -> X1.2 of FR ECU A\\nX1.3 -> X1.3 of FR ECU A\"")
+         TEXT("\"labelText\": \"\"")
          TEXT("},")
          TEXT("{")
          TEXT("\"id\": \"a726d50f-8dda-4d0a-aa0a-000f156b32ec\",")
          TEXT("\"kind\": 2,")
          TEXT("\"title\": \"Front Left Light\",")
          TEXT("\"coordinates\": [3.13, -0.7, 0.5],")
-         TEXT("\"labelText\": \"X1.1 -> X1.1 of FL ECU A\\nX1.2 -> X1.2 of FL ECU A\"")
+         TEXT("\"labelText\": \"\"")
          TEXT("},")
          TEXT("{")
          TEXT("\"id\": \"bf9842cc-4f36-44c0-9d35-f02f8cc65061\",")
          TEXT("\"kind\": 3,")
          TEXT("\"title\": \"Front Right Light\",")
          TEXT("\"coordinates\": [3.13, 0.7, 0.5],")
-         TEXT("\"labelText\": \"X1.1 -> X1.4 of FR ECU A\\nX1.2 -> X1.5 of FR ECU A\"")
+         TEXT("\"labelText\": \"\"")
          TEXT("},")
          TEXT("{")
          TEXT("\"id\": \"431db986-946e-48a6-8fd7-99f3129313f1\",")
@@ -98,7 +98,7 @@ void UAutoWiringComponent::OnResponseReceived(FHttpRequestPtr Request, FHttpResp
          TEXT("\"id\": \"dd9fb6cb-38bb-456a-8c8d-982619560190\",")
          TEXT("\"kind\": 10,")
          TEXT("\"title\": \"Roof Light\",")
-         TEXT("\"coordinates\": [1.1, 2.2, 3.3],")
+         TEXT("\"coordinates\": [0.93, 0.0, 1.39],")
          TEXT("\"labelText\": \"\"")
          TEXT("}")
          TEXT("],")
@@ -108,21 +108,21 @@ void UAutoWiringComponent::OnResponseReceived(FHttpRequestPtr Request, FHttpResp
          TEXT("\"kind\": 0,")
          TEXT("\"title\": \"FL ECU\",")
          TEXT("\"coordinates\": [2.7, -0.47, 0.47],")
-         TEXT("\"labelText\": \"\"")
+         TEXT("\"labelText\": \"ECU2.Pin8 <-> L DRL\\nECU2.Pin9 <-> DU.Pin4\"")
          TEXT("},")
          TEXT("{")
          TEXT("\"id\": \"f70de327-0caa-4d25-994e-d68dfe26807e\",")
          TEXT("\"kind\": 0,")
          TEXT("\"title\": \"FR ECU\",")
          TEXT("\"coordinates\": [2.7, 0.47, 0.47],")
-         TEXT("\"labelText\": \"\"")
+         TEXT("\"labelText\": \"ECU1.Pin4 <-> R Low Beam\\nECU1.Pin5 <-> R Turn Ind\"")
          TEXT("},")
          TEXT("{")
          TEXT("\"id\": \"0f108a3d-b831-4841-9834-c136001fe014\",")
          TEXT("\"kind\": 0,")
          TEXT("\"title\": \"Rear ECU\",")
          TEXT("\"coordinates\": [-0.26, 0.0, 0.14],")
-         TEXT("\"labelText\": \"\"")
+         TEXT("\"labelText\": \"ECU3.Pin2 <-> Roof Light.Pin1\"")
          TEXT("}")
          TEXT("],")
          TEXT("\"connections\": [")
@@ -400,7 +400,6 @@ void UAutoWiringComponent::UpdateDummies(const TSharedPtr<FJsonObject>& JsonObje
    }
 }
 
-
 void UAutoWiringComponent::DrawConnections(const TSharedPtr<FJsonObject>& JsonObject)
 {
    ConnectionIDs.Empty();
@@ -418,11 +417,106 @@ void UAutoWiringComponent::DrawConnections(const TSharedPtr<FJsonObject>& JsonOb
          UE_LOG(LogTemp, Display, TEXT("Connection added: %s -> %s"), *SourceId, *DestinationId);
       }
    }
+
+   AActor* OwnerActor = GetOwner();
+   TArray<UDummyComponent*> DummyComponents;
+   OwnerActor->GetComponents(DummyComponents);
+
+   for (UDummyComponent* DummyComponent : DummyComponents)
+   {
+      if (DummyComponent && DummyComponent->DummyType == EDummyType::RoofLight)
+      {
+         UDummyComponent* NearestECU = nullptr;
+         float MinDistance = FLT_MAX;
+         FVector RoofLightLocation = DummyComponent->GetComponentLocation();
+
+         for (UDummyComponent* PotentialECU : DummyComponents)
+         {
+            if (PotentialECU && PotentialECU->DummyType == EDummyType::ECU)
+            {
+               float Distance = FVector::Dist(RoofLightLocation, PotentialECU->GetComponentLocation());
+               if (Distance < MinDistance)
+               {
+                  MinDistance = Distance;
+                  NearestECU = PotentialECU;
+               }
+            }
+         }
+
+         if (NearestECU)
+         {
+            ConnectionIDs.Add(TPair<FString, FString>(DummyComponent->UUID, NearestECU->UUID));
+            UE_LOG(LogTemp, Display, TEXT("Connection added for RoofLight: %s -> %s"), *DummyComponent->UUID, *NearestECU->UUID);
+         }
+         else
+         {
+            UE_LOG(LogTemp, Warning, TEXT("No ECU found for RoofLight with UUID: %s"), *DummyComponent->UUID);
+         }
+      }
+   }
+}
+
+void UAutoWiringComponent::UpdateRoofLightConnection()
+{
+   AActor* OwnerActor = GetOwner();
+   if (!OwnerActor) return;
+
+   TArray<UDummyComponent*> DummyComponents;
+   OwnerActor->GetComponents(DummyComponents);
+
+   for (UDummyComponent* DummyComponent : DummyComponents)
+   {
+      if (DummyComponent && DummyComponent->DummyType == EDummyType::RoofLight)
+      {
+         // Поиск ближайшего ECU
+         UDummyComponent* NearestECU = nullptr;
+         float MinDistance = FLT_MAX;
+         FVector RoofLightLocation = DummyComponent->GetComponentLocation();
+
+         for (UDummyComponent* PotentialECU : DummyComponents)
+         {
+            if (PotentialECU && PotentialECU->DummyType == EDummyType::ECU)
+            {
+               float Distance = FVector::Dist(RoofLightLocation, PotentialECU->GetComponentLocation());
+               if (Distance < MinDistance)
+               {
+                  MinDistance = Distance;
+                  NearestECU = PotentialECU;
+               }
+            }
+         }
+
+         if (NearestECU)
+         {
+            TPair<FString, FString> NewConnection(DummyComponent->UUID, NearestECU->UUID);
+
+            // Удаление старого соединения, если оно существует и отличается от нового
+            if (LastRoofLightConnection.IsSet() && LastRoofLightConnection.GetValue() != NewConnection)
+            {
+               ConnectionIDs.Remove(LastRoofLightConnection.GetValue());
+            }
+
+            // Обновление соединения и сохранение его для последующего использования
+            LastRoofLightConnection = NewConnection;
+            if (!ConnectionIDs.Contains(NewConnection))
+            {
+               ConnectionIDs.Add(NewConnection);
+               UE_LOG(LogTemp, Display, TEXT("Connection added for RoofLight: %s -> %s"), *DummyComponent->UUID, *NearestECU->UUID);
+            }
+         }
+         else
+         {
+            UE_LOG(LogTemp, Warning, TEXT("No ECU found for RoofLight with UUID: %s"), *DummyComponent->UUID);
+         }
+      }
+   }
 }
 
 void UAutoWiringComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+   UpdateRoofLightConnection();
 
    AActor* OwnerActor = GetOwner();
    TArray<UDummyComponent*> DummyComponents;
@@ -455,7 +549,7 @@ void UAutoWiringComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
                GetWorld(),
                SourceLocation,
                DestinationLocation,
-               FColor::Green,
+               FColor::Blue,
                false, -1.0f, 0,
                1.0f
             );
