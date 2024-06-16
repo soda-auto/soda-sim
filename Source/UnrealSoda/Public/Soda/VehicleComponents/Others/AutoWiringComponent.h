@@ -28,4 +28,5 @@ private:
    TArray<TPair<FString, FString>> ConnectionIDs;
    TOptional<TPair<FString, FString>> LastRoofLightConnection;
    void UpdateRoofLightConnection();
+   bool AreComponentsInPlace() const;
 };

@@ -176,3 +176,8 @@ void UDummyComponent::RuntimePostEditChangeChainProperty(FPropertyChangedChainEv
       }
    }
 }
+
+bool UDummyComponent::IsInPlace() const
+{
+   return GetComponentLocation().Equals(TargetLocation, 0.1f);
+}

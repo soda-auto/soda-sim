@@ -468,7 +468,7 @@ void UAutoWiringComponent::UpdateRoofLightConnection()
    {
       if (DummyComponent && DummyComponent->DummyType == EDummyType::RoofLight)
       {
-         // Поиск ближайшего ECU
+
          UDummyComponent* NearestECU = nullptr;
          float MinDistance = FLT_MAX;
          FVector RoofLightLocation = DummyComponent->GetComponentLocation();
@@ -490,13 +490,11 @@ void UAutoWiringComponent::UpdateRoofLightConnection()
          {
             TPair<FString, FString> NewConnection(DummyComponent->UUID, NearestECU->UUID);
 
-            // Удаление старого соединения, если оно существует и отличается от нового
             if (LastRoofLightConnection.IsSet() && LastRoofLightConnection.GetValue() != NewConnection)
             {
                ConnectionIDs.Remove(LastRoofLightConnection.GetValue());
             }
 
-            // Обновление соединения и сохранение его для последующего использования
             LastRoofLightConnection = NewConnection;
             if (!ConnectionIDs.Contains(NewConnection))
             {
@@ -516,7 +514,10 @@ void UAutoWiringComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 {
    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-   UpdateRoofLightConnection();
+   if (!AreComponentsInPlace())
+   {
+      UpdateRoofLightConnection();
+   }
 
    AActor* OwnerActor = GetOwner();
    TArray<UDummyComponent*> DummyComponents;
@@ -566,6 +567,29 @@ void UAutoWiringComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
          UE_LOG(LogTemp, Warning, TEXT("Destination DummyComponent with UUID: %s not found"), *ConnectionID.Value);
       }
    }
+}
+
+bool UAutoWiringComponent::AreComponentsInPlace() const
+{
+   AActor* OwnerActor = GetOwner();
+   if (!OwnerActor)
+   {
+      UE_LOG(LogTemp, Error, TEXT("Owner actor is not valid"));
+      return false;
+   }
+
+   TArray<UDummyComponent*> DummyComponents;
+   OwnerActor->GetComponents(DummyComponents);
+
+   for (UDummyComponent* DummyComponent : DummyComponents)
+   {
+      if (DummyComponent && !DummyComponent->IsInPlace())
+      {
+         return false;
+      }
+   }
+
+   return true;
 }
 
 

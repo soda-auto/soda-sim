@@ -40,6 +40,7 @@ public:
 
    void UpdateDummyLocation(const FVector& NewLocation);
    void SetLabelText(const FString& NewLabelText);
+   bool IsInPlace() const;
 
 protected:
    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
