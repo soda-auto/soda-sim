@@ -122,7 +122,7 @@ void UAutoWiringComponent::OnResponseReceived(FHttpRequestPtr Request, FHttpResp
          TEXT("\"kind\": 0,")
          TEXT("\"title\": \"Rear ECU\",")
          TEXT("\"coordinates\": [-0.26, 0.0, 0.14],")
-         TEXT("\"labelText\": \"ECU3.Pin2 <-> Roof Light.Pin1\"")
+         TEXT("\"labelText\": \"\"")
          TEXT("}")
          TEXT("],")
          TEXT("\"connections\": [")
@@ -464,13 +464,15 @@ void UAutoWiringComponent::UpdateRoofLightConnection()
    TArray<UDummyComponent*> DummyComponents;
    OwnerActor->GetComponents(DummyComponents);
 
+   UDummyComponent* RoofLightComponent = nullptr;
+   UDummyComponent* NearestECU = nullptr;
+   float MinDistance = FLT_MAX;
+
    for (UDummyComponent* DummyComponent : DummyComponents)
    {
       if (DummyComponent && DummyComponent->DummyType == EDummyType::RoofLight)
       {
-
-         UDummyComponent* NearestECU = nullptr;
-         float MinDistance = FLT_MAX;
+         RoofLightComponent = DummyComponent;
          FVector RoofLightLocation = DummyComponent->GetComponentLocation();
 
          for (UDummyComponent* PotentialECU : DummyComponents)
@@ -486,27 +488,74 @@ void UAutoWiringComponent::UpdateRoofLightConnection()
             }
          }
 
-         if (NearestECU)
-         {
-            TPair<FString, FString> NewConnection(DummyComponent->UUID, NearestECU->UUID);
-
-            if (LastRoofLightConnection.IsSet() && LastRoofLightConnection.GetValue() != NewConnection)
-            {
-               ConnectionIDs.Remove(LastRoofLightConnection.GetValue());
-            }
-
-            LastRoofLightConnection = NewConnection;
-            if (!ConnectionIDs.Contains(NewConnection))
-            {
-               ConnectionIDs.Add(NewConnection);
-               UE_LOG(LogTemp, Display, TEXT("Connection added for RoofLight: %s -> %s"), *DummyComponent->UUID, *NearestECU->UUID);
-            }
-         }
-         else
-         {
-            UE_LOG(LogTemp, Warning, TEXT("No ECU found for RoofLight with UUID: %s"), *DummyComponent->UUID);
-         }
+         break; // Предполагаем, что только один RoofLightComponent
       }
+   }
+
+   if (RoofLightComponent && NearestECU)
+   {
+      TPair<FString, FString> NewConnection(RoofLightComponent->UUID, NearestECU->UUID);
+
+      if (LastRoofLightConnection != NewConnection)
+      {
+         // Удаление предыдущего текста только для Roof Light
+         for (UDummyComponent* DummyComponent : DummyComponents)
+         {
+            if (DummyComponent && DummyComponent->UUID == LastRoofLightConnection.Value)
+            {
+               FString CurrentLabelText = DummyComponent->GetLabelText();
+               FString TextToRemove;
+               if (LastRoofLightConnection.Value == "ae3b7d03-986c-4d09-8b06-632caf0abe00") // FL ECU
+               {
+                  TextToRemove = TEXT("ECU2.Pin8 <-> Roof Light.Pin1\nECU2.Pin9 <-> Roof Light.Pin2");
+               }
+               else if (LastRoofLightConnection.Value == "f70de327-0caa-4d25-994e-d68dfe26807e") // FR ECU
+               {
+                  TextToRemove = TEXT("ECU1.Pin8 <-> Roof Light.Pin1\nECU1.Pin9 <-> Roof Light.Pin2");
+               }
+               else if (LastRoofLightConnection.Value == "0f108a3d-b831-4841-9834-c136001fe014") // Rear ECU
+               {
+                  TextToRemove = TEXT("ECU3.Pin8 <-> Roof Light.Pin1\nECU3.Pin9 <-> Roof Light.Pin2");
+               }
+
+               CurrentLabelText = CurrentLabelText.Replace(*TextToRemove, TEXT(""));
+               DummyComponent->SetLabelText(CurrentLabelText);
+               break;
+            }
+         }
+
+         LastRoofLightConnection = NewConnection;
+
+         // Обновление текста для ближайшего ECU
+         FString CurrentLabelText = NearestECU->GetLabelText();
+         FString NewText;
+         if (NearestECU->UUID == "ae3b7d03-986c-4d09-8b06-632caf0abe00") // FL ECU
+         {
+            NewText = TEXT("ECU2.Pin8 <-> Roof Light.Pin1\nECU2.Pin9 <-> Roof Light.Pin2");
+         }
+         else if (NearestECU->UUID == "f70de327-0caa-4d25-994e-d68dfe26807e") // FR ECU
+         {
+            NewText = TEXT("ECU1.Pin8 <-> Roof Light.Pin1\nECU1.Pin9 <-> Roof Light.Pin2");
+         }
+         else if (NearestECU->UUID == "0f108a3d-b831-4841-9834-c136001fe014") // Rear ECU
+         {
+            NewText = TEXT("ECU3.Pin8 <-> Roof Light.Pin1\nECU3.Pin9 <-> Roof Light.Pin2");
+         }
+
+         if (!CurrentLabelText.Contains(NewText))
+         {
+            CurrentLabelText.Append(NewText);
+            NearestECU->SetLabelText(CurrentLabelText);
+         }
+
+         // Обновление соединений
+         ConnectionIDs.Empty(); // Удаляем все существующие соединения
+         ConnectionIDs.Add(NewConnection);
+      }
+   }
+   else
+   {
+      UE_LOG(LogTemp, Warning, TEXT("No ECU found for RoofLight with UUID: %s"), RoofLightComponent ? *RoofLightComponent->UUID : TEXT("Unknown"));
    }
 }
 

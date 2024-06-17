@@ -39,8 +39,10 @@ public:
    FString UUID;
 
    void UpdateDummyLocation(const FVector& NewLocation);
-   void SetLabelText(const FString& NewLabelText);
+   FString GetLabelText() const { return LabelText; }
+   void SetLabelText(const FString& NewLabelText) { LabelText = NewLabelText; }
    bool IsInPlace() const;
+   FVector TargetLocation;
 
 protected:
    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -59,7 +61,6 @@ private:
    bool bIsActivated;
    bool bShouldMove;
 
-   FVector TargetLocation;
    FString LabelText;
 
    void InitializeDummyMeshMap();

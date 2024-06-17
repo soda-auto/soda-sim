@@ -26,8 +26,11 @@ private:
    void DrawConnections(const TSharedPtr<FJsonObject>& JsonObject);
 
    TArray<TPair<FString, FString>> ConnectionIDs;
-   TOptional<TPair<FString, FString>> LastRoofLightConnection;
    void UpdateRoofLightConnection();
-   bool AreComponentsInPlace() const;
+
    bool bOtherComponentsInPlaceChecked;
+   TPair<FString, FString> LastECUConnection;
+   TPair<FString, FString> LastRoofLightConnection; 
+   FString PreviousECULabelText; 
+
 };

@@ -5,7 +5,7 @@
 #include "DrawDebugHelpers.h"
 
 UDummyComponent::UDummyComponent(const FObjectInitializer& ObjectInitializer)
-   : Super(ObjectInitializer), bIsActivated(false), bShouldMove(false), TargetLocation(FVector::ZeroVector)
+   : Super(ObjectInitializer), bIsActivated(false), TargetLocation(FVector::ZeroVector), bShouldMove(false)
 {
    GUI.Category = TEXT("Other");
    GUI.ComponentNameOverride = TEXT("Dummy component");
@@ -33,7 +33,7 @@ void UDummyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
       FVector CurrentLocation = GetRelativeLocation();
       if (!CurrentLocation.Equals(TargetLocation, 0.1f))
       {
-         FVector NewLocation = FMath::VInterpTo(CurrentLocation, TargetLocation, DeltaTime, 0.8f);
+         FVector NewLocation = FMath::VInterpTo(CurrentLocation, TargetLocation, DeltaTime, 0.9f);
          SetRelativeLocation(NewLocation);
       }
       else
@@ -55,11 +55,6 @@ void UDummyComponent::UpdateDummyLocation(const FVector& NewLocation)
 {
    TargetLocation = NewLocation;
    bShouldMove = true;
-}
-
-void UDummyComponent::SetLabelText(const FString& NewLabelText)
-{
-   LabelText = NewLabelText;
 }
 
 bool UDummyComponent::OnActivateVehicleComponent()
