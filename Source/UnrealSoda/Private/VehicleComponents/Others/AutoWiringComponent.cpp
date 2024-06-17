@@ -548,8 +548,16 @@ void UAutoWiringComponent::UpdateRoofLightConnection()
             NearestECU->SetLabelText(CurrentLabelText);
          }
 
-         // Обновление соединений
-         ConnectionIDs.Empty(); // Удаляем все существующие соединения
+         // Удаление только соединения RoofLight, а не всех соединений
+         for (int32 i = ConnectionIDs.Num() - 1; i >= 0; i--)
+         {
+            if (ConnectionIDs[i].Key == RoofLightComponent->UUID)
+            {
+               ConnectionIDs.RemoveAt(i);
+            }
+         }
+
+         // Добавляем новое соединение
          ConnectionIDs.Add(NewConnection);
       }
    }
@@ -614,7 +622,6 @@ void UAutoWiringComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
       }
    }
 }
-
 
 bool UAutoWiringComponent::OnActivateVehicleComponent()
 {
