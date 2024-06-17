@@ -178,4 +178,36 @@ bool UDummyComponent::IsInPlace() const
    return CurrentLocation.Equals(TargetLocation, 1.0f);
 }
 
+void UDummyComponent::TurnOnEmissiveColor()
+{
+   if (CurrentMeshComponent && DummyType != EDummyType::ECU && DummyType != EDummyType::Emotor)
+   {
+      int32 MaterialIndex = 2;
+      UMaterialInstanceDynamic* DynamicMaterial = CurrentMeshComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(MaterialIndex, CurrentMeshComponent->GetMaterial(MaterialIndex));
+      if (DynamicMaterial)
+      {
+         float EmissiveIntensity = 10000.0f; 
+         DynamicMaterial->SetScalarParameterValue(TEXT("Emissive power"), EmissiveIntensity);
+         UE_LOG(LogTemp, Display, TEXT("Turned on Emissive Color for %s"), *GetName());
+      }
+   }
+}
+
+void UDummyComponent::TurnOffEmissiveColor()
+{
+   if (CurrentMeshComponent && DummyType != EDummyType::ECU && DummyType != EDummyType::Emotor)
+   {
+      int32 MaterialIndex = 2;
+      UMaterialInstanceDynamic* DynamicMaterial = CurrentMeshComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(MaterialIndex, CurrentMeshComponent->GetMaterial(MaterialIndex));
+      if (DynamicMaterial)
+      {
+         float EmissiveIntensity = 0.0f;
+         DynamicMaterial->SetScalarParameterValue(TEXT("Emissive power"), EmissiveIntensity);
+         UE_LOG(LogTemp, Display, TEXT("Turned off Emissive Color for %s"), *GetName());
+      }
+   }
+}
+
+
+
 

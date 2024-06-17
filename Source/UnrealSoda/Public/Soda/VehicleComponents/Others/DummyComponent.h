@@ -39,6 +39,8 @@ public:
    FString UUID;
 
    void UpdateDummyLocation(const FVector& NewLocation);
+   void TurnOnEmissiveColor();
+   void TurnOffEmissiveColor();
    FString GetLabelText() const { return LabelText; }
    void SetLabelText(const FString& NewLabelText) { LabelText = NewLabelText; }
    bool IsInPlace() const;
@@ -58,6 +60,9 @@ private:
    UPROPERTY()
    UStaticMeshComponent* CurrentMeshComponent;
 
+   UPROPERTY()
+   UMaterialInstanceDynamic* DynamicMaterial;
+
    bool bIsActivated;
    bool bShouldMove;
 
@@ -66,5 +71,6 @@ private:
    void InitializeDummyMeshMap();
    void CreateAndAttachStaticMesh();
    void RemoveCurrentMeshComponent();
-};
 
+   bool IsEmissiveOn;
+};

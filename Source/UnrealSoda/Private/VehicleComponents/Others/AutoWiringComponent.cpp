@@ -14,13 +14,39 @@ UAutoWiringComponent::UAutoWiringComponent(const FObjectInitializer& ObjectIniti
    PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UAutoWiringComponent::SendRequest()
+void UAutoWiringComponent::Autowiring()
 {
    FHttpRequestPtr Request = FHttpModule::Get().CreateRequest();
    Request->OnProcessRequestComplete().BindUObject(this, &UAutoWiringComponent::OnResponseReceived);
    Request->SetURL("https://jsonplaceholder.typicode.com/posts/1");
    Request->SetVerb("GET");
    Request->ProcessRequest();
+}
+
+void UAutoWiringComponent::ChangeLight()
+{
+   AActor* OwnerActor = GetOwner();
+   if (!OwnerActor) return;
+
+   TArray<UDummyComponent*> DummyComponents;
+   OwnerActor->GetComponents(DummyComponents);
+
+   for (UDummyComponent* DummyComponent : DummyComponents)
+   {
+      if (DummyComponent && DummyComponent->DummyType != EDummyType::ECU && DummyComponent->DummyType != EDummyType::Emotor)
+      {
+         if (bIsLightOn)
+         {
+            DummyComponent->TurnOffEmissiveColor();
+         }
+         else
+         {
+            DummyComponent->TurnOnEmissiveColor();
+         }
+      }
+   }
+
+   bIsLightOn = !bIsLightOn;
 }
 
 void UAutoWiringComponent::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
@@ -363,7 +389,7 @@ void UAutoWiringComponent::UpdateDummies(const TSharedPtr<FJsonObject>& JsonObje
 
             FString LabelText = ComponentObject->GetStringField(TEXT("labelText"));
 
-            UE_LOG(LogTemp, Display, TEXT("Processing Component with ID: %s, Kind: %d, NewLocation: %s, LabelText: %s"), *Id, Kind, *NewLocation.ToString(), *LabelText);
+            //UE_LOG(LogTemp, Display, TEXT("Processing Component with ID: %s, Kind: %d, NewLocation: %s, LabelText: %s"), *Id, Kind, *NewLocation.ToString(), *LabelText);
 
             bool bComponentUpdated = false;
 
@@ -375,15 +401,15 @@ void UAutoWiringComponent::UpdateDummies(const TSharedPtr<FJsonObject>& JsonObje
                   DummyComponent->UpdateDummyLocation(NewLocation);
                   DummyComponent->SetLabelText(LabelText);
                   bComponentUpdated = true;
-                  UE_LOG(LogTemp, Display, TEXT("Assigned UUID: %s to DummyComponent"), *Id);
-                  UE_LOG(LogTemp, Display, TEXT("Updated DummyComponent with ID: %s, Kind: %d to new location: %s"), *Id, Kind, *NewLocation.ToString());
+                  //UE_LOG(LogTemp, Display, TEXT("Assigned UUID: %s to DummyComponent"), *Id);
+                  //UE_LOG(LogTemp, Display, TEXT("Updated DummyComponent with ID: %s, Kind: %d to new location: %s"), *Id, Kind, *NewLocation.ToString());
                   break;
                }
             }
 
             if (!bComponentUpdated)
             {
-               UE_LOG(LogTemp, Warning, TEXT("No available DummyComponent found for ID: %s, Kind: %d"), *Id, Kind);
+               //UE_LOG(LogTemp, Warning, TEXT("No available DummyComponent found for ID: %s, Kind: %d"), *Id, Kind);
             }
          }
       }
@@ -446,11 +472,11 @@ void UAutoWiringComponent::DrawConnections(const TSharedPtr<FJsonObject>& JsonOb
          if (NearestECU)
          {
             ConnectionIDs.Add(TPair<FString, FString>(DummyComponent->UUID, NearestECU->UUID));
-            UE_LOG(LogTemp, Display, TEXT("Connection added for RoofLight: %s -> %s"), *DummyComponent->UUID, *NearestECU->UUID);
+           // UE_LOG(LogTemp, Display, TEXT("Connection added for RoofLight: %s -> %s"), *DummyComponent->UUID, *NearestECU->UUID);
          }
          else
          {
-            UE_LOG(LogTemp, Warning, TEXT("No ECU found for RoofLight with UUID: %s"), *DummyComponent->UUID);
+            //UE_LOG(LogTemp, Warning, TEXT("No ECU found for RoofLight with UUID: %s"), *DummyComponent->UUID);
          }
       }
    }
@@ -488,7 +514,7 @@ void UAutoWiringComponent::UpdateRoofLightConnection()
             }
          }
 
-         break; // Предполагаем, что только один RoofLightComponent
+         break; 
       }
    }
 
@@ -498,7 +524,7 @@ void UAutoWiringComponent::UpdateRoofLightConnection()
 
       if (LastRoofLightConnection != NewConnection)
       {
-         // Удаление предыдущего текста только для Roof Light
+
          for (UDummyComponent* DummyComponent : DummyComponents)
          {
             if (DummyComponent && DummyComponent->UUID == LastRoofLightConnection.Value)
@@ -507,15 +533,15 @@ void UAutoWiringComponent::UpdateRoofLightConnection()
                FString TextToRemove;
                if (LastRoofLightConnection.Value == "ae3b7d03-986c-4d09-8b06-632caf0abe00") // FL ECU
                {
-                  TextToRemove = TEXT("ECU2.Pin8 <-> Roof Light.Pin1\nECU2.Pin9 <-> Roof Light.Pin2");
+                  TextToRemove = TEXT("\nECU2.Pin8 <-> Roof Light.Pin1\nECU2.Pin9 <-> Roof Light.Pin2");
                }
                else if (LastRoofLightConnection.Value == "f70de327-0caa-4d25-994e-d68dfe26807e") // FR ECU
                {
-                  TextToRemove = TEXT("ECU1.Pin8 <-> Roof Light.Pin1\nECU1.Pin9 <-> Roof Light.Pin2");
+                  TextToRemove = TEXT("\nECU1.Pin8 <-> Roof Light.Pin1\nECU1.Pin9 <-> Roof Light.Pin2");
                }
                else if (LastRoofLightConnection.Value == "0f108a3d-b831-4841-9834-c136001fe014") // Rear ECU
                {
-                  TextToRemove = TEXT("ECU3.Pin8 <-> Roof Light.Pin1\nECU3.Pin9 <-> Roof Light.Pin2");
+                  TextToRemove = TEXT("\nECU3.Pin8 <-> Roof Light.Pin1\nECU3.Pin9 <-> Roof Light.Pin2");
                }
 
                CurrentLabelText = CurrentLabelText.Replace(*TextToRemove, TEXT(""));
@@ -526,20 +552,19 @@ void UAutoWiringComponent::UpdateRoofLightConnection()
 
          LastRoofLightConnection = NewConnection;
 
-         // Обновление текста для ближайшего ECU
          FString CurrentLabelText = NearestECU->GetLabelText();
          FString NewText;
          if (NearestECU->UUID == "ae3b7d03-986c-4d09-8b06-632caf0abe00") // FL ECU
          {
-            NewText = TEXT("ECU2.Pin8 <-> Roof Light.Pin1\nECU2.Pin9 <-> Roof Light.Pin2");
+            NewText = TEXT("\nECU2.Pin8 <-> Roof Light.Pin1\nECU2.Pin9 <-> Roof Light.Pin2");
          }
          else if (NearestECU->UUID == "f70de327-0caa-4d25-994e-d68dfe26807e") // FR ECU
          {
-            NewText = TEXT("ECU1.Pin8 <-> Roof Light.Pin1\nECU1.Pin9 <-> Roof Light.Pin2");
+            NewText = TEXT("\nECU1.Pin8 <-> Roof Light.Pin1\nECU1.Pin9 <-> Roof Light.Pin2");
          }
          else if (NearestECU->UUID == "0f108a3d-b831-4841-9834-c136001fe014") // Rear ECU
          {
-            NewText = TEXT("ECU3.Pin8 <-> Roof Light.Pin1\nECU3.Pin9 <-> Roof Light.Pin2");
+            NewText = TEXT("\nECU3.Pin8 <-> Roof Light.Pin1\nECU3.Pin9 <-> Roof Light.Pin2");
          }
 
          if (!CurrentLabelText.Contains(NewText))
@@ -548,7 +573,6 @@ void UAutoWiringComponent::UpdateRoofLightConnection()
             NearestECU->SetLabelText(CurrentLabelText);
          }
 
-         // Удаление только соединения RoofLight, а не всех соединений
          for (int32 i = ConnectionIDs.Num() - 1; i >= 0; i--)
          {
             if (ConnectionIDs[i].Key == RoofLightComponent->UUID)
@@ -557,13 +581,12 @@ void UAutoWiringComponent::UpdateRoofLightConnection()
             }
          }
 
-         // Добавляем новое соединение
          ConnectionIDs.Add(NewConnection);
       }
    }
    else
    {
-      UE_LOG(LogTemp, Warning, TEXT("No ECU found for RoofLight with UUID: %s"), RoofLightComponent ? *RoofLightComponent->UUID : TEXT("Unknown"));
+      //UE_LOG(LogTemp, Warning, TEXT("No ECU found for RoofLight with UUID: %s"), RoofLightComponent ? *RoofLightComponent->UUID : TEXT("Unknown"));
    }
 }
 
@@ -588,13 +611,13 @@ void UAutoWiringComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
          {
             SourceLocation = DummyComponent->GetComponentLocation();
             bSourceFound = true;
-            UE_LOG(LogTemp, Display, TEXT("Found source DummyComponent: %s"), *ConnectionID.Key);
+            //UE_LOG(LogTemp, Display, TEXT("Found source DummyComponent: %s"), *ConnectionID.Key);
          }
          if (DummyComponent->UUID == ConnectionID.Value)
          {
             DestinationLocation = DummyComponent->GetComponentLocation();
             bDestinationFound = true;
-            UE_LOG(LogTemp, Display, TEXT("Found destination DummyComponent: %s"), *ConnectionID.Value);
+            //UE_LOG(LogTemp, Display, TEXT("Found destination DummyComponent: %s"), *ConnectionID.Value);
          }
 
          if (bSourceFound && bDestinationFound)
@@ -614,11 +637,11 @@ void UAutoWiringComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 
       if (!bSourceFound)
       {
-         UE_LOG(LogTemp, Warning, TEXT("Source DummyComponent with UUID: %s not found"), *ConnectionID.Key);
+         //UE_LOG(LogTemp, Warning, TEXT("Source DummyComponent with UUID: %s not found"), *ConnectionID.Key);
       }
       if (!bDestinationFound)
       {
-         UE_LOG(LogTemp, Warning, TEXT("Destination DummyComponent with UUID: %s not found"), *ConnectionID.Value);
+         //UE_LOG(LogTemp, Warning, TEXT("Destination DummyComponent with UUID: %s not found"), *ConnectionID.Value);
       }
    }
 }

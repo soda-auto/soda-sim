@@ -12,7 +12,10 @@ class UNREALSODA_API UAutoWiringComponent : public UVehicleBaseComponent
 
 public:
    UFUNCTION(BlueprintCallable, Category = Debug, meta = (CallInRuntime))
-   virtual void SendRequest();
+   virtual void Autowiring();
+
+   UFUNCTION(BlueprintCallable, Category = Debug, meta = (CallInRuntime))
+   virtual void ChangeLight();
 
    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -28,9 +31,9 @@ private:
    TArray<TPair<FString, FString>> ConnectionIDs;
    void UpdateRoofLightConnection();
 
-   bool bOtherComponentsInPlaceChecked;
-   TPair<FString, FString> LastECUConnection;
    TPair<FString, FString> LastRoofLightConnection; 
    FString PreviousECULabelText; 
+
+   bool bIsLightOn;
 
 };
