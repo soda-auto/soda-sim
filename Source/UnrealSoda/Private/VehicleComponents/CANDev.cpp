@@ -18,16 +18,22 @@ UCANDevComponent::UCANDevComponent(const FObjectInitializer& ObjectInitializer)
 	Common.Activation = EVehicleComponentActivation::OnStartScenario;
 }
 
+void UCANDevComponent::OnPreActivateVehicleComponent()
+{
+	Super::OnPreActivateVehicleComponent();
+
+	CANBus = LinkToCANBus.GetObject<UCANBusComponent>(GetOwner());
+	if (CANBus)
+	{
+		CANBus->RegisterCanDev(this);
+	}
+}
+
 bool UCANDevComponent::OnActivateVehicleComponent()
 {
-	CANBus = LinkToCANBus.GetObject<UCANBusComponent>(GetOwner());
 	if (!CANBus)
 	{
 		SetHealth(EVehicleComponentHealth::Warning, TEXT("CAN bus isn't connectd"));
-	}
-	else
-	{
-		CANBus->RegisterCanDev(this);
 	}
 
 	//RecvMessages.clear();
@@ -40,6 +46,10 @@ void UCANDevComponent::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
 
+	if (IsValid(CANBus))
+	{
+		CANBus->UnregisterCanDev(this);
+	}
 	CANBus = nullptr;
 
 	//RecvMessages.clear();

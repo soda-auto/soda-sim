@@ -161,6 +161,9 @@ class UNREALSODA_API ASodaVehicle :
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Dataset, SaveGame, meta = (EditInRuntime))
 	bool bRecordDataset = true;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = scenario, SaveGame, meta = (EditInRuntime))
+	bool bPossesWhenScarioPlay = false;
+
 public:
 	/** Widget created form VehicleWidgetClass. */
 	UPROPERTY(Transient, BlueprintReadOnly, Category = VehicleWidget)
@@ -347,6 +350,7 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
 	virtual void Serialize(FArchive& Ar) override;
+	virtual void NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;

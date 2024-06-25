@@ -41,6 +41,7 @@
 #include "UI/ToolBoxes/SVehicleComponentsToolBox.h"
 #include "SodaStyleSet.h"
 #include "GlobalRenderResources.h"
+#include "GameFramework/PlayerController.h"
 
 #include "bsoncxx/builder/stream/helpers.hpp"
 #include "bsoncxx/exception/exception.hpp"
@@ -1526,6 +1527,14 @@ void ASodaVehicle::ScenarioBegin()
 	{
 		Component->ScenarioBegin();
 	}
+
+	if (bPossesWhenScarioPlay)
+	{
+		if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+		{
+			PC->Possess(this);
+		}
+	}
 }
 
 void ASodaVehicle::ScenarioEnd()
@@ -1741,4 +1750,9 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 		[
 			ToolbarBuilder.MakeWidget()
 		];
+}
+
+void ASodaVehicle::NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+{
+	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 }

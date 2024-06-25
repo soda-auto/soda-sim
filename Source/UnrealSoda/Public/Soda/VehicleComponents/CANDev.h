@@ -55,6 +55,7 @@ public:
 	virtual int SendFrame(const dbc::FCanFrame& CanFrame);
 
 public:
+	virtual void OnPreActivateVehicleComponent() override;
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 

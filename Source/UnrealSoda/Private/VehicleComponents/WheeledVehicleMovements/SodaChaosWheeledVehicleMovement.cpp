@@ -44,7 +44,7 @@ void USodaChaosWheeledVehicleSimulation::UpdateSimulation(float DeltaTime, const
 
 	//TODO: Add realtime indicator
 	//auto Diff = soda::Now() - VehicleSimData.SimulatedTimestamp;
-	//UE_LOG(LogSoda, Warning, TEXT("*** %f %f"), std::chrono::duration_cast<float>(Diff).count(), DeltaTime);
+	//UE_LOG(LogSoda, Warning, TEXT("*** %ims %ims"), std::chrono::duration_cast<std::chrono::milliseconds>(Diff).count(), int(DeltaTime * 1000));
 
 	FScopeLock ScopeLock(&WheeledVehicle->PhysicMutex);
 
@@ -269,6 +269,7 @@ TUniquePtr<Chaos::FSimpleWheeledVehicle> USodaChaosWheeledVehicleMovementCompone
 {
 	WheeledVehicle = Cast<ASodaWheeledVehicle>(GetOwner());
 	VehicleSimulationPT = MakeUnique<USodaChaosWheeledVehicleSimulation>(WheeledVehicle, this);
+
 	return UChaosVehicleMovementComponent::CreatePhysicsVehicle();
 }
 
@@ -403,7 +404,21 @@ bool USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 
 	for (int i = 0; i < SodaWheelSetups.Num(); ++i)
 	{
-		SodaWheelSetups[i].SodaWheel->Radius = Wheels[i]->WheelRadius;
+		if (SodaWheelSetups[i].bOverrideRadius)
+		{
+			SetWheelRadius(i, SodaWheelSetups[i].OverrideRadius);
+			SodaWheelSetups[i].SodaWheel->Radius = SodaWheelSetups[i].OverrideRadius;
+		}
+		else
+		{
+			SodaWheelSetups[i].SodaWheel->Radius = Wheels[i]->WheelRadius;
+		}
+
+		if (SodaWheelSetups[i].bOverrideFrictionMultiplier)
+		{
+			SetWheelFrictionMultiplier(i, SodaWheelSetups[i].OverrideFrictionMultiplier);
+		}
+
 	}
 
 
@@ -422,6 +437,8 @@ bool USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 
 	bSynchronousMode = SodaApp.IsSynchronousMode();
 
+	ReceiveActivateVehicleComponent();
+
 	return true;
 }
 
@@ -431,6 +448,8 @@ void USodaChaosWheeledVehicleMovementComponent::OnPreDeactivateVehicleComponent(
 
 	DestroyPhysicsState();
 	bAllowCreatePhysicsState = false;
+
+	ReceiveDeactivateVehicleComponent();
 }
 
 void USodaChaosWheeledVehicleMovementComponent::OnDeactivateVehicleComponent()

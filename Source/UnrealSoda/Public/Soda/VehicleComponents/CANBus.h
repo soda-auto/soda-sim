@@ -5,7 +5,9 @@
 #include "Soda/VehicleComponents/VehicleBaseComponent.h"
 #include "Soda/DBC/Common.h"
 #include "Soda/SodaTypes.h"
+#include "Soda/Misc/PrecisionTimer.hpp"
 #include <unordered_map>
+#include <mutex>
 #include "CANBus.generated.h"
 
 #define CANID_DEFAULT -1
@@ -32,12 +34,23 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = CANBus, SaveGame, meta = (EditInRuntime, ReactivateActor))
 	bool bLoopFrames = false; 
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = CANBus, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	bool bUseIntervaledSendingFrames = false;
+
+	/** [ms] */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = CANBus, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	int IntevalStep = 10;
+
 	FCanDevRecvFrameDelegate RecvDelegate;
 
 public:
 	virtual bool ProcessRecvMessage(const TTimestamp& Timestamp, const dbc::FCanFrame& CanFrame);
 	virtual int SendFrame(const dbc::FCanFrame& CanFrame);
+
+	/** @Param Interval - [ms] */
+	virtual void SendFrame(const dbc::FCanFrame& CanFrame, int Interval);
 	virtual void RegisterCanDev(UCANDevComponent* CANDev);
+	virtual bool UnregisterCanDev(UCANDevComponent* CANDev);
 
 public:
 	virtual void OnPreActivateVehicleComponent() override;
@@ -102,4 +115,14 @@ protected:
 
 	std::unordered_map<std::uint64_t, TSharedPtr<dbc::FCANMessage>> RecvMessages;
 	std::unordered_map<std::uint64_t, TSharedPtr<dbc::FCANMessage>> SendMessages;
+
+	FPrecisionTimer PrecisionTimer;
+	struct FIntervaledFrame
+	{
+		dbc::FCanFrame CanFrame;
+		int Interval; //[ms]
+	};
+	TMap<uint32, FIntervaledFrame> IntervaledFrames;
+	std::mutex MutexIF;
+	int IntervaledThreadCounter;
 };

@@ -45,6 +45,12 @@ public:
 	virtual const FVehicleComponentGUI& GetVehicleComponentGUI() const override { return GUI; }
 	virtual const FVehicleComponentCommon& GetVehicleComponentCommon() const override { return Common; }
 
+	UFUNCTION(BlueprintImplementableEvent, Category = VehicleComponent, meta = (DisplayName = "ActivateVehicleComponen"))
+	void ReceiveActivateVehicleComponent();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = VehicleComponent, meta = (DisplayName = "DeactivateVehicleComponent"))
+	void ReceiveDeactivateVehicleComponent();
+
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;

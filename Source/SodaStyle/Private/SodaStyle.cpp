@@ -492,7 +492,7 @@ void FStarshipSodaStyle::FStyle::SetupGeneralStyles()
 		Set("SodaIcons.DownStream32", new IMAGE_BRUSH_SVG("SodaIcons/down-stream", Icon32x32));
 		Set("SodaIcons.GearBox", new IMAGE_BRUSH_SVG("SodaIcons/gear-box", Icon16x16));
 		Set("SodaIcons.Hive", new IMAGE_BRUSH_SVG("SodaIcons/hive", Icon16x16));
-		
+		Set("SodaIcons.Python", new IMAGE_BRUSH_SVG("SodaIcons/python", Icon16x16));
 
 		Set("SodaIcons.DB.ConnectingBG", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_UpDownBG", Icon16x16));
 		Set("SodaIcons.DB.Connecting", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_UpDown", Icon16x16, FLinearColor(0.3, 0.3, 0.3, 1.0)));

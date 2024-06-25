@@ -39,6 +39,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = VehicleComponent, SaveGame)
 	FVehicleComponentTick TickData;
 
+	UPROPERTY(BlueprintAssignable, Category = VehicleComponent)
+	FVehicleComponentActivatedDelegate OnVehicleComponentActivated;
+
+	UPROPERTY(BlueprintAssignable, Category = VehicleComponent)
+	FVehicleComponentDeactivateDelegate OnVehicleComponentDeactivated;
+
+public:
+	UFUNCTION(BlueprintImplementableEvent, Category = VehicleComponent, meta = (DisplayName = "ActivateVehicleComponen"))
+	void ReceiveActivateVehicleComponent();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = VehicleComponent, meta = (DisplayName = "DeactivateVehicleComponent"))
+	void ReceiveDeactivateVehicleComponent();
+
 public:
 	/* Override ISodaVehicleComponent */
 	virtual UActorComponent* AsActorComponent() override { return this; }
@@ -52,6 +65,9 @@ public:
 	virtual const FVehicleComponentGUI& GetVehicleComponentGUI() const override { return GUI; }
 	virtual const FVehicleComponentCommon& GetVehicleComponentCommon() const override { return Common; }
 	virtual const FVehicleComponentTick& GetVehicleComponentTick() const override { return TickData; }
+
+	virtual bool OnActivateVehicleComponent() override;
+	virtual void OnDeactivateVehicleComponent() override;
 
 public:
 	/* Override AActorComponent */

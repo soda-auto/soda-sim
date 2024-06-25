@@ -25,6 +25,12 @@ public:
 	static const FString& GetMetaData(const FField* Field, const TCHAR* Key);
 	static const FString& GetMetaData(const UField* Field, const FName& Key);
 	static const FString& GetMetaData(const FField* Field, const FName& Key);
+	static void SetMetaData(FField* Field, const TCHAR * Key, const TCHAR * InValue);
+	static void SetMetaData(FField* Field, const FName& Key, const TCHAR* InValue);
+	static void SetMetaData(FField* Field, const TCHAR* Key, FString&& InValue);
+	static void SetMetaData(FField* Field, const FName& Key, FString&& InValue);
+	static void SetMetaData(UField* Field, const TCHAR* Key, const TCHAR* InValue);
+	static void SetMetaData(UField* Field, const FName& Key, const TCHAR* InValue);
 	static FText GetDisplayNameText(const FField* Field);
 	static FText GetDisplayNameText(const UField* Field);
 	static FText GetToolTipText(const UField* Field, bool bShortTooltip);
@@ -49,6 +55,7 @@ public:
 	static FString GetMetaData(const UEnum* Enum, const TCHAR* Key, int32 NameIndex = INDEX_NONE, bool bAllowRemap = true);
 	static FText GetToolTipTextByIndex(const UEnum* Enum, int32 NameIndex);
 	static FText GetDisplayNameTextByIndex(const UEnum* Enum, int32 NameIndex);
+	static void SetMetaData(UEnum* Enum, const TCHAR* Key, const TCHAR* InValue, int32 NameIndex);
 
 	/**  Add custom metadata generated from IEditableObject::GenerateMetadata() to the MetadataGlobalScope */
 	static bool AddGeneratedMetadataToGlobalScope(UClass* Class);
@@ -56,12 +63,14 @@ public:
 	/** Find all UMetadataPrimaryAsset and add metadata to MetadataGlobalScope */
 	static void RegisterMetadataPrimaryAssets(); 
 
+	static void CopyMetaData(const FField* InSourceField, FField* InDestField);
+
 private:
 	static const FString * TryGetMetaData(const UField* Field, const TCHAR* Key);
 	static const FString * TryGetMetaData(const FField* Field, const TCHAR* Key);
 
-	static const FRuntimeMetadataField* FindField(const UField* Field);
-	static const FRuntimeMetadataField* FindField(const FField* Field);
+	static FRuntimeMetadataField* FindField(const UField* Field);
+	static FRuntimeMetadataField* FindField(const FField* Field);
 
 	//static void PrimaryAssetsLoaded(FPrimaryAssetId AssetId);
 

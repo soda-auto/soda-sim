@@ -9,6 +9,16 @@
 
 #define GPS_EPOCH_OFFSET 315964800
 
+UENUM(BlueprintType)
+enum class EQualityLevel
+{
+	Low, 
+	Medium, 
+	High, 
+	Epic,
+	Cinematic
+};
+
 UCLASS(ClassGroup = Soda, config = SodaUserSettings, configdonotcheckdefaults)
 class UNREALSODA_API USodaUserSettings : public UObject
 {
@@ -114,8 +124,46 @@ public:
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = DB, meta = (EditInRuntime))
 	bool bAutoConnect;
 
-	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Common, meta = (EditInRuntime))
+	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Advanced, meta = (EditInRuntime))
 	bool bTagActorsAtBeginPlay;
+
+	/** Resolution scale [0..100] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
+	float ResolutionScale;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
+	EQualityLevel ViewDistanceQuality;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
+	EQualityLevel AntiAliasingQuality;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
+	EQualityLevel ShadowQuality;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
+	EQualityLevel GlobalIlluminationQuality;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
+	EQualityLevel ReflectionQuality;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
+	EQualityLevel PostProcessQuality;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
+	EQualityLevel TextureQuality;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
+	EQualityLevel EffectsQuality;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
+	EQualityLevel FoliageQuality;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
+	EQualityLevel ShadingQuality;
+
+	/** Sets the user's frame rate limit (0 will disable frame rate limiting) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
+	float FrameRateLimit;
 
 	/** [s] */
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Advanced, meta = (EditInRuntime))
@@ -149,6 +197,12 @@ public:
 
 	/** Loads the user .ini settings into GConfig */
 	static void LoadConfigIni(bool bForceReload = false);
+
+	UFUNCTION(BlueprintCallable, Category = "Graphic Settings")
+	void ReadGraphicSettings();
+
+	UFUNCTION(BlueprintCallable, Category = "Graphic Settings")
+	void ApplyGraphicSettings();
 
 protected:
 	static FString SodaUserSettingsIni;

@@ -28,6 +28,9 @@ namespace soda
 	enum class EUIMode : uint8;
 }
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScenarioPlaySignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FScenarioStopSignature, EScenarioStopReason, Reason);
+
 
 /*
  * USodaGameModeComponent
@@ -60,6 +63,12 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = SodaGameMode)
 	USodaGameViewportClient* ViewportClient = nullptr;
+
+	UPROPERTY(BlueprintAssignable, Category = SodaGameMode)
+	FScenarioPlaySignature OnScenarioPlay;
+
+	UPROPERTY(BlueprintAssignable, Category = SodaGameMode)
+	FScenarioStopSignature OnScenarioStop;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = DB)

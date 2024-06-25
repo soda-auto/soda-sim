@@ -137,6 +137,18 @@ public:
 	UPROPERTY(Category = "Debug", EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
 	bool bForceUpdateInputStates = false;
 
+	UPROPERTY(Category = "Debug", EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
+	bool bForbidSetBrake = false;
+
+	UPROPERTY(Category = "Debug", EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
+	bool bForbidSetThrottle = false;
+
+	UPROPERTY(Category = "Debug", EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
+	bool bForbidSetSteering = false;
+
+	UPROPERTY(Category = "Debug", EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
+	bool bForbidSetGear = false;
+
 public:
 	UVehicleInputAIComponent(const FObjectInitializer& ObjectInitializer);
 

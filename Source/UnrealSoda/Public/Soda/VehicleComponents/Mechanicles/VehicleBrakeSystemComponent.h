@@ -137,6 +137,8 @@ public:
 	virtual float GetPressure() const override;
 	virtual float GetLoad() const override;
 
+	const FWheelBrakeSetup& GetSetup() const { return BrakeSetup; }
+
 protected:
 	UPROPERTY()
 	UVehicleBrakeSystemSimpleComponent* BrakeSystem = nullptr;
@@ -172,8 +174,11 @@ public:
 	virtual void RequestByRatio(float InRatio, double DeltaTime) override;
 	virtual void RequestByPressure(float InBar, double DeltaTime) override;
 	virtual UWheelBrake* GetWheel(int Ind) const override { return WheelBrakes[Ind]; }
-	virtual UWheelBrake* GetWheel4WD(E4WDWheelIndex Ind) const override;
+	virtual UWheelBrake* GetWheel4WD(E4WDWheelIndex Ind) const override { return GetWheelSimple4WD(Ind); }
 	virtual float ComputeFullTorqByRatio(float InRatio) override;
+
+	UWheelBrakeSimple* GetWheelSimple(int Ind) const { return WheelBrakes[Ind]; }
+	UWheelBrakeSimple* GetWheelSimple4WD(E4WDWheelIndex Ind) const;
 
 public:
 	virtual void InitializeComponent() override;

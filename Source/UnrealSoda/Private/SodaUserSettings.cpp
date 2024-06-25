@@ -13,6 +13,7 @@
 //#include "UnrealEngine.h"
 //#include "Framework/Application/SlateApplication.h"
 //#include "Engine/GameEngine.h"
+#include "GameFramework/GameUserSettings.h"
 
 #define GPS_LEAP_SECONDS_OFFSET 17
 
@@ -44,6 +45,7 @@ void USodaUserSettings::LoadSettings(bool bForceReload/*=false*/)
 void USodaUserSettings::SaveSettings()
 {
 	SaveConfig(CPF_Config, *SodaUserSettingsIni);
+	ApplyGraphicSettings();
 }
 
 void USodaUserSettings::LoadConfigIni(bool bForceReload/*=false*/)
@@ -94,4 +96,43 @@ void USodaUserSettings::SetToDefaults()
 	bRecordDataset = false;
 
 	GPSLeapOffset = GPS_LEAP_SECONDS_OFFSET;
+}
+
+void USodaUserSettings::ReadGraphicSettings()
+{
+	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
+
+	ResolutionScale = Settings->GetResolutionScaleNormalized() * 100;
+	ViewDistanceQuality = (EQualityLevel)Settings->GetViewDistanceQuality();
+	AntiAliasingQuality = (EQualityLevel)Settings->GetAntiAliasingQuality();
+	ShadowQuality = (EQualityLevel)Settings->GetShadowQuality();
+	GlobalIlluminationQuality = (EQualityLevel)Settings->GetGlobalIlluminationQuality();
+	ReflectionQuality = (EQualityLevel)Settings->GetReflectionQuality();
+	PostProcessQuality = (EQualityLevel)Settings->GetPostProcessingQuality();
+	TextureQuality = (EQualityLevel)Settings->GetTextureQuality();
+	EffectsQuality = (EQualityLevel)Settings->GetVisualEffectQuality();
+	FoliageQuality = (EQualityLevel)Settings->GetFoliageQuality();
+	ShadingQuality = (EQualityLevel)Settings->GetShadingQuality();
+	FrameRateLimit = Settings->GetFrameRateLimit();
+}
+
+void USodaUserSettings::ApplyGraphicSettings()
+{
+	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
+
+	Settings->SetResolutionScaleValueEx(ResolutionScale);
+	Settings->SetViewDistanceQuality((int32)ViewDistanceQuality);
+	Settings->SetAntiAliasingQuality((int32)AntiAliasingQuality);
+	Settings->SetShadowQuality((int32)ShadowQuality);
+	Settings->SetGlobalIlluminationQuality((int32)GlobalIlluminationQuality);
+	Settings->SetReflectionQuality((int32)ReflectionQuality);
+	Settings->SetPostProcessingQuality((int32)PostProcessQuality);
+	Settings->SetTextureQuality((int32)TextureQuality);
+	Settings->SetVisualEffectQuality((int32)EffectsQuality);
+	Settings->SetFoliageQuality((int32)FoliageQuality);
+	Settings->SetShadingQuality((int32)ShadingQuality);
+	Settings->SetFrameRateLimit((int32)FrameRateLimit);
+
+	Settings->ApplySettings(false);
+	
 }

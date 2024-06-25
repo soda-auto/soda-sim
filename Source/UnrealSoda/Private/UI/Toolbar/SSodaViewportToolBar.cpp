@@ -45,6 +45,7 @@
 #include "JoystickGameSettings.h"
 #include "SodaJoystick.h"
 #include "RemoteControlSettings.h"
+#include "GameFramework/GameUserSettings.h"
 
 #define LOCTEXT_NAMESPACE "SodaViewportToolBar"
 
@@ -439,6 +440,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 		FUIAction Action;
 		Action.ExecuteAction.BindLambda([]() 
 		{
+			SodaApp.GetSodaUserSettings()->ReadGraphicSettings();
 			USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
 			FRuntimeEditorModule& RuntimeEditorModule = FModuleManager::LoadModuleChecked<FRuntimeEditorModule>("RuntimeEditor");
 			soda::FDetailsViewArgs Args;
@@ -493,25 +495,6 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 			FText::FromString("Common Settings"),
 			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.Adjust"),
 			Action);
-	}
-
-	{
-		MenuBuilder.AddSubMenu(
-			FText::FromString("Graphics Settings"),
-			FText::FromString("Graphics Settings"),
-			FNewMenuDelegate::CreateLambda([](FMenuBuilder& MenuBuilder)
-				{
-					MenuBuilder.BeginSection(NAME_None);
-					FUIAction Action;
-					MenuBuilder.AddMenuEntry(
-						FText::FromString("TODO"),
-						FText::FromString("TODO"),
-						FSlateIcon(),
-						Action);
-					MenuBuilder.EndSection();
-				}),
-			false,
-			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaViewport.SubMenu.Stats"));
 	}
 
 	{

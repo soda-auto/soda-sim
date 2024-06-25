@@ -43,7 +43,7 @@ void ULevelSaveGame::Serialize(FArchive& Ar)
 	Ar << LevelDataRecord;
 }
 
-FLevelStateSlotDescription ALevelState::StaticSlot;
+FLevelStateSlotDescription ALevelState::StaticSlot{};
 
 ALevelState::ALevelState()
 {
@@ -415,6 +415,11 @@ ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass
 	check(World);
 
 	ULevelSaveGame* LevelSaveGame = nullptr;
+
+	if (StaticSlot.LevelName != UGameplayStatics::GetCurrentLevelName(WorldContextObject, true))
+	{
+		StaticSlot.SlotIndex = -1;
+	}
 
 	switch (StaticSlot.SlotSource)
 	{

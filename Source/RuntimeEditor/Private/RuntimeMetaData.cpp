@@ -11,7 +11,7 @@ DEFINE_LOG_CATEGORY(LogMetaData);
 
 TMap<FString, FRuntimeMetadataObject> FRuntimeMetaData::MetadataGlobalScope;
 
-const FRuntimeMetadataField* FRuntimeMetaData::FindField(const UField* Field)
+FRuntimeMetadataField* FRuntimeMetaData::FindField(const UField* Field)
 {
 	UObject* Owner = Field->GetOuter();
 	if (FRuntimeMetadataObject* Metadata = MetadataGlobalScope.Find(Owner->GetName()))
@@ -21,7 +21,7 @@ const FRuntimeMetadataField* FRuntimeMetaData::FindField(const UField* Field)
 	return nullptr;
 }
 
-const FRuntimeMetadataField* FRuntimeMetaData::FindField(const FField* Field)
+FRuntimeMetadataField* FRuntimeMetaData::FindField(const FField* Field)
 {
 	UObject* Owner = Field->GetOwnerUObject();
 	if (FRuntimeMetadataObject* Metadata = MetadataGlobalScope.Find(Owner->GetName()))
@@ -158,6 +158,17 @@ void FRuntimeMetaData::PrimaryAssetsLoaded(FPrimaryAssetId AssetId)
 }
 */
 
+void FRuntimeMetaData::CopyMetaData(const FField* InSourceField, FField* InDestField)
+{
+	const FRuntimeMetadataField* InMetadataSourceField = FindField(InSourceField);
+	FRuntimeMetadataField* InMetadataDestField = FindField(InDestField);
+
+	if (InMetadataSourceField && InMetadataDestField)
+	{
+		*InMetadataDestField = *InMetadataDestField;
+	}
+}
+
 #ifdef RUNTIME_METADATA_DEBUG
 
 const FString* FRuntimeMetaData::FindMetaData(const FField* Field, const TCHAR* Key) { return Field->FindMetaData(Key); }
@@ -172,6 +183,12 @@ const FString& FRuntimeMetaData::GetMetaData(const UField* Field, const TCHAR* K
 const FString& FRuntimeMetaData::GetMetaData(const FField* Field, const TCHAR* Key) { return Field->GetMetaData(Key); }
 const FString& FRuntimeMetaData::GetMetaData(const UField* Field, const FName& Key) { return Field->GetMetaData(Key); }
 const FString& FRuntimeMetaData::GetMetaData(const FField* Field, const FName& Key) { return Field->GetMetaData(Key); }
+void FRuntimeMetaData::SetMetaData(FField* Field, const TCHAR* Key, const TCHAR* InValue) { FField->SetMetaData(Key, InValue); }
+void FRuntimeMetaData::SetMetaData(FField* Field, const FName& Key, const TCHAR* InValue) { FField->SetMetaData(Key, InValue); }
+void FRuntimeMetaData::SetMetaData(FField* Field, const TCHAR* Key, FString&& InValue) { FField->SetMetaData(Key, InValue); }
+void FRuntimeMetaData::SetMetaData(FField* Field, const FName& Key, FString&& InValue) { FField->SetMetaData(Key, InValue); }
+void FRuntimeMetaData::SetMetaData(UField* Field, const TCHAR* Key, const TCHAR* InValue) { FField->SetMetaData(Key, InValue); }
+void FRuntimeMetaData::SetMetaData(UField* Field, const FName& Key, const TCHAR* InValue) { FField->SetMetaData(Key, InValue); }
 FText FRuntimeMetaData::GetDisplayNameText(const FField* Field) { return Field->GetDisplayNameText(); }
 FText FRuntimeMetaData::GetDisplayNameText(const UField* Field) { return Field->GetDisplayNameText(); }
 FText FRuntimeMetaData::GetToolTipText(const UField* Field) { return Field->GetToolTipText(); }
@@ -192,9 +209,9 @@ bool FRuntimeMetaData::HasMetaData(const UEnum* Enum, const TCHAR* Key, int32 Na
 FString FRuntimeMetaData::GetMetaData(const UEnum* Enum, const TCHAR* Key, int32 NameIndex, bool bAllowRemap) { return Enum->GetMetaData(Key, NameIndex, bAllowRemap); }
 FText FRuntimeMetaData::GetToolTipTextByIndex(const UEnum* Enum, int32 NameIndex) { return Enum->GetToolTipTextByIndex(NameIndex); };
 FText FRuntimeMetaData::GetDisplayNameTextByIndex(const UEnum* Enum, int32 NameIndex) { return Enum->GetDisplayNameTextByIndex(NameIndex); };
+void FRuntimeMetaData::SetMetaData(UEnum* Enum, const TCHAR* Key, const TCHAR* InValue, int32 NameIndex) { Enum->SetMetaData(Key, InValue, NameIndex); }
 
 #else // RUNTIME_METADATA_DEBUG
-
 
 static FString GetFieldDisplayName(const FField& Object)
 {
@@ -208,7 +225,6 @@ static FString GetFieldDisplayName(const FField& Object)
 
 	return Object.GetName();
 }
-
 
 static FString GetFieldDisplayName(const UObject& Object)
 {
@@ -228,7 +244,6 @@ static FString GetFieldDisplayName(const UObject& Object)
 
 	return Object.GetName();
 }
-
 
 static FString GetFieldFullGroupName(const FField& Object, bool bStartWithOuter)
 {
@@ -753,5 +768,66 @@ FText FRuntimeMetaData::GetDisplayNameTextByIndex(const UEnum* Enum, int32 NameI
 
 	return FText::FromString(Enum->GetNameStringByIndex(NameIndex));
 }
+void FRuntimeMetaData::SetMetaData(FField* Field, const TCHAR* Key, const TCHAR* InValue)
+{
+	if (FRuntimeMetadataField* MetadataField = FindField(Field))
+	{
+		MetadataField->MetadataMap.Add(Key, InValue);
+	}
+}
+void FRuntimeMetaData::SetMetaData(FField* Field, const FName& Key, const TCHAR* InValue)
+{
+	if (FRuntimeMetadataField* MetadataField = FindField(Field))
+	{
+		MetadataField->MetadataMap.Add(Key.ToString(), InValue);
+	}
+}
+void FRuntimeMetaData::SetMetaData(FField* Field, const TCHAR* Key, FString&& InValue)
+{
+	if (FRuntimeMetadataField* MetadataField = FindField(Field))
+	{
+		MetadataField->MetadataMap.Add(Key, MoveTemp(InValue));
+	}
+}
+void FRuntimeMetaData::SetMetaData(FField* Field, const FName& Key, FString&& InValue)
+{
+	if (FRuntimeMetadataField* MetadataField = FindField(Field))
+	{
+		MetadataField->MetadataMap.Add(Key.ToString(), MoveTemp(InValue));
+	}
+}
+void FRuntimeMetaData::SetMetaData(UField* Field, const TCHAR* Key, const TCHAR* InValue)
+{
+	if (FRuntimeMetadataField* MetadataField = FindField(Field))
+	{
+		MetadataField->MetadataMap.Add(Key, MoveTemp(InValue));
+	}
+}
+void FRuntimeMetaData::SetMetaData(UField* Field, const FName& Key, const TCHAR* InValue)
+{
+	if (FRuntimeMetadataField* MetadataField = FindField(Field))
+	{
+		MetadataField->MetadataMap.Add(Key.ToString(), MoveTemp(InValue));
+	}
+}
+void FRuntimeMetaData::SetMetaData(UEnum* Enum, const TCHAR* Key, const TCHAR* InValue, int32 NameIndex)
+{
+	if (FRuntimeMetadataField* MetadataField = FindField(Enum))
+	{
+		FString KeyString;
 
+		// If an index was specified, search for metadata linked to a specified value
+		if (NameIndex != INDEX_NONE)
+		{
+			//check(Names.IsValidIndex(NameIndex));
+			KeyString = Enum->GetNameStringByIndex(NameIndex) + TEXT(".") + Key;
+		}
+		// If no index was specified, search for metadata for the enum itself
+		else
+		{
+			KeyString = Key;
+		}
+		MetadataField->MetadataMap.Add(KeyString, InValue);
+	}
+}
 #endif // RUNTIME_METADATA_DEBUG

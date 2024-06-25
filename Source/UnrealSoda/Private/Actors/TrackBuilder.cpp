@@ -578,7 +578,7 @@ bool ATrackBuilder::LoadJsonFromFile(const FString & InFileName)
 		if (CentrePointsDir != InsidePointsDir || CentrePointsDir != OutsidePointsDir)
 		{
 			UE_LOG(LogSoda, Error, TEXT("ATrackBuilder::LoadJsonFromFile(); Direction of Inside, Outside and Centre line are not matched"));
-			return false;
+			//return false;
 		}
 
 		bIsClockwise2D = CentrePointsDir;

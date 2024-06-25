@@ -350,10 +350,10 @@ void UVehicleInputAIComponent::UpdateInputStates(float DeltaTime, float ForwardS
 
 	UpdateInputStatesInner(DeltaTime);
 
-	InputState.Brake    = BrakeInputRate.InterpInputValue(DeltaTime, InputState.Brake, FMath::Clamp(-1.f * Throttle, 0.f, 1.f));
-	InputState.Throttle = ThrottleInputRate.InterpInputValue(DeltaTime, InputState.Throttle, FMath::Min(FMath::Clamp(Throttle, 0.f, 1.f), ThrottlePedalLimit));
-	InputState.Steering = SteerInputRate.InterpInputValue(DeltaTime, InputState.Steering, Steering);
-	InputState.SetGearState(Gear);
+	if (!bForbidSetBrake) InputState.Brake    = BrakeInputRate.InterpInputValue(DeltaTime, InputState.Brake, FMath::Clamp(-1.f * Throttle, 0.f, 1.f));
+	if (!bForbidSetThrottle) InputState.Throttle = ThrottleInputRate.InterpInputValue(DeltaTime, InputState.Throttle, FMath::Min(FMath::Clamp(Throttle, 0.f, 1.f), ThrottlePedalLimit));
+	if (!bForbidSetSteering) InputState.Steering = SteerInputRate.InterpInputValue(DeltaTime, InputState.Steering, Steering);
+	if (!bForbidSetGear) InputState.SetGearState(Gear);
 }
 
 float UVehicleInputAIComponent::CalcStreeringValue(float DeltaTime)

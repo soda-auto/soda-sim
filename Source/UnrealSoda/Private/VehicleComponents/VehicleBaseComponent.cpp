@@ -48,6 +48,25 @@ void UVehicleBaseComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 	}
 }
 
+bool UVehicleBaseComponent::OnActivateVehicleComponent()
+{
+	if (!ISodaVehicleComponent::OnActivateVehicleComponent())
+	{
+		return false;
+	}
+
+	ReceiveActivateVehicleComponent();
+	OnVehicleComponentActivated.Broadcast(this);
+	return true;
+}
+
+void UVehicleBaseComponent::OnDeactivateVehicleComponent()
+{
+	ISodaVehicleComponent::OnDeactivateVehicleComponent();
+	ReceiveDeactivateVehicleComponent();
+	OnVehicleComponentDeactivated.Broadcast(this);
+}
+
 FSensorDataHeader UVehicleBaseComponent::GetHeaderGameThread() const
 {
 	return FSensorDataHeader{ SodaApp.GetSimulationTimestamp(), SodaApp.GetFrameIndex() };

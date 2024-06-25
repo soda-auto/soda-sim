@@ -98,7 +98,7 @@ void UVehicleBrakeSystemSimpleComponent::InitializeComponent()
 	Super::InitializeComponent();
 }
 
-UWheelBrake* UVehicleBrakeSystemSimpleComponent::GetWheel4WD(E4WDWheelIndex Ind) const
+UWheelBrakeSimple* UVehicleBrakeSystemSimpleComponent::GetWheelSimple4WD(E4WDWheelIndex Ind) const
 {
 	if (WheelBrakes4WD.Num() == 4 && Ind != E4WDWheelIndex::None)
 	{

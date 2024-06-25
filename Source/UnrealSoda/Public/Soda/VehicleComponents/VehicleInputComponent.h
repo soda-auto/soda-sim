@@ -34,7 +34,7 @@ enum class  EGearInputMode : uint8
 };
 
 USTRUCT(BlueprintType)
-struct FWheeledVehicleInputState
+struct UNREALSODA_API FWheeledVehicleInputState
 {
 	GENERATED_USTRUCT_BODY()
 

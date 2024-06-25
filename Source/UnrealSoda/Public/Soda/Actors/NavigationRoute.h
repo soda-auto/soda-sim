@@ -33,6 +33,7 @@ protected:
  * ANavigationRoute
  * This is a spline along which some other actors can move. First of all, these are AGhostVehicle, AGhostPedestrian, ASodaVehicle.
  * TODO: Finish Predecessor & Successor logic. Abilty to connect routes throw UI
+ * TODO: Look at UPathFollowingComponent
  */
 UCLASS()
 class UNREALSODA_API ANavigationRoute : public AActor

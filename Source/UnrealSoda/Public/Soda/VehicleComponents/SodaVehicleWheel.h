@@ -110,6 +110,8 @@ public:
 	/** Compute vecloty of the  wheel center in the wheel bone coordinate system. */
 	virtual FVector GetWheelLocalVelocity() const;
 
+	inline float GetLinearVelocity() const { return Radius * AngularVelocity; }
+
 
 public:
 	/* Override ITorqueTransmission*/

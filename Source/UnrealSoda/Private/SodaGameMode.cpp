@@ -488,6 +488,8 @@ void USodaGameModeComponent::ScenarioPlay()
 			
 			}
 		}
+
+		OnScenarioPlay.Broadcast();
 	}
 }
 
@@ -544,6 +546,8 @@ void USodaGameModeComponent::ScenarioStop(EScenarioStopReason Reason)
 				UE_LOG(LogSoda, Error, TEXT("USodaGameModeComponent::ScenarioStop(); Can't load level save data"));
 			}
 		}
+
+		OnScenarioStop.Broadcast(Reason);
 	}
 }
 

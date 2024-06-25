@@ -19,6 +19,9 @@ class UCanvas;
 class ASodaVehicle;
 class UActorComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FVehicleComponentActivatedDelegate, UActorComponent*, Component);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FVehicleComponentDeactivateDelegate, UActorComponent*, Component);
+
 namespace soda
 {
 	class FActorDatasetData;

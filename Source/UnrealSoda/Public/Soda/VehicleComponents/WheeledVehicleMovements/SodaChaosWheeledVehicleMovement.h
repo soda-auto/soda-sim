@@ -20,7 +20,7 @@ struct UNREALSODA_API FSodaChaosWheelSetup
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditInRuntime, AllowedClasses = "/Script/UnrealSoda.SodaVehicleWheelComponent"))
 	FSubobjectReference ConnectedSodaWheel;
 
 	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditCondition = "bOverrideRadius", EditInRuntime))
@@ -28,6 +28,13 @@ struct UNREALSODA_API FSodaChaosWheelSetup
 
 	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
 	bool bOverrideRadius = false;
+
+	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditCondition = "bOverrideFrictionMultiplier", EditInRuntime))
+	float OverrideFrictionMultiplier = 1.0;
+
+	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
+	bool bOverrideFrictionMultiplier = false;
+
 
 	UPROPERTY()
 	USodaVehicleWheelComponent* SodaWheel = nullptr;
@@ -112,6 +119,12 @@ public:
 
 	virtual const FVehicleComponentGUI& GetVehicleComponentGUI() const override { return GUI; }
 	virtual const FVehicleComponentCommon& GetVehicleComponentCommon() const override { return Common; }
+
+	UFUNCTION(BlueprintImplementableEvent, Category = VehicleComponent, meta = (DisplayName = "ActivateVehicleComponen"))
+	void ReceiveActivateVehicleComponent();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = VehicleComponent, meta = (DisplayName = "DeactivateVehicleComponent"))
+	void ReceiveDeactivateVehicleComponent();
 
 protected:
 	virtual bool OnActivateVehicleComponent() override;

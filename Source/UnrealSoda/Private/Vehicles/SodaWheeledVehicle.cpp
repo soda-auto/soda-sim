@@ -43,11 +43,11 @@ ASodaWheeledVehicle::ASodaWheeledVehicle(const FObjectInitializer& ObjectInitial
 	RootComponent = Mesh = CreateDefaultSubobject< USkeletalMeshComponent >(TEXT("VehicleMesh"));
 	Mesh->SetCollisionProfileName(UCollisionProfile::Vehicle_ProfileName);
 	Mesh->SetSimulatePhysics(false);
-	Mesh->SetNotifyRigidBodyCollision(true);
-	Mesh->SetUseCCD(true);
 	//Mesh->bBlendPhysics = true;
 	Mesh->SetGenerateOverlapEvents(true);
 	Mesh->SetCanEverAffectNavigation(false);
+	Mesh->BodyInstance.bNotifyRigidBodyCollision = true;
+	Mesh->BodyInstance.bUseCCD = true;
 
 
 	SpringArm = CreateDefaultSubobject< USpringArmComponent >(TEXT("SpringArm"));
@@ -70,6 +70,7 @@ void ASodaWheeledVehicle::SetDefaultMeshProfile()
 	Mesh->SetCanEverAffectNavigation(false);
 	Mesh->SetCollisionResponseToChannels(DefCollisionResponseToChannel);
 	Mesh->SetCollisionObjectType(DefCollisionObjectType);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
 void ASodaWheeledVehicle::BeginPlay() 

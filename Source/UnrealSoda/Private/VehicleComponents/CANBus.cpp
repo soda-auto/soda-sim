@@ -30,15 +30,46 @@ bool UCANBusComponent::OnActivateVehicleComponent()
 	//RecvMessages.clear();
 	//SendMessages.clear();
 
-	return Super::OnActivateVehicleComponent();
+	if (!Super::OnActivateVehicleComponent())
+	{
+		return false;
+	}
+
+	
+	if (bUseIntervaledSendingFrames)
+	{
+		IntervaledThreadCounter = 0;
+		PrecisionTimer.TimerDelegate.BindLambda([this](const std::chrono::nanoseconds& InDeltatime, const std::chrono::nanoseconds& Elapsed)
+		{
+			for (auto& It : IntervaledFrames)
+			{
+				if (IntervaledThreadCounter % It.Value.Interval == 0)
+				{
+					SendFrame(It.Value.CanFrame);
+				}
+			}
+			++IntervaledThreadCounter;
+		});
+		PrecisionTimer.RealtimeSmoothFactor = 0.5;
+		PrecisionTimer.TimerStart(std::chrono::milliseconds(IntevalStep), std::chrono::milliseconds(0));
+	}
+	
+	return true;
 }
+
+
 
 void UCANBusComponent::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
 
+	PrecisionTimer.TimerStop();
+
 	//RecvMessages.clear();
 	//SendMessages.clear();
+	//IntervaledFrames.Empty();
+
+	RegistredCANDev.Reset();
 }
 
 void UCANBusComponent::RegisterCanDev(UCANDevComponent* CANDev)
@@ -47,6 +78,15 @@ void UCANBusComponent::RegisterCanDev(UCANDevComponent* CANDev)
 	{
 		RegistredCANDev.Add(CANDev);
 	}
+}
+
+bool UCANBusComponent::UnregisterCanDev(UCANDevComponent* CANDev)
+{
+	if (IsValid(CANDev))
+	{
+		return RegistredCANDev.Remove(CANDev) > 0;
+	}
+	return false;
 }
 
 int UCANBusComponent::SendFrame(const dbc::FCanFrame& CanFrame)
@@ -123,6 +163,12 @@ int UCANBusComponent::SendFrameJ1939(const dbc::FCANMessage* Msg, int J1939Addr)
 	return SendFrameCustomID(Msg, (Msg->Serializer->GetID() & 0xFFFFFF00) | (J1939Addr & 0xFF));
 }
 */
+
+void UCANBusComponent::SendFrame(const dbc::FCanFrame& CanFrame, int Interval)
+{
+	std::lock_guard<std::mutex> Lock(MutexIF);
+	IntervaledFrames.Add(CanFrame.ID, { CanFrame, FMath::Max(1, FMath::DivideAndRoundNearest(Interval, IntevalStep)) });
+}
 
 TSharedPtr<dbc::FCANMessage> UCANBusComponent::RegRecvMsg(const FString& MessageName, int64 CAN_ID)
 {
@@ -268,6 +314,7 @@ void UCANBusComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 		Canvas->SetDrawColor(FColor::White);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Registred send msgs: %d"), RecvMessages.size()), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Registred recv msgs: %d"), SendMessages.size()), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Intervaled frames: %d"), IntervaledFrames.Num()), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("PkgSent: %d"), PkgSent), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("PkgReceived: %d"), PkgReceived), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("PkgSentErr: %d"), PkgSentErr), 16, YPos);

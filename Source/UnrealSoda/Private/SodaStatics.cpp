@@ -783,7 +783,7 @@ TArray<UObject*> USodaStatics::FindAllObjectsByClass(UObject* WorldContextObject
 	{
 		ForEachObjectWithOuter(World, [&SubObjects, Class](UObject* Object)
 			{
-				if (Object->GetClass()->IsChildOf(Class))
+				if (IsValid(Object) && Object->GetClass()->IsChildOf(Class))
 				{
 					SubObjects.Add(Object);
 				}
