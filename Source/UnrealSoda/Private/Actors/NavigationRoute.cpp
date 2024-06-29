@@ -639,7 +639,7 @@ void ANavigationRouteEditable::Tick(float DeltaTime)
 			{
 				if (Hit.GetActor() != this && !Hit.GetActor()->IsRootComponentMovable() && (Hit.GetComponent()->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic || Hit.GetComponent()->GetCollisionObjectType() == ECollisionChannel::ECC_WorldDynamic))
 				{
-					const float ZOffset = 50;
+					const float ZOffset = 10;
 					const FVector Dir = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal();
 					FVector HitLocation = Hit.Location + Dir * ZOffset / Dir.Z;
 					SelectedNode->SetWorldLocation(HitLocation);
@@ -839,7 +839,7 @@ const FSodaActorDescriptor* ANavigationRouteEditable::GenerateActorDescriptor() 
 		TEXT("SodaIcons.Route"), /*Icon*/
 		false, /*bAllowTransform*/
 		true, /*bAllowSpawn*/
-		FVector(0, 0, 50), /*SpawnOffset*/
+		FVector(0, 0, 10), /*SpawnOffset*/
 	};
 	return &Desc;
 }
