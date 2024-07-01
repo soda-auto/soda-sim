@@ -467,7 +467,7 @@ URoutePlannerEditableNode::URoutePlannerEditableNode(const FObjectInitializer& O
 	: Super(ObjectInitializer)
 {
 	static ConstructorHelpers::FObjectFinder< UStaticMesh > MeshAsset(TEXT("/Engine/BasicShapes/Cylinder"));
-	static ConstructorHelpers::FObjectFinder< UMaterial > MatAsset(TEXT("/SodaSim/Assets/CPP/AxesMatDense"));
+	static ConstructorHelpers::FObjectFinder< UMaterial > MatAsset(TEXT("/SodaSim/Assets/CPP/RouteNodeMat"));
 	if (MeshAsset.Succeeded()) 	SetStaticMesh(MeshAsset.Object);
 	if (MatAsset.Succeeded()) 	SetMaterial(0, MatAsset.Object);
 	PrimaryComponentTick.bCanEverTick = true;
