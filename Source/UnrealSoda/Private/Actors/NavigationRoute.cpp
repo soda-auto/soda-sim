@@ -33,6 +33,7 @@ static bool IsSplineValid(const URouteSplineComponent* SplineComponent)
 		   (SplineComponent->GetNumberOfSplinePoints() > 1);
 }
 
+
 /*****************************************************************************************
                                 ANavigationRoute
 *****************************************************************************************/
@@ -419,6 +420,44 @@ bool ANavigationRoute::IsRouteTagsAllowed(const TSet<FString>& AllowedRouteTags)
 	return false;
 }
 
+bool ANavigationRoute::GroundHitFilter(const FHitResult& Hit)
+{
+	return
+		Hit.GetActor() != this &&
+		!Hit.GetActor()->IsRootComponentMovable() &&
+		(Hit.GetComponent()->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic || Hit.GetComponent()->GetCollisionObjectType() == ECollisionChannel::ECC_WorldDynamic);
+}
+
+void ANavigationRoute::PullToGround()
+{
+	FVector2D ScreenPosition;
+	FVector WorldOrigin;
+	FVector WorldDirection;
+
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	check(PlayerController);
+	FCollisionObjectQueryParams ObjectQueryParams(FCollisionObjectQueryParams::AllObjects);
+	TArray<FHitResult> HitResults;
+
+	for (int i = 0; i < Spline->GetNumberOfSplinePoints(); ++i)
+	{
+		const FVector Point = Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World);
+		if(PlayerController->GetWorld()->LineTraceMultiByObjectType(HitResults, Point - FVector(0, 0, 200), Point + FVector(0, 0, 200), ObjectQueryParams))
+		{
+			for (auto& Hit : HitResults)
+			{
+				if (GroundHitFilter(Hit))
+				{
+					Spline->SetLocationAtSplinePoint(i, Hit.Location + FVector(0, 0, ZOffset), ESplineCoordinateSpace::World, false);
+				}
+			}
+		}
+	}
+
+	Spline->UpdateSpline();
+	UpdateViewMesh();
+}
+
 /*****************************************************************************************
 								URoutePlannerEditableNode
 *****************************************************************************************/
@@ -637,9 +676,8 @@ void ANavigationRouteEditable::Tick(float DeltaTime)
 		{
 			for (auto& Hit : HitResults)
 			{
-				if (Hit.GetActor() != this && !Hit.GetActor()->IsRootComponentMovable() && (Hit.GetComponent()->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic || Hit.GetComponent()->GetCollisionObjectType() == ECollisionChannel::ECC_WorldDynamic))
+				if (GroundHitFilter(Hit))
 				{
-					const float ZOffset = 50;
 					const FVector Dir = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal();
 					FVector HitLocation = Hit.Location + Dir * ZOffset / Dir.Z;
 					SelectedNode->SetWorldLocation(HitLocation);
@@ -809,6 +847,10 @@ void ANavigationRouteEditable::RuntimePostEditChangeProperty(FPropertyChangedEve
 		//UpdateRouteNetwork(this, false);
 		PropagetUpdateSuccessorRoute();
 	}
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(ANavigationRoute, ZOffset))
+	{
+		PullToGround();
+	}
 }
 
 void ANavigationRouteEditable::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
@@ -828,6 +870,16 @@ void ANavigationRouteEditable::RuntimePostEditChangeChainProperty(FPropertyChang
 		//UpdateRouteNetwork(this, false);
 		PropagetUpdateSuccessorRoute();
 	}
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(ANavigationRoute, ZOffset))
+	{
+		PullToGround();
+	}
+}
+
+void ANavigationRouteEditable::PullToGround()
+{
+	Super::PullToGround();
+	UpdateNodes();
 }
 
 const FSodaActorDescriptor* ANavigationRouteEditable::GenerateActorDescriptor() const
