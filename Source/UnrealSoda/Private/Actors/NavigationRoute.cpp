@@ -442,13 +442,14 @@ void ANavigationRoute::PullToGround()
 	for (int i = 0; i < Spline->GetNumberOfSplinePoints(); ++i)
 	{
 		const FVector Point = Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World);
-		if(PlayerController->GetWorld()->LineTraceMultiByObjectType(HitResults, Point - FVector(0, 0, 200), Point + FVector(0, 0, 200), ObjectQueryParams))
+		if(PlayerController->GetWorld()->LineTraceMultiByObjectType(HitResults, Point - FVector(0, 0, 100), Point + FVector(0, 0, 1000), ObjectQueryParams))
 		{
 			for (auto& Hit : HitResults)
 			{
 				if (GroundHitFilter(Hit))
 				{
 					Spline->SetLocationAtSplinePoint(i, Hit.Location + FVector(0, 0, ZOffset), ESplineCoordinateSpace::World, false);
+					break;
 				}
 			}
 		}
