@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <float.h>
 #include <chrono>
+#include "Misc/SpinLock.h"
 
 #define INT_DEFAULT (1000U)
 #define CANID_EXTENDED_FLAG ((uint32_t)0x80000000U)
@@ -82,6 +83,9 @@ public:
 	std::chrono::nanoseconds Timeout{ 500000000ll };
 	//FCanDelegate OnPreSend;
 	//FCanDelegate OnAfterSerialize;
+
+	UE::FSpinLock SpinLockFrame;
+	bool bForbiddenIntervaledSending = false;
 };
 
 class UNREALSODA_API FCANMessageDynamic : public FCANMessage

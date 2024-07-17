@@ -41,11 +41,17 @@ bool UCANBusComponent::OnActivateVehicleComponent()
 		IntervaledThreadCounter = 0;
 		PrecisionTimer.TimerDelegate.BindLambda([this](const std::chrono::nanoseconds& InDeltatime, const std::chrono::nanoseconds& Elapsed)
 		{
-			for (auto& It : IntervaledFrames)
+			for (const auto& [Key, Value] : SendMessages)
 			{
-				if (IntervaledThreadCounter % It.Value.Interval == 0)
+				int Step = FMath::Max(1, FMath::DivideAndRoundNearest<int>(Value->GetInterval(), IntevalStep));
+				if (IntervaledThreadCounter % Step == 0)
 				{
-					SendFrame(It.Value.CanFrame);
+					Value->SpinLockFrame.Lock();
+					auto Frame = Value->Frame;
+					Value->SpinLockFrame.Unlock();
+					SendFrame(Frame);
+
+					UE_LOG(LogSoda, Error, TEXT("UCANBusComponent::SendFrame(); ID:%lld; %lldms"), int64(Frame.ID), soda::RawTimestamp<std::chrono::milliseconds>(soda::Now()));
 				}
 			}
 			++IntervaledThreadCounter;
@@ -67,7 +73,6 @@ void UCANBusComponent::OnDeactivateVehicleComponent()
 
 	//RecvMessages.clear();
 	//SendMessages.clear();
-	//IntervaledFrames.Empty();
 
 	RegistredCANDev.Reset();
 }
@@ -164,11 +169,6 @@ int UCANBusComponent::SendFrameJ1939(const dbc::FCANMessage* Msg, int J1939Addr)
 }
 */
 
-void UCANBusComponent::SendFrame(const dbc::FCanFrame& CanFrame, int Interval)
-{
-	std::lock_guard<std::mutex> Lock(MutexIF);
-	IntervaledFrames.Add(CanFrame.ID, { CanFrame, FMath::Max(1, FMath::DivideAndRoundNearest(Interval, IntevalStep)) });
-}
 
 TSharedPtr<dbc::FCANMessage> UCANBusComponent::RegRecvMsg(const FString& MessageName, int64 CAN_ID)
 {
@@ -314,7 +314,6 @@ void UCANBusComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 		Canvas->SetDrawColor(FColor::White);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Registred send msgs: %d"), RecvMessages.size()), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Registred recv msgs: %d"), SendMessages.size()), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Intervaled frames: %d"), IntervaledFrames.Num()), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("PkgSent: %d"), PkgSent), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("PkgReceived: %d"), PkgReceived), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("PkgSentErr: %d"), PkgSentErr), 16, YPos);

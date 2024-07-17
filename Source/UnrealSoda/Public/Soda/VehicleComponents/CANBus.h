@@ -47,8 +47,6 @@ public:
 	virtual bool ProcessRecvMessage(const TTimestamp& Timestamp, const dbc::FCanFrame& CanFrame);
 	virtual int SendFrame(const dbc::FCanFrame& CanFrame);
 
-	/** @Param Interval - [ms] */
-	virtual void SendFrame(const dbc::FCanFrame& CanFrame, int Interval);
 	virtual void RegisterCanDev(UCANDevComponent* CANDev);
 	virtual bool UnregisterCanDev(UCANDevComponent* CANDev);
 
@@ -117,12 +115,5 @@ protected:
 	std::unordered_map<std::uint64_t, TSharedPtr<dbc::FCANMessage>> SendMessages;
 
 	FPrecisionTimer PrecisionTimer;
-	struct FIntervaledFrame
-	{
-		dbc::FCanFrame CanFrame;
-		int Interval; //[ms]
-	};
-	TMap<uint32, FIntervaledFrame> IntervaledFrames;
-	std::mutex MutexIF;
 	int IntervaledThreadCounter;
 };
