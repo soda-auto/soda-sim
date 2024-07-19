@@ -41,6 +41,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = CANBus, SaveGame, meta = (EditInRuntime, ReactivateActor))
 	int IntevalStep = 10;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	bool bLogSendFrames = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	bool bLogRecvFrames = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	bool bShowRegRecvMsgs = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	bool bShowRegSendMsgs = false;
+
 	FCanDevRecvFrameDelegate RecvDelegate;
 
 public:
@@ -66,6 +78,7 @@ public:
 	{
 		CAN_ID = (CAN_ID == CANID_DEFAULT ? T::Default_CANID : CAN_ID);
 		auto Msg = MakeShared<T>(CAN_ID);
+		std::lock_guard<std::mutex> Lock{ regMsgsMutex };
 		RecvMessages[CAN_ID] = Msg;
 		return Msg;
 	}
@@ -75,6 +88,7 @@ public:
 	{
 		CAN_ID = (CAN_ID == CANID_DEFAULT ? T::Default_CANID : CAN_ID);
 		auto Msg = MakeShared<T>(CAN_ID);
+		std::lock_guard<std::mutex> Lock{ regMsgsMutex };
 		SendMessages[CAN_ID] = Msg;
 		return Msg;
 	}
@@ -116,4 +130,6 @@ protected:
 
 	FPrecisionTimer PrecisionTimer;
 	int IntervaledThreadCounter;
+
+	std::mutex regMsgsMutex;
 };

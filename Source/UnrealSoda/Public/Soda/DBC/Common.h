@@ -35,9 +35,9 @@ enum ECanFrameFlags : uint8
 
 struct UNREALSODA_API FCanFrame
 {
-	uint32_t ID;
-	uint8_t Length;
-	uint8 Flags; // ECanFrameFlags
+	uint32_t ID{};
+	uint8_t Length{};
+	uint8 Flags{}; // ECanFrameFlags
 	uint8_t Data[64];
 
 	FCanFrame() {}
@@ -85,7 +85,6 @@ public:
 	//FCanDelegate OnAfterSerialize;
 
 	UE::FSpinLock SpinLockFrame;
-	bool bForbiddenIntervaledSending = false;
 };
 
 class UNREALSODA_API FCANMessageDynamic : public FCANMessage

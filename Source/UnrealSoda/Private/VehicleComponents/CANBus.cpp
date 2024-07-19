@@ -20,6 +20,12 @@ UCANBusComponent::UCANBusComponent(const FObjectInitializer& ObjectInitializer)
 	Common.Activation = EVehicleComponentActivation::OnStartScenario;
 }
 
+FString CANFrameToString(const dbc::FCanFrame& CanFrame)
+{
+	return FString::Printf(TEXT("#%08X [%i] "), CanFrame.ID, CanFrame.Length) + BytesToHex(CanFrame.Data, CanFrame.Length);
+}
+
+
 void UCANBusComponent::OnPreActivateVehicleComponent()
 {
 	RegistredCANDev.Empty();
@@ -41,17 +47,21 @@ bool UCANBusComponent::OnActivateVehicleComponent()
 		IntervaledThreadCounter = 0;
 		PrecisionTimer.TimerDelegate.BindLambda([this](const std::chrono::nanoseconds& InDeltatime, const std::chrono::nanoseconds& Elapsed)
 		{
+			std::lock_guard<std::mutex> Lock{ regMsgsMutex };
 			for (const auto& [Key, Value] : SendMessages)
 			{
-				int Step = FMath::Max(1, FMath::DivideAndRoundNearest<int>(Value->GetInterval(), IntevalStep));
-				if (IntervaledThreadCounter % Step == 0)
+				if (Value->Frame.ID != 0)
 				{
-					Value->SpinLockFrame.Lock();
-					auto Frame = Value->Frame;
-					Value->SpinLockFrame.Unlock();
-					SendFrame(Frame);
+					int Step = FMath::Max(1, FMath::DivideAndRoundNearest<int>(Value->GetInterval(), IntevalStep));
+					if (IntervaledThreadCounter % Step == 0)
+					{
+						Value->SpinLockFrame.Lock();
+						auto Frame = Value->Frame;
+						Value->SpinLockFrame.Unlock();
+						SendFrame(Frame);
 
-					UE_LOG(LogSoda, Error, TEXT("UCANBusComponent::SendFrame(); ID:%lld; %lldms"), int64(Frame.ID), soda::RawTimestamp<std::chrono::milliseconds>(soda::Now()));
+						//UE_LOG(LogSoda, Error, TEXT("UCANBusComponent::SendFrame(); ID:%lld; %lldms"), int64(Frame.ID), soda::RawTimestamp<std::chrono::milliseconds>(soda::Now()));
+					}
 				}
 			}
 			++IntervaledThreadCounter;
@@ -110,6 +120,11 @@ int UCANBusComponent::SendFrame(const dbc::FCanFrame& CanFrame)
 	}
 
 	++PkgSent;
+
+	if (bLogSendFrames)
+	{
+		UE_LOG(LogSoda, Log, TEXT("UCANBusComponent::SendFrame(); %s"), *CANFrameToString(CanFrame));
+	}
 
 	return -1;
 }
@@ -216,11 +231,13 @@ TSharedPtr<dbc::FCANMessage> UCANBusComponent::RegSendMsg(const FString& Message
 
 void UCANBusComponent::UnregRecvMsg(int64 CAN_ID)
 {
+	std::lock_guard<std::mutex> Lock{ regMsgsMutex };
 	RecvMessages.erase(CAN_ID);
 }
 
 void UCANBusComponent::UnregSendMsg(int64 CAN_ID)
 {
+	std::lock_guard<std::mutex> Lock{ regMsgsMutex };
 	SendMessages.erase(CAN_ID);
 }
 
@@ -291,10 +308,21 @@ bool UCANBusComponent::ProcessRecvMessage(const TTimestamp& Timestamp, const dbc
 		It->second->Frame = CanFrame;
 		It->second->OnAfterRecv();
 		++PkgDecoded;
+
+		if (bLogRecvFrames)
+		{
+			UE_LOG(LogSoda, Log, TEXT("UCANBusComponent::ProcessRecvMessage(); %s -- found"), *CANFrameToString(CanFrame));
+		}
+
 		return true;
 	}
 	else
 	{
+		if (bLogRecvFrames)
+		{
+			UE_LOG(LogSoda, Log, TEXT("UCANBusComponent::ProcessRecvMessage(); %s -- not found"), *CANFrameToString(CanFrame));
+		}
+
 		return false;
 	}
 }
@@ -318,6 +346,22 @@ void UCANBusComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("PkgReceived: %d"), PkgReceived), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("PkgSentErr: %d"), PkgSentErr), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("PkgDecoded: %d"), PkgDecoded), 16, YPos);
+		if (bShowRegRecvMsgs)
+		{
+			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Recv Messages:")), 16, YPos);
+			for (auto& [Key, Value] : RecvMessages)
+			{
+				YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("    %s: #%08X"), *Value->GetName(), Value->GetRegistredCANID()), 16, YPos);
+			}
+		}
+		if (bShowRegSendMsgs)
+		{
+			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Send Messages:")), 16, YPos);
+			for (auto& [Key, Value] : SendMessages)
+			{
+				YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("    %s: #%08X"), *Value->GetName(), Value->GetRegistredCANID()), 16, YPos);
+			}
+		}
 	}
 }
 
