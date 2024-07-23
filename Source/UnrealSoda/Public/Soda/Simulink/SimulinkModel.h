@@ -18,11 +18,11 @@ THIRD_PARTY_INCLUDES_END
 #endif // PLATFORM_WINDOWS
 #include <cstring>
 #include <optional>
-#include "rtw_capi.h"
-#include "rtw_modelmap.h"
+#include "Soda/Simulink/simulink-capi/rtw_capi.h"
+#include "Soda/Simulink/simulink-capi/rtw_modelmap.h"
 //#include "simulink-capi/BusBuilder.hpp"
 //#include "simulink-capi/CapiAccessor.hpp"
-
+#include <unordered_map>
 
 //using namespace ImitatorSoftwareComponentSpace;
 

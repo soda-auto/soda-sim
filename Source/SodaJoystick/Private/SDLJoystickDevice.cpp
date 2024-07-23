@@ -206,7 +206,7 @@ bool FSDLJoystickDevice::SDLStartup()
 			UE_LOG(SodaSDLJoystickDevice, Log, TEXT("\tNumber of Balls: %d\n"), SDL_JoystickNumBalls(Joys.Last()));
 		}
 		else {
-			UE_LOG(SodaSDLJoystickDevice, Log, TEXT("Couldn't open Joystick %\n"), i);
+			UE_LOG(SodaSDLJoystickDevice, Log, TEXT("Couldn't open Joystick %i\n"), i);
 		}
 
 		Settings->SetAnalogAxesNum(AxesNum);
@@ -235,7 +235,7 @@ bool FSDLJoystickDevice::SDLStartup()
 		// Open the device
 		Haptics.Add(SDL_HapticOpenFromJoystick(Joys.Last()));
 		if (Haptics.Last() == 0)
-			UE_LOG(SodaSDLJoystickDevice, Error, TEXT("SDL_HapticOpenFromJoystick[%d] - %s"), i, SDL_GetError());
+			UE_LOG(SodaSDLJoystickDevice, Error, TEXT("SDL_HapticOpenFromJoystick[%d] - %s"), i, UTF8_TO_TCHAR(SDL_GetError()));
 		if (Haptics.Num() > i)
 		{
 			SDL_HapticSetAutocenter(Haptics[i], 0);

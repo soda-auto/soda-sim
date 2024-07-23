@@ -157,7 +157,7 @@ bool FSensorSceneProxy::CanBeOccluded() const
 	return !MaterialRelevance.bDisableDepthTest;
 }
 
-void FSensorSceneProxy::OnTransformChanged()
+void FSensorSceneProxy::OnTransformChanged(FRHICommandListBase& RHICmdList)
 {
-	FPrimitiveSceneProxy::OnTransformChanged();
+	FPrimitiveSceneProxy::OnTransformChanged(RHICmdList);
 }

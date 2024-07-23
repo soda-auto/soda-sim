@@ -61,11 +61,11 @@ void UGenericRacingSensor::PostInitProperties()
 }
 #endif
 
-bool UGenericRacingSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FRacingSensorData& SensorData)
+bool UGenericRacingSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FRacingSensorData& InSensorData)
 {
 	if (Publisher && Publisher->IsOk())
 	{
-		return Publisher->Publish(DeltaTime, Header, SensorData);
+		return Publisher->Publish(DeltaTime, Header, InSensorData);
 	}
 	return false;
 }

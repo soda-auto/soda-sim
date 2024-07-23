@@ -10,7 +10,7 @@
 #define GPS_EPOCH_OFFSET 315964800
 
 UENUM(BlueprintType)
-enum class EQualityLevel
+enum class EQualityLevel : uint8
 {
 	Low, 
 	Medium, 

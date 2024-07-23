@@ -8,7 +8,7 @@
 #include "OutputButtons.generated.h"
 
 UENUM(BlueprintType)
-enum class EIOButtonSwitchMode
+enum class EIOButtonSwitchMode : uint8
 {
 	Momentary,
 	Position, 

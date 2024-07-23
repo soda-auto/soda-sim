@@ -650,7 +650,7 @@ bool FDBGatewayMongo::LoadLevelData(int64 ScenarioID, TArray<uint8>& OutObjectBy
 		}
 		catch (const std::system_error& e)
 		{
-			UE_LOG(LogSoda, Error, TEXT("FDBGatewayMongo::LoadLevelData(); MongoDB error: \"%s\""), *UTF8_TO_TCHAR(e.what()));
+			UE_LOG(LogSoda, Error, TEXT("FDBGatewayMongo::LoadLevelData(); MongoDB error: \"%s\""), UTF8_TO_TCHAR(e.what()));
 			return false;
 		}
 

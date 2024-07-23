@@ -68,8 +68,6 @@ FText FPropertyEditor::GetDisplayName() const
 		PropertyNode->GetQualifiedName( DisplayName, true );
 		return FText::FromString(DisplayName);
 	}
-
-	return FText::GetEmpty();
 }
 
 FText FPropertyEditor::GetToolTipText() const

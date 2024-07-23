@@ -1381,7 +1381,7 @@ FString ASodaVehicle::ExportTo(const FString& ExporterName)
 		}
 		else
 		{
-			UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::ExportTo(); Faild to export to ExporterName: %\"%s\""), *ExporterName);
+			UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::ExportTo(); Faild to export to ExporterName: \"%s\""), *ExporterName);
 			return "";
 		}
 	}

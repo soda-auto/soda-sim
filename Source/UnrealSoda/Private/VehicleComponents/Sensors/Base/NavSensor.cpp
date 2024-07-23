@@ -96,11 +96,11 @@ void UNavSensor::OnPushDataset(soda::FActorDatasetData& Dataset) const
 	double Latitude = 0;
 	double Altitude = 0;
 
-	if (ALevelState* LevelState = GetLevelState())
+	if (GetLevelState())
 	{
-		LevelState->GetLLConverter().UE2LLA(WorldLoc, Longitude, Latitude, Altitude);
-		WorldRot = LevelState->GetLLConverter().ConvertRotationForward(WorldRot);
-		WorldVel = LevelState->GetLLConverter().ConvertDirForward(WorldVel);
+		GetLevelState()->GetLLConverter().UE2LLA(WorldLoc, Longitude, Latitude, Altitude);
+		WorldRot = GetLevelState()->GetLLConverter().ConvertRotationForward(WorldRot);
+		WorldVel = GetLevelState()->GetLLConverter().ConvertDirForward(WorldVel);
 	}
 
 	try

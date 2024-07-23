@@ -75,7 +75,6 @@ bool UUltrasonicSensor::NeedRenderSensorFOV() const
 {
 	return (FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::Ever) ||
 		(FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::OnSelect && IsVehicleComponentSelected());
-	return false;
 }
 
 FBoxSphereBounds UUltrasonicSensor::CalcBounds(const FTransform& LocalToWorld) const

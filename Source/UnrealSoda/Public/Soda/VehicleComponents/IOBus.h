@@ -13,7 +13,7 @@ class UIODevComponent;
  * EIOExchangeMode
  */
 UENUM(BlueprintType)
-enum class EIOExchangeMode
+enum class EIOExchangeMode: uint8
 {
     Undefined,
     Fixed,
@@ -25,7 +25,7 @@ enum class EIOExchangeMode
  * EIOPinDir
  */
 UENUM(BlueprintType)
-enum class EIOPinDir
+enum class EIOPinDir : uint8
 {
 	Output,
 	Input,

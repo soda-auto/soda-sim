@@ -321,10 +321,10 @@ FSimulinkModel::SignalsMap FSimulinkModel::GetSignals()
     return signals;
 }
 
-rtwCAPI_ModelMappingInfo* FSimulinkModel::getModelMappingInfo(void* ModelDataPtr)
+rtwCAPI_ModelMappingInfo* FSimulinkModel::getModelMappingInfo(void* InModelDataPtr)
 {
 
-    RTM_ModelDataStructure_T* addr = (RTM_ModelDataStructure_T*)ModelDataPtr;
+    RTM_ModelDataStructure_T* addr = (RTM_ModelDataStructure_T*)InModelDataPtr;
     if (addr != nullptr)
     {
         return  &addr->DataMapInfo.mmi;
