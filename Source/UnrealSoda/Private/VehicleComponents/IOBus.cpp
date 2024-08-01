@@ -238,7 +238,7 @@ void UIOBusComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
 	Super::DrawDebug(Canvas, YL, YPos);
 
-	static const wchar_t * IOExchangeModeToStr[4] =
+	static const FString::ElementType * IOExchangeModeToStr[4] =
 	{
 		TEXT("Undefined"),
 		TEXT("Fixed"),

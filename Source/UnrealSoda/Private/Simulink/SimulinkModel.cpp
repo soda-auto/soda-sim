@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <map>
 
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM_WINDOWS
 #pragma warning(disable: 4191)
 #endif
 
@@ -31,7 +31,7 @@ FSimulinkModel::FSimulinkModel(const FString& LibPath, const FString& ModelName)
 
     if (!LibPath.IsEmpty())
     {
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM_WINDOWS
 
         hInstDLL = LoadLibraryA((LPCSTR)TCHAR_TO_UTF8(*LibPath));
         if (!hInstDLL) 
@@ -42,7 +42,7 @@ FSimulinkModel::FSimulinkModel(const FString& LibPath, const FString& ModelName)
         hInstSO = dlopen(TCHAR_TO_UTF8(*LibPath), RTLD_LAZY);
         if (!hInstSO) 
         {
-            throw std::runtime_error(("FSimulinkModel::LoadModel(); Unable to Load *.so file");
+            throw std::runtime_error("FSimulinkModel::LoadModel(); Unable to Load *.so file");
         }
 #endif
     }
@@ -238,7 +238,7 @@ void FSimulinkModel::Release()
     {
         TerminatePtr(ModelDataPtr);
     }
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM_WINDOWS
     if (hInstDLL != nullptr)
     {
         FreeLibrary(hInstDLL);
@@ -256,7 +256,7 @@ void FSimulinkModel::Release()
 void* FSimulinkModel::GetFunc(const std::string& FuncName)
 {
     void* Ptr = nullptr;
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM_WINDOWS
     Ptr = GetProcAddress(hInstDLL, FuncName.c_str());
     if (Ptr == nullptr)
     {
@@ -264,7 +264,7 @@ void* FSimulinkModel::GetFunc(const std::string& FuncName)
         throw std::runtime_error(std::string("FSimulinkModel::GetFunc(); Unable to get func ptr to ") + FuncName + "(), GetLastError()=" + std::to_string(GetLastError()));
     }
 #else
-    Ptr = dlsym(hInstSO, TCHAR_TO_UTF8(*FuncName));
+    Ptr = dlsym(hInstSO, FuncName.c_str());
     if (Ptr == nullptr)
     {
         Release();

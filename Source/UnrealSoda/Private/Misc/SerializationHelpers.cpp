@@ -39,6 +39,11 @@ void FObjectRecord::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
 
+	if (Ar.GetError())
+	{
+		UE_LOG(LogSoda, Error, TEXT("FObjectRecord::Serialize(); FArchive is in error state; Name: %s; IsCriticalError: %i"), *Name.ToString(), Ar.IsCriticalError());
+	}
+
 	if (Ar.IsSaving() && !Name.IsNone() && !Class)
 	{
 		UE_LOG(LogSoda, Fatal, TEXT("FObjectRecord::Serialize(); Don't need to save named object without class"));

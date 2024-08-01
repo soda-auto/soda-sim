@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CoreMinimal.h"
+
 //#include "../api/ImitatorSoftwareComponent.h"
 #include <iostream>
 #include <fstream>
@@ -7,7 +9,7 @@
 #include <string>
 #include <thread>
 #include <chrono>
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
 THIRD_PARTY_INCLUDES_START
 #include <Windows.h>
@@ -88,7 +90,7 @@ private:
     void** dataAddrMap = nullptr;
     rtwCAPI_ModelMappingInfo* mmi = nullptr;
 
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM_WINDOWS
     HINSTANCE hInstDLL = nullptr;
 #else
     void* hInstSO = nullptr;

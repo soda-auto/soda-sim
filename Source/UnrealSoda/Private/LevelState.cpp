@@ -40,6 +40,12 @@ ALevelState* ALevelState::GetChecked()
 void ULevelSaveGame::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
+
+	if (Ar.GetError())
+	{
+		UE_LOG(LogSoda, Error, TEXT("ULevelSaveGame::Serialize(); FArchive is in error state: %i"), Ar.IsCriticalError());
+	}
+
 	Ar << LevelDataRecord;
 }
 
@@ -53,6 +59,11 @@ ALevelState::ALevelState()
 void ALevelState::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
+
+	if (Ar.GetError())
+	{
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::Serialize(); FArchive is in error state; IsCriticalError: %i"), Ar.IsCriticalError());
+	}
 
 	if (Ar.IsSaveGame())
 	{
