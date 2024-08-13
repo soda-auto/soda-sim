@@ -56,7 +56,7 @@ void UHitDetectorComponent::OnVehicleHit(AActor* SelfActor, AActor* OtherActor, 
 	{
 		if (NormalImpulse.Size() > ImpulseThresholdScenarioStop)
 		{
-			SodaApp.GetGameModeChecked()->ScenarioStop(EScenarioStopReason::ScenarioStopTrigger);
+			SodaApp.GetGameModeChecked()->ScenarioStop(EScenarioStopReason::ScenarioStopTrigger, EScenarioStopMode::RestartLevel);
 		}
 	}
 }

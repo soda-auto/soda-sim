@@ -116,6 +116,17 @@ enum class EScenarioStopReason : uint8
 };
 
 /**
+ * EScenarioStopReason
+ */
+UENUM(BlueprintType)
+enum class EScenarioStopMode : uint8
+{
+	RestartLevel, // Restart (reloda) full level
+	ResetSodaActorsOnly, // Reset only ISodaActors to previos state, some states of ULevel and levels objects can be saved
+	StopSiganalOnly, // ISodaActors will got OnStopScenario() event
+};
+
+/**
  * FSubobjectReference 
  */
 USTRUCT(BlueprintType)

@@ -1658,8 +1658,7 @@ void ATrackBuilder::ScenarioBegin()
 		auto Dataset = soda::FDBGateway::Instance().CreateActorDataset(GetName(), "trackbuilder", GetClass()->GetName(), Doc);
 		if (!Dataset)
 		{
-			SodaApp.GetGameModeChecked()->ScenarioStop(EScenarioStopReason::InnerError);
-			SodaApp.GetGameModeChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "Scenarip stoped", "Can't create dataset for \"" + GetName() + "\"");
+			SodaApp.GetGameModeChecked()->ScenarioStop(EScenarioStopReason::InnerError, EScenarioStopMode::RestartLevel, "Can't create dataset for \"" + GetName() + "\"");
 		}
 	}
 }

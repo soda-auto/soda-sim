@@ -17,7 +17,7 @@ enum class ELeveSlotSource : uint8
 	NoSlot,
 	Local,
 	Remote,
-	NewSlot
+	NewSlot,
 };
 
 /*
@@ -106,8 +106,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	bool SaveLevelRemotlyAs(int64 ScenarioID, const FString& Description);
 
+	/** if SlotIndex < 0, SlotIndex will detect automaticly */
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	bool SaveLevelLocallyAs(int SlotIndex, const FString& Description);
+
+	UFUNCTION(BlueprintCallable, Category = LevelState)
+	bool SaveLevelToTransientSlot();
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	bool ReSaveLevel();
@@ -128,7 +132,7 @@ public:
 	static bool ReloadLevelFromSlotRemotly(const UObject* WorldContextObject, int64 ScenarioID = -1);
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static ALevelState* CreateOrLoad(const UObject* WorldContextObject, UClass * DefaultClass);
+	static ALevelState* CreateOrLoad(const UObject* WorldContextObject, UClass * DefaultClass, bool bFromTransientSlot = false);
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	static bool DeleteLevelLocally(const UObject* WorldContextObject, int SlotIndex);
@@ -179,6 +183,8 @@ protected:
 	static ULevelSaveGame* LoadSaveGameLocally(const UObject* WorldContextObject, int & SlotIndex);
 	/* SlotIndex == -1 - load last saved slot */
 	static ULevelSaveGame* LoadSaveGameRemotly(const UObject* WorldContextObject, int64 & ScenarioID);
+
+	static ULevelSaveGame* LoadSaveGameTransient(const UObject* WorldContextObject);
 
 	static FLevelStateSlotDescription StaticSlot;
 

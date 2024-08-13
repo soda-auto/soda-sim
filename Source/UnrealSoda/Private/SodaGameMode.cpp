@@ -41,6 +41,8 @@
 
 #define SLOT_GAMEMODE "SodaGameMode"
 
+USodaGameModeComponent::FScenarioLevelSavedData USodaGameModeComponent::ScenarioLevelSavedData {};
+
 USodaGameModeComponent* USodaGameModeComponent::Get()
 {
 	return SodaApp.GetGameMode();
@@ -151,9 +153,10 @@ void USodaGameModeComponent::InitGame(AGameModeBase* GameMode)
 	}
 
 	/* Initialize LevelState */
-	LevelState = ALevelState::CreateOrLoad(this, DefaultLevelStateClass);
+	LevelState = ALevelState::CreateOrLoad(this, DefaultLevelStateClass, ScenarioLevelSavedData.bIsValid);
 	check(LevelState);
-	
+	LevelState->FinishLoadLevel(); //Spawn all saved actors
+
 	/* Initialize level default pinned tool actors */
 	/*
 	for (TActorIterator<AActor> It(World); It; ++It)
@@ -167,8 +170,6 @@ void USodaGameModeComponent::InitGame(AGameModeBase* GameMode)
 		}
 	}
 	*/
-	
-	LevelState->FinishLoadLevel(); //Spawn all saved actors
 	
 	if (UGameInstance* Instance = UGameplayStatics::GetGameInstance(this))
 	{
@@ -188,7 +189,7 @@ void USodaGameModeComponent::PreEndGame(UWorld* World)
 		return;
 	}
 
-	ScenarioStop(EScenarioStopReason::QuitApplication);
+	ScenarioStop(EScenarioStopReason::QuitApplication, EScenarioStopMode::StopSiganalOnly);
 
 	if (InitGameHandle.IsValid())
 	{
@@ -231,15 +232,12 @@ void USodaGameModeComponent::BeginPlay()
 		ViewportClient->InitUI(SodaViewport);
 	}
 
-	//if (bSetSpectatorModeOnStartUp)
-	{
-		SetSpectatorMode(true);
-	}
-
 	if (SodaApp.GetSodaUserSettings()->bAutoConnect)
 	{
 		UpdateDBGateway(false);
 	}
+
+	AfterScenarioStop();
 }
 
 void USodaGameModeComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -258,8 +256,7 @@ void USodaGameModeComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	{
 		if (soda::FDBGateway::Instance().IsDatasetRecording() && soda::FDBGateway::Instance().IsDatasetRecordingStalled())
 		{
-			ShowMessageBox(soda::EMessageBoxType::OK, "Scenario Recording Failed", soda::FDBGateway::Instance().GetLastError());
-			ScenarioStop(EScenarioStopReason::InnerError);
+			ScenarioStop(EScenarioStopReason::InnerError, EScenarioStopMode::RestartLevel, "Scenario Recording Failed. " + soda::FDBGateway::Instance().GetLastError());
 		}
 	}
 }
@@ -416,14 +413,21 @@ void USodaGameModeComponent::SetActiveVehicle(ASodaVehicle* Vehicle)
 	}
 }
 
-void USodaGameModeComponent::ScenarioPlay()
+bool USodaGameModeComponent::ScenarioPlay()
 {
 	if (!bIsScenarioRunning)
 	{
-		ScenarioLevelSavedData.Memory.Empty();
+		ScenarioLevelSavedData.bIsValid = LevelState->SaveLevelToTransientSlot();
+		if (!ScenarioLevelSavedData.bIsValid)
+		{
+			UE_LOG(LogSoda, Error, TEXT("USodaGameModeComponent::ScenarioPlay(); Can't SaveLevelToTransientSlot()"));
+			ShowMessageBox(soda::EMessageBoxType::OK, "Scenario Play Failed", soda::FDBGateway::Instance().GetLastError());
+			return false;
+		}
 		ScenarioLevelSavedData.ActorsDirty.Empty();
 		ScenarioLevelSavedData.SelectedActor.Reset();
 		ScenarioLevelSavedData.PossesdActor.Reset();
+		ScenarioLevelSavedData.UserMessage.Empty();
 		if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
 		{
 			if (APawn * Pawn = PlayerController->GetPawn())
@@ -439,8 +443,7 @@ void USodaGameModeComponent::ScenarioPlay()
 				ScenarioLevelSavedData.SelectedActor = Actor->GetName();
 			}
 		}
-		ULevelSaveGame* LevelSaveGame = LevelState->CreateSaveGame(true);
-		UGameplayStatics::SaveGameToMemory(LevelSaveGame, ScenarioLevelSavedData.Memory);
+		
 		for (auto& It : LevelState->ActorFactory->GetActors())
 		{
 			if (ISodaActor* SodaActor = Cast<ISodaActor>(It))
@@ -464,7 +467,7 @@ void USodaGameModeComponent::ScenarioPlay()
 			else
 			{
 				ShowMessageBox(soda::EMessageBoxType::OK, "Scenario Play Failed", soda::FDBGateway::Instance().GetLastError());
-				return;
+				return false;
 			}
 		}
 
@@ -490,16 +493,17 @@ void USodaGameModeComponent::ScenarioPlay()
 		}
 
 		OnScenarioPlay.Broadcast();
+		return true;
 	}
+	return false;
 }
 
-void USodaGameModeComponent::ScenarioStop(EScenarioStopReason Reason)
+void USodaGameModeComponent::ScenarioStop(EScenarioStopReason Reason, EScenarioStopMode Mode, const FString& UserMessage)
 {
 	if (bIsScenarioRunning)
 	{
 		bIsScenarioRunning = false;
-
-		SodaViewport->SetUIMode(ScenarioLevelSavedData.Mode);
+		ScenarioLevelSavedData.UserMessage = UserMessage;
 
 		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
 		{
@@ -508,10 +512,6 @@ void USodaGameModeComponent::ScenarioStop(EScenarioStopReason Reason)
 				if (ISodaActor* SodaActor = Cast<ISodaActor>(*It))
 				{
 					SodaActor->ScenarioEnd();
-					if (SodaActor->GetActorHiddenInScenario())
-					{
-						It->SetActorHiddenInGame(false);
-					}
 				}
 				else
 				{
@@ -524,81 +524,82 @@ void USodaGameModeComponent::ScenarioStop(EScenarioStopReason Reason)
 			soda::FDBGateway::Instance().EndRecordDataset(Reason);
 		}
 
-		if (ScenarioLevelSavedData.Memory.Num())
+		OnScenarioStop.Broadcast(Reason);
+
+		if (Mode == EScenarioStopMode::RestartLevel)
 		{
-			if (ULevelSaveGame* LevelSaveGame = Cast<ULevelSaveGame>(UGameplayStatics::LoadGameFromMemory(ScenarioLevelSavedData.Memory)))
+			if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
 			{
-				if (LevelSaveGame->LevelDataRecord.DeserializeActor(LevelState, false))
-				{
-					LevelState->ClearLevel();
-					GEngine->ForceGarbageCollection(true);
-					FCoreUObjectDelegates::GetPostGarbageCollect().RemoveAll(this);
-					FCoreUObjectDelegates::GetPostGarbageCollect().AddUObject(this, &USodaGameModeComponent::OnPostGarbageCollect, 0.0f);
-				}
-				else
-				{
-					UE_LOG(LogSoda, Error, TEXT("USodaGameModeComponent::ScenarioStop(); Can't deserialize level save data"));
-				}
-				ScenarioLevelSavedData.Memory.Empty();
+				PlayerController->RestartLevel();
 			}
-			else
+		}
+		else if (Mode == EScenarioStopMode::ResetSodaActorsOnly)
+		{
+			LevelState->ClearLevel();
+			GEngine->ForceGarbageCollection(true);
+			FCoreUObjectDelegates::GetPostGarbageCollect().RemoveAll(this);
+			FCoreUObjectDelegates::GetPostGarbageCollect().AddUObject(this, &USodaGameModeComponent::OnPostGarbageCollect, 0.0f);
+		}
+		else // (Mode == EScenarioStopMode::StopSiganalOnly)
+		{
+			// Do not anything
+		}
+	}
+}
+
+void USodaGameModeComponent::AfterScenarioStop()
+{
+	SetSpectatorMode(true);
+
+	if (ScenarioLevelSavedData.bIsValid)
+	{
+		ScenarioLevelSavedData.bIsValid = false;
+
+		for (auto& It : ScenarioLevelSavedData.ActorsDirty)
+		{
+			AActor* const* Actor = LevelState->ActorFactory->GetActors().FindByPredicate([&It](const AActor* Actor) { return Actor->GetName() == It; });
+			if (ISodaActor* SodaActor = Cast<ISodaActor>(*Actor))
 			{
-				UE_LOG(LogSoda, Error, TEXT("USodaGameModeComponent::ScenarioStop(); Can't load level save data"));
+				SodaActor->MarkAsDirty();
 			}
 		}
 
-		OnScenarioStop.Broadcast(Reason);
+		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+		check(PlayerController);
+
+		SodaViewport->SetUIMode(ScenarioLevelSavedData.Mode);
+		if (ViewportClient && !ScenarioLevelSavedData.SelectedActor.IsEmpty())
+		{
+			if (AActor* const* Actor = LevelState->ActorFactory->GetActors().FindByPredicate([this](const AActor* Actor) { return Actor->GetName() == ScenarioLevelSavedData.SelectedActor; }))
+			{
+				ViewportClient->Selection->SelectActor(*Actor, nullptr);
+			}
+		}
+
+		if (!ScenarioLevelSavedData.PossesdActor.IsEmpty() && SpectatorActor->GetName() != ScenarioLevelSavedData.PossesdActor)
+		{
+			for (TActorIterator<APawn> It(GetWorld()); It; ++It)
+			{
+				if (It->GetName() == ScenarioLevelSavedData.PossesdActor)
+				{
+					PlayerController->Possess(*It);
+					break;
+				}
+			}
+		}
+
+		if (!ScenarioLevelSavedData.UserMessage.IsEmpty())
+		{
+			SodaApp.GetGameModeChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "Scenarip stoped", ScenarioLevelSavedData.UserMessage);
+		}
 	}
 }
 
 void USodaGameModeComponent::OnPostGarbageCollect(float Delay /*= 0.0f*/)
 {
-	LevelState->FinishLoadLevel();
-	for (auto& It : ScenarioLevelSavedData.ActorsDirty)
-	{
-		AActor* const* Actor = LevelState->ActorFactory->GetActors().FindByPredicate([&It](const AActor* Actor) { return Actor->GetName() == It; });
-		if (ISodaActor* SodaActor = Cast<ISodaActor>(*Actor))
-		{
-			SodaActor->MarkAsDirty();
-		}
-	}
-	if (ViewportClient && !ScenarioLevelSavedData.SelectedActor.IsEmpty())
-	{
-		if (AActor* const* Actor = LevelState->ActorFactory->GetActors().FindByPredicate([this](const AActor* Actor) { return Actor->GetName() == ScenarioLevelSavedData.SelectedActor; }))
-		{
-			ViewportClient->Selection->SelectActor(*Actor, nullptr);
-		}			
-	}
-
-	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
-	{
-		if (!PlayerController->GetPawn())
-		{
-			if (SpectatorActor && SpectatorActor->GetName() == ScenarioLevelSavedData.PossesdActor)
-			{
-				SetSpectatorMode(true);
-			}
-			else
-			{
-				for (TActorIterator<APawn> It(GetWorld()); It; ++It)
-				{
-					if (It->GetName() == ScenarioLevelSavedData.PossesdActor)
-					{
-						PlayerController->Possess(*It);
-						break;
-					}
-				}
-			}
-		}
-
-		if (!PlayerController->GetPawn())
-		{
-			SetSpectatorMode(true);
-		}
-	}
-	
-
 	FCoreUObjectDelegates::GetPostGarbageCollect().RemoveAll(this);
+	LevelState->FinishLoadLevel();
+	AfterScenarioStop();
 }
 
 int64 USodaGameModeComponent::GetScenarioID() const
@@ -616,7 +617,7 @@ int64 USodaGameModeComponent::GetScenarioID() const
 
 void USodaGameModeComponent::RequestQuit(bool bForce)
 {
-	ScenarioStop(EScenarioStopReason::QuitApplication);
+	ScenarioStop(EScenarioStopReason::QuitApplication, EScenarioStopMode::StopSiganalOnly);
 
 	CloseWindow(true);
 
@@ -637,7 +638,7 @@ void USodaGameModeComponent::RequestQuit(bool bForce)
 
 void USodaGameModeComponent::RequestRestartLevel(bool bForce)
 {
-	ScenarioStop(EScenarioStopReason::QuitApplication);
+	ScenarioStop(EScenarioStopReason::QuitApplication, EScenarioStopMode::StopSiganalOnly);
 
 	CloseWindow(true);
 
@@ -648,7 +649,7 @@ void USodaGameModeComponent::RequestRestartLevel(bool bForce)
 	else
 	{
 		//Delay before exiting to end the current scenario if it was running
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() 
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
 		{
 			UGameplayStatics::OpenLevel(this, *UGameplayStatics::GetCurrentLevelName(this, true), false);
 		}, 0.2, false);

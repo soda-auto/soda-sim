@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"
 #include "Engine/EngineTypes.h"
+#include "Soda/SodaTypes.h"
 #include "SodaUserSettings.generated.h"
 
 #define GPS_EPOCH_OFFSET 315964800
@@ -174,6 +175,9 @@ public:
 
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Advanced, meta = (EditInRuntime))
 	TEnumAsByte<ECollisionChannel>  RadarCollisionChannel = ECollisionChannel::ECC_GameTraceChannel11;
+
+	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Advanced, meta = (EditInRuntime))
+	EScenarioStopMode ScenarioStopMode = EScenarioStopMode::RestartLevel;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = UI)

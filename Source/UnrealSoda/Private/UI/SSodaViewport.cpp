@@ -352,7 +352,7 @@ void SSodaViewport::BindCommands()
 		Commands.RestartLevel,
 		FExecuteAction::CreateLambda([]()
 		{
-			if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+			if (USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked())
 			{
 				GameMode->RequestRestartLevel(false);
 			}

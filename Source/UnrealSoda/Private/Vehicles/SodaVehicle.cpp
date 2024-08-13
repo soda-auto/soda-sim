@@ -1518,8 +1518,7 @@ void ASodaVehicle::ScenarioBegin()
 		}
 		else
 		{
-			SodaApp.GetGameModeChecked()->ScenarioStop(EScenarioStopReason::InnerError);
-			SodaApp.GetGameModeChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "Scenarip stoped", "Can't create dataset for \"" + GetName() + "\"");
+			SodaApp.GetGameModeChecked()->ScenarioStop(EScenarioStopReason::InnerError, EScenarioStopMode::RestartLevel, "Can't create dataset for \"" + GetName() + "\"");
 		}
 	}
 

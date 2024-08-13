@@ -99,10 +99,10 @@ public:
 	ASodalSpectator* GetSpectatorActor() const { return SpectatorActor; }
 
 	UFUNCTION(BlueprintCallable, Category = Scenario)
-	void ScenarioPlay();
+	bool ScenarioPlay();
 
 	UFUNCTION(BlueprintCallable, Category = Scenario)
-	void ScenarioStop(EScenarioStopReason Reason);
+	void ScenarioStop(EScenarioStopReason Reason, EScenarioStopMode Mode, const FString & UserMessage=TEXT(""));
 
 	/** Valid only during scenario playing. -1 means no dataset recording in this scenario */
 	UFUNCTION(BlueprintCallable, Category = Scenario)
@@ -155,10 +155,11 @@ protected:
 	virtual void InitGame(AGameModeBase* GameMode);
 	virtual void PreEndGame(UWorld* world);
 	virtual bool OnWindowCloseRequested();
+
 	void OnPostGarbageCollect(float Delay);
+	void AfterScenarioStop();
 
 protected:
-
 	bool bIsScenarioRunning = false;
 	FDelegateHandle InitGameHandle;
 	FDelegateHandle PreEndGameHandle;
@@ -168,11 +169,14 @@ protected:
 
 	struct FScenarioLevelSavedData
 	{
-		TArray<uint8> Memory;
-		TArray<FString> ActorsDirty;
-		soda::EUIMode Mode;
-		FString SelectedActor;
-		FString PossesdActor;
-	} 
-	ScenarioLevelSavedData;
+		//TArray<uint8> Memory{};
+		TArray<FString> ActorsDirty{};
+		soda::EUIMode Mode{};
+		FString SelectedActor{};
+		FString PossesdActor{};
+		bool bIsValid = false;
+		FString UserMessage;
+		//inline const bool IsValid() { return Memory.Num(); }
+	};
+	static FScenarioLevelSavedData ScenarioLevelSavedData;
 };

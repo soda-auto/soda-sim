@@ -20,6 +20,8 @@
 #include "Soda/Actors/RefPoint.h"
 #include "Soda/SodaGameMode.h"
 
+#define TRANSIENT_SLOT TEXT("LevelState_Transient")
+
 ALevelState* ALevelState::Get()
 {
 	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
@@ -134,6 +136,24 @@ ULevelSaveGame * ALevelState::CreateSaveGame(bool bSerializePinnedActorsAsUnpinn
 	return SaveGame;
 }
 
+bool ALevelState::SaveLevelToTransientSlot()
+{
+	ULevelSaveGame* SaveGame = CreateSaveGame(false);
+	if (!SaveGame)
+	{
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveLevelToTransientSlot(); Can't CreateSaveGame()"));
+		return false;
+	}
+
+	if (!UGameplayStatics::SaveGameToSlot(SaveGame, TRANSIENT_SLOT, 0))
+	{
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveLevelToTransientSlot(); Can't SaveGameToSlot()"));
+		return false;
+	}
+
+	return true;
+}
+
 bool ALevelState::SaveLevelLocallyAs(int SlotIndex, const FString& Description)
 {
 	if (SlotIndex > 255)
@@ -166,7 +186,7 @@ bool ALevelState::SaveLevelLocallyAs(int SlotIndex, const FString& Description)
 	Slot.LevelName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
 	Slot.SlotSource = ELeveSlotSource::Local;
 
-	ULevelSaveGame* SaveGame = ALevelState::CreateSaveGame(false);
+	ULevelSaveGame* SaveGame = CreateSaveGame(false);
 	if (!SaveGame)
 	{
 		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveLevelLocallyAs(); Can't CreateSaveGame()"));
@@ -186,7 +206,7 @@ bool ALevelState::SaveLevelLocallyAs(int SlotIndex, const FString& Description)
 
 bool ALevelState::SaveLevelRemotlyAs(int64 ScenarioID, const FString& Description)
 {
-	ULevelSaveGame* SaveGame = ALevelState::CreateSaveGame(false);
+	ULevelSaveGame* SaveGame = CreateSaveGame(false);
 	if (!SaveGame)
 	{
 		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveLevelRemotlyAs(); Can't CreateSaveGame()"));
@@ -260,6 +280,16 @@ ULevelSaveGame* ALevelState::LoadSaveGameLocally(const UObject* WorldContextObje
 	{
 		return nullptr;
 	}
+}
+
+ULevelSaveGame* ALevelState::LoadSaveGameTransient(const UObject* WorldContextObject)
+{
+	if (!WorldContextObject)
+	{
+		WorldContextObject = USodaStatics::GetGameWorld();
+	}
+
+	return Cast<ULevelSaveGame>(UGameplayStatics::LoadGameFromSlot(TRANSIENT_SLOT, 0));
 }
 
 ULevelSaveGame* ALevelState::LoadSaveGameRemotly(const UObject* WorldContextObject, int64 & ScenarioID)
@@ -415,7 +445,7 @@ bool ALevelState::ReloadLevelFromSlotRemotly(const UObject* WorldContextObject, 
 	return true;
 }
 
-ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass* DefaultClass)
+ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass* DefaultClass, bool bFromTransientSlot)
 {
 	if (!WorldContextObject)
 	{
@@ -432,40 +462,49 @@ ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass
 		StaticSlot.SlotIndex = -1;
 	}
 
-	switch (StaticSlot.SlotSource)
+	if (bFromTransientSlot)
 	{
-	case ELeveSlotSource::NoSlot:
-		StaticSlot.SlotIndex = -1;
-		LevelSaveGame = LoadSaveGameLocally(WorldContextObject, StaticSlot.SlotIndex);
-		StaticSlot.SlotSource = ELeveSlotSource::Local;
-		break;
-	case ELeveSlotSource::NewSlot:
-		StaticSlot.SlotIndex = -1;
-		StaticSlot.SlotSource = ELeveSlotSource::NoSlot;
-		break;
-	case ELeveSlotSource::Local:
-		LevelSaveGame = LoadSaveGameLocally(WorldContextObject, StaticSlot.SlotIndex);
-		StaticSlot.SlotSource = ELeveSlotSource::Local;
-		break;
-	case ELeveSlotSource::Remote:
-		LevelSaveGame = LoadSaveGameRemotly(WorldContextObject, StaticSlot.ScenarioID);
-		StaticSlot.SlotSource = ELeveSlotSource::Remote;
-		break;
+		LevelSaveGame = LoadSaveGameTransient(WorldContextObject);
+		if (LevelSaveGame->LevelName != UGameplayStatics::GetCurrentLevelName(WorldContextObject, true))
+		{
+			LevelSaveGame = nullptr;
+			UE_LOG(LogSoda, Error, TEXT("ALevelState::CreateOrLoad(); Transient slot LevelName mismatch"));
+		}
+	}
+	else
+	{
+		switch (StaticSlot.SlotSource)
+		{
+		case ELeveSlotSource::NoSlot:
+			StaticSlot.SlotIndex = -1;
+			LevelSaveGame = LoadSaveGameLocally(WorldContextObject, StaticSlot.SlotIndex);
+			//StaticSlot.SlotSource = ELeveSlotSource::Local;
+			break;
+		case ELeveSlotSource::NewSlot:
+			StaticSlot.SlotIndex = -1;
+			StaticSlot.SlotSource = ELeveSlotSource::NoSlot;
+			break;
+		case ELeveSlotSource::Local:
+			LevelSaveGame = LoadSaveGameLocally(WorldContextObject, StaticSlot.SlotIndex);
+			//StaticSlot.SlotSource = ELeveSlotSource::Local;
+			break;
+		case ELeveSlotSource::Remote:
+			LevelSaveGame = LoadSaveGameRemotly(WorldContextObject, StaticSlot.ScenarioID);
+			//StaticSlot.SlotSource = ELeveSlotSource::Remote;
+			break;
+		}
 	}
 
 	auto It = TActorIterator<ALevelState>(World);
 	ALevelState* LevelState = It ? *It : nullptr;
 
-	if (LevelState)
+	if (LevelSaveGame)
 	{
-		if (LevelSaveGame)
+		if (LevelState)
 		{
 			LevelSaveGame->LevelDataRecord.DeserializeActor(LevelState, false);
 		}
-	}
-	else
-	{
-		if (LevelSaveGame)
+		else
 		{
 			LevelState = LevelSaveGame->LevelDataRecord.SpawnActor<ALevelState>(World, false);
 		}
