@@ -10,6 +10,7 @@
 #include "RuntimePropertyEditor/IDetailsView.h"
 #include "RuntimePropertyEditor/PropertyEditorDelegates.h"
 #include "RuntimePropertyEditor/IPropertyTypeCustomization.h"
+#include "RuntimeStructViewer/StructViewerModule.h"
 
 class FNotifyHook;
 class SWindow;
@@ -297,6 +298,8 @@ public:
 
 	class TSharedRef< soda::IDocumentation > GetDocumentation() const;
 
+	soda::FStructViewerModule& GetStructViewer() { return StructViewerModule; }
+
 private:
 
 	/**
@@ -343,4 +346,6 @@ private:
 	bool bUsingStarshipStyle = false;
 
 	TSharedPtr< soda::IDocumentation > Documentation;
+
+	soda::FStructViewerModule StructViewerModule;
 };

@@ -35,6 +35,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FScenarioStopSignature, EScenarioSto
 /*
  * USodaGameModeComponent
  * USodaGameModeComponent must be added to the AGameMode to support UnrealSoda plugin
+ * TODO: refact USodaGameModeComponent as UWorldSubsystem
  */
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API USodaGameModeComponent : public UActorComponent

@@ -8,6 +8,7 @@
 
 class UActorComponent;
 
+/** TODO: Thinking to use FJsonArchiveInputFormatterEx/FJsonArchiveOutputFormatterEx insted of FJsonObjectConverter */
 USTRUCT()
 struct UNREALSODA_API FJsonArchive
 {

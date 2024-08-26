@@ -176,7 +176,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 			USodaGameModeComponent * GameMode = USodaGameModeComponent::GetChecked();
 			if (GameMode->IsScenarioRunning())
 			{
-				USodaUserSettings* Settings = SodaApp.GetSodaUserSettings();
+				const USodaUserSettings* Settings = SodaApp.GetSodaUserSettings();
 				GameMode->ScenarioStop(EScenarioStopReason::UserRequest, Settings->ScenarioStopMode);
 			}
 			else

@@ -70,7 +70,7 @@ private:
 	 *
 	 * @return The Class Picker widget.
 	 */
-	//TSharedRef<SWidget> GenerateClassPicker();
+	TSharedRef<SWidget> GenerateClassPicker();
 
 	/** 
 	 * Callback function from the Class Picker for when a Class is picked.

@@ -71,7 +71,7 @@ private:
 	 *
 	 * @return The Struct Picker widget.
 	 */
-	//TSharedRef<SWidget> GenerateStructPicker();
+	TSharedRef<SWidget> GenerateStructPicker();
 
 	/** 
 	 * Callback function from the Struct Picker for when a struct is picked.

@@ -6,6 +6,8 @@
 #include "Serialization/MemoryWriter.h"
 #include "UObject/UObjectGlobals.h"
 
+//TODO: See to FConcertSyncObjectWriter and FConcertSyncObjectReader
+
 struct FSaveExtensionArchive : public FObjectAndNameAsStringProxyArchive 
 {
 	FSaveExtensionArchive(FArchive &InInnerArchive, bool bInLoadIfFindFails) : FObjectAndNameAsStringProxyArchive(InInnerArchive, bInLoadIfFindFails) 
@@ -14,13 +16,13 @@ struct FSaveExtensionArchive : public FObjectAndNameAsStringProxyArchive
     	ArNoDelta = true;
 	}
 
-	FArchive &operator<<(struct FSoftObjectPtr &Value)
+	virtual FArchive &operator<<(struct FSoftObjectPtr &Value) override
 	{
 		*this << Value.GetUniqueID();
 		return *this;
 	}
 
-	FArchive &operator<<(struct FSoftObjectPath &Value)
+	virtual FArchive &operator<<(struct FSoftObjectPath &Value) override
 	{
 		FString Path = Value.ToString();
 		*this << Path;
@@ -30,6 +32,57 @@ struct FSaveExtensionArchive : public FObjectAndNameAsStringProxyArchive
 		}
 		return *this;
 	}
+	
+	virtual FArchive& operator<<(UObject*& Obj) override
+	{
+		FProperty* SerializingProperty = GetSerializedProperty();
+		const bool bHasInstancedValue = SerializingProperty && SerializingProperty->HasAnyPropertyFlags(CPF_PersistentInstance);
+
+		if (IsSaveGame() && bHasInstancedValue)
+		{
+			if (IsLoading())
+			{
+				UObject* Outer = SerializingProperty->GetOwnerUObject();
+				if (!Outer)
+				{
+					Outer = GetTransientPackage();
+				}
+
+				//FObjectProperty* ObjectProperty = CastField<FObjectProperty>(SerializingProperty);
+				//UClass* PropertyClass = ObjectProperty->PropertyClass;
+
+				// load the path name to the object
+				FString ClassString;
+				InnerArchive << ClassString;
+
+				if (!ClassString.IsEmpty())
+				{
+					UClass* FoundClass = FPackageName::IsShortPackageName(ClassString) ? FindFirstObject<UClass>(*ClassString) : UClass::TryFindTypeSlow<UClass>(ClassString);
+					if (FoundClass)
+					{
+						Obj = StaticAllocateObject(FoundClass, Outer, NAME_None, EObjectFlags::RF_NoFlags, EInternalObjectFlags::None, false);
+						(*FoundClass->ClassConstructor)(FObjectInitializer(Obj, FoundClass, EObjectInitializerOptions::None));
+						Obj->Serialize(*this);
+					}
+				}
+			}
+			else if (Obj)
+			{
+				// save out the fully qualified object name
+				FString ClassString(Obj->GetClass()->GetPathName());
+				InnerArchive << ClassString;
+				Obj->Serialize(*this);
+			}
+			else
+			{
+				// for null pointer, output empty string
+				FString ClassString;
+				InnerArchive << ClassString;
+			}
+		}
+		return *this;
+	}
+	
 };
 
 /******************************************************************

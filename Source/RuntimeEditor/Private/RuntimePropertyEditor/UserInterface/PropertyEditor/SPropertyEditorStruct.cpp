@@ -7,8 +7,8 @@
 #include "Widgets/Layout/SBox.h"
 
 //#include "DragAndDrop/AssetDragDropOp.h"
-//#include "StructViewerModule.h"
-//#include "StructViewerFilter.h"
+#include "RuntimeStructViewer/StructViewerModule.h"
+#include "RuntimeStructViewer/StructViewerFilter.h"
 #include "Engine/UserDefinedStruct.h"
 
 #include "RuntimeMetaData.h"
@@ -18,7 +18,7 @@
 namespace soda
 {
 
-class FPropertyEditorStructFilter/* : public IStructViewerFilter*/
+class FPropertyEditorStructFilter : public IStructViewerFilter
 {
 public:
 	/** The meta struct for the property that classes must be a child-of. */
@@ -26,7 +26,7 @@ public:
 
 	// TODO: Have a flag controlling whether we allow UserDefinedStructs, even when a MetaClass is set (as they cannot support inheritance, but may still be allowed (eg, data tables))?
 
-	virtual bool IsStructAllowed(/*const FStructViewerInitializationOptions& InInitOptions, */const UScriptStruct* InStruct/*, TSharedRef<FStructViewerFilterFuncs> InFilterFuncs*/) //override
+	virtual bool IsStructAllowed(const FStructViewerInitializationOptions& InInitOptions, const UScriptStruct* InStruct, TSharedRef<FStructViewerFilterFuncs> InFilterFuncs) override
 	{
 		if (InStruct->IsA<UUserDefinedStruct>())
 		{
@@ -38,7 +38,7 @@ public:
 		return !MetaStruct || InStruct->IsChildOf(MetaStruct);
 	}
 
-	virtual bool IsUnloadedStructAllowed(/*const FStructViewerInitializationOptions& InInitOptions, const FName InStructPath, TSharedRef<FStructViewerFilterFuncs> InFilterFuncs*/) //override
+	virtual bool IsUnloadedStructAllowed(const FStructViewerInitializationOptions& InInitOptions, const FSoftObjectPath& InStructPath, TSharedRef<FStructViewerFilterFuncs> InFilterFuncs) override
 	{
 		// User Defined Structs don't support inheritance, so only include them if we have don't a MetaStruct set
 		return MetaStruct == nullptr;
@@ -121,7 +121,7 @@ void SPropertyEditorStruct::Construct(const FArguments& InArgs, const TSharedPtr
 	}
 	
 	SAssignNew(ComboButton, SComboButton)
-		//.OnGetMenuContent(this, &SPropertyEditorStruct::GenerateStructPicker)
+		.OnGetMenuContent(this, &SPropertyEditorStruct::GenerateStructPicker)
 		.ContentPadding(FMargin(2.0f, 2.0f))
 		.ToolTipText(this, &SPropertyEditorStruct::GetDisplayValue)
 		.ButtonContent()
@@ -180,7 +180,6 @@ FText SPropertyEditorStruct::GetDisplayValue() const
 	}
 }
 
-/*
 TSharedRef<SWidget> SPropertyEditorStruct::GenerateStructPicker()
 {
 	
@@ -210,12 +209,11 @@ TSharedRef<SWidget> SPropertyEditorStruct::GenerateStructPicker()
 			.AutoHeight()
 			.MaxHeight(500)
 			[
-				FModuleManager::LoadModuleChecked<FStructViewerModule>("StructViewer").CreateStructViewer(Options, OnPicked)
+				FModuleManager::LoadModuleChecked<FRuntimeEditorModule>("RuntimeEditor").GetStructViewer().CreateStructViewer(Options, OnPicked)
 			]			
 		];
 	
 }
-*/
 
 void SPropertyEditorStruct::OnStructPicked(const UScriptStruct* InStruct)
 {

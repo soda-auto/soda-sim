@@ -49,6 +49,8 @@ public class UnrealSoda : ModuleRules
 				"TypedElementFramework",
 				"TypedElementRuntime",
                 "AnimGraphRuntime",
+                "MassActors",
+                "MassSpawner"
             }
 		);
 
@@ -71,7 +73,8 @@ public class UnrealSoda : ModuleRules
                 "Eigen",
                 "ApplicationCore",
                 "PROJ",
-                "GeometryAlgorithms"
+                "GeometryAlgorithms",
+                "MassEntity"
             } 
 		);
 
