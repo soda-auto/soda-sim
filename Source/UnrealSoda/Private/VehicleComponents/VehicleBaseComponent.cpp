@@ -5,7 +5,7 @@
 #include "Soda/SodaApp.h"
 #include "Engine/Canvas.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/LevelState.h"
 #include "RuntimeEditorModule.h"
 
@@ -31,8 +31,8 @@ void UVehicleBaseComponent::UninitializeComponent()
 
 void UVehicleBaseComponent::BeginPlay()
 {
-	GameMode = USodaGameModeComponent::GetChecked();
-	LevelState = GameMode->LevelState;
+	SodaSubsystem = USodaSubsystem::GetChecked();
+	LevelState = SodaSubsystem->LevelState;
 	check(LevelState);
 
 	Super::BeginPlay();

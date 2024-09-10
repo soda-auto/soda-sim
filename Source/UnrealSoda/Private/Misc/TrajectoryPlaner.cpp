@@ -2,7 +2,7 @@
 
 #include "Soda/Misc/TrajectoryPlaner.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/SodaStatics.h"
 #include "Soda/Actors/NavigationRoute.h"
 #include "EngineUtils.h"

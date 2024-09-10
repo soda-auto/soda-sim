@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "GameFramework/SaveGame.h"
+#include "Subsystems/WorldSubsystem.h"
 #include "Blueprint/UserWidget.h"
 #include "Soda/SodaTypes.h"
 #include "Soda/ISodaActor.h"
-#include "SodaGameMode.generated.h"
+#include "SodaSubsystem.generated.h"
 
 #define GPS_EPOCH_OFFSET 315964800
 #define GPS_LEAP_SECONDS_OFFSET 17
@@ -33,42 +33,41 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FScenarioStopSignature, EScenarioSto
 
 
 /*
- * USodaGameModeComponent
- * USodaGameModeComponent must be added to the AGameMode to support UnrealSoda plugin
- * TODO: refact USodaGameModeComponent as UWorldSubsystem
+ * USodaSubsystem
+ * USodaSubsystem must be added to the AGameMode to support UnrealSoda plugin
  */
-UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API USodaGameModeComponent : public UActorComponent
+UCLASS(ClassGroup = Soda, config = SODA, defaultconfig)
+class UNREALSODA_API USodaSubsystem : public UTickableWorldSubsystem
 {
 	GENERATED_BODY()
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SodaGameMode)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SodaSubsystem)
 	TSubclassOf <ASodalSpectator> SpectatorClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SodaGameMode)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SodaSubsystem)
 	TSubclassOf <ALevelState> DefaultLevelStateClass;
 
-	UPROPERTY(BlueprintReadOnly, Category = SodaGameMode)
+	UPROPERTY(BlueprintReadOnly, Category = SodaSubsystem)
 	ASodaVehicle* UnpossesVehicle = nullptr;
 
-	UPROPERTY(BlueprintReadOnly, Category = SodaGameMode)
+	UPROPERTY(BlueprintReadOnly, Category = SodaSubsystem)
 	ALevelState * LevelState = nullptr;
 
-	UPROPERTY(BlueprintReadWrite, Transient, DuplicateTransient, Category = SodaGameMode)
+	UPROPERTY(BlueprintReadWrite, Transient, DuplicateTransient, Category = SodaSubsystem)
 	ASodalSpectator* SpectatorActor = nullptr;
 
-	UPROPERTY(BlueprintReadWrite, Category = SodaGameMode)
+	UPROPERTY(BlueprintReadWrite, Category = SodaSubsystem)
 	TMap<UClass*, UPinnedToolActorsSaveGame*> PinnedToolActorsSaveGame;
 
-	UPROPERTY(BlueprintReadOnly, Category = SodaGameMode)
+	UPROPERTY(BlueprintReadOnly, Category = SodaSubsystem)
 	USodaGameViewportClient* ViewportClient = nullptr;
 
-	UPROPERTY(BlueprintAssignable, Category = SodaGameMode)
+	UPROPERTY(BlueprintAssignable, Category = SodaSubsystem)
 	FScenarioPlaySignature OnScenarioPlay;
 
-	UPROPERTY(BlueprintAssignable, Category = SodaGameMode)
+	UPROPERTY(BlueprintAssignable, Category = SodaSubsystem)
 	FScenarioStopSignature OnScenarioStop;
 
 public:
@@ -81,22 +80,22 @@ public:
 
 	void PushToolBox(TSharedRef<soda::SToolBox> Widget, bool InstedPrev = false);
 
-	UFUNCTION(BlueprintCallable, Category = SodaGameMode)
+	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	bool PopToolBox();
 
-	UFUNCTION(BlueprintCallable, Category = SodaGameMode)
+	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	bool CloseWindow(bool bCloseAllWindows = false);
 
-	UFUNCTION(BlueprintCallable, Category = SodaGameMode)
+	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	void SetSpectatorMode(bool bSpectatorMode);
 
-	UFUNCTION(BlueprintCallable, Category = SodaGameMode)
+	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	ASodaVehicle* GetActiveVehicle();
 
-	UFUNCTION(BlueprintCallable, Category = SodaGameMode)
+	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	void SetActiveVehicle(ASodaVehicle * Vehicle);
 
-	UFUNCTION(BlueprintCallable, Category = SodaGameMode)
+	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	ASodalSpectator* GetSpectatorActor() const { return SpectatorActor; }
 
 	UFUNCTION(BlueprintCallable, Category = Scenario)
@@ -112,16 +111,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Scenario)
 	bool IsScenarioRunning() { return bIsScenarioRunning; }
 
-	UFUNCTION(BlueprintCallable, Category = SodaGameMode)
+	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	void RequestQuit(bool bForce = false);
 
-	UFUNCTION(BlueprintCallable, Category = SodaGameMode)
+	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	void RequestRestartLevel(bool bForce = false);
 
-	UFUNCTION(BlueprintCallable, Category = SodaGameMode)
+	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	void NotifyLevelIsChanged();
 
-	UFUNCTION(BlueprintCallable, Category = SodaGameMode)
+	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	ASodaActorFactory * GetActorFactory();
 
 	const FSodaActorDescriptor& GetSodaActorDescriptor(TSoftClassPtr<AActor> Class) const;
@@ -138,19 +137,21 @@ public:
 	soda::SSodaViewport* GetSodaViewport() const { return SodaViewport.Get(); }
 	
 public:
-	static USodaGameModeComponent* Get();
-	static USodaGameModeComponent* GetChecked();
+	static USodaSubsystem* Get();
+	static USodaSubsystem* GetChecked();
 
 public:
-	USodaGameModeComponent();
+	USodaSubsystem();
 
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	//virtual void InitializeComponent() override;
-	//virtual void UninitializeComponent() override;
-	virtual void OnComponentCreated() override;
-	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
+	// UTickableWorldSubsystem implementation Begin
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+	virtual void Tick(float DeltaTime) override;
+	virtual void PostInitialize() override;
+	virtual void Deinitialize() override;
+	virtual bool IsTickable() const override { return true; }
+	virtual bool IsTickableInEditor() const override { return true; }
+	virtual TStatId GetStatId() const override;
+	// UTickableWorldSubsystem implementation End
 
 protected:
 	virtual void InitGame(AGameModeBase* GameMode);

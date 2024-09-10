@@ -1,7 +1,7 @@
 // Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/UI/SResetScaleBox.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/SodaApp.h"
 #include "Soda/SodaUserSettings.h"
 #include "Layout/ArrangedChildren.h"
@@ -17,9 +17,9 @@ SResetScaleBox::SResetScaleBox()
 
 float SResetScaleBox::GetRelativeLayoutScale(int32 ChildIndex, float LayoutScaleMultiplier) const
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 
-	CashedScale = 1 / LayoutScaleMultiplier * GameMode->GetWorld()->GetGameViewport()->GetDPIScale() * SodaApp.GetSodaUserSettings()->DPIScale;
+	CashedScale = 1 / LayoutScaleMultiplier * SodaSubsystem->GetWorld()->GetGameViewport()->GetDPIScale() * SodaApp.GetSodaUserSettings()->DPIScale;
 	return CashedScale;
 }
 

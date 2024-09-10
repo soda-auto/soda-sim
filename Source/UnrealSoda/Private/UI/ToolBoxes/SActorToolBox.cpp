@@ -14,7 +14,7 @@
 #include "Soda/ISodaActor.h"
 #include "RuntimeEditorModule.h"
 #include "RuntimePropertyEditor/IDetailsView.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/SodaActorFactory.h"
 #include "Soda/Editor/SodaSelection.h"
 #include "Soda/SodaGameViewportClient.h"

@@ -150,8 +150,6 @@ void UMetadataPrimaryAsset::PostLoad()
 
 void UMetadataPrimaryAsset::Serialize(FArchive& Ar)
 {
-	Super::Serialize(Ar);
-
 #if WITH_EDITOR
 	if (Ar.IsCooking())
 	{
@@ -159,4 +157,6 @@ void UMetadataPrimaryAsset::Serialize(FArchive& Ar)
 		UpdateMetadataGlobalScope();
 	}
 #endif
+
+	Super::Serialize(Ar);
 }

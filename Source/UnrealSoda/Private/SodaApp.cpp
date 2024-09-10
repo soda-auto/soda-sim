@@ -2,14 +2,15 @@
 
 #include "Soda/SodaApp.h"
 #include "Soda/UnrealSoda.h"
-#include "Soda/SodaGameMode.h"
-#include "HAL/RunnableThread.h"
-#include "PhysicsEngine/PhysicsSettings.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/Vehicles/SodaVehicle.h"
-#include "EngineUtils.h"
-#include "Kismet/GameplayStatics.h"
 #include "Soda/SodaUserSettings.h"
 #include "Soda/DBC/Serialization.h"
+#include "Soda/Misc/PakUtils.h"
+#include "HAL/RunnableThread.h"
+#include "PhysicsEngine/PhysicsSettings.h"
+#include "EngineUtils.h"
+#include "Kismet/GameplayStatics.h"
 #include "UI/SOutputLog.h"
 #include "Misc/App.h"
 #include "UObject/Package.h"
@@ -87,6 +88,9 @@ void FSodaApp::Initialize()
 	OnHttpServerStoppedHandle = WebRemoteControlModule.OnHttpServerStopped().AddRaw(this, &FSodaApp::OnHttpServerStopped);
 
 	OutputLogHistory = MakeShareable(new soda::FOutputLogHistory);
+
+	PakLoader = MakeShared<FSodaPakLoader>();
+	PakLoader->Initialize();
 
 	bInitialized = true;
 }
@@ -176,17 +180,17 @@ void FSodaApp::SetSynchronousMode(bool bEnable, double DeltaSeconds)
 	}
 }
 
-void FSodaApp::NotifyInitGame(USodaGameModeComponent* InGameMode)
+void FSodaApp::NotifyInitGame(USodaSubsystem* InSodaSubsystem)
 {
-	check(IsValid(InGameMode) && IsValid(InGameMode->GetWorld()));
-	GameWorld = InGameMode->GetWorld();
-	SetGameMode(InGameMode);
+	check(IsValid(InSodaSubsystem) && IsValid(InSodaSubsystem->GetWorld()));
+	GameWorld = InSodaSubsystem->GetWorld();
+	SetSodaSubsystem(InSodaSubsystem);
 
 }
 
 void FSodaApp::NotifyEndGame()
 {
-	ResetGameMode();
+	ResetSodaSubsystem();
 	GameWorld = nullptr;
 }
 
@@ -216,29 +220,29 @@ void FSodaApp::OnHttpServerStopped()
 }
 
 
-USodaGameModeComponent* FSodaApp::GetGameMode() const
+USodaSubsystem* FSodaApp::GetSodaSubsystem() const
 {
 	check(IsInGameThread());
-	return GameMode.Get();
+	return SodaSubsystem.Get();
 }
 
-USodaGameModeComponent* FSodaApp::GetGameModeChecked() const
+USodaSubsystem* FSodaApp::GetSodaSubsystemChecked() const
 {
 	check(IsInGameThread());
-	check(GameMode.IsValid());
-	return GameMode.Get();
+	check(SodaSubsystem.IsValid());
+	return SodaSubsystem.Get();
 }
 
-void FSodaApp::SetGameMode(USodaGameModeComponent* InGameMode)
+void FSodaApp::SetSodaSubsystem(USodaSubsystem* InSodaSubsystem)
 {
 	check(IsInGameThread());
-	GameMode = InGameMode;
+	SodaSubsystem = InSodaSubsystem;
 }
 
-void FSodaApp::ResetGameMode()
+void FSodaApp::ResetSodaSubsystem()
 {
 	check(IsInGameThread());
-	GameMode = nullptr;
+	SodaSubsystem = nullptr;
 }
 
 const USodaUserSettings* FSodaApp::GetSodaUserSettings() const

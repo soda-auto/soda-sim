@@ -9,7 +9,7 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SEditableTextBox.h"
 #include "Soda/UI/SMessageBox.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/LevelState.h"
 #include "Soda/SodaActorFactory.h"
 
@@ -80,8 +80,8 @@ void SPinToolActorWindow::Construct( const FArguments& InArgs, IToolActor* InToo
 
 void SPinToolActorWindow::UpdateSlots()
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	if (!GameMode || !GameMode->LevelState)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	if (!SodaSubsystem || !SodaSubsystem->LevelState)
 	{
 		return;
 	}
@@ -144,9 +144,9 @@ FReply SPinToolActorWindow::OnNewSave()
 
 FReply SPinToolActorWindow::OnDeleteSlot(TSharedPtr<FString> Slot)
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		TSharedPtr<soda::SMessageBox> MsgBox = GameMode->ShowMessageBox(
+		TSharedPtr<soda::SMessageBox> MsgBox = SodaSubsystem->ShowMessageBox(
 			soda::EMessageBoxType::YES_NO_CANCEL,
 			"Delete Slot",
 			"Are you sure you want to delete the \"" + *Slot.Get() + "\" slot?");
@@ -177,12 +177,12 @@ void SPinToolActorWindow::OnDoubleClickRow(TSharedPtr<FString> Slot)
 			FName ActorName = ToolActor->AsActor()->GetFName();
 			Actor->Destroy();
 			AActor* NewActor = DefaultToolActor->LoadPinnedActor(World, Transform, *Slot.Get(), false, ActorName);
-			if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+			if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 			{
-				if (GameMode->LevelState)
+				if (SodaSubsystem->LevelState)
 				{
-					if(GameMode->LevelState->ActorFactory) GameMode->LevelState->ActorFactory->ReplaceActor(NewActor, Actor, false);
-					GameMode->LevelState->MarkAsDirty();
+					if(SodaSubsystem->LevelState->ActorFactory) SodaSubsystem->LevelState->ActorFactory->ReplaceActor(NewActor, Actor, false);
+					SodaSubsystem->LevelState->MarkAsDirty();
 				}
 			}
 		}

@@ -8,7 +8,7 @@
 #include "Widgets/Layout/SBackgroundBlur.h"
 #include "Widgets/Images/SThrobber.h"
 #include "Widgets/SBoxPanel.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 
 namespace soda
 {
@@ -55,9 +55,9 @@ void SWaitingPanel::Construct( const FArguments& InArgs )
 
 bool SWaitingPanel::CloseWindow()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		if (!GameMode->CloseWaitingPanel(this))
+		if (!SodaSubsystem->CloseWaitingPanel(this))
 		{
 			return false;
 		}

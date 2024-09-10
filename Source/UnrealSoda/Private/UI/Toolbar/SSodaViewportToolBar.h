@@ -42,6 +42,7 @@ private:
 	bool ModeIs(EUIMode InMode) const;
 
 	void OnOpenLevelWindow();
+	void OnOpenPakWindow();
 	void OnOpenAboutWindow();
 	void OnOpenVehicleManagerWindow();
 	void OnOpenSaveLoadWindow();

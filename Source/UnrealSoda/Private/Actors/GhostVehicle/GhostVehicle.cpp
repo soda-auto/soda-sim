@@ -5,7 +5,7 @@
 #include "Soda/Actors/NavigationRoute.h"
 #include "Soda/UnrealSoda.h"
 #include "Components/BoxComponent.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/SodaStatics.h"
 #include "Actors/GhostVehicle/SpeedProfile/UnifiedSpeedProfile.h"
 #include "Actors/GhostVehicle/SpeedProfile/Curvature.h"
@@ -140,7 +140,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	check(PlayerController);
 
-	USodaGameModeComponent * GameMode  = USodaGameModeComponent::GetChecked();
+	USodaSubsystem * SodaSubsystem  = USodaSubsystem::GetChecked();
 
 	if (bIsMoving)
 	{
@@ -269,7 +269,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 		}
 	}
 
-	if (!GameMode->IsScenarioRunning() && !bJoinToInitialRoute)
+	if (!SodaSubsystem->IsScenarioRunning() && !bJoinToInitialRoute)
 	{
 		for (int i = 1; i < JoiningCurvePoints.Num(); ++i)
 		{

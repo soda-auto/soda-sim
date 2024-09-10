@@ -8,7 +8,7 @@
 #include "Engine/Canvas.h"
 #include "SodaJoystick.h"
 #include "InputCoreTypes.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 
 FString ToString(ESodaVehicleDriveMode Mode)
 {

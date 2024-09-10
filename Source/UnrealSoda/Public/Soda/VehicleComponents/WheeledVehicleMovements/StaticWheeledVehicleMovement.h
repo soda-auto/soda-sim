@@ -5,7 +5,7 @@
 #include "Soda/VehicleComponents/WheeledVehicleMovementBaseComponent.h"
 #include "StaticWheeledVehicleMovement.generated.h"
 
-class USodaGameModeComponent;
+class USodaSubsystem;
 
 /**
  * The UStaticWheeledVehicleMovementComponent

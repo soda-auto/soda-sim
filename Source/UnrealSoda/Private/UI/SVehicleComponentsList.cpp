@@ -17,7 +17,7 @@
 #include "RuntimeEditorModule.h"
 #include "RuntimePropertyEditor/IDetailsView.h"
 #include "Soda/SodaStatics.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/Editor/SodaSelection.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "UI/Common/SVehicleComponentClassCombo.h"
@@ -583,9 +583,9 @@ public:
 		Component->GetVehicleComponentGUI().bIsDeleted = false;
 		Component->MarkAsDirty();
 
-		if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+		if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 		{
-			TSharedPtr<soda::SMessageBox> MsgBox = GameMode->ShowMessageBox(
+			TSharedPtr<soda::SMessageBox> MsgBox = SodaSubsystem->ShowMessageBox(
 				soda::EMessageBoxType::OK, "Restore Vehicle Component", "Save and restart vehicle to apply the changes");
 		}
 
@@ -910,9 +910,9 @@ void SVehicleComponentsList::OnDoubleClick(TSharedRef<IComponentsBarTreeNode> No
 		TWeakInterfacePtr<ISodaVehicleComponent> Component = ComponentNode->GetComponent();
 		if (Component.IsValid())
 		{
-			if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+			if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 			{
-				GameMode->PushToolBox(
+				SodaSubsystem->PushToolBox(
 					SNew(SToolBox)
 					.Caption(FText::FromString(Component->AsActorComponent()->GetOwner()->GetName() + " -> " + Component->AsActorComponent()->GetName()))
 					[

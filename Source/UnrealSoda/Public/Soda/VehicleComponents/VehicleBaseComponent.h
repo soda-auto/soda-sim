@@ -7,7 +7,7 @@
 #include "VehicleBaseComponent.generated.h"
 
 class ASodaVehicle;
-class USodaGameModeComponent;
+class USodaSubsystem;
 class ALevelState;
 
 struct FSensorDataHeader
@@ -79,7 +79,7 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
-	USodaGameModeComponent* GetGameMode() const { return GameMode; }
+	USodaSubsystem* GetSodaSubsystem() const { return SodaSubsystem; }
 	ALevelState* GetLevelState() const { return LevelState; }
 
 	FSensorDataHeader GetHeaderGameThread() const;
@@ -90,7 +90,7 @@ private:
 	ASodaVehicle* Vehicle = nullptr;
 
 	UPROPERTY()
-	USodaGameModeComponent* GameMode = nullptr;
+	USodaSubsystem* SodaSubsystem = nullptr;
 
 	UPROPERTY()
 	ALevelState* LevelState = nullptr;

@@ -16,7 +16,7 @@
 #include "Slate/SceneViewport.h"
 #include "Soda/Misc/EditorUtils.h"
 #include "Soda/SodaGameViewportClient.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/SodaActorFactory.h"
 #include "Soda/Editor/SodaSelection.h"
 #include "Materials/MaterialInterface.h"
@@ -395,8 +395,8 @@ void ANavigationRoute::PropagetUpdateSuccessorRoute()
 
 void ANavigationRoute::UpdateRouteNetwork(const ANavigationRoute* Initiator, bool bIsInitiatorPredecessor)
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
-	ASodaActorFactory * ActorFactory = GameMode->GetActorFactory();
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+	ASodaActorFactory * ActorFactory = SodaSubsystem->GetActorFactory();
 	check(ActorFactory);
 
 	for (AActor* Actor : ActorFactory->GetActors())

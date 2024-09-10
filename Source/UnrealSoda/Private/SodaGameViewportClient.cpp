@@ -5,14 +5,14 @@
 #include "SceneViewExtension.h"
 #include "Engine/LocalPlayer.h"
 #include "EngineUtils.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Editor/SodaWidget.h"
 #include "Components/BillboardComponent.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/Editor/SodaSelection.h"
 #include "Soda/Misc/EditorUtils.h"
 #include "Soda/SodaActorFactory.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Editor/PreviewActor.h"
 #include "Soda/ISodaActor.h"
 #include "Soda/ISodaVehicleComponent.h"
@@ -21,6 +21,8 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Framework/Commands/UICommandList.h"
 #include "Soda/LevelState.h"
+#include "Soda/Vehicles/SodaVehicle.h"
+#include "Soda/UnrealSodaVersion.h"
 
 static void DrawSelectBox(FPrimitiveDrawInterface* PDI, const FBox& Box, float SizeK, const FLinearColor& Color, uint8 DepthPriority, float Thickness = 0.0f, float DepthBias = 0.0f, bool bScreenSpace = false)
 {
@@ -107,6 +109,38 @@ void USodaGameViewportClient::Draw(FViewport* InViewport, FCanvas* SceneCanvas)
 	DrawAxes(InViewport, SceneCanvas, nullptr, EAxisList::XYZ);
 }
 
+void USodaGameViewportClient::PostRender(UCanvas* Canvas)
+{
+	Super::PostRender(Canvas);
+
+	if (bIsDrawVehicleDebugPanel)
+	{
+		ASodaVehicle* Vehicle = nullptr;
+		APlayerController* PlayerController = World->GetFirstPlayerController();
+		if (PlayerController)
+		{
+			Vehicle = PlayerController->GetPawn<ASodaVehicle>();
+		}
+		if (!Vehicle)
+		{
+			if (GetGameMode() == soda::EUIMode::Editing)
+			{
+				Vehicle = Cast< ASodaVehicle >(Selection->GetSelectedActor());
+			}
+		}
+		if (Vehicle)
+		{
+			float YL = 10;
+			float YPos = 10;
+			Vehicle->DrawDebug(Canvas, YL, YPos);
+		}
+	}
+
+	UFont* RenderFont = GEngine->GetSmallFont();
+	Canvas->SetDrawColor(FColor::White);
+	Canvas->DrawText(RenderFont, FString::Printf(TEXT("Ver: %s"), UNREALSODA_VERSION_STRING), Canvas->SizeX - 100, Canvas->SizeY - 20);
+}
+
 void USodaGameViewportClient::FinalizeViews(class FSceneViewFamily* ViewFamily, const TMap<ULocalPlayer*, FSceneView*>& PlayerViewMap)
 {
 	for (auto& It : PlayerViewMap)
@@ -130,7 +164,7 @@ void USodaGameViewportClient::Draw(const FSceneView* View, FPrimitiveDrawInterfa
 			DropPreviewActor->RenderTarget(PDI);
 		}
 
-		USodaGameModeComponent* SodaGameMode = USodaGameModeComponent::GetChecked();
+		USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 
 		AActor* SelectedActor = Selection->GetSelectedActor();
 		ISodaActor* SodaActor = Cast<ISodaActor>(SelectedActor);
@@ -140,7 +174,7 @@ void USodaGameViewportClient::Draw(const FSceneView* View, FPrimitiveDrawInterfa
 		}
 
 		AActor* HoveredActor = Selection->GetHoveredActor();
-		if (HoveredActor/* && SodaGameMode->GetSodaActorDescriptor(HoveredActor->GetClass()).bDrawDebugSelectBox*/)
+		if (HoveredActor/* && SodaSubsystem->GetSodaActorDescriptor(HoveredActor->GetClass()).bDrawDebugSelectBox*/)
 		{
 			DrawBoundingBox(View, PDI, HoveredActor, FLinearColor(0, 0.8, 1, 0.8));
 		}
@@ -758,12 +792,12 @@ bool USodaGameViewportClient::DropActorAtCoordinates(int32 MouseX, int32 MouseY,
 
 	if (bAddToFactory)
 	{
-		USodaGameModeComponent* SodaGameMode = USodaGameModeComponent::Get();
-		if (!SodaGameMode)
+		USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+		if (!SodaSubsystem)
 		{
 			return false;
 		}
-		ASodaActorFactory* ActorFactory = SodaGameMode->GetActorFactory();
+		ASodaActorFactory* ActorFactory = SodaSubsystem->GetActorFactory();
 		NewActor = ActorFactory->SpawnActor(ActorClass, FTransform(FRotator::ZeroRotator, TraceResult.Location, FVector::OneVector));
 	}
 	else
@@ -813,10 +847,10 @@ bool USodaGameViewportClient::DropActorAtCoordinates(int32 MouseX, int32 MouseY,
 
 	if (bAddToFactory)
 	{
-		USodaGameModeComponent* SodaGameMode = USodaGameModeComponent::Get();
-		ASodaActorFactory* ActorFactory = SodaGameMode->GetActorFactory();
+		USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+		ASodaActorFactory* ActorFactory = SodaSubsystem->GetActorFactory();
 		ActorFactory->AddActor(NewActor);
-		SodaGameMode->LevelState->MarkAsDirty();
+		SodaSubsystem->LevelState->MarkAsDirty();
 	}
 
 	if (OutNewActor)

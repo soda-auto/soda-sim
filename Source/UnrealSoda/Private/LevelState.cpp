@@ -18,25 +18,25 @@
 #include "Soda/SodaSpectator.h"
 #include "Soda/DBGateway.h"
 #include "Soda/Actors/RefPoint.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 
 #define TRANSIENT_SLOT TEXT("LevelState_Transient")
 
 ALevelState* ALevelState::Get()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		return  GameMode->LevelState;
+		return  SodaSubsystem->LevelState;
 	}
 	return nullptr;
 }
 
 ALevelState* ALevelState::GetChecked()
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	check(GameMode);
-	check(GameMode->LevelState);
-	return GameMode->LevelState;
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	check(SodaSubsystem);
+	check(SodaSubsystem->LevelState);
+	return SodaSubsystem->LevelState;
 }
 
 void ULevelSaveGame::Serialize(FArchive& Ar)
@@ -108,10 +108,10 @@ void ALevelState::Serialize(FArchive& Ar)
 ULevelSaveGame * ALevelState::CreateSaveGame(bool bSerializePinnedActorsAsUnpinned)
 {
 	ASodalSpectator* SpectatorActor = nullptr;
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	if (GameMode)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	if (SodaSubsystem)
 	{
-		SpectatorActor = GameMode->GetSpectatorActor();
+		SpectatorActor = SodaSubsystem->GetSpectatorActor();
 	}
 
 	if (IsValid(SpectatorActor))
@@ -138,6 +138,8 @@ ULevelSaveGame * ALevelState::CreateSaveGame(bool bSerializePinnedActorsAsUnpinn
 
 bool ALevelState::SaveLevelToTransientSlot()
 {
+	Slot.LevelName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
+
 	ULevelSaveGame* SaveGame = CreateSaveGame(false);
 	if (!SaveGame)
 	{
@@ -457,7 +459,9 @@ ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass
 
 	ULevelSaveGame* LevelSaveGame = nullptr;
 
-	if (StaticSlot.LevelName != UGameplayStatics::GetCurrentLevelName(WorldContextObject, true))
+	FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(WorldContextObject, true);
+
+	if (StaticSlot.LevelName != CurrentLevelName)
 	{
 		StaticSlot.SlotIndex = -1;
 	}
@@ -465,10 +469,17 @@ ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass
 	if (bFromTransientSlot)
 	{
 		LevelSaveGame = LoadSaveGameTransient(WorldContextObject);
-		if (LevelSaveGame->LevelName != UGameplayStatics::GetCurrentLevelName(WorldContextObject, true))
+		if (IsValid(LevelSaveGame))
 		{
-			LevelSaveGame = nullptr;
-			UE_LOG(LogSoda, Error, TEXT("ALevelState::CreateOrLoad(); Transient slot LevelName mismatch"));
+			if (LevelSaveGame->LevelName != CurrentLevelName)
+			{
+				UE_LOG(LogSoda, Error, TEXT("ALevelState::CreateOrLoad(); Transient slot LevelName mismatch, loaded name \"%s\", current name \"%s\""), *LevelSaveGame->LevelName, *CurrentLevelName);
+				LevelSaveGame = nullptr;
+			}
+		}
+		else
+		{
+			UE_LOG(LogSoda, Error, TEXT("ALevelState::CreateOrLoad(); Can't load SavaGame for TransientSlot"));
 		}
 	}
 	else
