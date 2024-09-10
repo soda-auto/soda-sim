@@ -3,7 +3,7 @@
 #include "Soda/Editor/SodaSelection.h"
 #include "EngineUtils.h"
 #include "Soda/ISodaActor.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/SodaGameViewportClient.h"
 #include "DrawDebugHelpers.h"
 #include "Soda/Misc/EditorUtils.h"
@@ -110,7 +110,7 @@ AActor * USodaSelection::GetSodaActorUnderCursor(FViewport* Viewport)
 {
 	check(Viewport);
 
-	UWorld * World = USodaGameModeComponent::GetChecked()->GetWorld();
+	UWorld * World = USodaSubsystem::GetChecked()->GetWorld();
 	check(World);
 
 	int32 X = Viewport->GetMouseX();
@@ -213,7 +213,7 @@ void USodaSelection::RetargetWidgetForSelectedActor()
 	{
 		if (USodaGameViewportClient* ViewportClient = Cast<USodaGameViewportClient>(GetWorld()->GetGameViewport()))
 		{
-			if (USodaGameModeComponent::GetChecked()->GetSodaActorDescriptor(SelectedActor->GetClass()).bAllowTransform)
+			if (USodaSubsystem::GetChecked()->GetSodaActorDescriptor(SelectedActor->GetClass()).bAllowTransform)
 			{
 				ViewportClient->SetWidgetTarget(SelectedActor->GetRootComponent());
 			}

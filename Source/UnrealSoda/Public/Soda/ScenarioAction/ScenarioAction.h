@@ -6,7 +6,7 @@
 #include "Soda/ISodaActor.h"
 #include "ScenarioAction.generated.h"
 
-class USodaGameModeComponent;
+class USodaSubsystem;
 class UScenarioActionBlock;
 class SScenarioActionEditor;
 

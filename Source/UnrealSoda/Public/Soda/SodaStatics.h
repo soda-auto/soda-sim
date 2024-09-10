@@ -9,7 +9,7 @@
 #include "SodaStatics.generated.h"
 
 class UProceduralMeshComponent;
-class USodaGameModeComponent;
+class USodaSubsystem;
 class USodaUserSettings;
 
 UENUM(BlueprintType)
@@ -40,7 +40,7 @@ public:
 	static UWorld * GetGameWorld(const UObject* WorldContextObject=nullptr);
 
 	UFUNCTION(BlueprintPure, Category = "Soda")
-	static USodaGameModeComponent* GetSodaGameMode();
+	static USodaSubsystem* GetSodaSubsystem();
 
 	UFUNCTION(BlueprintPure, Category = "Soda")
 	static USodaUserSettings* GetSodaUserSettings();

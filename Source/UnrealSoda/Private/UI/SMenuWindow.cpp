@@ -9,7 +9,7 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Layout/SBackgroundBlur.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 
 namespace soda
 {
@@ -89,11 +89,11 @@ void SMenuWindow::Construct( const FArguments& InArgs )
 
 bool SMenuWindow::CloseWindow()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		if (!GameMode->CloseWindow(this))
+		if (!SodaSubsystem->CloseWindow(this))
 		{
-			checkf(true, TEXT("SMenuWindow::CloseWindow(), but the window isn't fins in the USodaGameModeComponent"));
+			checkf(true, TEXT("SMenuWindow::CloseWindow(), but the window isn't fins in the USodaSubsystem"));
 		}
 		else
 		{

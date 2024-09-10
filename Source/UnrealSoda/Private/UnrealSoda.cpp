@@ -16,6 +16,8 @@
 #include "Soda/Misc/JsonArchive.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Misc/SodaVehicleCommonExporter.h"
+#include "Soda/SodaUserSettings.h"
+#include "Misc/ConfigContext.h"
 
 #define LOCTEXT_NAMESPACE "FUnrealSodaModule"
 
@@ -156,6 +158,8 @@ void FUnrealSodaModule::StartupModule()
 
 	SodaApp.RegisterVehicleExporter(MakeShared<FSodaVehicleJSONExporter>());
 	SodaApp.RegisterVehicleExporter(MakeShared<FSodaVehicleCommonExporter>());
+
+	UE_LOG(LogSoda, Log, TEXT("FUnrealSodaModule::StartupModule(); CustomConfig: \"%s\""), *FConfigCacheIni::GetCustomConfigString());
 }
 
 void FUnrealSodaModule::ShutdownModule()
@@ -179,6 +183,8 @@ void FUnrealSodaModule::ShutdownModule()
 		FPlatformProcess::FreeDllHandle(It);
 	}
 #endif
+
+	
 }
 
 #undef LOCTEXT_NAMESPACE

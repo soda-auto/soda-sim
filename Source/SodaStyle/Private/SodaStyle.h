@@ -51,6 +51,7 @@ public:
 		void SetupColorPickerStyle();
 		void SetupTutorialStyles();
 		void SetupScenarioEditorStyle();
+		void SetupPakWindowStyle();
 
 		void SettingsChanged(UObject* ChangedObject, FPropertyChangedEvent& PropertyChangedEvent);
 		void SyncSettings();

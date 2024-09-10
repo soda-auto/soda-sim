@@ -21,9 +21,9 @@
 #include <cmath>
 
 class IHttpRouter;
-class USodaGameModeComponent;
+class USodaSubsystem;
 class USodaUserSettings;
-
+class FSodaPakLoader;
 
 namespace dbc
 {
@@ -51,7 +51,7 @@ public:
 	inline TTimestamp GetRealtimeTimestamp() const { return RealtimeTimestamp; }
 
 	void SetSynchronousMode(bool bEnable, double DeltaSeconds);
-	void NotifyInitGame(USodaGameModeComponent* InGameMode);
+	void NotifyInitGame(USodaSubsystem* InSodaSubsystem);
 	void NotifyEndGame();
 	inline bool IsSynchronousMode() const { return bSynchronousMode; }
 	inline int GetFrameIndex() const { return FrameIndex; }
@@ -61,8 +61,8 @@ public:
 
 	TSharedPtr<IHttpRouter> & GetHttpRouter() { return HttpRouter; }
 
-	USodaGameModeComponent* GetGameMode() const;
-	USodaGameModeComponent* GetGameModeChecked() const;
+	USodaSubsystem* GetSodaSubsystem() const;
+	USodaSubsystem* GetSodaSubsystemChecked() const;
 
 	const USodaUserSettings* GetSodaUserSettings() const;
 	USodaUserSettings* GetSodaUserSettings();
@@ -75,6 +75,8 @@ public:
 	const TMap<FString, TSharedPtr<ISodaVehicleExporter>>& GetVehicleExporters() const { return VehicleExporters; }
 
 	TSharedPtr<soda::FOutputLogHistory> GetOutputLogHistory() { return OutputLogHistory; }
+
+	const TSharedPtr<FSodaPakLoader>& GetPakLoader() const { return PakLoader; }
 
 public:
 	soda::FAsyncTaskManager CamTaskManager;
@@ -99,8 +101,8 @@ protected:
 	void OnHttpServerStarted(uint32 Port);
 	void OnHttpServerStopped();
 
-	void SetGameMode(USodaGameModeComponent* InGameMode);
-	void ResetGameMode();
+	void SetSodaSubsystem(USodaSubsystem* InSodaSubsystem);
+	void ResetSodaSubsystem();
 
 	void CreateSodaUserSettings();
 
@@ -123,7 +125,7 @@ protected:
 	/* HTTP */
 	TSharedPtr<IHttpRouter> HttpRouter;
 
-	TWeakObjectPtr<USodaGameModeComponent> GameMode;
+	TWeakObjectPtr<USodaSubsystem> SodaSubsystem;
 	bool bInitialized = false;
 
 	TWeakObjectPtr<USodaUserSettings> SodaUserSettings;
@@ -133,6 +135,8 @@ protected:
 	TMap<FString, TSharedPtr<ISodaVehicleExporter>> VehicleExporters;
 
 	TSharedPtr<soda::FOutputLogHistory> OutputLogHistory;
+
+	TSharedPtr<FSodaPakLoader> PakLoader;
 };
 
 extern UNREALSODA_API class FSodaApp SodaApp;

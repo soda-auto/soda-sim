@@ -5,7 +5,7 @@
 #include "Soda/Actors/NavigationRoute.h"
 #include "Soda/UnrealSoda.h"
 #include "Components/BoxComponent.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/SodaStatics.h"
 #include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
@@ -90,7 +90,7 @@ void AGhostPedestrian::TickActor(float DeltaTime, enum ELevelTick TickType, FAct
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	check(PlayerController);
 
-	USodaGameModeComponent * GameMode  = USodaGameModeComponent::GetChecked();
+	USodaSubsystem * SodaSubsystem  = USodaSubsystem::GetChecked();
 
 	if (bIsMoving)
 	{
@@ -146,7 +146,7 @@ void AGhostPedestrian::TickActor(float DeltaTime, enum ELevelTick TickType, FAct
 		}
 	}
 
-	if (!GameMode->IsScenarioRunning() && !bJoinToInitialRoute)
+	if (!SodaSubsystem->IsScenarioRunning() && !bJoinToInitialRoute)
 	{
 		for (int i = 1; i < JoiningCurvePoints.Num(); ++i)
 		{

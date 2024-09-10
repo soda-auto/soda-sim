@@ -3,7 +3,7 @@
 #include "Soda/DBGatewayMongo.h"
 #include "Soda/UnrealSoda.h"
 #include "Soda/UnrealSodaVersion.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/LevelState.h"
 #include "Soda/Misc/Time.h"
@@ -124,7 +124,7 @@ void FDBGatewayMongo::Configure(const FString& URL, const FString& InDatabaseNam
 			Status = EDBGatewayStatus::Faild;
 			::AsyncTask(ENamedThreads::GameThread, [LastError = LastError]() 
 			{
-				USodaGameModeComponent::GetChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "MongoDB Faild", *LastError);
+				USodaSubsystem::GetChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "MongoDB Faild", *LastError);
 			});
 			return false;
 		}

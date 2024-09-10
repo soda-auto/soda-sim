@@ -74,7 +74,7 @@ public class UnrealSoda : ModuleRules
                 "ApplicationCore",
                 "PROJ",
                 "GeometryAlgorithms",
-                "MassEntity"
+                "MassEntity",
             } 
 		);
 

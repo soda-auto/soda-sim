@@ -10,7 +10,7 @@
 #include "ConstrainedDelaunay2.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "Soda/SodaStatics.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/LevelState.h"
 #include "Soda/SodaActorFactory.h"
 #include "EngineUtils.h"
@@ -31,7 +31,7 @@
 #include "Widgets/Layout/SBorder.h"
 #include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/UI/SMessageBox.h"
 #include <map>
 
@@ -1371,8 +1371,8 @@ void ATrackBuilder::GenerateLapCounter()
 		return;
 	}
 
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
-	ASodaActorFactory* ActorFactory = GameMode->GetActorFactory();
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+	ASodaActorFactory* ActorFactory = SodaSubsystem->GetActorFactory();
 	check(ActorFactory);
 
 	FPolyline CentrePolyline(CentrePoints, true, TrackElevation);
@@ -1387,8 +1387,8 @@ void ATrackBuilder::ClearLapCounter()
 {
 	if (IsValid(LapCounter))
 	{
-		USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
-		ASodaActorFactory* ActorFactory = GameMode->GetActorFactory();
+		USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+		ASodaActorFactory* ActorFactory = SodaSubsystem->GetActorFactory();
 		check(ActorFactory);
 
 		ActorFactory->RemoveActor(LapCounter, true);
@@ -1658,7 +1658,7 @@ void ATrackBuilder::ScenarioBegin()
 		auto Dataset = soda::FDBGateway::Instance().CreateActorDataset(GetName(), "trackbuilder", GetClass()->GetName(), Doc);
 		if (!Dataset)
 		{
-			SodaApp.GetGameModeChecked()->ScenarioStop(EScenarioStopReason::InnerError, EScenarioStopMode::RestartLevel, "Can't create dataset for \"" + GetName() + "\"");
+			SodaApp.GetSodaSubsystemChecked()->ScenarioStop(EScenarioStopReason::InnerError, EScenarioStopMode::RestartLevel, "Can't create dataset for \"" + GetName() + "\"");
 		}
 	}
 }

@@ -12,7 +12,7 @@
 #include "Materials/Material.h"
 #include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/UI/SMessageBox.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -544,7 +544,7 @@ void AOpenDriveTool::ScenarioBegin()
 			auto Dataset = soda::FDBGateway::Instance().CreateActorDataset(GetName(), "opendrive", GetClass()->GetName(), Doc);
 			if (!Dataset)
 			{
-				SodaApp.GetGameModeChecked()->ScenarioStop(EScenarioStopReason::InnerError, EScenarioStopMode::RestartLevel, "Can't create dataset for \"" + GetName() + "\"");
+				SodaApp.GetSodaSubsystemChecked()->ScenarioStop(EScenarioStopReason::InnerError, EScenarioStopMode::RestartLevel, "Can't create dataset for \"" + GetName() + "\"");
 			}
 		}
 		else

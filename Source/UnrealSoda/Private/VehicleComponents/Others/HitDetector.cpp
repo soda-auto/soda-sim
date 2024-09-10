@@ -5,7 +5,7 @@
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 
 UHitDetectorComponent::UHitDetectorComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -56,7 +56,7 @@ void UHitDetectorComponent::OnVehicleHit(AActor* SelfActor, AActor* OtherActor, 
 	{
 		if (NormalImpulse.Size() > ImpulseThresholdScenarioStop)
 		{
-			SodaApp.GetGameModeChecked()->ScenarioStop(EScenarioStopReason::ScenarioStopTrigger, EScenarioStopMode::RestartLevel);
+			SodaApp.GetSodaSubsystemChecked()->ScenarioStop(EScenarioStopReason::ScenarioStopTrigger, EScenarioStopMode::RestartLevel);
 		}
 	}
 }

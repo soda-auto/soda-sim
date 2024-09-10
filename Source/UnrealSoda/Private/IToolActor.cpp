@@ -4,7 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Soda/UnrealSoda.h"
 #include "UI/Wnds/SPinToolActorWindow.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 
 #define TOOL_ACTOR_SLOT_PREFIX "Pinned"
 
@@ -43,9 +43,9 @@ bool IToolActor::OnSetPinnedActor(bool bIsPinnedActor)
 {
 	if (bIsPinnedActor)
 	{
-		if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+		if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 		{
-			GameMode->OpenWindow(FString::Printf(TEXT("Pin \"%s\" Actor"), *AsActor()->GetName()), SNew(soda::SPinToolActorWindow, this));
+			SodaSubsystem->OpenWindow(FString::Printf(TEXT("Pin \"%s\" Actor"), *AsActor()->GetName()), SNew(soda::SPinToolActorWindow, this));
 		}
 	}
 	else
@@ -198,10 +198,10 @@ AActor* IToolActor::LoadPinnedActor(UWorld* World, const FTransform& Transform, 
 
 UPinnedToolActorsSaveGame* IToolActor::GetSaveGame() const
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
 		// Try find savegamae
-		UPinnedToolActorsSaveGame *& SaveGame = GameMode->PinnedToolActorsSaveGame.FindOrAdd(AsActor()->GetClass());
+		UPinnedToolActorsSaveGame *& SaveGame = SodaSubsystem->PinnedToolActorsSaveGame.FindOrAdd(AsActor()->GetClass());
 		if (SaveGame)
 		{
 			if (SaveGame->Class != AsActor()->GetClass())
@@ -226,7 +226,7 @@ UPinnedToolActorsSaveGame* IToolActor::GetSaveGame() const
 		}
 
 		// Create savegame
-		SaveGame = NewObject< UPinnedToolActorsSaveGame>(GameMode);
+		SaveGame = NewObject< UPinnedToolActorsSaveGame>(SodaSubsystem);
 		SaveGame->Class = AsActor()->GetClass();
 		return SaveGame;
 	}

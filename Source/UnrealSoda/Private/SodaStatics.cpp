@@ -5,7 +5,7 @@
 #include "Soda/SodaApp.h"
 #include "Soda/VehicleComponents/VehicleSensorComponent.h"
 #include "Soda/VehicleComponents/Sensors/Base/V2XSensor.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/LevelState.h"
 #include "Soda/UnrealSodaVersion.h"
 #include "Soda/SodaUserSettings.h"
@@ -32,7 +32,9 @@
 #include "DynamicMeshBuilder.h"
 #include "UObject/UObjectIterator.h"
 #include "Engine/GameViewportClient.h"
-
+#include "AssetRegistry/ARFilter.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "Misc/PackageName.h"
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -115,6 +117,19 @@ static void SetStencilValue(UPrimitiveComponent& Component, const ESegmObjectLab
 	Component.SetRenderCustomDepth(bSetRenderCustomDepth && (Label != ESegmObjectLabel::None));
 }
 
+static bool IsMapAsset(const FString& InPackageName)
+{
+	FString FullPath;
+	if (FPackageName::TryConvertLongPackageNameToFilename(InPackageName, FullPath, FPackageName::GetMapPackageExtension()))
+	{
+		if (FPlatformFileManager::Get().GetPlatformFile().FileExists(*FullPath))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 USodaStatics::USodaStatics(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -151,9 +166,9 @@ UWorld* USodaStatics::GetGameWorld(const UObject* WorldContextObject)
 	return nullptr;
 }
 
-USodaGameModeComponent* USodaStatics::GetSodaGameMode()
+USodaSubsystem* USodaStatics::GetSodaSubsystem()
 {
-	return USodaGameModeComponent::Get();
+	return USodaSubsystem::Get();
 }
 
 USodaUserSettings* USodaStatics::GetSodaUserSettings()
@@ -174,24 +189,27 @@ TArray<FString> USodaStatics::GetAllMapPaths()
 {
 	TArray<FString> Ret;
 
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
+
 	auto ObjectLibrary = UObjectLibrary::CreateLibrary(UWorld::StaticClass(), false, true);
-	ObjectLibrary->LoadAssetDataFromPath(TEXT("/Game"));
+	ObjectLibrary->LoadAssetDataFromPaths({ TEXT("/Game"),  TEXT("/SodaSim") });
 	TArray<FAssetData> AssetDatas;
 	ObjectLibrary->GetAssetDataList(AssetDatas);
 	
-	for (int32 i = 0; i < AssetDatas.Num(); ++i)
+	for (const FAssetData& AssetData : AssetDatas)
 	{
-		FAssetData& AssetData = AssetDatas[i];
+		const FString LevelName = AssetData.AssetName.ToString();
 
-		FString LevelName = AssetData.AssetName.ToString();
-
-		if (LevelName.StartsWith(TEXT("__"), ESearchCase::CaseSensitive))
+		// Show only */Maps/{MAP_NAME} assets
+		if (!AssetData.PackagePath.ToString().EndsWith(TEXT("/Maps"), ESearchCase::IgnoreCase) &&
+			!AssetData.PackagePath.ToString().EndsWith(TEXT("/Map"), ESearchCase::IgnoreCase)
+			)
 		{
 			continue;
 		}
 
 		Ret.Add(AssetData.PackagePath.ToString() / LevelName);
-
 	}
 	return Ret;
 }

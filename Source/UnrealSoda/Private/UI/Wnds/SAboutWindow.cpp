@@ -8,7 +8,7 @@
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/SBoxPanel.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/LevelState.h"
 #include "SodaStyleSet.h"
 
@@ -18,14 +18,14 @@ namespace soda
 void SAboutWindow::Construct(const FArguments& InArgs)
 {
 	
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	check(GameMode);
-	//UWorld * World = GameMode->GetWorld();
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	check(SodaSubsystem);
+	//UWorld * World = SodaSubsystem->GetWorld();
 	//check(World);
 
 	FString LevelSource;
 
-	switch (GameMode->LevelState->Slot.SlotSource)
+	switch (SodaSubsystem->LevelState->Slot.SlotSource)
 	{
 	case ELeveSlotSource::Local: LevelSource = "Local"; break;
 	case ELeveSlotSource::Remote: LevelSource = "Remote"; break;
@@ -60,14 +60,14 @@ void SAboutWindow::Construct(const FArguments& InArgs)
 			.Padding(0, 0, 0, 0)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString(FString("Level Info: " ) + GameMode->LevelState->Slot.LevelName))
+				.Text(FText::FromString(FString("Level Info: " ) + SodaSubsystem->LevelState->Slot.LevelName))
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
 			.Padding(15, 0, 0, 0)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString(FString("LevelName: " ) + GameMode->LevelState->Slot.LevelName))
+				.Text(FText::FromString(FString("LevelName: " ) + SodaSubsystem->LevelState->Slot.LevelName))
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
@@ -81,28 +81,28 @@ void SAboutWindow::Construct(const FArguments& InArgs)
 			.Padding(15, 0, 0, 0)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString(FString("Description: " ) + GameMode->LevelState->Slot.Description))
+				.Text(FText::FromString(FString("Description: " ) + SodaSubsystem->LevelState->Slot.Description))
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
 			.Padding(15, 0, 0, 0)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString(FString("DateTime: " ) + GameMode->LevelState->Slot.DateTime.ToString()))
+				.Text(FText::FromString(FString("DateTime: " ) + SodaSubsystem->LevelState->Slot.DateTime.ToString()))
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
 			.Padding(15, 0, 0, 0)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString(FString("SlotIndex: " ) + FString::FromInt(GameMode->LevelState->Slot.SlotIndex)))
+				.Text(FText::FromString(FString("SlotIndex: " ) + FString::FromInt(SodaSubsystem->LevelState->Slot.SlotIndex)))
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
 			.Padding(15, 0, 0, 0)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString(FString("ScenarioID: " ) + FString::FromInt(GameMode->LevelState->Slot.ScenarioID)))
+				.Text(FText::FromString(FString("ScenarioID: " ) + FString::FromInt(SodaSubsystem->LevelState->Slot.ScenarioID)))
 			]
 			+ SVerticalBox::Slot()
 			.FillHeight(1)

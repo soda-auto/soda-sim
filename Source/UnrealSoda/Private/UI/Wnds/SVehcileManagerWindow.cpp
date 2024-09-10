@@ -12,7 +12,7 @@
 #include "Soda/DBGateway.h"
 #include "GenericPlatform/GenericPlatformFile.h"
 #include "Soda/UI/SMessageBox.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
@@ -197,9 +197,9 @@ TSharedRef<ITableRow> SVehcileManagerWindow::OnGenerateRow(TSharedPtr<FVechicleS
 
 FReply SVehcileManagerWindow::OnDeleteSlot(TSharedPtr<FVechicleSaveAddress> Address)
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		TSharedPtr<soda::SMessageBox> MsgBox = GameMode->ShowMessageBox(
+		TSharedPtr<soda::SMessageBox> MsgBox = SodaSubsystem->ShowMessageBox(
 			soda::EMessageBoxType::YES_NO_CANCEL, 
 			"Delete Vehicle", 
 			"Are you sure you want to delete the \"" + Address->ToVehicleName() + "\" vehicle?");
@@ -233,9 +233,9 @@ FReply SVehcileManagerWindow::OnNewSave()
 
 		if (!Vehicle->SaveToAddress(Address, true))
 		{
-			if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+			if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 			{
-				TSharedPtr<soda::SMessageBox> MsgBox = GameMode->ShowMessageBox(
+				TSharedPtr<soda::SMessageBox> MsgBox = SodaSubsystem->ShowMessageBox(
 					soda::EMessageBoxType::OK, "Error", "Can't save vehilce");
 			}
 		}
@@ -257,7 +257,7 @@ void SVehcileManagerWindow::UpdateSlots()
 	{
 		if (!ASodaVehicle::GetSavedVehiclesDB(Addresses))
 		{
-			USodaGameModeComponent::GetChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "Error", "MongoDB error. See log for more information");
+			USodaSubsystem::GetChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "Error", "MongoDB error. See log for more information");
 		}
 	}
 
@@ -351,9 +351,9 @@ FReply SVehcileManagerWindow::OnSave()
 		{
 			if (!Vehicle->Resave())
 			{
-				if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+				if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 				{
-					TSharedPtr<soda::SMessageBox> MsgBox = GameMode->ShowMessageBox(
+					TSharedPtr<soda::SMessageBox> MsgBox = SodaSubsystem->ShowMessageBox(
 						soda::EMessageBoxType::OK, "Error", "Can't save vehilce");
 				}
 			}

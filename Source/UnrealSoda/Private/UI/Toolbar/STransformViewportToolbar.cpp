@@ -20,7 +20,7 @@
 #include "UI/Toolbar/Common/SViewportToolBarButton.h"
 #include "Soda/UI/SSodaViewport.h"
 #include "Soda/SodaGameViewportClient.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 
 #define LOCTEXT_NAMESPACE "TransformToolBar"

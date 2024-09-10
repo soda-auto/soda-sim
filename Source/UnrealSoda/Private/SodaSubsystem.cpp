@@ -1,6 +1,6 @@
 // Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaApp.h"
 #include "Soda/LevelState.h"
@@ -39,54 +39,52 @@
 #include "Engine/GameInstance.h"
 #include "Engine/Engine.h"
 
-#define SLOT_GAMEMODE "SodaGameMode"
+USodaSubsystem::FScenarioLevelSavedData USodaSubsystem::ScenarioLevelSavedData {};
 
-USodaGameModeComponent::FScenarioLevelSavedData USodaGameModeComponent::ScenarioLevelSavedData {};
-
-USodaGameModeComponent* USodaGameModeComponent::Get()
+USodaSubsystem* USodaSubsystem::Get()
 {
-	return SodaApp.GetGameMode();
+	return SodaApp.GetSodaSubsystem();
 }
 
-USodaGameModeComponent* USodaGameModeComponent::GetChecked()
+USodaSubsystem* USodaSubsystem::GetChecked()
 {
-	return SodaApp.GetGameModeChecked();
+	return SodaApp.GetSodaSubsystemChecked();
 }
 
-USodaGameModeComponent::USodaGameModeComponent()
+USodaSubsystem::USodaSubsystem()
 {
-	//bWantsInitializeComponent = true;
-	PrimaryComponentTick.bCanEverTick = true;
-	bTickInEditor = false;
-	PrimaryComponentTick.TickGroup = TG_PrePhysics;
-
 	DefaultLevelStateClass = ALevelState::StaticClass();
 	SpectatorClass = ASodalSpectator::StaticClass();
 }
 
-void USodaGameModeComponent::OnComponentCreated()
+TStatId USodaSubsystem::GetStatId() const
 {
-	Super::OnComponentCreated();
-
-	InitGameHandle = FGameModeEvents::GameModeInitializedEvent.AddUObject(this, &USodaGameModeComponent::InitGame);
-	PreEndGameHandle = FWorldDelegates::OnWorldBeginTearDown.AddUObject(this, &USodaGameModeComponent::PreEndGame);
+	RETURN_QUICK_DECLARE_CYCLE_STAT(USodaSubsystem, STATGROUP_Tickables);
 }
 
-void USodaGameModeComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
+void USodaSubsystem::PostInitialize()
 {
-	Super::OnComponentDestroyed(bDestroyingHierarchy);
+	Super::PostInitialize();
+
+	InitGameHandle = FGameModeEvents::GameModeInitializedEvent.AddUObject(this, &USodaSubsystem::InitGame);
+	PreEndGameHandle = FWorldDelegates::OnWorldBeginTearDown.AddUObject(this, &USodaSubsystem::PreEndGame);
+}
+
+void USodaSubsystem::Deinitialize()
+{
+	Super::Deinitialize();
 
 	SodaApp.NotifyEndGame();
 }
 
-void USodaGameModeComponent::InitGame(AGameModeBase* GameMode)
+void USodaSubsystem::InitGame(AGameModeBase* GameMode)
 {
 	UWorld* World = GetWorld();
 	check(World);
 
 	if (World->WorldType != EWorldType::Game && World->WorldType != EWorldType::PIE)
 	{
-		UE_LOG(LogSoda, Warning, TEXT("USodaGameModeComponent::InitGame(); Wrong WorldType"));
+		UE_LOG(LogSoda, Warning, TEXT("USodaSubsystem::InitGame(); Wrong WorldType"));
 		return;
 	}
 
@@ -125,26 +123,21 @@ void USodaGameModeComponent::InitGame(AGameModeBase* GameMode)
 			UClass* AssetObjectClass = AssetManager.GetPrimaryAssetObjectClass<USodaLibraryPrimaryAsset>(AssetId);
 			if (AssetObjectClass)
 			{
-				UE_LOG(LogSoda, Log, TEXT("USodaGameModeComponent::InitGame(); Loaded asset %s"), *AssetObjectClass->GetName());
+				UE_LOG(LogSoda, Log, TEXT("USodaSubsystem::InitGame(); Loaded asset %s"), *AssetObjectClass->GetName());
 				for (auto& It : CastChecked<USodaLibraryPrimaryAsset>(AssetObjectClass->GetDefaultObject())->SodaActors)
 				{
 					SodaActorDescriptors.FindOrAdd(It.Key) = It.Value;
-					UE_LOG(LogSoda, Log, TEXT("USodaGameModeComponent::InitGame(); Registre \"%s\" [%s]"), *It.Key.ToString(), It.Key.Get() ? TEXT("Loaded") : TEXT("Unloaded"));
+					UE_LOG(LogSoda, Log, TEXT("USodaSubsystem::InitGame(); Registre \"%s\" [%s]"), *It.Key.ToString(), It.Key.Get() ? TEXT("Loaded") : TEXT("Unloaded"));
 				}
 			}
 			else
 			{
-				UE_LOG(LogSoda, Error, TEXT("USodaGameModeComponent::InitGame(); Primary asset \"%s\" load faild"), *AssetId.ToString());
+				UE_LOG(LogSoda, Error, TEXT("USodaSubsystem::InitGame(); Primary asset \"%s\" load faild"), *AssetId.ToString());
 			}
 		}));
 	}
 
 	SodaApp.NotifyInitGame(this);
-
-	if (Cast<AGameModeBase>(GetOwner()) == nullptr)
-	{
-		UE_LOG(LogSoda, Fatal, TEXT("The USodaGameModeComponent must be child of AGameModeBase"));
-	}
 
 	if (SodaApp.GetSodaUserSettings()->bTagActorsAtBeginPlay)
 	{
@@ -176,16 +169,16 @@ void USodaGameModeComponent::InitGame(AGameModeBase* GameMode)
 		UGameViewportClient* ViewPortClient = Instance->GetGameViewportClient();
 		if (ViewPortClient)
 		{
-			ViewPortClient->OnWindowCloseRequested().BindUObject(this, &USodaGameModeComponent::OnWindowCloseRequested);
+			ViewPortClient->OnWindowCloseRequested().BindUObject(this, &USodaSubsystem::OnWindowCloseRequested);
 		}
 	}
 }
 
-void USodaGameModeComponent::PreEndGame(UWorld* World)
+void USodaSubsystem::PreEndGame(UWorld* World)
 {
 	if (World->WorldType != EWorldType::Game && World->WorldType != EWorldType::PIE)
 	{
-		UE_LOG(LogSoda, Warning, TEXT("USodaGameModeComponent::PreEndGame(); Wrong WorldType"));
+		UE_LOG(LogSoda, Warning, TEXT("USodaSubsystem::PreEndGame(); Wrong WorldType"));
 		return;
 	}
 
@@ -204,31 +197,29 @@ void USodaGameModeComponent::PreEndGame(UWorld* World)
 	soda::FDBGateway::Instance().ClearDatasetsQueue();
 }
 
-bool USodaGameModeComponent::OnWindowCloseRequested()
+bool USodaSubsystem::OnWindowCloseRequested()
 {
 	RequestQuit();
 	return false;
 }
 
 
-void USodaGameModeComponent::BeginPlay()
+void USodaSubsystem::OnWorldBeginPlay(UWorld& World)
 {
-	Super::BeginPlay();
+	Super::OnWorldBeginPlay(World);
 
-	check(this == USodaGameModeComponent::Get());
-	UWorld* World = GetWorld();
-	check(World);
-	APlayerController* PlayerController = World->GetFirstPlayerController();
+	check(this == USodaSubsystem::Get());
+	APlayerController* PlayerController = World.GetFirstPlayerController();
 	check(PlayerController);
 	FInputModeGameAndUI Mode;
 	Mode.SetHideCursorDuringCapture(true).SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	PlayerController->SetInputMode(Mode);
 	PlayerController->bShowMouseCursor = true;
 
-	ViewportClient = Cast<USodaGameViewportClient>(GetWorld()->GetGameViewport());
+	ViewportClient = Cast<USodaGameViewportClient>(World.GetGameViewport());
 	if (ViewportClient)
 	{
-		SAssignNew(SodaViewport, soda::SSodaViewport, GetWorld());
+		SAssignNew(SodaViewport, soda::SSodaViewport, &World);
 		ViewportClient->InitUI(SodaViewport);
 	}
 
@@ -240,14 +231,10 @@ void USodaGameModeComponent::BeginPlay()
 	AfterScenarioStop();
 }
 
-void USodaGameModeComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-}
 
-void USodaGameModeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void USodaSubsystem::Tick(float DeltaTime)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	Super::Tick(DeltaTime);
 
 	UWorld* World = GetWorld();
 	check(World);
@@ -261,7 +248,7 @@ void USodaGameModeComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	}
 }
 
-void USodaGameModeComponent::PushToolBox(TSharedRef<soda::SToolBox> Widget, bool InstedPrev)
+void USodaSubsystem::PushToolBox(TSharedRef<soda::SToolBox> Widget, bool InstedPrev)
 {
 	if (SodaViewport.IsValid())
 	{
@@ -269,7 +256,7 @@ void USodaGameModeComponent::PushToolBox(TSharedRef<soda::SToolBox> Widget, bool
 	}
 }
 
-bool USodaGameModeComponent::PopToolBox()
+bool USodaSubsystem::PopToolBox()
 {
 	if (SodaViewport.IsValid())
 	{
@@ -281,7 +268,7 @@ bool USodaGameModeComponent::PopToolBox()
 	}
 }
 
-bool USodaGameModeComponent::CloseWindow(bool bCloseAllWindows)
+bool USodaSubsystem::CloseWindow(bool bCloseAllWindows)
 {
 	if (SodaViewport.IsValid())
 	{
@@ -293,7 +280,7 @@ bool USodaGameModeComponent::CloseWindow(bool bCloseAllWindows)
 	}
 }
 
-void USodaGameModeComponent::SetSpectatorMode(bool bSpectatorMode)
+void USodaSubsystem::SetSpectatorMode(bool bSpectatorMode)
 {
 	UWorld* World = GetWorld();
 	check(World);
@@ -367,7 +354,7 @@ void USodaGameModeComponent::SetSpectatorMode(bool bSpectatorMode)
 	}
 }
 
-ASodaVehicle* USodaGameModeComponent::GetActiveVehicle()
+ASodaVehicle* USodaSubsystem::GetActiveVehicle()
 {
 	UWorld* World = GetWorld();
 	check(World);
@@ -398,7 +385,7 @@ ASodaVehicle* USodaGameModeComponent::GetActiveVehicle()
 	return nullptr;
 }
 
-void USodaGameModeComponent::SetActiveVehicle(ASodaVehicle* Vehicle)
+void USodaSubsystem::SetActiveVehicle(ASodaVehicle* Vehicle)
 {
 	UWorld* World = GetWorld();
 	check(World);
@@ -413,14 +400,14 @@ void USodaGameModeComponent::SetActiveVehicle(ASodaVehicle* Vehicle)
 	}
 }
 
-bool USodaGameModeComponent::ScenarioPlay()
+bool USodaSubsystem::ScenarioPlay()
 {
 	if (!bIsScenarioRunning)
 	{
 		ScenarioLevelSavedData.bIsValid = LevelState->SaveLevelToTransientSlot();
 		if (!ScenarioLevelSavedData.bIsValid)
 		{
-			UE_LOG(LogSoda, Error, TEXT("USodaGameModeComponent::ScenarioPlay(); Can't SaveLevelToTransientSlot()"));
+			UE_LOG(LogSoda, Error, TEXT("USodaSubsystem::ScenarioPlay(); Can't SaveLevelToTransientSlot()"));
 			ShowMessageBox(soda::EMessageBoxType::OK, "Scenario Play Failed", soda::FDBGateway::Instance().GetLastError());
 			return false;
 		}
@@ -498,7 +485,7 @@ bool USodaGameModeComponent::ScenarioPlay()
 	return false;
 }
 
-void USodaGameModeComponent::ScenarioStop(EScenarioStopReason Reason, EScenarioStopMode Mode, const FString& UserMessage)
+void USodaSubsystem::ScenarioStop(EScenarioStopReason Reason, EScenarioStopMode Mode, const FString& UserMessage)
 {
 	if (bIsScenarioRunning)
 	{
@@ -538,7 +525,7 @@ void USodaGameModeComponent::ScenarioStop(EScenarioStopReason Reason, EScenarioS
 			LevelState->ClearLevel();
 			GEngine->ForceGarbageCollection(true);
 			FCoreUObjectDelegates::GetPostGarbageCollect().RemoveAll(this);
-			FCoreUObjectDelegates::GetPostGarbageCollect().AddUObject(this, &USodaGameModeComponent::OnPostGarbageCollect, 0.0f);
+			FCoreUObjectDelegates::GetPostGarbageCollect().AddUObject(this, &USodaSubsystem::OnPostGarbageCollect, 0.0f);
 		}
 		else // (Mode == EScenarioStopMode::StopSiganalOnly)
 		{
@@ -547,7 +534,7 @@ void USodaGameModeComponent::ScenarioStop(EScenarioStopReason Reason, EScenarioS
 	}
 }
 
-void USodaGameModeComponent::AfterScenarioStop()
+void USodaSubsystem::AfterScenarioStop()
 {
 	SetSpectatorMode(true);
 
@@ -590,19 +577,19 @@ void USodaGameModeComponent::AfterScenarioStop()
 
 		if (!ScenarioLevelSavedData.UserMessage.IsEmpty())
 		{
-			SodaApp.GetGameModeChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "Scenarip stoped", ScenarioLevelSavedData.UserMessage);
+			SodaApp.GetSodaSubsystem()->ShowMessageBox(soda::EMessageBoxType::OK, "Scenarip stoped", ScenarioLevelSavedData.UserMessage);
 		}
 	}
 }
 
-void USodaGameModeComponent::OnPostGarbageCollect(float Delay /*= 0.0f*/)
+void USodaSubsystem::OnPostGarbageCollect(float Delay /*= 0.0f*/)
 {
 	FCoreUObjectDelegates::GetPostGarbageCollect().RemoveAll(this);
 	LevelState->FinishLoadLevel();
 	AfterScenarioStop();
 }
 
-int64 USodaGameModeComponent::GetScenarioID() const
+int64 USodaSubsystem::GetScenarioID() const
 {
 	if (!bIsScenarioRunning)
 	{
@@ -615,7 +602,7 @@ int64 USodaGameModeComponent::GetScenarioID() const
 }
 
 
-void USodaGameModeComponent::RequestQuit(bool bForce)
+void USodaSubsystem::RequestQuit(bool bForce)
 {
 	ScenarioStop(EScenarioStopReason::QuitApplication, EScenarioStopMode::StopSiganalOnly);
 
@@ -636,7 +623,7 @@ void USodaGameModeComponent::RequestQuit(bool bForce)
 
 }
 
-void USodaGameModeComponent::RequestRestartLevel(bool bForce)
+void USodaSubsystem::RequestRestartLevel(bool bForce)
 {
 	ScenarioStop(EScenarioStopReason::QuitApplication, EScenarioStopMode::StopSiganalOnly);
 
@@ -656,7 +643,7 @@ void USodaGameModeComponent::RequestRestartLevel(bool bForce)
 	}
 }
 
-TSharedPtr<soda::SMessageBox> USodaGameModeComponent::ShowMessageBox(soda::EMessageBoxType Type, const FString& Caption, const FString& Text)
+TSharedPtr<soda::SMessageBox> USodaSubsystem::ShowMessageBox(soda::EMessageBoxType Type, const FString& Caption, const FString& Text)
 {
 	if (SodaViewport.IsValid())
 	{
@@ -668,7 +655,7 @@ TSharedPtr<soda::SMessageBox> USodaGameModeComponent::ShowMessageBox(soda::EMess
 	}
 }
 
-TSharedPtr<soda::SMenuWindow> USodaGameModeComponent::OpenWindow(const FString& Caption, TSharedRef<soda::SMenuWindowContent> Content)
+TSharedPtr<soda::SMenuWindow> USodaSubsystem::OpenWindow(const FString& Caption, TSharedRef<soda::SMenuWindowContent> Content)
 {
 	if (SodaViewport.IsValid())
 	{
@@ -680,7 +667,7 @@ TSharedPtr<soda::SMenuWindow> USodaGameModeComponent::OpenWindow(const FString& 
 	}
 }
 
-bool USodaGameModeComponent::CloseWindow(soda::SMenuWindow * Wnd)
+bool USodaSubsystem::CloseWindow(soda::SMenuWindow * Wnd)
 {
 	if (SodaViewport.IsValid())
 	{
@@ -693,18 +680,18 @@ bool USodaGameModeComponent::CloseWindow(soda::SMenuWindow * Wnd)
 }
 
 
-void USodaGameModeComponent::NotifyLevelIsChanged()
+void USodaSubsystem::NotifyLevelIsChanged()
 {
 
 }
 
-ASodaActorFactory* USodaGameModeComponent::GetActorFactory()
+ASodaActorFactory* USodaSubsystem::GetActorFactory()
 {
 	check(LevelState);
 	return LevelState->ActorFactory;
 }
 
-const FSodaActorDescriptor& USodaGameModeComponent::GetSodaActorDescriptor(TSoftClassPtr<AActor> Class) const
+const FSodaActorDescriptor& USodaSubsystem::GetSodaActorDescriptor(TSoftClassPtr<AActor> Class) const
 {
 	if (const FSodaActorDescriptor* Desc = SodaActorDescriptors.Find(Class))
 	{
@@ -715,12 +702,12 @@ const FSodaActorDescriptor& USodaGameModeComponent::GetSodaActorDescriptor(TSoft
 	return Default;
 }
 
-const TMap<TSoftClassPtr<AActor>, FSodaActorDescriptor>& USodaGameModeComponent::GetSodaActorDescriptors() const
+const TMap<TSoftClassPtr<AActor>, FSodaActorDescriptor>& USodaSubsystem::GetSodaActorDescriptors() const
 {
 	return SodaActorDescriptors;
 }
 
-void USodaGameModeComponent::UpdateDBGateway(bool bSync)
+void USodaSubsystem::UpdateDBGateway(bool bSync)
 {
 	if (soda::FDBGateway::Instance().GetStatus() == soda::EDBGatewayStatus::Connecting)
 	{
@@ -731,7 +718,7 @@ void USodaGameModeComponent::UpdateDBGateway(bool bSync)
 	soda::FDBGateway::Instance().Configure(SodaApp.GetSodaUserSettings()->MongoURL, SodaApp.GetSodaUserSettings()->DatabaseName, bSync);
 }
 
-TSharedPtr<soda::SWaitingPanel> USodaGameModeComponent::ShowWaitingPanel(const FString& Caption, const FString& SubCaption)
+TSharedPtr<soda::SWaitingPanel> USodaSubsystem::ShowWaitingPanel(const FString& Caption, const FString& SubCaption)
 {
 	if (SodaViewport.IsValid())
 	{
@@ -743,7 +730,7 @@ TSharedPtr<soda::SWaitingPanel> USodaGameModeComponent::ShowWaitingPanel(const F
 	}
 }
 
-bool USodaGameModeComponent::CloseWaitingPanel(soda::SWaitingPanel* InWaitingPanel = nullptr)
+bool USodaSubsystem::CloseWaitingPanel(soda::SWaitingPanel* InWaitingPanel = nullptr)
 {
 	if (SodaViewport.IsValid())
 	{
@@ -755,7 +742,7 @@ bool USodaGameModeComponent::CloseWaitingPanel(soda::SWaitingPanel* InWaitingPan
 	}
 }
 
-bool USodaGameModeComponent::CloseWaitingPanel(bool bCloseAll)
+bool USodaSubsystem::CloseWaitingPanel(bool bCloseAll)
 {
 	if (SodaViewport.IsValid())
 	{

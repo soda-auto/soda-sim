@@ -10,7 +10,7 @@
  * 3D object extent struct. Similarly FBox struct
  */
 USTRUCT( BlueprintType)
-struct FExtent
+struct UNREALSODA_API FExtent
 {
 	GENERATED_USTRUCT_BODY()
 

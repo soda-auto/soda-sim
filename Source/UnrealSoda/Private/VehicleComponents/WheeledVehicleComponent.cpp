@@ -5,7 +5,7 @@
 #include "Soda/SodaApp.h"
 #include "Engine/Canvas.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "RuntimeEditorModule.h"
 
 UWheeledVehicleComponent::UWheeledVehicleComponent(const FObjectInitializer& ObjectInitializer)

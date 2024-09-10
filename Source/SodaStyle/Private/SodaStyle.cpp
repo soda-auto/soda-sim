@@ -196,6 +196,7 @@ void FStarshipSodaStyle::FStyle::Initialize()
 	SetupColorPickerStyle();
 	SetupTutorialStyles();
 	SetupScenarioEditorStyle();
+	SetupPakWindowStyle();
 
 	AuditDuplicatedCoreStyles(*this);
 	
@@ -2670,6 +2671,131 @@ void FStarshipSodaStyle::FStyle::SetupScenarioEditorStyle()
 		//.SetPressedPadding(PressedButtonMargins));
 
 	Set("ScenarioAction.OpenEditor", new IMAGE_BRUSH_SVG("Starship/AssetIcons/LevelSequenceActor_16", Icon20x20));
+}
+
+void FStarshipSodaStyle::FStyle::SetupPakWindowStyle()
+{
+	const FTextBlockStyle ButtonText = FAppStyle::Get().GetWidgetStyle<FTextBlockStyle>("PrimaryButtonText");
+	FTextBlockStyle LargeText = FAppStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Large");
+
+	const float IconSize = 16.0f;
+	const float PaddingAmount = 2.0f;
+
+	/*
+	Set("Plugins.TabIcon", new IMAGE_BRUSH_SVG("Plugins", Icon16x16));
+	Set("Plugins.BreadcrumbArrow", new IMAGE_BRUSH("SmallArrowRight", Icon10x10));
+	Set("Plugins.ListBorder", new FSlateRoundedBoxBrush(FStyleColors::Recessed, 4.0f));
+	Set("Plugins.RestartWarningBorder", new FSlateRoundedBoxBrush(FStyleColors::Panel, 5.0f, FStyleColors::Warning, 1.0f));
+
+	FTextBlockStyle WarningText = FTextBlockStyle(NormalText)
+		.SetColorAndOpacity(FStyleColors::White);
+
+	Set("Plugins.WarningText", WarningText);
+
+	
+	//Category Tree Item
+
+
+	
+	Set("CategoryTreeItem.IconSize", IconSize);
+	Set("CategoryTreeItem.PaddingAmount", PaddingAmount);
+
+	Set("CategoryTreeItem.BuiltIn", new IMAGE_BRUSH("icon_plugins_builtin_20x", Icon20x20));
+	Set("CategoryTreeItem.Installed", new IMAGE_BRUSH("icon_plugins_installed_20x", Icon20x20));
+	Set("CategoryTreeItem.LeafItemWithPlugin", new IMAGE_BRUSH("hiererchy_16x", Icon12x12));
+	Set("CategoryTreeItem.ExpandedCategory", new IMAGE_BRUSH("FolderOpen", FVector2D(18, 16)));
+	Set("CategoryTreeItem.Category", new IMAGE_BRUSH("FolderClosed", FVector2D(18, 16)));
+
+	//Root Category Tree Item
+	const float ExtraTopPadding = 12.f;
+	const float ExtraBottomPadding = 8.f;
+	const float AllPluginsExtraTopPadding = 9.f;
+	const float AllPluginsExtraBottomPadding = 7.f;
+
+	Set("CategoryTreeItem.Root.BackgroundBrush", new FSlateNoResource);
+	Set("CategoryTreeItem.Root.BackgroundPadding", FMargin(PaddingAmount, PaddingAmount + ExtraTopPadding, PaddingAmount, PaddingAmount + ExtraBottomPadding));
+	Set("CategoryTreeItem.Root.AllPluginsBackgroundPadding", FMargin(PaddingAmount, PaddingAmount + AllPluginsExtraTopPadding, PaddingAmount, PaddingAmount + AllPluginsExtraBottomPadding));
+
+	FTextBlockStyle Text = FTextBlockStyle(ButtonText);
+	Text.ColorAndOpacity = FStyleColors::Foreground;
+	Text.TransformPolicy = ETextTransformPolicy::ToUpper;
+	Set("CategoryTreeItem.Root.Text", Text);
+
+
+	FTextBlockStyle RootPluginCountText = FTextBlockStyle(NormalText);
+	Set("CategoryTreeItem.Root.PluginCountText", RootPluginCountText);
+
+	//Subcategory Tree Item
+	Set("CategoryTreeItem.BackgroundBrush", new FSlateNoResource);
+	Set("CategoryTreeItem.BackgroundPadding", FMargin(PaddingAmount));
+
+
+	FTextBlockStyle CategoryText = FTextBlockStyle(NormalText);
+	CategoryText.ColorAndOpacity = FStyleColors::Foreground;
+	Set("CategoryTreeItem.Text", CategoryText);
+
+	FTextBlockStyle PluginCountText = FTextBlockStyle(NormalText);
+	Set("CategoryTreeItem.PluginCountText", PluginCountText);
+	*/
+
+	//Plugin Tile
+	Set("PakItem.RestrictedBorderImage", new FSlateRoundedBoxBrush(FStyleColors::AccentRed, 8.f));
+	Set("PakItem.BetaBorderImage", new FSlateRoundedBoxBrush(FStyleColors::AccentOrange.GetSpecifiedColor().CopyWithNewOpacity(0.8), 8.f));
+	Set("PakItem.ExperimentalBorderImage", new FSlateRoundedBoxBrush(FStyleColors::AccentPurple, 8.f));
+	Set("PakItem.NewLabelBorderImage", new FSlateRoundedBoxBrush(FStyleColors::AccentGreen.GetSpecifiedColor().CopyWithNewOpacity(0.8), 8.f));
+	Set("PakItem.BorderImage", new FSlateRoundedBoxBrush(FStyleColors::Header, 4.0));
+	Set("PakItem.ThumbnailBorderImage", new FSlateRoundedBoxBrush(FStyleColors::Panel, 4.0));
+
+	Set("PakItem.Padding", PaddingAmount);
+
+	const float HorizontalTilePadding = 8.0f;
+	Set("PakItem.HorizontalTilePadding", HorizontalTilePadding);
+
+	const float VerticalTilePadding = 4.0f;
+	Set("PakItem.VerticalTilePadding", VerticalTilePadding);
+
+	const float ThumbnailImageSize = 69.0f;
+	Set("PakItem.ThumbnailImageSize", ThumbnailImageSize);
+
+	Set("PakItem.BackgroundBrush", new FSlateNoResource);
+	Set("PakItem.BackgroundPadding", FMargin(PaddingAmount));
+
+	FTextBlockStyle NameText = FTextBlockStyle(LargeText)
+		.SetColorAndOpacity(FStyleColors::White);
+	Set("PakItem.NameText", NameText);
+
+	FTextBlockStyle DescriptionText = FTextBlockStyle(NormalText)
+		.SetColorAndOpacity(FStyleColors::Foreground);
+	Set("PakItem.DescriptionText", DescriptionText);
+
+
+	FTextBlockStyle BetaText = FTextBlockStyle(NormalText)
+		.SetColorAndOpacity(FStyleColors::White);
+	Set("PakItem.BetaText", BetaText);
+
+
+	FTextBlockStyle VersionNumberText = FTextBlockStyle(LargeText)
+		.SetColorAndOpacity(FStyleColors::Foreground);
+	Set("PakItem.VersionNumberText", VersionNumberText);
+
+	FTextBlockStyle NewLabelText = FTextBlockStyle(NormalText)
+		.SetColorAndOpacity(FLinearColor(0.05f, 0.05f, 0.05f));
+	Set("PakItem.NewLabelText", NewLabelText);
+
+	Set("PakItem.BetaWarning", new IMAGE_BRUSH("icon_plugins_betawarn_14px", FVector2D(14, 14)));
+
+	// Metadata editor
+	Set("PluginMetadataNameFont", DEFAULT_FONT("Bold", 18));
+
+	// Plugin Creator
+	const FButtonStyle& BaseButtonStyle = FStarshipCoreStyle::GetCoreStyle().GetWidgetStyle<FButtonStyle>("Button");
+	Set("PluginPath.BrowseButton",
+		FButtonStyle(BaseButtonStyle)
+		.SetNormal(FSlateRoundedBoxBrush(FStyleColors::Secondary, 4.0f, FStyleColors::Secondary, 2.0f))
+		.SetHovered(FSlateRoundedBoxBrush(FStyleColors::Hover, 4.0f, FStyleColors::Hover, 2.0f))
+		.SetPressed(FSlateRoundedBoxBrush(FStyleColors::Header, 4.0f, FStyleColors::Header, 2.0f))
+		.SetNormalPadding(FMargin(2, 2, 2, 2))
+		.SetPressedPadding(FMargin(2, 3, 2, 1)));
 }
 
 #undef DEFAULT_FONT
