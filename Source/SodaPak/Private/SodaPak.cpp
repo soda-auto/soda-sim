@@ -1,47 +1,67 @@
-
-#include "Soda/Misc/PakUtils.h"
-#include "Soda/UnrealSoda.h"
+#include "SodaPak.h"
+#include "Serialization/ArrayReader.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonWriter.h"
+#include "Serialization/JsonSerializer.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryState.h"
 #include "GenericPlatform/GenericPlatformFile.h"
 #include "IPlatformFilePak.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
 #include "Dom/JsonObject.h"
-#include "Serialization/JsonReader.h"
-#include "Serialization/JsonWriter.h"
-#include "Serialization/JsonSerializer.h"
+
+namespace
+{
+	const TCHAR* PAK_EXT = TEXT(".pak");
+	const TCHAR* PAK_UNINSTALEED_EXT = TEXT(".pak_uninstalled");
+	const TCHAR* SPAK_EXT = TEXT(".spak");
+}
+
+static bool LoadAssetRegistryFile(const FString& AssetRegistryFile)
+{
+	//IPlatformFile* PlatformFile = FPlatformFileManager::Get().FindPlatformFile(TEXT("PakFile"));
+	//if (PlatformFile)
+	{
+		//if (PlatformFile->FileExists(*AssetRegistryFile))
+		{
+			FArrayReader SerializedAssetData;
+
+			if (FFileHelper::LoadFileToArray(SerializedAssetData, *AssetRegistryFile))
+			{
+				SerializedAssetData.Seek(0);
+				IAssetRegistry& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName).Get();
+				FAssetRegistryState PakState;
+				if (PakState.RemovePackageData("/SodaSim/MetadataAsset")) // Don't need load MetadataAsset from DLC
+				{
+					UE_LOG(LogSodaPak, Log, TEXT("LoadAssetRegistryFile(): Removed /SodaSim/MetadataAsset from \"%s\""), *AssetRegistryFile);
+				}
+				PakState.Load(SerializedAssetData);
+				AssetRegistry.AppendState(PakState);
+
+				UE_LOG(LogSodaPak, Log, TEXT("LoadAssetRegistryFile(): Loaded \"%s\""), *AssetRegistryFile);
+
+				return true;
+			}
+		}
+	}
+
+	UE_LOG(LogSodaPak, Warning, TEXT("LoadAssetRegistryFile(): Can't load \"%s\""), *AssetRegistryFile);
+	return false;
+}
+
 
 static FString GetSodaPakDir()
 {
 	return FPaths::ProjectSavedDir() / TEXT("Paks");
 }
 
-class FFindSPakFilesVisitor : public IPlatformFile::FDirectoryVisitor
-{
-	TArray<FString>& FoundFiles;
-public:
-	FFindSPakFilesVisitor(TArray<FString>& InFoundFiles)
-		: FoundFiles(InFoundFiles)
-	{}
-	virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory)
-	{
-		if (bIsDirectory == false)
-		{
-			FString Filename(FilenameOrDirectory);
-			if (Filename.MatchesWildcard(TEXT("*.spak")) && !FoundFiles.Contains(Filename))
-			{
-				FoundFiles.Add(Filename);
-			}
-		}
-		return true;
-	}
-};
-
 class FFindByWildcardVisitor : public IPlatformFile::FDirectoryVisitor
 {
-	const FString& Wildcard;
+	FString Wildcard;
 	TArray<FString>& FoundFiles;
 public:
-	FFindByWildcardVisitor(const FString & Wildcard, TArray<FString>& InFoundFiles)
+	FFindByWildcardVisitor(const FString& Wildcard, TArray<FString>& InFoundFiles)
 		: Wildcard(Wildcard)
 		, FoundFiles(InFoundFiles)
 	{}
@@ -65,7 +85,7 @@ static bool LoadFromJson(const FString& FileName, FSodaPakDescriptor& Out)
 	FString JsonString;
 	if (!FFileHelper::LoadFileToString(JsonString, *FileName))
 	{
-		UE_LOG(LogSoda, Error, TEXT("FPakUtils::LoadFromJson(%s); Can't read file"), *FileName);
+		UE_LOG(LogSodaPak, Error, TEXT("FPakUtils::LoadFromJson(%s); Can't read file"), *FileName);
 		return false;
 	}
 
@@ -73,7 +93,7 @@ static bool LoadFromJson(const FString& FileName, FSodaPakDescriptor& Out)
 	TSharedRef<TJsonReader<TCHAR>> Reader = TJsonReaderFactory<TCHAR>::Create(JsonString);
 	if (!FJsonSerializer::Deserialize(Reader, JSON))
 	{
-		UE_LOG(LogSoda, Error, TEXT("FPakUtils::LoadFromJson(%s); Can't JSON deserialize "), *FileName);
+		UE_LOG(LogSodaPak, Error, TEXT("FPakUtils::LoadFromJson(%s); Can't JSON deserialize "), *FileName);
 		return false;
 	}
 
@@ -87,8 +107,7 @@ static bool LoadFromJson(const FString& FileName, FSodaPakDescriptor& Out)
 	*/
 	if (!JSON->TryGetStringField(TEXT("FriendlyName"), Out.FriendlyName))
 	{
-		UE_LOG(LogSoda, Error, TEXT("FPakUtils::LoadFromJson(%s); Can't find \"FriendlyName\""), *FileName);
-		return false;
+		Out.FriendlyName = Out.PakName;
 	}
 	JSON->TryGetStringField(TEXT("Description"), Out.Description);
 	JSON->TryGetStringField(TEXT("Category"), Out.Category);
@@ -142,13 +161,13 @@ static bool SaveToJson(const FString& FileName, const FSodaPakDescriptor& In)
 	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&JsonString);
 	if (!FJsonSerializer::Serialize(JSON, Writer))
 	{
-		UE_LOG(LogSoda, Error, TEXT("SaveToJson(); Can't serialize"));
+		UE_LOG(LogSodaPak, Error, TEXT("SaveToJson(); Can't serialize"));
 		return false;
 	}
 
 	if (!FFileHelper::SaveStringToFile(JsonString, *FileName))
 	{
-		UE_LOG(LogSoda, Error, TEXT("SaveToJson(); Can't write to '%s' file"), *FileName);
+		UE_LOG(LogSodaPak, Error, TEXT("SaveToJson(); Can't write to '%s' file"), *FileName);
 		return false;
 	}
 	return true;
@@ -158,8 +177,8 @@ FSodaPak::FSodaPak(const FSodaPakDescriptor& Descriptor, const FString& BaseDir)
 	: Descriptor(Descriptor)
 	, BaseDir(BaseDir)
 {
-	InstalledPakFile = BaseDir / Descriptor.PakName + TEXT(".pak");
-	UninstalledPakFile = BaseDir / Descriptor.PakName + TEXT(".pak_uninstalled");
+	InstalledPakFile = BaseDir / Descriptor.PakName + PAK_EXT;
+	UninstalledPakFile = BaseDir / Descriptor.PakName + PAK_UNINSTALEED_EXT;
 
 	UpdateInstallStatus();
 	UpdateMountStatus();
@@ -217,7 +236,7 @@ void FSodaPak::UpdateMountStatus()
 		TArray<FString> MountedPakFilenames;
 		PakPlatformFile->GetMountedPakFilenames(MountedPakFilenames);
 		bIsMounted = MountedPakFilenames.FindByPredicate([this](const auto& It) { return FPaths::IsSamePath(It, InstalledPakFile); }) != nullptr;
-		
+
 	}
 	else
 	{
@@ -225,26 +244,83 @@ void FSodaPak::UpdateMountStatus()
 	}
 }
 
-void FSodaPakLoader::Initialize()
+void FSodaPakModule::StartupModule()
 {
-	TArray<FString>	FoundSPaks;
-	FFindSPakFilesVisitor PakVisitor(FoundSPaks);
+	TArray<FString>	FoundPaksInstalled;
+	TArray<FString>	FoundPaksUninstalled;
+	TSet<FString>FoundPaks;
+	FFindByWildcardVisitor PakVisitorInstalled(FString(TEXT("*")) + PAK_EXT, FoundPaksInstalled);
+	FFindByWildcardVisitor PakVisitorUninstalled(FString(TEXT("*")) + PAK_UNINSTALEED_EXT, FoundPaksUninstalled);
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-	PlatformFile.IterateDirectoryRecursively(*GetSodaPakDir(), PakVisitor);
-	TSet<FString> PakFileNames;
-	for (const FString& SPakPath : FoundSPaks)
+	PlatformFile.IterateDirectoryRecursively(*GetSodaPakDir(), PakVisitorInstalled);
+	PlatformFile.IterateDirectoryRecursively(*GetSodaPakDir(), PakVisitorUninstalled);
+
+	for (const FString& PakName : FoundPaksInstalled)
 	{
-		UE_LOG(LogSoda, Log, TEXT("FSodaPakLoader::Initialize(); Found: \"%s\""), *SPakPath);
-		FSodaPakDescriptor Desc;
-		if (LoadFromJson(SPakPath, Desc))
+		FoundPaks.Add(FPaths::GetBaseFilename(PakName));
+	}
+	for (const FString& PakName : FoundPaksUninstalled)
+	{
+		FoundPaks.Add(FPaths::GetBaseFilename(PakName));
+	}
+
+
+	for (const FString& PakName : FoundPaks)
+	{
+		UE_LOG(LogSodaPak, Log, TEXT("FSodaPakModule::StartupModule(); Found: \"%s\""), *PakName);
+		
+		FString SPakPath = GetSodaPakDir() / PakName + SPAK_EXT;
+
+		if (FPaths::FileExists(SPakPath))
 		{
+			FSodaPakDescriptor Desc;
+			if (LoadFromJson(SPakPath, Desc))
+			{
+				TSharedPtr<FSodaPak> Pak = MakeShared<FSodaPak>(Desc, GetSodaPakDir());
+				SodaPaks.Add(Pak);
+			}
+		}
+		else
+		{
+			FSodaPakDescriptor Desc;
+			Desc.FriendlyName = Desc.PakName = PakName;
+			SaveToJson(SPakPath, Desc);
 			TSharedPtr<FSodaPak> Pak = MakeShared<FSodaPak>(Desc, GetSodaPakDir());
 			SodaPaks.Add(Pak);
 		}
 	}
 
-	if (FoundSPaks.IsEmpty())
+	// Try to load AssetRegistry.bin for any DLC paks.
+	if (FPakPlatformFile* PakPlatformFile = static_cast<FPakPlatformFile*>(FPlatformFileManager::Get().FindPlatformFile(TEXT("PakFile"))))
 	{
-		UE_LOG(LogSoda, Warning, TEXT("FSodaPakLoader::Initialize(); Can't find any .spak in \"%s\""), *GetSodaPakDir());
+		TArray<FString> MountedPakFilenames;
+		PakPlatformFile->GetMountedPakFilenames(MountedPakFilenames);
+
+		for (auto & MountedPakFilename : MountedPakFilenames)
+		{
+			TRefCountPtr<FPakFile> PakFile = new FPakFile(PakPlatformFile, *MountedPakFilename, false);
+			if (FPaths::IsUnderDirectory(PakFile->GetFilename(), GetSodaPakDir()))
+			{
+				TArray<FString> Files;
+				PakFile->FindPrunedFilesAtPath(*PakFile->GetMountPoint(), Files, true, false, true);
+				for (const FString& File : Files)
+				{
+					if (File.EndsWith("/AssetRegistry.bin", ESearchCase::CaseSensitive))
+					{
+						LoadAssetRegistryFile(File);
+					}
+				}
+			}
+
+			PakFile.SafeRelease();
+		}
 	}
 }
+
+void FSodaPakModule::ShutdownModule()
+{
+}
+
+
+DEFINE_LOG_CATEGORY(LogSodaPak);
+IMPLEMENT_MODULE(FSodaPakModule, SodaPak)

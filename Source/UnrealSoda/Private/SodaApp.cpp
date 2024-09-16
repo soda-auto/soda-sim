@@ -6,7 +6,6 @@
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/SodaUserSettings.h"
 #include "Soda/DBC/Serialization.h"
-#include "Soda/Misc/PakUtils.h"
 #include "HAL/RunnableThread.h"
 #include "PhysicsEngine/PhysicsSettings.h"
 #include "EngineUtils.h"
@@ -88,9 +87,6 @@ void FSodaApp::Initialize()
 	OnHttpServerStoppedHandle = WebRemoteControlModule.OnHttpServerStopped().AddRaw(this, &FSodaApp::OnHttpServerStopped);
 
 	OutputLogHistory = MakeShareable(new soda::FOutputLogHistory);
-
-	PakLoader = MakeShared<FSodaPakLoader>();
-	PakLoader->Initialize();
 
 	bInitialized = true;
 }

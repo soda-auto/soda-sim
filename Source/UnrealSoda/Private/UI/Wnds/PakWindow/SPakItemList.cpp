@@ -93,7 +93,7 @@ void SPakItemList::RebuildAndFilterPluginList()
 		}
 		*/
 
-		for (auto & Pak : SodaApp.GetPakLoader()->GetSodaPaks())
+		for (auto & Pak : FSodaPakModule::Get().GetSodaPaks())
 		{
 			PakListItems.Add(Pak.ToSharedRef());
 		}

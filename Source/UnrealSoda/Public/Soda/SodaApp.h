@@ -23,7 +23,6 @@
 class IHttpRouter;
 class USodaSubsystem;
 class USodaUserSettings;
-class FSodaPakLoader;
 
 namespace dbc
 {
@@ -75,8 +74,6 @@ public:
 	const TMap<FString, TSharedPtr<ISodaVehicleExporter>>& GetVehicleExporters() const { return VehicleExporters; }
 
 	TSharedPtr<soda::FOutputLogHistory> GetOutputLogHistory() { return OutputLogHistory; }
-
-	const TSharedPtr<FSodaPakLoader>& GetPakLoader() const { return PakLoader; }
 
 public:
 	soda::FAsyncTaskManager CamTaskManager;
@@ -135,8 +132,6 @@ protected:
 	TMap<FString, TSharedPtr<ISodaVehicleExporter>> VehicleExporters;
 
 	TSharedPtr<soda::FOutputLogHistory> OutputLogHistory;
-
-	TSharedPtr<FSodaPakLoader> PakLoader;
 };
 
 extern UNREALSODA_API class FSodaApp SodaApp;

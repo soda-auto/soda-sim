@@ -1,8 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Modules/ModuleManager.h"
 
-struct UNREALSODA_API FSodaPakDescriptor
+DECLARE_LOG_CATEGORY_EXTERN(LogSodaPak, Log, All);
+
+struct SODAPAK_API FSodaPakDescriptor
 {
 	/** File name of the pak in the Saved/SodaPaks folder without extension */
 	FString PakName{};
@@ -43,7 +46,7 @@ enum ESodaPakInstallStatus
 };
 
 
-class UNREALSODA_API FSodaPak
+class SODAPAK_API FSodaPak
 {
 public:
 	FSodaPak(const FSodaPakDescriptor& Descriptor, const FString& BaseDir);
@@ -71,12 +74,21 @@ private:
 };
 
 
-class UNREALSODA_API FSodaPakLoader
+
+class SODAPAK_API FSodaPakModule : public IModuleInterface
 {
 public:
-	void Initialize();
-	const TArray<TSharedPtr<FSodaPak>> & GetSodaPaks() const { return SodaPaks; }
+	static inline FSodaPakModule& Get()
+	{
+		return FModuleManager::LoadModuleChecked< FSodaPakModule >( "SodaPak" );
+	}
+
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
+
+	const TArray<TSharedPtr<FSodaPak>>& GetSodaPaks() const { return SodaPaks; }
 
 private:
 	TArray<TSharedPtr<FSodaPak>> SodaPaks;
+
 };
