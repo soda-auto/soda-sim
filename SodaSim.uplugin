@@ -17,6 +17,11 @@
 		{
 			"Name": "SodaPak",
 			"Type": "DeveloperTool",
+			"LoadingPhase": "EarliestPossible"
+		},
+		{
+			"Name": "SodaPakPostLoad",
+			"Type": "DeveloperTool",
 			"LoadingPhase": "PreEarlyLoadingScreen"
 		},
 		{

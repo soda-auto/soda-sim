@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogSodaPak, Log, All);
+SODAPAK_API DECLARE_LOG_CATEGORY_EXTERN(LogSodaPak, Log, All);
 
 struct SODAPAK_API FSodaPakDescriptor
 {
@@ -32,6 +32,9 @@ struct SODAPAK_API FSodaPakDescriptor
 	FString CreatedBy{};
 
 	FString CreatedByURL{};
+
+	// Custom Config uses for this pak. It is located in the "Config/Custom/{CUSTOMCONFIG}". See Misc/ConfigHierarchy.h
+	FString CustomConfig{};
 
 	//TArray<FString> MountPoints{};
 

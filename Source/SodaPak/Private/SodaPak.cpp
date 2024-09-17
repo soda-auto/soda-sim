@@ -10,44 +10,14 @@
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
 #include "Dom/JsonObject.h"
+#include "Misc/ConfigContext.h"
+#include "Misc/ConfigHierarchy.h"
 
 namespace
 {
 	const TCHAR* PAK_EXT = TEXT(".pak");
 	const TCHAR* PAK_UNINSTALEED_EXT = TEXT(".pak_uninstalled");
 	const TCHAR* SPAK_EXT = TEXT(".spak");
-}
-
-static bool LoadAssetRegistryFile(const FString& AssetRegistryFile)
-{
-	//IPlatformFile* PlatformFile = FPlatformFileManager::Get().FindPlatformFile(TEXT("PakFile"));
-	//if (PlatformFile)
-	{
-		//if (PlatformFile->FileExists(*AssetRegistryFile))
-		{
-			FArrayReader SerializedAssetData;
-
-			if (FFileHelper::LoadFileToArray(SerializedAssetData, *AssetRegistryFile))
-			{
-				SerializedAssetData.Seek(0);
-				IAssetRegistry& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName).Get();
-				FAssetRegistryState PakState;
-				if (PakState.RemovePackageData("/SodaSim/MetadataAsset")) // Don't need load MetadataAsset from DLC
-				{
-					UE_LOG(LogSodaPak, Log, TEXT("LoadAssetRegistryFile(): Removed /SodaSim/MetadataAsset from \"%s\""), *AssetRegistryFile);
-				}
-				PakState.Load(SerializedAssetData);
-				AssetRegistry.AppendState(PakState);
-
-				UE_LOG(LogSodaPak, Log, TEXT("LoadAssetRegistryFile(): Loaded \"%s\""), *AssetRegistryFile);
-
-				return true;
-			}
-		}
-	}
-
-	UE_LOG(LogSodaPak, Warning, TEXT("LoadAssetRegistryFile(): Can't load \"%s\""), *AssetRegistryFile);
-	return false;
 }
 
 
@@ -115,6 +85,8 @@ static bool LoadFromJson(const FString& FileName, FSodaPakDescriptor& Out)
 	JSON->TryGetStringField(TEXT("EngineVersion"), Out.EngineVersion);
 	JSON->TryGetStringField(TEXT("CreatedByURL"), Out.CreatedByURL);
 	JSON->TryGetStringField(TEXT("CreatedBy"), Out.CreatedBy);
+	JSON->TryGetStringField(TEXT("CustomConfig"), Out.CustomConfig);
+	
 	//JSON->TryGetBoolField(TEXT("IsEnabled"), Out.bIsEnabled);
 
 	/*
@@ -150,6 +122,7 @@ static bool SaveToJson(const FString& FileName, const FSodaPakDescriptor& In)
 	JSON->SetStringField(TEXT("EngineVersion"), In.EngineVersion);
 	JSON->SetStringField(TEXT("CreatedByURL"), In.CreatedByURL);
 	JSON->SetStringField(TEXT("CreatedBy"), In.CreatedBy);
+	JSON->SetStringField(TEXT("CustomConfig"), In.CustomConfig);
 	//JSON->SetBoolField(TEXT("IsEnabled"), In.bIsEnabled);
 	/*
 	TArray<TSharedPtr<FJsonValue>> MountPointsArray;
@@ -244,6 +217,34 @@ void FSodaPak::UpdateMountStatus()
 	}
 }
 
+static bool LoadCustomConfig(const FString& CustomConfig, const FString& IniName)
+{ 
+	FConfigContext Contet = FConfigContext::ForceReloadIntoGConfig();
+	Contet.OverrideLayers = TArray<FConfigLayer>(GConfigLayers, UE_ARRAY_COUNT(GConfigLayers));
+	int CustomConfigInd = Contet.OverrideLayers.IndexOfByPredicate([](const auto& It) { return FString(TEXT("CustomConfig")) == It.EditorName; });
+	check(CustomConfigInd >= 0);
+	FString Layer = FString::Printf(TEXT("{PROJECT}/Config/Custom/%s/Default{TYPE}.ini"), *CustomConfig);
+	Contet.OverrideLayers.Insert({ TEXT("PakConfig"), *Layer }, CustomConfigInd);
+	FString ConfigName;
+	UE_LOG(LogSodaPak, Log, TEXT("LoadCustomConfig(); Layer:\"%s\"; IniName: \"%s\""), *Layer, *IniName);
+	return Contet.Load(*IniName, ConfigName);
+}
+
+static void LoadAllCustomConfigs(const FString& CustomConfig)
+{
+	FString CustomConfigDir = FPaths::ProjectConfigDir() / TEXT("Custom") / CustomConfig;
+	TArray<FString>FoundIni;
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	FFindByWildcardVisitor Visitor(TEXT("*Default*.ini"), FoundIni);
+	PlatformFile.IterateDirectoryRecursively(*CustomConfigDir, Visitor);
+	for (const FString & Ini : FoundIni)
+	{
+		FString IniName = FPaths::GetBaseFilename(Ini);
+		IniName.RemoveFromStart(TEXT("Default"));
+		LoadCustomConfig(CustomConfig, IniName);
+	}
+}
+
 void FSodaPakModule::StartupModule()
 {
 	TArray<FString>	FoundPaksInstalled;
@@ -290,31 +291,18 @@ void FSodaPakModule::StartupModule()
 		}
 	}
 
-	// Try to load AssetRegistry.bin for any DLC paks.
-	if (FPakPlatformFile* PakPlatformFile = static_cast<FPakPlatformFile*>(FPlatformFileManager::Get().FindPlatformFile(TEXT("PakFile"))))
+	for (const auto& Pak : SodaPaks)
 	{
-		TArray<FString> MountedPakFilenames;
-		PakPlatformFile->GetMountedPakFilenames(MountedPakFilenames);
-
-		for (auto & MountedPakFilename : MountedPakFilenames)
+		if (Pak->GetInstallStatus() == ESodaPakInstallStatus::Installed)
 		{
-			TRefCountPtr<FPakFile> PakFile = new FPakFile(PakPlatformFile, *MountedPakFilename, false);
-			if (FPaths::IsUnderDirectory(PakFile->GetFilename(), GetSodaPakDir()))
+			if (!Pak->GetDescriptor().CustomConfig.IsEmpty())
 			{
-				TArray<FString> Files;
-				PakFile->FindPrunedFilesAtPath(*PakFile->GetMountPoint(), Files, true, false, true);
-				for (const FString& File : Files)
-				{
-					if (File.EndsWith("/AssetRegistry.bin", ESearchCase::CaseSensitive))
-					{
-						LoadAssetRegistryFile(File);
-					}
-				}
+				LoadAllCustomConfigs(Pak->GetDescriptor().CustomConfig);
 			}
-
-			PakFile.SafeRelease();
 		}
 	}
+
+	//LoadAllCustomConfigs(TEXT("CitySample"));
 }
 
 void FSodaPakModule::ShutdownModule()
