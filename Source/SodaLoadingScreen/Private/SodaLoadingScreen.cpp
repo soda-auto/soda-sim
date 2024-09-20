@@ -28,50 +28,60 @@ class SSodaLoadingScreen : public SCompoundWidget
 	void Construct(const FArguments& InArgs)
 	{
 		if (UTexture2D* Tex = Cast<UTexture2D>(SodaLoadingMaterialPath.TryLoad()))
-		//if(UMaterialInterface* Tex = Cast<UMaterialInterface>(SodaLoadingMaterialPath.TryLoad()))
-		{ 
+		{
 			SodaLoadingBrush = MakeShareable(new FSlateImageBrush(Tex, FVector2D(1024 * 0.3, 512 * 0.3)));
-			//SodaLoadingBrush = MakeShareable(new FSlateMaterialBrush(*Tex, FVector2D(1024 * 0.3, 512 * 0.3)));
 			check(SodaLoadingBrush.IsValid());
+		}
 
-			ChildSlot
+		if (UTexture2D* BackgroundTex = Cast<UTexture2D>(SodaBackgroundMaterialPath.TryLoad()))
+		{
+			SodaBackgroundBrush = MakeShareable(new FSlateImageBrush(BackgroundTex, FVector2D(3840 * 0.4, 2160 * 0.4)));
+			check(SodaBackgroundBrush.IsValid());
+		}
+
+		ChildSlot
 			.HAlign(HAlign_Fill)
 			.VAlign(VAlign_Fill)
 			[
-				SNew(SBorder)
-				.BorderBackgroundColor(FColor(0,0, 0))
-				.BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
-				[
-					SNew(SOverlay)
+				SNew(SOverlay)
 					+ SOverlay::Slot()
 					[
 						SNew(SBox)
-						.HAlign(HAlign_Center)
-						.VAlign(VAlign_Center)
-						[
-							SNew(SImage)
-							.Image(SodaLoadingBrush.Get())
-						]
+							.HAlign(HAlign_Center)
+							.VAlign(VAlign_Center)
+							[
+								SNew(SImage)
+									.Image(SodaBackgroundBrush.Get())
+									.RenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(RotationAngle))))
+							]
+					]
+					+ SOverlay::Slot()
+					[
+						SNew(SBox)
+							.HAlign(HAlign_Center)
+							.VAlign(VAlign_Center)
+							[
+								SNew(SImage)
+									.Image(SodaLoadingBrush.Get())
+							]
 					]
 					+ SOverlay::Slot()
 					[
 						SAssignNew(BackgroundBlur, SBackgroundBlur)
-						.BlurStrength(4)
-						.CornerRadius(FVector4(4.0f, 4.0f, 4.0f, 4.0f))
+							.BlurStrength(4)
+							.CornerRadius(FVector4(4.0f, 4.0f, 4.0f, 4.0f))
 					]
 					+ SOverlay::Slot()
 					[
 						SNew(SBox)
-						.HAlign(HAlign_Center)
-						.VAlign(VAlign_Center)
-						[
-							SNew(SImage)
-							.Image(SodaLoadingBrush.Get())
-						]
+							.HAlign(HAlign_Center)
+							.VAlign(VAlign_Center)
+							[
+								SNew(SImage)
+									.Image(SodaLoadingBrush.Get())
+							]
 					]
-				]
 			];
-		}
 	}
 
 	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override
@@ -85,10 +95,20 @@ class SSodaLoadingScreen : public SCompoundWidget
 
 			BackgroundBlur->SetBlurStrength(FMath::Cos(InCurrentTime / (2 * PI) * Period) * Amplitude);
 		}
+
+		const float RotationSpeed = 15.0f;
+		RotationAngle += RotationSpeed * InDeltaTime;
+
+		if (RotationAngle > 360.0f)
+		{
+			RotationAngle -= 360.0f;
+		}
 	}
 
 	SSodaLoadingScreen()
-		:SodaLoadingMaterialPath(TEXT("/SodaSim/Assets/CPP/ScreenLoading/Logo"))
+		: SodaLoadingMaterialPath(TEXT("/SodaSim/Assets/CPP/ScreenLoading/Logo")),
+		SodaBackgroundMaterialPath(TEXT("/SodaSim/Assets/CPP/ScreenLoading/T_LaunchScreenLoad")),
+		RotationAngle(0.0f)
 	{}
 
 	virtual ~SSodaLoadingScreen()
@@ -97,12 +117,20 @@ class SSodaLoadingScreen : public SCompoundWidget
 		{
 			SodaLoadingBrush->SetResourceObject(nullptr);
 		}
+
+		if (SodaBackgroundBrush.IsValid())
+		{
+			SodaBackgroundBrush->SetResourceObject(nullptr);
+		}
 	}
 
 private:
 	FSoftObjectPath SodaLoadingMaterialPath;
+	FSoftObjectPath SodaBackgroundMaterialPath;
 	TSharedPtr<FSlateBrush> SodaLoadingBrush;
 	TSharedPtr<SBackgroundBlur> BackgroundBlur;
+	TSharedPtr<FSlateBrush> SodaBackgroundBrush;
+	float RotationAngle;
 };
 
 void FSodaLoadingScreenModule::StartupModule()
