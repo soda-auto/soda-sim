@@ -50,9 +50,10 @@ class SSodaLoadingScreen : public SCompoundWidget
 							.HAlign(HAlign_Center)
 							.VAlign(VAlign_Center)
 							[
-								SNew(SImage)
-									.Image(SodaBackgroundBrush.Get())
-									.RenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(RotationAngle))))
+								SAssignNew(BackgroundImageWidget, SImage)
+								.Image(SodaBackgroundBrush.Get())
+								.RenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(RotationAngle))))
+								.RenderTransformPivot(FVector2D(0.5f, 0.5f))
 							]
 					]
 					+ SOverlay::Slot()
@@ -96,13 +97,21 @@ class SSodaLoadingScreen : public SCompoundWidget
 			BackgroundBlur->SetBlurStrength(FMath::Cos(InCurrentTime / (2 * PI) * Period) * Amplitude);
 		}
 
-		const float RotationSpeed = 15.0f;
-		RotationAngle += RotationSpeed * InDeltaTime;
 
-		if (RotationAngle > 360.0f)
+		if (BackgroundImageWidget)
 		{
-			RotationAngle -= 360.0f;
+			const float RotationSpeed = 30.0f;
+			RotationAngle += RotationSpeed * InDeltaTime;
+
+			if (RotationAngle > 360.0f)
+			{
+				RotationAngle -= 360.0f;
+			}
+
+			BackgroundImageWidget->SetRenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(RotationAngle))));
+			BackgroundImageWidget->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
 		}
+		
 	}
 
 	SSodaLoadingScreen()
@@ -130,6 +139,7 @@ private:
 	TSharedPtr<FSlateBrush> SodaLoadingBrush;
 	TSharedPtr<SBackgroundBlur> BackgroundBlur;
 	TSharedPtr<FSlateBrush> SodaBackgroundBrush;
+	TSharedPtr<SImage> BackgroundImageWidget;
 	float RotationAngle;
 };
 
