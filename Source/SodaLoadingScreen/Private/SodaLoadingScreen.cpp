@@ -35,7 +35,7 @@ class SSodaLoadingScreen : public SCompoundWidget
 
 		if (UTexture2D* BackgroundTex = Cast<UTexture2D>(SodaBackgroundMaterialPath.TryLoad()))
 		{
-			SodaBackgroundBrush = MakeShareable(new FSlateImageBrush(BackgroundTex, FVector2D(3840 * 0.4, 2160 * 0.4)));
+			SodaBackgroundBrush = MakeShareable(new FSlateImageBrush(BackgroundTex, FVector2D(2160 * 0.3, 2160 * 0.3)));
 			check(SodaBackgroundBrush.IsValid());
 		}
 
@@ -115,9 +115,9 @@ class SSodaLoadingScreen : public SCompoundWidget
 	}
 
 	SSodaLoadingScreen()
-		: SodaLoadingMaterialPath(TEXT("/SodaSim/Assets/CPP/ScreenLoading/Logo")),
-		SodaBackgroundMaterialPath(TEXT("/SodaSim/Assets/CPP/ScreenLoading/T_LaunchScreenLoad")),
-		RotationAngle(0.0f)
+		: SodaLoadingMaterialPath(TEXT("/SodaSim/Assets/CPP/ScreenLoading/Logo"))
+		, SodaBackgroundMaterialPath(TEXT("/SodaSim/Assets/CPP/ScreenLoading/T_LaunchScreenLoad"))
+		, RotationAngle(0.0f)
 	{}
 
 	virtual ~SSodaLoadingScreen()
