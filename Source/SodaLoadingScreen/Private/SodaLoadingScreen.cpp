@@ -13,8 +13,11 @@
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Images/SImage.h"
+#include "Widgets/Text/STextBlock.h"
 #include "Widgets/SOverlay.h"
 #include "Engine/Texture2D.h"
+#include "Engine/Font.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Materials/MaterialInterface.h"
 
 #define LOCTEXT_NAMESPACE "FSodaLoadingScreenModule"
@@ -38,7 +41,6 @@ class SSodaLoadingScreen : public SCompoundWidget
 			SodaBackgroundBrush = MakeShareable(new FSlateImageBrush(BackgroundTex, FVector2D(2160 * 0.3, 2160 * 0.3)));
 			check(SodaBackgroundBrush.IsValid());
 		}
-
 		ChildSlot
 			.HAlign(HAlign_Fill)
 			.VAlign(VAlign_Fill)
@@ -82,6 +84,26 @@ class SSodaLoadingScreen : public SCompoundWidget
 									.Image(SodaLoadingBrush.Get())
 							]
 					]
+					+ SOverlay::Slot()
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Center)
+					.Padding(FMargin(0, 100, 0, 0))
+					[
+						SNew(STextBlock)
+							.Text(FText::FromString("SIM"))
+							.Font(MainFont)
+							.ColorAndOpacity(FLinearColor::White)
+					]
+					+ SOverlay::Slot()
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Center)
+					.Padding(FMargin(0, 300, 0, 0))
+					[
+						SNew(STextBlock)
+							.Text(FText::FromString("Version 1.1.0"))
+							.Font(VersionFont)
+							.ColorAndOpacity(FLinearColor::White)
+					]
 			];
 	}
 
@@ -96,7 +118,6 @@ class SSodaLoadingScreen : public SCompoundWidget
 
 			BackgroundBlur->SetBlurStrength(FMath::Cos(InCurrentTime / (2 * PI) * Period) * Amplitude);
 		}
-
 
 		if (BackgroundImageWidget)
 		{
@@ -118,7 +139,17 @@ class SSodaLoadingScreen : public SCompoundWidget
 		: SodaLoadingMaterialPath(TEXT("/SodaSim/Assets/CPP/ScreenLoading/Logo"))
 		, SodaBackgroundMaterialPath(TEXT("/SodaSim/Assets/CPP/ScreenLoading/T_LaunchScreenLoad"))
 		, RotationAngle(0.0f)
-	{}
+	{
+		const FSoftObjectPath RobotoPath(TEXT("/Engine/EngineFonts/Roboto.Roboto"));
+		FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+		UFont* DefaultFont = Cast<UFont>(AssetRegistryModule.Get().GetAssetByObjectPath(RobotoPath).GetAsset());
+
+		if (DefaultFont)
+		{
+			MainFont = FSlateFontInfo(DefaultFont, 30);
+			VersionFont = FSlateFontInfo(DefaultFont, 20);
+		}
+	}
 
 	virtual ~SSodaLoadingScreen()
 	{
@@ -141,6 +172,8 @@ private:
 	TSharedPtr<FSlateBrush> SodaBackgroundBrush;
 	TSharedPtr<SImage> BackgroundImageWidget;
 	float RotationAngle;
+	FSlateFontInfo MainFont;
+	FSlateFontInfo VersionFont;
 };
 
 void FSodaLoadingScreenModule::StartupModule()
