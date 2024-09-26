@@ -24,6 +24,14 @@
 #include "IWebRemoteControlModule.h"
 #include "RemoteControlSettings.h"
 
+#if PLATFORM_WINDOWS
+#include "Windows/AllowWindowsPlatformTypes.h"
+#endif
+#include <zmq.hpp>
+#if PLATFORM_WINDOWS
+#include "Windows/HideWindowsPlatformTypes.h"
+#endif
+
 #include <thread>
 
 FSodaApp::FSodaApp()

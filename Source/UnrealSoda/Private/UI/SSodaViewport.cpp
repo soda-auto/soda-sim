@@ -79,6 +79,7 @@ SSodaViewport::SSodaViewport()
 
 SSodaViewport::~SSodaViewport()
 {
+	FSodalViewportCommands::NewStatCommandDelegate.RemoveAll(this);
 }
 
 void SSodaViewport::Construct( const FArguments& InArgs, UWorld* InWorld)

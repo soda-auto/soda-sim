@@ -3,13 +3,6 @@
 #pragma once
 
 #include "CoreGlobals.h"
-#if PLATFORM_WINDOWS
-#include "Windows/AllowWindowsPlatformTypes.h"
-#endif
-#include <zmq.hpp>
-#if PLATFORM_WINDOWS
-#include "Windows/HideWindowsPlatformTypes.h"
-#endif
 #include "Engine/EngineBaseTypes.h"
 #include "GameFramework/WorldSettings.h"
 #include "Soda/Misc/LLConverter.h"
@@ -32,6 +25,11 @@ namespace dbc
 namespace soda
 {
 	class FOutputLogHistory;
+}
+
+namespace zmq
+{
+	class context_t;
 }
 
 class UNREALSODA_API FSodaApp

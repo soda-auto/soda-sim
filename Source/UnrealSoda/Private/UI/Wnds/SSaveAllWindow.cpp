@@ -205,7 +205,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 				.HAlign(HAlign_Center)
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString("Good bay!"))
+					.Text(FText::FromString("Good bye!"))
 				]
 			];
 			return;
