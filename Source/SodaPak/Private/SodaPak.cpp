@@ -1,47 +1,37 @@
-
-#include "Soda/Misc/PakUtils.h"
-#include "Soda/UnrealSoda.h"
+#include "SodaPak.h"
+#include "Serialization/ArrayReader.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonWriter.h"
+#include "Serialization/JsonSerializer.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryState.h"
 #include "GenericPlatform/GenericPlatformFile.h"
 #include "IPlatformFilePak.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
 #include "Dom/JsonObject.h"
-#include "Serialization/JsonReader.h"
-#include "Serialization/JsonWriter.h"
-#include "Serialization/JsonSerializer.h"
+#include "Misc/ConfigContext.h"
+#include "Misc/ConfigHierarchy.h"
+
+namespace
+{
+	const TCHAR* PAK_EXT = TEXT(".pak");
+	const TCHAR* PAK_UNINSTALEED_EXT = TEXT(".pak_uninstalled");
+	const TCHAR* SPAK_EXT = TEXT(".spak");
+}
+
 
 static FString GetSodaPakDir()
 {
 	return FPaths::ProjectSavedDir() / TEXT("Paks");
 }
 
-class FFindSPakFilesVisitor : public IPlatformFile::FDirectoryVisitor
-{
-	TArray<FString>& FoundFiles;
-public:
-	FFindSPakFilesVisitor(TArray<FString>& InFoundFiles)
-		: FoundFiles(InFoundFiles)
-	{}
-	virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory)
-	{
-		if (bIsDirectory == false)
-		{
-			FString Filename(FilenameOrDirectory);
-			if (Filename.MatchesWildcard(TEXT("*.spak")) && !FoundFiles.Contains(Filename))
-			{
-				FoundFiles.Add(Filename);
-			}
-		}
-		return true;
-	}
-};
-
 class FFindByWildcardVisitor : public IPlatformFile::FDirectoryVisitor
 {
-	const FString& Wildcard;
+	FString Wildcard;
 	TArray<FString>& FoundFiles;
 public:
-	FFindByWildcardVisitor(const FString & Wildcard, TArray<FString>& InFoundFiles)
+	FFindByWildcardVisitor(const FString& Wildcard, TArray<FString>& InFoundFiles)
 		: Wildcard(Wildcard)
 		, FoundFiles(InFoundFiles)
 	{}
@@ -65,7 +55,7 @@ static bool LoadFromJson(const FString& FileName, FSodaPakDescriptor& Out)
 	FString JsonString;
 	if (!FFileHelper::LoadFileToString(JsonString, *FileName))
 	{
-		UE_LOG(LogSoda, Error, TEXT("FPakUtils::LoadFromJson(%s); Can't read file"), *FileName);
+		UE_LOG(LogSodaPak, Error, TEXT("FPakUtils::LoadFromJson(%s); Can't read file"), *FileName);
 		return false;
 	}
 
@@ -73,7 +63,7 @@ static bool LoadFromJson(const FString& FileName, FSodaPakDescriptor& Out)
 	TSharedRef<TJsonReader<TCHAR>> Reader = TJsonReaderFactory<TCHAR>::Create(JsonString);
 	if (!FJsonSerializer::Deserialize(Reader, JSON))
 	{
-		UE_LOG(LogSoda, Error, TEXT("FPakUtils::LoadFromJson(%s); Can't JSON deserialize "), *FileName);
+		UE_LOG(LogSodaPak, Error, TEXT("FPakUtils::LoadFromJson(%s); Can't JSON deserialize "), *FileName);
 		return false;
 	}
 
@@ -87,8 +77,7 @@ static bool LoadFromJson(const FString& FileName, FSodaPakDescriptor& Out)
 	*/
 	if (!JSON->TryGetStringField(TEXT("FriendlyName"), Out.FriendlyName))
 	{
-		UE_LOG(LogSoda, Error, TEXT("FPakUtils::LoadFromJson(%s); Can't find \"FriendlyName\""), *FileName);
-		return false;
+		Out.FriendlyName = Out.PakName;
 	}
 	JSON->TryGetStringField(TEXT("Description"), Out.Description);
 	JSON->TryGetStringField(TEXT("Category"), Out.Category);
@@ -96,6 +85,8 @@ static bool LoadFromJson(const FString& FileName, FSodaPakDescriptor& Out)
 	JSON->TryGetStringField(TEXT("EngineVersion"), Out.EngineVersion);
 	JSON->TryGetStringField(TEXT("CreatedByURL"), Out.CreatedByURL);
 	JSON->TryGetStringField(TEXT("CreatedBy"), Out.CreatedBy);
+	JSON->TryGetStringField(TEXT("CustomConfig"), Out.CustomConfig);
+	
 	//JSON->TryGetBoolField(TEXT("IsEnabled"), Out.bIsEnabled);
 
 	/*
@@ -131,6 +122,7 @@ static bool SaveToJson(const FString& FileName, const FSodaPakDescriptor& In)
 	JSON->SetStringField(TEXT("EngineVersion"), In.EngineVersion);
 	JSON->SetStringField(TEXT("CreatedByURL"), In.CreatedByURL);
 	JSON->SetStringField(TEXT("CreatedBy"), In.CreatedBy);
+	JSON->SetStringField(TEXT("CustomConfig"), In.CustomConfig);
 	//JSON->SetBoolField(TEXT("IsEnabled"), In.bIsEnabled);
 	/*
 	TArray<TSharedPtr<FJsonValue>> MountPointsArray;
@@ -142,13 +134,13 @@ static bool SaveToJson(const FString& FileName, const FSodaPakDescriptor& In)
 	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&JsonString);
 	if (!FJsonSerializer::Serialize(JSON, Writer))
 	{
-		UE_LOG(LogSoda, Error, TEXT("SaveToJson(); Can't serialize"));
+		UE_LOG(LogSodaPak, Error, TEXT("SaveToJson(); Can't serialize"));
 		return false;
 	}
 
 	if (!FFileHelper::SaveStringToFile(JsonString, *FileName))
 	{
-		UE_LOG(LogSoda, Error, TEXT("SaveToJson(); Can't write to '%s' file"), *FileName);
+		UE_LOG(LogSodaPak, Error, TEXT("SaveToJson(); Can't write to '%s' file"), *FileName);
 		return false;
 	}
 	return true;
@@ -158,8 +150,8 @@ FSodaPak::FSodaPak(const FSodaPakDescriptor& Descriptor, const FString& BaseDir)
 	: Descriptor(Descriptor)
 	, BaseDir(BaseDir)
 {
-	InstalledPakFile = BaseDir / Descriptor.PakName + TEXT(".pak");
-	UninstalledPakFile = BaseDir / Descriptor.PakName + TEXT(".pak_uninstalled");
+	InstalledPakFile = BaseDir / Descriptor.PakName + PAK_EXT;
+	UninstalledPakFile = BaseDir / Descriptor.PakName + PAK_UNINSTALEED_EXT;
 
 	UpdateInstallStatus();
 	UpdateMountStatus();
@@ -217,7 +209,7 @@ void FSodaPak::UpdateMountStatus()
 		TArray<FString> MountedPakFilenames;
 		PakPlatformFile->GetMountedPakFilenames(MountedPakFilenames);
 		bIsMounted = MountedPakFilenames.FindByPredicate([this](const auto& It) { return FPaths::IsSamePath(It, InstalledPakFile); }) != nullptr;
-		
+
 	}
 	else
 	{
@@ -225,26 +217,98 @@ void FSodaPak::UpdateMountStatus()
 	}
 }
 
-void FSodaPakLoader::Initialize()
+static bool LoadCustomConfig(const FString& CustomConfig, const FString& IniName)
+{ 
+	FConfigContext Contet = FConfigContext::ForceReloadIntoGConfig();
+	Contet.OverrideLayers = TArray<FConfigLayer>(GConfigLayers, UE_ARRAY_COUNT(GConfigLayers));
+	int CustomConfigInd = Contet.OverrideLayers.IndexOfByPredicate([](const auto& It) { return FString(TEXT("CustomConfig")) == It.EditorName; });
+	check(CustomConfigInd >= 0);
+	FString Layer = FString::Printf(TEXT("{PROJECT}/Config/Custom/%s/Default{TYPE}.ini"), *CustomConfig);
+	Contet.OverrideLayers.Insert({ TEXT("PakConfig"), *Layer }, CustomConfigInd);
+	FString ConfigName;
+	UE_LOG(LogSodaPak, Log, TEXT("LoadCustomConfig(); Layer:\"%s\"; IniName: \"%s\""), *Layer, *IniName);
+	return Contet.Load(*IniName, ConfigName);
+}
+
+static void LoadAllCustomConfigs(const FString& CustomConfig)
 {
-	TArray<FString>	FoundSPaks;
-	FFindSPakFilesVisitor PakVisitor(FoundSPaks);
+	FString CustomConfigDir = FPaths::ProjectConfigDir() / TEXT("Custom") / CustomConfig;
+	TArray<FString>FoundIni;
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-	PlatformFile.IterateDirectoryRecursively(*GetSodaPakDir(), PakVisitor);
-	TSet<FString> PakFileNames;
-	for (const FString& SPakPath : FoundSPaks)
+	FFindByWildcardVisitor Visitor(TEXT("*Default*.ini"), FoundIni);
+	PlatformFile.IterateDirectoryRecursively(*CustomConfigDir, Visitor);
+	for (const FString & Ini : FoundIni)
 	{
-		UE_LOG(LogSoda, Log, TEXT("FSodaPakLoader::Initialize(); Found: \"%s\""), *SPakPath);
-		FSodaPakDescriptor Desc;
-		if (LoadFromJson(SPakPath, Desc))
+		FString IniName = FPaths::GetBaseFilename(Ini);
+		IniName.RemoveFromStart(TEXT("Default"));
+		LoadCustomConfig(CustomConfig, IniName);
+	}
+}
+
+void FSodaPakModule::StartupModule()
+{
+	TArray<FString>	FoundPaksInstalled;
+	TArray<FString>	FoundPaksUninstalled;
+	TSet<FString>FoundPaks;
+	FFindByWildcardVisitor PakVisitorInstalled(FString(TEXT("*")) + PAK_EXT, FoundPaksInstalled);
+	FFindByWildcardVisitor PakVisitorUninstalled(FString(TEXT("*")) + PAK_UNINSTALEED_EXT, FoundPaksUninstalled);
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	PlatformFile.IterateDirectoryRecursively(*GetSodaPakDir(), PakVisitorInstalled);
+	PlatformFile.IterateDirectoryRecursively(*GetSodaPakDir(), PakVisitorUninstalled);
+
+	for (const FString& PakName : FoundPaksInstalled)
+	{
+		FoundPaks.Add(FPaths::GetBaseFilename(PakName));
+	}
+	for (const FString& PakName : FoundPaksUninstalled)
+	{
+		FoundPaks.Add(FPaths::GetBaseFilename(PakName));
+	}
+
+
+	for (const FString& PakName : FoundPaks)
+	{
+		UE_LOG(LogSodaPak, Log, TEXT("FSodaPakModule::StartupModule(); Found: \"%s\""), *PakName);
+		
+		FString SPakPath = GetSodaPakDir() / PakName + SPAK_EXT;
+
+		if (FPaths::FileExists(SPakPath))
 		{
+			FSodaPakDescriptor Desc;
+			if (LoadFromJson(SPakPath, Desc))
+			{
+				TSharedPtr<FSodaPak> Pak = MakeShared<FSodaPak>(Desc, GetSodaPakDir());
+				SodaPaks.Add(Pak);
+			}
+		}
+		else
+		{
+			FSodaPakDescriptor Desc;
+			Desc.FriendlyName = Desc.PakName = PakName;
+			SaveToJson(SPakPath, Desc);
 			TSharedPtr<FSodaPak> Pak = MakeShared<FSodaPak>(Desc, GetSodaPakDir());
 			SodaPaks.Add(Pak);
 		}
 	}
 
-	if (FoundSPaks.IsEmpty())
+	for (const auto& Pak : SodaPaks)
 	{
-		UE_LOG(LogSoda, Warning, TEXT("FSodaPakLoader::Initialize(); Can't find any .spak in \"%s\""), *GetSodaPakDir());
+		if (Pak->GetInstallStatus() == ESodaPakInstallStatus::Installed)
+		{
+			if (!Pak->GetDescriptor().CustomConfig.IsEmpty())
+			{
+				LoadAllCustomConfigs(Pak->GetDescriptor().CustomConfig);
+			}
+		}
 	}
+
+	//LoadAllCustomConfigs(TEXT("CitySample"));
 }
+
+void FSodaPakModule::ShutdownModule()
+{
+}
+
+
+DEFINE_LOG_CATEGORY(LogSodaPak);
+IMPLEMENT_MODULE(FSodaPakModule, SodaPak)

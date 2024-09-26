@@ -7,6 +7,14 @@
 #include "Soda/SodaApp.h"
 #include <errno.h>
 
+#if PLATFORM_WINDOWS
+#include "Windows/AllowWindowsPlatformTypes.h"
+#endif
+#include <zmq.hpp>
+#if PLATFORM_WINDOWS
+#include "Windows/HideWindowsPlatformTypes.h"
+#endif
+
 bool UProtoV1CameraPublisher::Advertise(UVehicleBaseComponent* Parent)
 {
 	Shutdown();

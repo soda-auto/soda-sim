@@ -3,13 +3,6 @@
 #pragma once
 
 #include "CoreGlobals.h"
-#if PLATFORM_WINDOWS
-#include "Windows/AllowWindowsPlatformTypes.h"
-#endif
-#include <zmq.hpp>
-#if PLATFORM_WINDOWS
-#include "Windows/HideWindowsPlatformTypes.h"
-#endif
 #include "Engine/EngineBaseTypes.h"
 #include "GameFramework/WorldSettings.h"
 #include "Soda/Misc/LLConverter.h"
@@ -23,7 +16,6 @@
 class IHttpRouter;
 class USodaSubsystem;
 class USodaUserSettings;
-class FSodaPakLoader;
 
 namespace dbc
 {
@@ -33,6 +25,11 @@ namespace dbc
 namespace soda
 {
 	class FOutputLogHistory;
+}
+
+namespace zmq
+{
+	class context_t;
 }
 
 class UNREALSODA_API FSodaApp
@@ -75,8 +72,6 @@ public:
 	const TMap<FString, TSharedPtr<ISodaVehicleExporter>>& GetVehicleExporters() const { return VehicleExporters; }
 
 	TSharedPtr<soda::FOutputLogHistory> GetOutputLogHistory() { return OutputLogHistory; }
-
-	const TSharedPtr<FSodaPakLoader>& GetPakLoader() const { return PakLoader; }
 
 public:
 	soda::FAsyncTaskManager CamTaskManager;
@@ -135,8 +130,6 @@ protected:
 	TMap<FString, TSharedPtr<ISodaVehicleExporter>> VehicleExporters;
 
 	TSharedPtr<soda::FOutputLogHistory> OutputLogHistory;
-
-	TSharedPtr<FSodaPakLoader> PakLoader;
 };
 
 extern UNREALSODA_API class FSodaApp SodaApp;

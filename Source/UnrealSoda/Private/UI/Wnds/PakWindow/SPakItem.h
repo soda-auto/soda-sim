@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Widgets/SCompoundWidget.h"
-#include "Soda/Misc/PakUtils.h"
+#include "SodaPak.h"
 
 enum class ECheckBoxState : uint8;
 struct FSlateDynamicImageBrush;
