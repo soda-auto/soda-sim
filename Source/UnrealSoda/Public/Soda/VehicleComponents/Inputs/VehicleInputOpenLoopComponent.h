@@ -30,27 +30,27 @@ struct FDoubleStepSteerPrms
 
 public:
 	/** Rate of steering input, deg/s */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), meta = (ClampMin = "0.1"), meta = (ClampMax = "5000"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), meta = (ClampMin = "0.1"), meta = (ClampMax = "5000"))
 	float SteeringRate = 50;
 
 	/** deg */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), meta = (ClampMin = "1"), meta = (ClampMax = "100"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), meta = (ClampMin = "1"), meta = (ClampMax = "100"))
 	float MaxSteeringAngle = 25;
 
 	/** Speed to start steering input, m/s */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), meta = (ClampMin = "0"), meta = (ClampMax = "300"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), meta = (ClampMin = "0"), meta = (ClampMax = "300"))
 	float StartSpeed = 15;
 
 	/** Time to hold maximum steering angle, sec */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), meta = (ClampMin = "0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), meta = (ClampMin = "0"))
 	float TimeToKeepMaxSteering = 0.3;
 
 	/** True to add additional step input */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
 	bool bTripleSteer = false;
 
 	/** True to apply steering with + first, false to apply with - first */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
 	bool bSteerPositive = true;
 
 };
@@ -63,19 +63,19 @@ struct FRampSteerPrms
 public:
 
 	/** Rate of steering increment, deg/sec */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), meta = (ClampMin = "0.1"), meta = (ClampMax = "1000"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), meta = (ClampMin = "0.1"), meta = (ClampMax = "1000"))
 	float SteerRate = 4.5;
 
 	/** deg */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), meta = (ClampMin = "1"), meta = (ClampMax = "100"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), meta = (ClampMin = "1"), meta = (ClampMax = "100"))
 	float MaxSteeringAngle = 25;
 
 	/** m/s */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), meta = (ClampMin = "0"), meta = (ClampMax = "300"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), meta = (ClampMin = "0"), meta = (ClampMax = "300"))
 	float StartSpeed = 15;
 
 	/** True to apply steering with +, false to apply with - */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
 	bool bSteerPositive = true;
 };
 
@@ -86,27 +86,27 @@ struct FAccelerationAndBraking
 
 public:
 	/** Timout before start of the acceleration, sec */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), meta = (ClampMin = "0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), meta = (ClampMin = "0"))
 	float TimeToStartScenario = 1.0;
 
 	/** sec */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), meta = (ClampMin = "0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), meta = (ClampMin = "0"))
 	float AccelerationDuration = 4.0;
 
 	/** Total acceleration torque applied to the vehicle, will be distributed to wheels, N*m */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
 	float AccelerationTorqueTotal = 1500;
 
 	/** sec */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), meta = (ClampMin = "0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), meta = (ClampMin = "0"))
 	float DecelerationDuration = 4.0;
 
 	/** Total deceleration torque applied to the vehicle, will be distributed to wheels, N*m */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
 	float DecelerationTorqueTotal = 1500;
 
 	/** Time to build up a torque from 0 to max value, sec */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), meta = (ClampMin = "0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), meta = (ClampMin = "0"))
 	float TorqueBuildUpTime = 0.01;
 
 };
@@ -171,23 +171,23 @@ public:
 
 
 	/** Longitudinal speed controller, proportional gain */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), Category = "LongitudinalControl")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "LongitudinalControl")
 	float VLgtCtlP = -250;
 	/** Longitudinal speed controller, integral gain */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), Category = "LongitudinalControl")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "LongitudinalControl")
 	float VLgtCtlI = -10;
 	/** Longitudinal speed controller, tolerance to consider that acceleration part of the scenario is done */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), Category = "LongitudinalControl", meta = (ClampMin = "0"), meta = (ClampMax = "100"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "LongitudinalControl", meta = (ClampMin = "0"), meta = (ClampMax = "100"))
 	float VLgtTolerance = 1.0;
 
 	float VLgtIError = 0.0;
 
 	/** Balance of the traction torque, 1 for FWD, 0 for RWD */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), Category = "TorqueBalance", meta = (ClampMin = "0"), meta = (ClampMax = "1"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "TorqueBalance", meta = (ClampMin = "0"), meta = (ClampMax = "1"))
 	float TracTqBalance = 0.5;
 
 	/** Balance of the braking torque, 1 for FWD, 0 for RWD */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditInRuntime), Category = "TorqueBalance", meta = (ClampMin = "0"), meta = (ClampMax = "1"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "TorqueBalance", meta = (ClampMin = "0"), meta = (ClampMax = "1"))
 	float BrkTqBalance = 0.5;
 
 	
