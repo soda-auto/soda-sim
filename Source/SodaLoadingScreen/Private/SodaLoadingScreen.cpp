@@ -19,6 +19,7 @@
 #include "Engine/Font.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Materials/MaterialInterface.h"
+#include "..\..\UnrealSoda\Public\Soda\UnrealSodaVersion.h"
 
 #define LOCTEXT_NAMESPACE "FSodaLoadingScreenModule"
 
@@ -87,7 +88,7 @@ class SSodaLoadingScreen : public SCompoundWidget
 					+ SOverlay::Slot()
 					.HAlign(HAlign_Center)
 					.VAlign(VAlign_Center)
-					.Padding(FMargin(0, 100, 0, 0))
+					.Padding(FMargin(0, 110, 0, 0))
 					[
 						SNew(STextBlock)
 							.Text(FText::FromString("SIM"))
@@ -97,10 +98,10 @@ class SSodaLoadingScreen : public SCompoundWidget
 					+ SOverlay::Slot()
 					.HAlign(HAlign_Center)
 					.VAlign(VAlign_Center)
-					.Padding(FMargin(0, 300, 0, 0))
+					.Padding(FMargin(0, 325, 0, 0))
 					[
 						SNew(STextBlock)
-							.Text(FText::FromString("Version 1.1.0"))
+							.Text(FText::FromString(VersionText))
 							.Font(VersionFont)
 							.ColorAndOpacity(FLinearColor::White)
 					]
@@ -146,8 +147,8 @@ class SSodaLoadingScreen : public SCompoundWidget
 
 		if (DefaultFont)
 		{
-			MainFont = FSlateFontInfo(DefaultFont, 30);
-			VersionFont = FSlateFontInfo(DefaultFont, 20);
+			MainFont = FSlateFontInfo(DefaultFont, 26);
+			VersionFont = FSlateFontInfo(DefaultFont, 16);
 		}
 	}
 
@@ -174,6 +175,7 @@ private:
 	float RotationAngle;
 	FSlateFontInfo MainFont;
 	FSlateFontInfo VersionFont;
+	FString VersionText = FString::Printf(TEXT("Version %s"), *FString(UNREALSODA_VERSION_STRING));
 };
 
 void FSodaLoadingScreenModule::StartupModule()
