@@ -134,5 +134,5 @@ void USodaUserSettings::ApplyGraphicSettings()
 	Settings->SetFrameRateLimit((int32)FrameRateLimit);
 
 	Settings->ApplySettings(false);
-	
+
 }

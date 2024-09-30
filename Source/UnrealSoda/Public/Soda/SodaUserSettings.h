@@ -13,9 +13,9 @@
 UENUM(BlueprintType)
 enum class EQualityLevel : uint8
 {
-	Low, 
-	Medium, 
-	High, 
+	Low,
+	Medium,
+	High,
 	Epic,
 	Cinematic
 };
@@ -179,6 +179,9 @@ public:
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Advanced, meta = (EditInRuntime))
 	EScenarioStopMode ScenarioStopMode = EScenarioStopMode::RestartLevel;
 
+	UPROPERTY(config)
+	bool bShowQuickStartAtStartUp = true;;
+
 public:
 	UFUNCTION(BlueprintCallable, Category = UI)
 	float GetDPIScale() { return FMath::Clamp(DPIScale, 0.3f, 3.0f); }
@@ -189,14 +192,14 @@ public:
 
 public:
 	/** Loads the user settings from persistent storage */
-	UFUNCTION(BlueprintCallable, Category=Settings)
+	UFUNCTION(BlueprintCallable, Category = Settings)
 	virtual void LoadSettings(bool bForceReload = false);
 
 	/** Save the user settings to persistent storage (automatically happens as part of ApplySettings) */
-	UFUNCTION(BlueprintCallable, Category=Settings)
+	UFUNCTION(BlueprintCallable, Category = Settings)
 	virtual void SaveSettings();
 
-	UFUNCTION(BlueprintCallable, Category=Settings)
+	UFUNCTION(BlueprintCallable, Category = Settings)
 	virtual void SetToDefaults();
 
 	/** Loads the user .ini settings into GConfig */

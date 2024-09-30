@@ -34,6 +34,7 @@
 #include "UI/Wnds/SVehcileManagerWindow.h"
 #include "UI/Wnds/SAboutWindow.h"
 #include "UI/Wnds/PakWindow/SPakWindow.h"
+#include "UI/Wnds/SQuickStartWindow.h"
 #include "SPlacementModeTools.h"
 #include "Soda/ISodaActor.h"
 #include "RuntimeEditorModule.h"
@@ -425,6 +426,16 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateMainMenu()
 	MenuBuilder.AddMenuEntry(FSodalViewportCommands::Get().RestartLevel);
 
 	MenuBuilder.AddMenuSeparator();
+
+	{
+		FUIAction Action;
+		Action.ExecuteAction.BindSP(this, &SSodaViewportToolBar::OnOpenQuickStartWindow);
+		MenuBuilder.AddMenuEntry(
+			FText::FromString(TEXT("Quick Star")),
+			FText::FromString(TEXT("Quick Star")),
+			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.Advanced"),
+			Action);
+	}
 
 	{
 		FUIAction Action;
@@ -955,7 +966,15 @@ void SSodaViewportToolBar::OnOpenAboutWindow()
 {
 	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		SodaSubsystem->OpenWindow("About SodaSim", SNew(SAboutWindow));
+		SodaSubsystem->OpenWindow("About SODA.Sim", SNew(SAboutWindow));
+	}
+}
+
+void SSodaViewportToolBar::OnOpenQuickStartWindow()
+{
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
+	{
+		SodaSubsystem->OpenWindow("Quick Start", SNew(SQuickStartWindow));
 	}
 }
 

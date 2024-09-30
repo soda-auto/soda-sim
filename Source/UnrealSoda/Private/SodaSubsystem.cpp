@@ -22,6 +22,7 @@
 #include "Soda/UI/SMenuWindow.h"
 #include "Soda/UI/SSodaViewport.h"
 #include "UI/Wnds/SSaveAllWindow.h"
+#include "UI/Wnds/SQuickStartWindow.h"
 #include "Soda/UI/SToolBox.h"
 #include "Soda/UI/SWaitingPanel.h"
 #include "Soda/SodaGameViewportClient.h"
@@ -229,6 +230,13 @@ void USodaSubsystem::OnWorldBeginPlay(UWorld& World)
 	}
 
 	AfterScenarioStop();
+
+	static bool bWasShown = false;
+	if (SodaApp.GetSodaUserSettings()->bShowQuickStartAtStartUp && !bWasShown)
+	{
+		bWasShown = true;
+		OpenWindow("Quick Start", SNew(soda::SQuickStartWindow));
+	}
 }
 
 

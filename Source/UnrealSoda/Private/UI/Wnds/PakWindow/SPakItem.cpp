@@ -35,7 +35,7 @@ void SPakItem::Construct( const FArguments& Args, const TSharedRef<SPakItemList>
 
 FText SPakItem::GetPakNameText() const
 {
-	return FText::FromString(SodaPak->GetDescriptor().FriendlyName);
+	return FText::FromString(SodaPak->GetDescriptor().PakName);
 }
 
 void SPakItem::RecreateWidgets()

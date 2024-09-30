@@ -35,6 +35,7 @@
 #include "AssetRegistry/ARFilter.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Misc/PackageName.h"
+#include "SodaPak.h"
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -191,9 +192,18 @@ TArray<FString> USodaStatics::GetAllMapPaths()
 
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
+	FSodaPakModule& SodaPakModule = FSodaPakModule::Get();
+
+	TArray<FString> MapsWildcardFilters;// = { TEXT("*/Maps/*"), TEXT("*/Map/*") };
+	TArray<FString> MapsPathsToScan = { TEXT("/Game"),  TEXT("/SodaSim") };
+
+	for (const auto& Pak : SodaPakModule.GetSodaPaks())
+	{
+		MapsWildcardFilters.Append(Pak->GetDescriptor().MapsWildcardFilters);
+	}
 
 	auto ObjectLibrary = UObjectLibrary::CreateLibrary(UWorld::StaticClass(), false, true);
-	ObjectLibrary->LoadAssetDataFromPaths({ TEXT("/Game"),  TEXT("/SodaSim") });
+	ObjectLibrary->LoadAssetDataFromPaths(MapsPathsToScan);
 	TArray<FAssetData> AssetDatas;
 	ObjectLibrary->GetAssetDataList(AssetDatas);
 	
@@ -201,15 +211,21 @@ TArray<FString> USodaStatics::GetAllMapPaths()
 	{
 		const FString LevelName = AssetData.AssetName.ToString();
 
-		// Show only */Maps/{MAP_NAME} assets
-		if (!AssetData.PackagePath.ToString().EndsWith(TEXT("/Maps"), ESearchCase::IgnoreCase) &&
-			!AssetData.PackagePath.ToString().EndsWith(TEXT("/Map"), ESearchCase::IgnoreCase)
-			)
+		if (AssetData.PackagePath.ToString().EndsWith(TEXT("/Maps"), ESearchCase::IgnoreCase) ||
+			AssetData.PackagePath.ToString().EndsWith(TEXT("/Map"), ESearchCase::IgnoreCase))
 		{
+			Ret.Add(AssetData.PackagePath.ToString() / LevelName);
 			continue;
 		}
 
-		Ret.Add(AssetData.PackagePath.ToString() / LevelName);
+		for (auto& Wildcard : MapsWildcardFilters)
+		{
+			if (AssetData.PackageName.ToString().MatchesWildcard(Wildcard, ESearchCase::IgnoreCase))
+			{
+				Ret.Add(AssetData.PackagePath.ToString() / LevelName);
+				break;
+			}
+		}	
 	}
 	return Ret;
 }
