@@ -50,40 +50,40 @@ class SSodaLoadingScreen : public SCompoundWidget
 					+ SOverlay::Slot()
 					[
 						SNew(SBox)
-							.HAlign(HAlign_Center)
-							.VAlign(VAlign_Center)
-							[
-								SAssignNew(BackgroundImageWidget, SImage)
-								.Image(SodaBackgroundBrush.Get())
-								.RenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(RotationAngle))))
-								.RenderTransformPivot(FVector2D(0.5f, 0.5f))
-							]
+						.HAlign(HAlign_Center)
+						.VAlign(VAlign_Center)
+						[
+							SAssignNew(BackgroundImageWidget, SImage)
+							.Image(SodaBackgroundBrush.Get())
+							.RenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(RotationAngle))))
+							.RenderTransformPivot(FVector2D(0.5f, 0.5f))
+						]
 					]
 					+ SOverlay::Slot()
 					[
 						SNew(SBox)
-							.HAlign(HAlign_Center)
-							.VAlign(VAlign_Center)
-							[
-								SNew(SImage)
-									.Image(SodaLoadingBrush.Get())
-							]
+						.HAlign(HAlign_Center)
+						.VAlign(VAlign_Center)
+						[
+							SNew(SImage)
+							.Image(SodaLoadingBrush.Get())
+						]
 					]
 					+ SOverlay::Slot()
 					[
 						SAssignNew(BackgroundBlur, SBackgroundBlur)
-							.BlurStrength(4)
-							.CornerRadius(FVector4(4.0f, 4.0f, 4.0f, 4.0f))
+						.BlurStrength(4)
+						.CornerRadius(FVector4(4.0f, 4.0f, 4.0f, 4.0f))
 					]
 					+ SOverlay::Slot()
 					[
 						SNew(SBox)
-							.HAlign(HAlign_Center)
-							.VAlign(VAlign_Center)
-							[
-								SNew(SImage)
-									.Image(SodaLoadingBrush.Get())
-							]
+						.HAlign(HAlign_Center)
+						.VAlign(VAlign_Center)
+						[
+							SNew(SImage)
+							.Image(SodaLoadingBrush.Get())
+						]
 					]
 					+ SOverlay::Slot()
 					.HAlign(HAlign_Center)
@@ -91,9 +91,9 @@ class SSodaLoadingScreen : public SCompoundWidget
 					.Padding(FMargin(0, 110, 0, 0))
 					[
 						SNew(STextBlock)
-							.Text(FText::FromString("SIM"))
-							.Font(MainFont)
-							.ColorAndOpacity(FLinearColor::White)
+						.Text(FText::FromString("SIM"))
+						.Font(MainFont)
+						.ColorAndOpacity(FLinearColor::White)
 					]
 					+ SOverlay::Slot()
 					.HAlign(HAlign_Center)
@@ -101,9 +101,9 @@ class SSodaLoadingScreen : public SCompoundWidget
 					.Padding(FMargin(0, 325, 0, 0))
 					[
 						SNew(STextBlock)
-							.Text(FText::FromString(VersionText))
-							.Font(VersionFont)
-							.ColorAndOpacity(FLinearColor::White)
+						.Text(FText::FromString(VersionText))
+						.Font(VersionFont)
+						.ColorAndOpacity(FLinearColor::White)
 					]
 			];
 	}
