@@ -19,7 +19,7 @@
 #include "Engine/Font.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Materials/MaterialInterface.h"
-#include "..\..\UnrealSoda\Public\Soda\UnrealSodaVersion.h"
+#include "../../UnrealSoda/Public/Soda/UnrealSodaVersion.h"
 
 #define LOCTEXT_NAMESPACE "FSodaLoadingScreenModule"
 

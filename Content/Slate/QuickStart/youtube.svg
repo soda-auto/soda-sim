@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="377.95276"
+   height="377.95276"
+   viewBox="0 0 100 100"
+   version="1.1"
+   id="svg3331"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="youtube.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview3333"
+     pagecolor="#9f9f9f"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="2.3786088"
+     inkscape:cx="110.14842"
+     inkscape:cy="169.00635"
+     inkscape:window-width="3840"
+     inkscape:window-height="2054"
+     inkscape:window-x="2549"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs3328" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       d="M 79.902836,39.920639 V 58.20652 c 0,6.185792 -4.907205,11.250211 -11.085158,11.395486 -5.709924,0.134293 -12.488757,0.259916 -17.861273,0.259916 -5.372579,0 -12.15141,-0.125616 -17.861337,-0.259916 C 26.917115,69.456728 22.009912,64.392254 22.009912,58.20652 V 39.872092 c 0,-6.181993 4.899244,-11.243877 11.072493,-11.387042 5.290985,-0.122712 11.50319,-0.233622 16.667838,-0.233622 5.568449,0 12.915234,0.128936 19.032459,0.262568 6.193389,0.135275 11.120134,5.206438 11.120134,11.406643 z"
+       stroke="#ffffff"
+       stroke-width="1.20611"
+       id="path24726"
+       style="fill:none" />
+    <path
+       d="M 45.528888,57.197859 V 39.70939 l 15.679317,9.04576 z"
+       stroke="#ffffff"
+       stroke-width="1.20611"
+       id="path24724"
+       style="fill:none" />
+  </g>
+</svg>

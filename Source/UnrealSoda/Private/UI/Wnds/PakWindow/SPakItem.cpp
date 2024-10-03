@@ -102,7 +102,7 @@ void SPakItem::RecreateWidgets()
 						.Text(FText::FromString(PakDescriptor.CreatedBy))
 						.ToolTipText(FText::Format(LOCTEXT("NavigateToCreatedByURL", "Visit the vendor's web site ({0})"), FText::FromString(CreatedByURL)))
 						.OnNavigate_Lambda([=]() { FPlatformProcess::LaunchURL(*CreatedByURL, nullptr, nullptr); })
-						.Style(FAppStyle::Get(), "HoverOnlyHyperlink")
+						.Style(FSodaStyle::Get(), "HoverOnlyHyperlink")
 				]
 
 			+ SHorizontalBox::Slot()
@@ -112,7 +112,7 @@ void SPakItem::RecreateWidgets()
 				[
 					SNew(SImage)
 					.ColorAndOpacity(FSlateColor::UseForeground())
-					.Image(FAppStyle::Get().GetBrush("Icons.OpenInBrowser"))
+					.Image(FSodaStyle::Get().GetBrush("Icons.OpenInBrowser"))
 				];
 		}
 	}
@@ -259,9 +259,9 @@ void SPakItem::RecreateWidgets()
 													.ColorAndOpacity(FSlateColor::UseForeground())
 													.Image_Lambda([this]() {
 
-														if (SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Broken) return FAppStyle::Get().GetBrush("Icons.ErrorWithColor");
-														else if (SodaPak->IsMounted()) return FAppStyle::Get().GetBrush("Icons.SuccessWithColor");
-														else return FAppStyle::Get().GetBrush("Icons.InfoWithColor");
+														if (SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Broken) return FSodaStyle::Get().GetBrush("Icons.ErrorWithColor");
+														else if (SodaPak->IsMounted()) return FSodaStyle::Get().GetBrush("Icons.SuccessWithColor");
+														else return FSodaStyle::Get().GetBrush("Icons.InfoWithColor");
 													})
 												]
 

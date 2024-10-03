@@ -16,7 +16,7 @@
 
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
-#include "HAL/PlatformFilemanager.h"
+#include "HAL/PlatformFileManager.h"
 #include "Containers/UnrealString.h"
 #include "Misc/OutputDeviceDebug.h"
 #include "DesktopPlatformModule.h"

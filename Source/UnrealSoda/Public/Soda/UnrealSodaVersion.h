@@ -5,7 +5,7 @@
 #include "Runtime/Launch/Resources/Version.h"
 
 #define UNREALSODA_MAJOR_VERSION	1
-#define UNREALSODA_MINOR_VERSION	1
+#define UNREALSODA_MINOR_VERSION	2
 #define UNREALSODA_PATCH_VERSION	0
 
 #if defined(UNREALSODA_PIPLINE_VERSION)

@@ -431,8 +431,8 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateMainMenu()
 		FUIAction Action;
 		Action.ExecuteAction.BindSP(this, &SSodaViewportToolBar::OnOpenQuickStartWindow);
 		MenuBuilder.AddMenuEntry(
-			FText::FromString(TEXT("Quick Star")),
-			FText::FromString(TEXT("Quick Star")),
+			FText::FromString(TEXT("Quick Start")),
+			FText::FromString(TEXT("Quick Start")),
 			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.Advanced"),
 			Action);
 	}

@@ -93,7 +93,7 @@ static bool LoadFromJson(const FString& FileName, FSodaPakDescriptor& Out)
 		return false;
 	}
 
-	Out.PakName = FPaths::GetBaseFilename(FileName);
+	Out.PakFileName = FPaths::GetBaseFilename(FileName);
 	/*
 	if (!JSON->TryGetNumberField(TEXT("PakOrder"), Out.PakOrder))
 	{
@@ -157,8 +157,8 @@ FSodaPak::FSodaPak(const FSodaPakDescriptor& Descriptor, const FString& BaseDir)
 	: Descriptor(Descriptor)
 	, BaseDir(BaseDir)
 {
-	InstalledPakFile = BaseDir / Descriptor.PakName + PAK_EXT;
-	UninstalledPakFile = BaseDir / Descriptor.PakName + PAK_UNINSTALEED_EXT;
+	InstalledPakFile = BaseDir / Descriptor.PakFileName + PAK_EXT;
+	UninstalledPakFile = BaseDir / Descriptor.PakFileName + PAK_UNINSTALEED_EXT;
 
 	UpdateInstallStatus();
 	UpdateMountStatus();

@@ -119,36 +119,29 @@ bool FEditorUtils::DeprojectScreenToWorld(const ULocalPlayer* LocalPlayer, const
 
 FEditorUtils::FActorPositionTraceResult FEditorUtils::TraceWorldForPosition(const UWorld* InWorld, const FVector& RayStart, const FVector& RayEnd, const TArray<AActor*>* IgnoreActors)
 {
-	TArray<FHitResult> Hits;
-
-	FCollisionQueryParams Param(SCENE_QUERY_STAT(DragDropTrace), true);
+	FCollisionQueryParams CollisionQueryParams(SCENE_QUERY_STAT(DragDropTrace), true);
 
 	if (IgnoreActors)
 	{
-		Param.AddIgnoredActors(*IgnoreActors);
+		CollisionQueryParams.AddIgnoredActors(*IgnoreActors);
 	}
 
 	FActorPositionTraceResult Results;
-	if (InWorld->LineTraceMultiByObjectType(Hits, RayStart, RayEnd, FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllObjects), Param))
+	FHitResult Hit;
+	if (InWorld->LineTraceSingleByChannel(
+		Hit, 
+		RayStart, RayEnd, 
+		ECollisionChannel::ECC_GameTraceChannel2, // ECC_GameTraceChannel2 -  camera (any collision) // ECollisionChannel::ECC_WorldDynamic;
+		CollisionQueryParams, 
+		FCollisionResponseParams())) 
 	{
-		// Go through all hits and find closest
-		float ClosestHitDistanceSqr = TNumericLimits<float>::Max();
-
-		for (const FHitResult& Hit : Hits)
-		{
-			const float DistanceToHitSqr = (Hit.ImpactPoint - RayStart).SizeSquared();
-			if (DistanceToHitSqr < ClosestHitDistanceSqr)
-			{
-				ClosestHitDistanceSqr = DistanceToHitSqr;
-				Results.Location = Hit.Location;
-				Results.SurfaceNormal = Hit.Normal.GetSafeNormal();
-				Results.State = FActorPositionTraceResult::HitSuccess;
-				Results.HitActor = Hit.HitObjectHandle.GetManagingActor();
-			}
-		}
+		const float DistanceToHitSqr = (Hit.ImpactPoint - RayStart).SizeSquared();
+		Results.Location = Hit.Location;
+		Results.SurfaceNormal = Hit.Normal.GetSafeNormal();
+		Results.State = FActorPositionTraceResult::HitSuccess;
+		Results.HitActor = Hit.HitObjectHandle.GetManagingActor();
 	}
-
-	if (Results.State == FActorPositionTraceResult::Failed)
+	else
 	{
 		Results.State = FActorPositionTraceResult::Default;
 		const float DistanceMultiplier = 20000; // And put it in front of the camera
