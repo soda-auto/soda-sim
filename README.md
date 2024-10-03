@@ -6,7 +6,7 @@ By simulating vehicles at the level of atomic components, such as sensors, vehic
 
 SODA.Sim is empowered by SODA Validation Library. You can choose available tests or craft your bespoke scenarios in real-time. Be the first to access SODA Validation Library with a built-in AI scenario generator and AI scenario mixer.  
 
-Now we support ***UnrealEngine 5.3***.
+Now we support ***UnrealEngine 5.4***.
 
 ![SodaSim](Docs/img/intro.jpg)
 
@@ -22,7 +22,6 @@ Quick start [here](https://docs.soda.auto/projects/soda-sim/en/latest/How_To/Qui
 This repository is plugin for UnrealEngine. You can clone this repo to the UnrealEngine's plugins folder or to the project plugins folders. Then you need to follow the next steps: [Setup a New UProject](https://docs.soda.auto/projects/soda-sim/en/latest/How_To/Setup_a_New_UProject.html)
 
 > [!NOTE]
-> * Keep in mind this repo contain a submodule [SodaSimProto](https://github.com/soda-auto/SodaSimProto).  Make sure you clone the submodule as well.
 > * The repose includes LFS files. Make sure you clone LFS files as well.
 
 See more information about [Working with Plugins in Unreal Engine](https://docs.unrealengine.com/5.0/en-US/working-with-plugins-in-unreal-engine/).
@@ -32,6 +31,7 @@ See more information about [Working with Plugins in Unreal Engine](https://docs.
 * Linux (not tested)
 
 ## Ecosystem
+* [soda-sim-uproject] (https://github.com/soda-auto/soda-sim-uproject) - Just an example of UnreanEngine project for building the SODA.Sim.
 * [soda-sim-ros2](https://github.com/soda-auto/soda-sim-ros2) - support ROS2 capabilities for the SODA.Sim
 * [soda-sim-ros2-ws](https://github.com/soda-auto/soda-sim-ros2-ws) - scripts for build ROS2 for [SODA.Sim ROS2](https://github.com/soda-auto/soda-sim-ros2) for Windows and Linux.
 * [soda-sim-proto-v1](https://github.com/soda-auto/soda-sim-proto-v1) - implementation of the generic snesors messages serialization for the SodaSim.
