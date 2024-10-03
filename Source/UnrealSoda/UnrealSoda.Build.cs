@@ -110,6 +110,12 @@ public class UnrealSoda : ModuleRules
         }
 		*/
 
+        // Temporary hack to fix build for Linux (Ubuntu)
+        if (Target.Platform == UnrealTargetPlatform.Linux)
+		{
+            PublicIncludePaths.Add("/usr/include/eigen3");
+        }	
+
         if (Target.Configuration == UnrealTargetConfiguration.Shipping)
         {
             throw new NullReferenceException("The Shipping configuration isn't supported yet");
