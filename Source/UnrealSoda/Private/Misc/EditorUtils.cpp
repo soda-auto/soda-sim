@@ -285,3 +285,54 @@ AActor* FEditorUtils::FindOuterActor(const UObject* InObject)
 	}
 	return nullptr;
 }
+
+
+AActor* FEditorUtils::FindActorByName(const FString& ActorNameStr, const UWorld* InWorld)
+{
+	for (ULevel const* Level : InWorld->GetLevels())
+	{
+		if (Level)
+		{
+			for (AActor* Actor : Level->Actors)
+			{
+				if (Actor)
+				{
+					if (Actor->GetName() == ActorNameStr)
+					{
+						return Actor;
+					}
+				}
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+FString FEditorUtils::GetOwningActorOf(const FSoftObjectPath& SoftObjectPath)
+{
+	// Example of an actor called floor
+	// SoftObjectPath = { AssetPath = {PackageName = "/Game/Maps/SyncBoxLevel", AssetName = "SyncBoxLevel"}, SubPathString = "PersistentLevel.Floor" } }
+	const FString& SubPathString = SoftObjectPath.GetSubPathString();
+
+	constexpr int32 PersistentLevelStringLength = 16; // "PersistentLevel." has 16 characters
+	const bool bIsWorldObject = SubPathString.Contains(TEXT("PersistentLevel."), ESearchCase::CaseSensitive);
+	if (!bIsWorldObject)
+	{
+		// Not a path to a world object
+		return {};
+	}
+
+	const FString NewSubstring = SubPathString.RightChop(PersistentLevelStringLength);
+	return NewSubstring;
+}
+
+AActor* FEditorUtils::FindActorByName(const FSoftObjectPath& SoftObjectPath, const UWorld* InWorld)
+{
+	FString ActorName = GetOwningActorOf(SoftObjectPath);
+	if (!ActorName.IsEmpty())
+	{
+		return FindActorByName(ActorName, InWorld);
+	}
+	return nullptr;
+}

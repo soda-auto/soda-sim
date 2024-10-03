@@ -108,4 +108,10 @@ FName MakeUniqueObjectName(UObject* Parent, const UClass* Class, FName InBaseNam
 
 AActor* FindOuterActor(const UObject* InObject);
 
+AActor* FindActorByName(const FString& ActorNameStr, const UWorld* InWorld);
+
+FString GetOwningActorOf(const FSoftObjectPath& SoftObjectPath);
+
+AActor* FindActorByName(const FSoftObjectPath& SoftObjectPath, const UWorld* InWorld);
+
 } // FEditorUtils

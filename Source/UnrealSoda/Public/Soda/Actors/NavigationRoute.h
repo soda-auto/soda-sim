@@ -246,6 +246,6 @@ protected:
 	bool bIsSelected = false;
 	bool bIsUnfreezeNotified = false;
 
-	static bool TraceForMousePositionByChanel(const APlayerController * PlayerController, struct FHitResult & HitResults, const TEnumAsByte<ECollisionChannel> & CollisionChannel);
+	static bool TraceForMousePositionByChanel(const APlayerController * PlayerController, TArray<FHitResult>& HitResults, const TEnumAsByte<ECollisionChannel> & CollisionChannel);
 	static bool TraceForMousePositionByObject(const APlayerController* PlayerController, TArray<struct FHitResult>& HitResults, const TEnumAsByte<ECollisionChannel>& CollisionChannel);
 };

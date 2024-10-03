@@ -167,6 +167,24 @@ void ANavigationRoute::Serialize(FArchive& Ar)
 
 			}
 			SetRoutePoints(Ponints, false);
+
+
+			if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(LeftRoute.ToSoftObjectPath(), GetWorld())))
+			{
+				LeftRoute = FoundActor;
+			}
+			if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(RightRoute.ToSoftObjectPath(), GetWorld())))
+			{
+				RightRoute = FoundActor;
+			}
+			if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(PredecessorRoute.ToSoftObjectPath(), GetWorld())))
+			{
+				PredecessorRoute = FoundActor;
+			}
+			if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(SuccessorRoute.ToSoftObjectPath(), GetWorld())))
+			{
+				SuccessorRoute = FoundActor;
+			}
 		}
 	}
 }
@@ -675,27 +693,34 @@ void ANavigationRouteEditable::Tick(float DeltaTime)
 		// Move selected node
 		if (SelectedNode)
 		{
-			FHitResult HitGround;
+			TArray<FHitResult> HitGround;
 			if (TraceForMousePositionByChanel(PlayerController, HitGround, ECollisionChannel::ECC_WorldDynamic)) // && GroundHitFilter(Hit))
 			{
-				const FVector Dir = (HitGround.TraceEnd - HitGround.TraceStart).GetSafeNormal();
-				FVector HitLocation = HitGround.Location + Dir * ZOffset / Dir.Z;
-				SelectedNode->SetWorldLocation(HitLocation);
-				Spline->SetLocationAtSplinePoint(SelectedNode->PointIndex, HitLocation, ESplineCoordinateSpace::World, true);
-				UpdateProcedureMeshSegment(SelectedNode->PointIndex - 2);
-				UpdateProcedureMeshSegment(SelectedNode->PointIndex - 1);
-				UpdateProcedureMeshSegment(SelectedNode->PointIndex + 0);
-				UpdateProcedureMeshSegment(SelectedNode->PointIndex + 1);
-				UpdateProcedureMeshSegment(SelectedNode->PointIndex + 2);
-				if (SelectedNode->PointIndex == 0)
+				for (auto& Hit : HitGround)
 				{
-					PropagetUpdatePredecessorRoute();
+					if (!Cast<ISodaActor>(Hit.GetActor()))
+					{
+						const FVector Dir = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal();
+						FVector HitLocation = Hit.Location + Dir * ZOffset / Dir.Z;
+						SelectedNode->SetWorldLocation(HitLocation);
+						Spline->SetLocationAtSplinePoint(SelectedNode->PointIndex, HitLocation, ESplineCoordinateSpace::World, true);
+						UpdateProcedureMeshSegment(SelectedNode->PointIndex - 2);
+						UpdateProcedureMeshSegment(SelectedNode->PointIndex - 1);
+						UpdateProcedureMeshSegment(SelectedNode->PointIndex + 0);
+						UpdateProcedureMeshSegment(SelectedNode->PointIndex + 1);
+						UpdateProcedureMeshSegment(SelectedNode->PointIndex + 2);
+						if (SelectedNode->PointIndex == 0)
+						{
+							PropagetUpdatePredecessorRoute();
+						}
+						else if (SelectedNode->PointIndex == Spline->GetNumberOfSplinePoints() - 1)
+						{
+							PropagetUpdateSuccessorRoute();
+						}
+						MarkAsDirty();
+						break;
+					}
 				}
-				else if(SelectedNode->PointIndex == Spline->GetNumberOfSplinePoints() - 1)
-				{
-					PropagetUpdateSuccessorRoute();
-				}
-				MarkAsDirty();
 			}
 		}
 
@@ -808,7 +833,7 @@ void ANavigationRouteEditable::UpdateNodes()
 	}
 }
 
-bool ANavigationRouteEditable::TraceForMousePositionByChanel(const APlayerController* PlayerController, FHitResult & Hit, const TEnumAsByte<ECollisionChannel> & CollisionChannel)
+bool ANavigationRouteEditable::TraceForMousePositionByChanel(const APlayerController* PlayerController, TArray<FHitResult>& HitResults, const TEnumAsByte<ECollisionChannel> & CollisionChannel)
 {
 	FVector2D ScreenPosition;
 	FVector WorldOrigin;
@@ -817,8 +842,8 @@ bool ANavigationRouteEditable::TraceForMousePositionByChanel(const APlayerContro
 	const float HitResultTraceDistance = 100000.f;
 	if (PlayerController->GetMousePosition(ScreenPosition.X, ScreenPosition.Y) &&
 		FEditorUtils::DeprojectScreenToWorld(PlayerController->GetLocalPlayer(), ScreenPosition, WorldOrigin, WorldDirection) &&
-		PlayerController->GetWorld()->LineTraceSingleByChannel(
-			Hit,
+		PlayerController->GetWorld()->LineTraceMultiByChannel(
+			HitResults,
 			WorldOrigin, WorldOrigin + WorldDirection * HitResultTraceDistance, CollisionChannel))
 			//ECollisionChannel::ECC_GameTraceChannel2)) // ECC_GameTraceChannel2 -  camera (any collision) // ECollisionChannel::ECC_WorldDynamic;
 	{

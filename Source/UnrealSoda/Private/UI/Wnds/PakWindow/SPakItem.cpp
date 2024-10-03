@@ -313,6 +313,8 @@ void SPakItem::OnEnablePluginCheckboxChanged(ECheckBoxState NewCheckedState)
 {
 	const bool bNewEnabledState = NewCheckedState == ECheckBoxState::Checked;
 
+	auto PrevStatus = SodaPak->GetInstallStatus();
+	
 	if (bNewEnabledState)
 	{
 		SodaPak->Install();
@@ -324,8 +326,9 @@ void SPakItem::OnEnablePluginCheckboxChanged(ECheckBoxState NewCheckedState)
 		SodaPak->Uninstall();
 	}
 
-	if ((SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Installed && !SodaPak->IsMounted()) ||
-		(SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Uninstalled && SodaPak->IsMounted()) )
+	if ((SodaPak->GetInstallStatus() != PrevStatus) && (
+		(SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Installed && !SodaPak->IsMounted()) ||
+		(SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Uninstalled && SodaPak->IsMounted())))
 	{
 		FNotificationInfo Info(FText::FromString(TEXT("You must restart SODA.Sim for your changes to take effect")));
 		Info.ExpireDuration = 5.0f;

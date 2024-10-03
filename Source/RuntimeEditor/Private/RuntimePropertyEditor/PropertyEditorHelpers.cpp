@@ -178,7 +178,6 @@ TSharedRef<SWidget> SPropertyValueWidget::ConstructPropertyEditorWidget( TShared
 
 			StructWidget->GetDesiredWidth(MinDesiredWidth, MaxDesiredWidth);
 		}
-		/*
 		else if ( SPropertyEditorAsset::Supports( PropertyEditorRef ) )
 		{
 			TSharedRef<SPropertyEditorAsset> AssetWidget =
@@ -188,7 +187,6 @@ TSharedRef<SWidget> SPropertyValueWidget::ConstructPropertyEditorWidget( TShared
 			
 			AssetWidget->GetDesiredWidth( MinDesiredWidth, MaxDesiredWidth );
 		}
-		*/
 		else if ( SPropertyEditorNumeric<float>::Supports( PropertyEditorRef ) )
 		{
 			auto NumericWidget = 
@@ -647,7 +645,7 @@ namespace PropertyEditorHelpers
 
 	static bool SupportsObjectPropertyButtons( FProperty* NodeProperty, bool bUsingAssetPicker )
 	{
-		return (NodeProperty->IsA<FObjectPropertyBase>() || NodeProperty->IsA<FInterfaceProperty>()) && (!bUsingAssetPicker /* || !SPropertyEditorAsset::Supports(NodeProperty)*/);
+		return (NodeProperty->IsA<FObjectPropertyBase>() || NodeProperty->IsA<FInterfaceProperty>()) && (!bUsingAssetPicker  || !SPropertyEditorAsset::Supports(NodeProperty));
 	}
 	
 	bool IsSoftObjectPath( const FProperty* Property )

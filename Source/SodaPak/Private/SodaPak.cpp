@@ -12,6 +12,8 @@
 #include "Dom/JsonObject.h"
 #include "Misc/ConfigContext.h"
 #include "Misc/ConfigHierarchy.h"
+#include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Notifications/SNotificationList.h"
 
 namespace
 {
@@ -166,11 +168,31 @@ FSodaPak::FSodaPak(const FSodaPakDescriptor& Descriptor, const FString& BaseDir)
 
 bool FSodaPak::Install()
 {
+	for (auto& Pak : FSodaPakModule::Get().GetSodaPaks())
+	{
+		if (this != Pak.Get() && Pak->GetInstallStatus() != ESodaPakInstallStatus::Uninstalled)
+		{
+			for (auto& It : Pak->GetDescriptor().PakBlackListNames)
+			{
+				if (It == GetDescriptor().PakName)
+				{
+					FNotificationInfo Info(FText::FromString(FString::Printf(TEXT("Pak \"%s\" confilct with pak \"%s\""), *GetDescriptor().PakName, *Pak->GetDescriptor().PakName)));
+					Info.ExpireDuration = 2.0f;
+					Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
+					FSlateNotificationManager::Get().AddNotification(Info);
+
+					return false;
+				}
+			}
+		}
+	}
+
 	if (InstallStatus != ESodaPakInstallStatus::Installed)
 	{
 		bool bRes = IFileManager::Get().Move(*InstalledPakFile, *UninstalledPakFile);
 		InstallStatus = bRes ? ESodaPakInstallStatus::Installed : ESodaPakInstallStatus::Broken;
 	}
+
 	return InstallStatus == ESodaPakInstallStatus::Installed;
 }
 
@@ -208,6 +230,7 @@ void FSodaPak::UpdateInstallStatus()
 		InstallStatus = ESodaPakInstallStatus::Uninstalled;
 	}
 }
+
 
 void FSodaPak::UpdateMountStatus()
 {

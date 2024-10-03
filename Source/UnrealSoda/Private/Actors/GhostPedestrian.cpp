@@ -9,6 +9,7 @@
 #include "Soda/SodaStatics.h"
 #include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
+#include "Soda/Misc/EditorUtils.h"
 
 #include "bsoncxx/builder/stream/helpers.hpp"
 #include "bsoncxx/exception/exception.hpp"
@@ -163,6 +164,40 @@ void AGhostPedestrian::TickActor(float DeltaTime, enum ELevelTick TickType, FAct
 
 }
 
+static AActor* FindActorByName(const FString& ActorNameStr, const UWorld* InWorld)
+{
+	for (ULevel const* Level : InWorld->GetLevels())
+	{
+		if (Level)
+		{
+			for (AActor* Actor : Level->Actors)
+			{
+				if (Actor)
+				{
+					if (Actor->GetName() == ActorNameStr)
+					{
+						return Actor;
+					}
+				}
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+
+void AGhostPedestrian::Serialize(FArchive& Ar)
+{
+	Super::Serialize(Ar);
+	if (Ar.IsSaveGame() && Ar.IsLoading())
+	{
+		if (ANavigationRouteEditable* FoundActor = Cast<ANavigationRouteEditable>(FEditorUtils::FindActorByName(InitialRoute.ToSoftObjectPath(), GetWorld())))
+		{
+			InitialRoute = FoundActor;
+		}
+	}
+}
 
 void AGhostPedestrian::GoToLeftRoute(float StaticOffset, float VelocityToOffset)
 {

@@ -72,6 +72,8 @@ public:
 	void UpdateInstallStatus();
 	void UpdateMountStatus();
 
+	bool CheckIsCompatibleWith(const FString& PakName) const;
+
 private:
 	FSodaPakDescriptor Descriptor{};
 	FString BaseDir;
