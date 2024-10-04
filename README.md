@@ -1,6 +1,6 @@
 # SODA.Sim  
 
-[SODA.Sim](https://soda.auto/products/sim/index.html) is designed for seamless software validation of any vehicle, covering the entire process from initial concept through certification to aftermarket updates.
+[SODA.Sim](https://soda.auto/tools/sim/) is designed for seamless software validation of any vehicle, covering the entire process from initial concept through certification to aftermarket updates.
 
 By simulating vehicles at the level of atomic components, such as sensors, vehicle systems, and electronic control units SODA.Sim is not only a perfect tool for AD/ADAS development, but also a virtual proving ground for validation and certification of all vehicle functions.
 
