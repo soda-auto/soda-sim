@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/CANDev.h"
 #include "Soda/VehicleComponents/CANBus.h"
@@ -18,16 +18,22 @@ UCANDevComponent::UCANDevComponent(const FObjectInitializer& ObjectInitializer)
 	Common.Activation = EVehicleComponentActivation::OnStartScenario;
 }
 
+void UCANDevComponent::OnPreActivateVehicleComponent()
+{
+	Super::OnPreActivateVehicleComponent();
+
+	CANBus = LinkToCANBus.GetObject<UCANBusComponent>(GetOwner());
+	if (CANBus)
+	{
+		CANBus->RegisterCanDev(this);
+	}
+}
+
 bool UCANDevComponent::OnActivateVehicleComponent()
 {
-	CANBus = LinkToCANBus.GetObject<UCANBusComponent>(GetOwner());
 	if (!CANBus)
 	{
 		SetHealth(EVehicleComponentHealth::Warning, TEXT("CAN bus isn't connectd"));
-	}
-	else
-	{
-		CANBus->RegisterCanDev(this);
 	}
 
 	//RecvMessages.clear();
@@ -40,6 +46,10 @@ void UCANDevComponent::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
 
+	if (IsValid(CANBus))
+	{
+		CANBus->UnregisterCanDev(this);
+	}
 	CANBus = nullptr;
 
 	//RecvMessages.clear();
@@ -60,9 +70,9 @@ void UCANDevComponent::ProcessRecvMessage(const TTimestamp& Timestamp, const dbc
 }
 
 
-void UCANDevComponent::GetRemark(FString& Info) const
+FString UCANDevComponent::GetRemark() const
 {
-	Info = "Bus:" + LinkToCANBus.PathToSubobject;
+	return "Bus:" + LinkToCANBus.PathToSubobject;
 }
 
 void UCANDevComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)

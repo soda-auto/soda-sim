@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "SScenarioActionTree.h"
 #include "Soda/UnrealSoda.h"
@@ -18,7 +18,7 @@
 //#include "RuntimeEditorModule.h"
 //#include "RuntimePropertyEditor/IDetailsView.h"
 //#include "Soda/SodaStatics.h"
-//#include "Soda/SodaGameMode.h"
+//#include "Soda/SodaSubsystem.h"
 //#include "Soda/Vehicles/SodaVehicle.h"
 //#include "Soda/UI/ToolBoxes/Common/SVehicleComponentClassCombo.h"
 //#include "Soda/UI/ToolBoxes/Common/SPinWidget.h"

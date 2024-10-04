@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/WheeledVehicleMovementBaseComponent.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
@@ -39,10 +39,31 @@ bool UWheeledVehicleMovementBaseComponent::OnActivateVehicleComponent()
 		return false;
 	}
 
+	ReceiveActivateVehicleComponent();
+
 	return true;
 }
 
 void UWheeledVehicleMovementBaseComponent::OnDeactivateVehicleComponent()
 {
 	ISodaVehicleComponent::OnDeactivateVehicleComponent();
+	ReceiveDeactivateVehicleComponent();
 }
+
+#if WITH_EDITOR
+void UWheeledVehicleMovementBaseComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	if (!HasBegunPlay())
+	{
+		Super::PostEditChangeProperty(PropertyChangedEvent);
+	}
+}
+
+void UWheeledVehicleMovementBaseComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	if (!HasBegunPlay())
+	{
+		Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	}
+}
+#endif

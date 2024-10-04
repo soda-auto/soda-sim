@@ -1,5 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -17,6 +17,7 @@ namespace soda
 class FDetailWidgetRow;
 class IDetailGroup;
 class IDetailPropertyRow;
+class IDetailLayoutBuilder;
 
 /** Interface for the various types of rows that can be created through a detail layout customization */
 class IDetailLayoutRow
@@ -181,7 +182,7 @@ public:
 	/**
 	 * @return The parent layout builder of this class
 	 */
-	virtual class IDetailLayoutBuilder& GetParentLayout() const = 0;
+	virtual IDetailLayoutBuilder& GetParentLayout() const = 0;
 
 	/**
 	 * @return true if the parent layout is valid or has been destroyed by a refresh.

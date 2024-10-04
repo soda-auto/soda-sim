@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -161,6 +161,9 @@ class UNREALSODA_API ASodaVehicle :
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Dataset, SaveGame, meta = (EditInRuntime))
 	bool bRecordDataset = true;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = scenario, SaveGame, meta = (EditInRuntime))
+	bool bPossesWhenScarioPlay = false;
+
 public:
 	/** Widget created form VehicleWidgetClass. */
 	UPROPERTY(Transient, BlueprintReadOnly, Category = VehicleWidget)
@@ -261,9 +264,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
 	virtual void ReActivateVehicleComponents(bool bOnlyTopologyComponents);
 
-	UFUNCTION(BlueprintCallable, Category = Vehicle)
-	virtual bool ReActivateVehicleComponentsIfNeeded();
-
 	/** Get vehicle extent calculated and store in the CalculateVehicleExtent(). */
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
 	virtual const FExtent & GetVehicleExtent() const { return VehicelExtent; }
@@ -299,9 +299,6 @@ public:
 
 	//TODO: Add CanCreateVehicle() logic
 	//virtual bool CanCreateVehicle() const;
-
-	void NotifyNeedReActivateComponents() { bNotifyNeedReActivateComponents = true; }
-	bool DoNeedReActivateComponents() const { return bNotifyNeedReActivateComponents; }
 
 public:
 	/**
@@ -353,6 +350,11 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
 	virtual void Serialize(FArchive& Ar) override;
+	virtual void NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
 
 protected:
 	virtual void ReRegistreVehicleComponents();
@@ -379,7 +381,6 @@ protected:
 	TSharedPtr<FJsonActorArchive> JsonAr;
 	FExtent VehicelExtent;
 
-	bool bNotifyNeedReActivateComponents = false;
 	FPhysBodyKinematic PhysBodyKinematicCashed;
 	TSharedPtr<soda::FActorDatasetData> Dataset;
 };

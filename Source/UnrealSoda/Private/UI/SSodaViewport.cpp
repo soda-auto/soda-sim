@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/UI/SSodaViewport.h"
 #include "Misc/Paths.h"
@@ -34,12 +34,11 @@
 #include "UI/SOutputLog.h"
 #include "Soda/SodaActorFactory.h"
 #include "Soda/SodaSpectator.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/SodaApp.h"
 #include "Soda/SodaUserSettings.h"
 #include "Soda/Editor/SodaSelection.h"
 #include "Soda/SodaGameViewportClient.h"
-#include "Soda/SodaHUD.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Soda/Misc/EditorUtils.h"
 #include "Framework/Commands/UICommandInfo.h"
@@ -80,6 +79,7 @@ SSodaViewport::SSodaViewport()
 
 SSodaViewport::~SSodaViewport()
 {
+	FSodalViewportCommands::NewStatCommandDelegate.RemoveAll(this);
 }
 
 void SSodaViewport::Construct( const FArguments& InArgs, UWorld* InWorld)
@@ -206,25 +206,19 @@ void SSodaViewport::BindCommands()
 
 	CommandListRef.MapAction(
 		Commands.ToggleVehiclePanel,
-		FExecuteAction::CreateLambda([World=GetWorld()]()
+		FExecuteAction::CreateLambda([ViewportClient=ViewportClient]()
 		{
-			if (IsValid(World))
+			if (ViewportClient.IsValid())
 			{
-				if (ASodaHUD* SodaHUD = World->GetFirstPlayerController()->GetHUD<ASodaHUD>())
-				{
-					SodaHUD->bDrawVehicleDebugPanel = !SodaHUD->bDrawVehicleDebugPanel;
-				}
+				ViewportClient->SetIsDrawVehicleDebugPanel(!ViewportClient->GetIsDrawVehicleDebugPanel());
 			}
 		}),
 		FCanExecuteAction(),
-		FIsActionChecked::CreateLambda([World=GetWorld()]()
+		FIsActionChecked::CreateLambda([ViewportClient=ViewportClient]()
 		{
-			if (IsValid(World))
+			if (ViewportClient.IsValid())
 			{
-				if (ASodaHUD* SodaHUD = World->GetFirstPlayerController()->GetHUD<ASodaHUD>())
-				{
-					return SodaHUD->bDrawVehicleDebugPanel;
-				}
+				return ViewportClient->GetIsDrawVehicleDebugPanel();
 			}
 			return false;
 		})
@@ -352,9 +346,9 @@ void SSodaViewport::BindCommands()
 		Commands.RestartLevel,
 		FExecuteAction::CreateLambda([]()
 		{
-			if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+			if (USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked())
 			{
-				GameMode->RequestRestartLevel(false);
+				SodaSubsystem->RequestRestartLevel(false);
 			}
 		})
 	);
@@ -402,24 +396,24 @@ void SSodaViewport::BindCommands()
 		Commands.ToggleSpectatorMode,
 		FExecuteAction::CreateLambda([]()
 		{
-			if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+			if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 			{
-				APlayerController* PlayerController = GameMode->GetWorld()->GetFirstPlayerController();
+				APlayerController* PlayerController = SodaSubsystem->GetWorld()->GetFirstPlayerController();
 				check(PlayerController);
 
 				APawn* Pawn = PlayerController->GetPawn();
 
 				if (Cast<ASodaVehicle>(Pawn))
 				{
-					GameMode->SetSpectatorMode(true);
+					SodaSubsystem->SetSpectatorMode(true);
 				}
 				else if (Cast<ASodalSpectator>(Pawn))
 				{
-					GameMode->SetSpectatorMode(false);
+					SodaSubsystem->SetSpectatorMode(false);
 				}
 				else
 				{
-					GameMode->SetSpectatorMode(true);
+					SodaSubsystem->SetSpectatorMode(true);
 				}
 			}
 		})
@@ -429,26 +423,26 @@ void SSodaViewport::BindCommands()
 		Commands.PossesNextVehicle,
 		FExecuteAction::CreateLambda([]()
 		{
-			if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+			if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 			{
-				APlayerController* PlayerController = GameMode->GetWorld()->GetFirstPlayerController();
+				APlayerController* PlayerController = SodaSubsystem->GetWorld()->GetFirstPlayerController();
 				check(PlayerController);
 
-				ASodaVehicle* Vehicle = GameMode->GetActiveVehicle();
+				ASodaVehicle* Vehicle = SodaSubsystem->GetActiveVehicle();
 				if (Vehicle)
 				{
-					for (TActorIterator<ASodaVehicle> It(GameMode->GetWorld()); It; ++It)
+					for (TActorIterator<ASodaVehicle> It(SodaSubsystem->GetWorld()); It; ++It)
 					{
 						if (*It == Vehicle)
 						{
 							++It;
 							if (It)
 							{
-								GameMode->SetActiveVehicle(*It);
+								SodaSubsystem->SetActiveVehicle(*It);
 							}
 							else
 							{
-								GameMode->SetActiveVehicle(*TActorIterator<ASodaVehicle>(GameMode->GetWorld()));
+								SodaSubsystem->SetActiveVehicle(*TActorIterator<ASodaVehicle>(SodaSubsystem->GetWorld()));
 							}
 							break;
 						}
@@ -456,10 +450,10 @@ void SSodaViewport::BindCommands()
 				}
 				else
 				{
-					TActorIterator<ASodaVehicle> It(GameMode->GetWorld());
+					TActorIterator<ASodaVehicle> It(SodaSubsystem->GetWorld());
 					if (It)
 					{
-						GameMode->SetActiveVehicle(*It);
+						SodaSubsystem->SetActiveVehicle(*It);
 					}
 				}
 			}
@@ -483,7 +477,7 @@ void SSodaViewport::BindCommands()
 		FExecuteAction::CreateLambda([this]()
 		{
 			USodaStatics::TagActorsInLevel(GetWorld(), true);
-			USodaStatics::AddV2VComponentToAllVehiclesInLevel(GetWorld(), ASodaVehicle::StaticClass());
+			USodaStatics::AddV2XMarkerToAllVehiclesInLevel(GetWorld(), ASodaVehicle::StaticClass());
 		})
 	);
 
@@ -491,9 +485,9 @@ void SSodaViewport::BindCommands()
 		Commands.Exit,
 		FExecuteAction::CreateLambda([]()
 		{
-			if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+			if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 			{
-				GameMode->RequestQuit();
+				SodaSubsystem->RequestQuit();
 			}
 		})
 	);
@@ -529,11 +523,11 @@ void SSodaViewport::BindStatCommand(const TSharedPtr<FUICommandInfo> InMenuItem,
 
 void SSodaViewport::BackMenu()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		if (!GameMode->CloseWindow())
+		if (!SodaSubsystem->CloseWindow())
 		{
-			GameMode->PopToolBox();
+			SodaSubsystem->PopToolBox();
 		}
 	}
 }
@@ -829,9 +823,9 @@ void SSodaViewport::SetToolBoxWidget(TSharedRef<SToolBox> InWidget)
 						.ButtonStyle(FSodaStyle::Get(), "MenuWindow.CloseButton")
 						.OnClicked(FOnClicked::CreateLambda([this]() 
 						{
-							if(USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+							if(USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 							{
-								GameMode->PopToolBox();
+								SodaSubsystem->PopToolBox();
 							}
 							return FReply::Handled();
 						}))
@@ -858,19 +852,19 @@ void SSodaViewport::RemoveToolBoxWidget()
 
 void SSodaViewport::SetViewportType(ESodaSpectatorMode InMode)
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	if (GameMode && GameMode->SpectatorActor)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	if (SodaSubsystem && SodaSubsystem->SpectatorActor)
 	{
-		GameMode->SpectatorActor->SetMode(InMode);
+		SodaSubsystem->SpectatorActor->SetMode(InMode);
 	}
 }
 
 bool SSodaViewport::IsActiveViewportType(ESodaSpectatorMode InMode)
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	if (GameMode && GameMode->SpectatorActor)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	if (SodaSubsystem && SodaSubsystem->SpectatorActor)
 	{
-		return GameMode->SpectatorActor->GetMode() == InMode;
+		return SodaSubsystem->SpectatorActor->GetMode() == InMode;
 	}
 	return false;
 }

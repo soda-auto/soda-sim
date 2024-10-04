@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "UI/Wnds/SSaveAllWindow.h"
 #include "UI/Wnds/SLevelSaveLoadWindow.h"
@@ -7,7 +7,7 @@
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SButton.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/LevelState.h"
 #include "UObject/WeakInterfacePtr.h"
 #include "EngineUtils.h"
@@ -104,13 +104,13 @@ public:
 
 void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode, bool bExecuteModeIfNothingToSave)
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	check(GameMode);
-	UWorld * World = GameMode->GetWorld();
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	check(SodaSubsystem);
+	UWorld * World = SodaSubsystem->GetWorld();
 	check(World);
 
 	// Add Level State
-	TWeakObjectPtr<ALevelState> LevelState = GameMode->LevelState;
+	TWeakObjectPtr<ALevelState> LevelState = SodaSubsystem->LevelState;
 	if(LevelState.IsValid() && LevelState->IsDirty())
 	{
 		TSharedPtr<FSaveAllWindowItem> LevelItem = MakeShared<FSaveAllWindowItem>();
@@ -127,7 +127,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 			}
 			return false;
 		});
-		LevelItem->Action.ExecuteAction.BindLambda([LevelState, GameMode]()
+		LevelItem->Action.ExecuteAction.BindLambda([LevelState, SodaSubsystem]()
 		{
 			if (LevelState.IsValid())
 			{
@@ -137,7 +137,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 				}
 				else
 				{
-					GameMode->OpenWindow("Level Save & Load", SNew(SLevelSaveLoadWindow));
+					SodaSubsystem->OpenWindow("Level Save & Load", SNew(SLevelSaveLoadWindow));
 				}
 			}
 		});
@@ -154,7 +154,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 			{
 				TSharedPtr<FSaveAllWindowItem> PinnedItem = MakeShared<FSaveAllWindowItem>();
 				Source.Add(PinnedItem);
-				const FSodaActorDescriptor & Desc = GameMode->GetSodaActorDescriptor(Actor->GetClass());
+				const FSodaActorDescriptor & Desc = SodaSubsystem->GetSodaActorDescriptor(Actor->GetClass());
 				PinnedItem->Caption = SodaActor->GetPinnedActorName();
 				PinnedItem->IconName = Desc.Icon;
 				PinnedItem->ClassName = Actor->GetClass()->GetFName();
@@ -166,7 +166,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 					}
 					return false;
 				});
-				PinnedItem->Action.ExecuteAction.BindLambda([SodaActor, GameMode]()
+				PinnedItem->Action.ExecuteAction.BindLambda([SodaActor, SodaSubsystem]()
 				{
 					if (SodaActor.IsValid())
 					{
@@ -182,7 +182,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 		switch (Mode)
 		{
 		case ESaveAllWindowMode::Restart:
-			GameMode->RequestRestartLevel(true);
+			SodaSubsystem->RequestRestartLevel(true);
 			ChildSlot
 			[
 				SNew(SBox)
@@ -196,7 +196,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 			];
 			return;
 		case ESaveAllWindowMode::Quit:
-			GameMode->RequestQuit(true);
+			SodaSubsystem->RequestQuit(true);
 			ChildSlot
 			[
 				SNew(SBox)
@@ -205,7 +205,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 				.HAlign(HAlign_Center)
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString("Good bay!"))
+					.Text(FText::FromString("Good bye!"))
 				]
 			];
 			return;
@@ -273,8 +273,8 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 				.AutoWidth()
 				[
 					SNew(SButton)
-					.Text(FText::FromString("Cancle"))
-					.OnClicked(this, &SSaveAllWindow::OnCancle)
+					.Text(FText::FromString("Cancel"))
+					.OnClicked(this, &SSaveAllWindow::OnCancel)
 				]
 			]
 		]
@@ -288,23 +288,23 @@ TSharedRef<ITableRow> SSaveAllWindow::OnGenerateRow(TSharedPtr<FSaveAllWindowIte
 
 FReply SSaveAllWindow::OnQuit()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		GameMode->RequestQuit(true);
+		SodaSubsystem->RequestQuit(true);
 	}
 	return FReply::Handled();
 }
 
 FReply SSaveAllWindow::OnRestart()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		GameMode->RequestRestartLevel(true);
+		SodaSubsystem->RequestRestartLevel(true);
 	}
 	return FReply::Handled();
 }
 
-FReply SSaveAllWindow::OnCancle()
+FReply SSaveAllWindow::OnCancel()
 {
 	CloseWindow();
 	return FReply::Handled();

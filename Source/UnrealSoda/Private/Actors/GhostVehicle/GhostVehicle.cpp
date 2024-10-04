@@ -1,12 +1,13 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Actors/GhostVehicle/GhostVehicle.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Soda/Actors/NavigationRoute.h"
 #include "Soda/UnrealSoda.h"
 #include "Components/BoxComponent.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/SodaStatics.h"
+#include "Soda/Misc/EditorUtils.h"
 #include "Actors/GhostVehicle/SpeedProfile/UnifiedSpeedProfile.h"
 #include "Actors/GhostVehicle/SpeedProfile/Curvature.h"
 #include "Soda/DBGateway.h"
@@ -25,8 +26,10 @@
 AGhostVehicle::AGhostVehicle()
 {
 	Mesh = CreateDefaultSubobject< USkeletalMeshComponent >(TEXT("VehicleMesh"));
-	//Mesh->SetCollisionProfileName(UCollisionProfile::Vehicle_ProfileName);
+	
+	Mesh->SetCollisionProfileName(UCollisionProfile::Vehicle_ProfileName);
 	Mesh->SetSimulatePhysics(false);
+	/*
 	Mesh->SetGenerateOverlapEvents(true);
 	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -38,6 +41,7 @@ AGhostVehicle::AGhostVehicle()
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Ignore);
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Vehicle, ECollisionResponse::ECR_Ignore);
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Destructible, ECollisionResponse::ECR_Ignore);
+	*/
 
 	RootComponent = Mesh;
 	PrimaryActorTick.bCanEverTick = true;
@@ -137,7 +141,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	check(PlayerController);
 
-	USodaGameModeComponent * GameMode  = USodaGameModeComponent::GetChecked();
+	USodaSubsystem * SodaSubsystem  = USodaSubsystem::GetChecked();
 
 	if (bIsMoving)
 	{
@@ -191,7 +195,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 			{
 				auto& Wheel = Wheels[i];
 				GetWorld()->LineTraceSingleByChannel(Wheel.Hit, VehicleTransform.TransformPosition(Wheel.Location + FVector(0, 0, Wheel.Radius)), VehicleTransform.TransformPosition(Wheel.Location + FVector(0, 0, -Wheel.Radius - RayCastDepth)),
-					ECollisionChannel::ECC_WorldDynamic,
+					ECollisionChannel::ECC_GameTraceChannel2, //ECollisionChannel::ECC_WorldDynamic,
 					FCollisionQueryParams(NAME_None, false, this));
 
 				if (Wheel.Hit.bBlockingHit)
@@ -231,7 +235,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 				VehicleTransform.GetLocation() - 
 				VehicleTransform.GetRotation().RotateVector(VehicleTransform.InverseTransformPosition(VehicleTransform.GetLocation()) + RealAxesOffset)
 			);
-			SetActorTransform(VehicleTransform);
+			SetActorTransform(VehicleTransform, false, nullptr, ETeleportType::TeleportPhysics);
 		}
 
 		if (Dataset)
@@ -255,7 +259,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 						VehicleTransform.GetLocation() -
 						VehicleTransform.GetRotation().RotateVector(VehicleTransform.InverseTransformPosition(VehicleTransform.GetLocation()) + RealAxesOffset)
 					);
-					SetActorTransform(VehicleTransform);
+					SetActorTransform(VehicleTransform, false, nullptr, ETeleportType::TeleportPhysics);
 				}
 				else
 				{
@@ -266,7 +270,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 		}
 	}
 
-	if (!GameMode->IsScenarioRunning() && !bJoinToInitialRoute)
+	if (!SodaSubsystem->IsScenarioRunning() && !bJoinToInitialRoute)
 	{
 		for (int i = 1; i < JoiningCurvePoints.Num(); ++i)
 		{
@@ -283,12 +287,23 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 
 }
 
+void AGhostVehicle::Serialize(FArchive& Ar)
+{
+	Super::Serialize(Ar);
+	if (Ar.IsSaveGame() && Ar.IsLoading())
+	{
+		if (ANavigationRouteEditable* FoundActor = Cast<ANavigationRouteEditable>(FEditorUtils::FindActorByName(InitialRoute.ToSoftObjectPath(), GetWorld())))
+		{
+			InitialRoute = FoundActor;
+		}
+	}
+}
 
 void AGhostVehicle::GoToLeftRoute(float StaticOffset, float VelocityToOffset)
 {
 	if (bIsMoving)
 	{
-		if (TrajectoryPlaner.GoToLeftRoute(GetWorld(), GetActorTransform(), StaticOffset + CurrentVelocity * VelocityToOffset))
+		if (TrajectoryPlaner.GoToLeftRoute(GetWorld(), GetRealAxesTransform(), StaticOffset + CurrentVelocity * VelocityToOffset))
 		{
 			CurrentSplineOffset = TrajectoryPlaner.GetDistanceAlongSpline();
 			CalculateSpeedProfile();
@@ -300,7 +315,7 @@ void AGhostVehicle::GoToRightRoute(float StaticOffset, float VelocityToOffset)
 {
 	if (bIsMoving)
 	{
-		if (TrajectoryPlaner.GoToRightRoute(GetWorld(), GetActorTransform(), StaticOffset + CurrentVelocity * VelocityToOffset))
+		if (TrajectoryPlaner.GoToRightRoute(GetWorld(), GetRealAxesTransform(), StaticOffset + CurrentVelocity * VelocityToOffset))
 		{
 			CurrentSplineOffset = TrajectoryPlaner.GetDistanceAlongSpline();
 			CalculateSpeedProfile();
@@ -312,7 +327,7 @@ void AGhostVehicle::GoToRoute(TSoftObjectPtr<ANavigationRoute> Route, float Stat
 {
 	if (bIsMoving && Route.Get())
 	{
-		if (TrajectoryPlaner.GoToRoute(GetWorld(), GetActorTransform(), StaticOffset + CurrentVelocity * VelocityToOffset, Route.Get()))
+		if (TrajectoryPlaner.GoToRoute(GetWorld(), GetRealAxesTransform(), StaticOffset + CurrentVelocity * VelocityToOffset, Route.Get()))
 		{
 			CurrentSplineOffset = TrajectoryPlaner.GetDistanceAlongSpline();
 			CalculateSpeedProfile();
@@ -352,7 +367,7 @@ void AGhostVehicle::StopMoving()
 {
 	if (bIsMoving)
 	{
-		SetActorTransform(InitTransform);
+		SetActorTransform(InitTransform, false, nullptr, ETeleportType::TeleportPhysics);
 		bIsMoving = false;
 		CurrentVelocity = 0;
 		CurrentAcc = 0;
@@ -488,6 +503,16 @@ void AGhostVehicle::UpdateJoinCurve()
 	}
 }
 
+FTransform AGhostVehicle::GetRealAxesTransform() const
+{
+	FTransform Transform = GetActorTransform();
+	Transform.SetLocation(
+		Transform.GetLocation() -
+		Transform.GetRotation().RotateVector(Transform.InverseTransformPosition(Transform.GetLocation()) - RealAxesOffset));
+	return Transform;
+}
+
+
 void AGhostVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) const
 {
 	using bsoncxx::builder::stream::document;
@@ -499,13 +524,13 @@ void AGhostVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) const
 
 	FExtent Extent = USodaStatics::CalculateActorExtent(this);
 	*Doc
-		<< "extents" << open_document
-		<< "forward" << Extent.Forward
-		<< "backward" << Extent.Backward
-		<< "left" << Extent.Left
-		<< "right" << Extent.Right
-		<< "up" << Extent.Up
-		<< "down" << Extent.Down
+		<< "Extents" << open_document
+		<< "Forward" << Extent.Forward
+		<< "Backward" << Extent.Backward
+		<< "Left" << Extent.Left
+		<< "Right" << Extent.Right
+		<< "Up" << Extent.Up
+		<< "Down" << Extent.Down
 		<< close_document;
 }
 
@@ -529,11 +554,11 @@ void AGhostVehicle::OnPushDataset() const
 			//FVector AngVel = FVector(0, 0, 0);
 
 			Dataset->GetRowDoc()
-				<< "ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SodaApp.GetSimulationTimestamp()))
-				<< "loc" << open_array << Location.X << Location.Y << Location.Z << close_array
-				<< "rot" << open_array << Rotation.Pitch << Rotation.Yaw << Rotation.Roll << close_array
-				<< "vel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array
-				<< "acc" << open_array << Acc.X << Acc.Y << Acc.Z << close_array;
+				<< "Ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SodaApp.GetSimulationTimestamp()))
+				<< "Loc" << open_array << Location.X << Location.Y << Location.Z << close_array
+				<< "Rot" << open_array << Rotation.Pitch << Rotation.Yaw << Rotation.Roll << close_array
+				<< "Vel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array
+				<< "Acc" << open_array << Acc.X << Acc.Y << Acc.Z << close_array;
 				//<< "ang_vel" << open_array << AngVel.X << AngVel.Y << AngVel.Z << close_array;
 
 			auto RouteDoc = Dataset->GetRowDoc() << "route" << open_document;
@@ -541,16 +566,16 @@ void AGhostVehicle::OnPushDataset() const
 			{
 				if (WayPoint->OwndedRoute.IsValid())
 				{
-					RouteDoc << "name" << TCHAR_TO_UTF8(*WayPoint->OwndedRoute->GetName());
+					RouteDoc << "Name" << TCHAR_TO_UTF8(*WayPoint->OwndedRoute->GetName());
 				}
 				else
 				{
-					RouteDoc << "name" << "";
+					RouteDoc << "Name" << "";
 				}
 			}
 			else
 			{
-				RouteDoc << "name" << "";
+				RouteDoc << "Name" << "";
 			}
 			RouteDoc << close_document;
 				

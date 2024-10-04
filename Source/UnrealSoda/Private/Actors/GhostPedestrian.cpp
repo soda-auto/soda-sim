@@ -1,14 +1,15 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Actors/GhostPedestrian.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Soda/Actors/NavigationRoute.h"
 #include "Soda/UnrealSoda.h"
 #include "Components/BoxComponent.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/SodaStatics.h"
 #include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
+#include "Soda/Misc/EditorUtils.h"
 
 #include "bsoncxx/builder/stream/helpers.hpp"
 #include "bsoncxx/exception/exception.hpp"
@@ -90,7 +91,7 @@ void AGhostPedestrian::TickActor(float DeltaTime, enum ELevelTick TickType, FAct
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	check(PlayerController);
 
-	USodaGameModeComponent * GameMode  = USodaGameModeComponent::GetChecked();
+	USodaSubsystem * SodaSubsystem  = USodaSubsystem::GetChecked();
 
 	if (bIsMoving)
 	{
@@ -146,7 +147,7 @@ void AGhostPedestrian::TickActor(float DeltaTime, enum ELevelTick TickType, FAct
 		}
 	}
 
-	if (!GameMode->IsScenarioRunning() && !bJoinToInitialRoute)
+	if (!SodaSubsystem->IsScenarioRunning() && !bJoinToInitialRoute)
 	{
 		for (int i = 1; i < JoiningCurvePoints.Num(); ++i)
 		{
@@ -163,6 +164,40 @@ void AGhostPedestrian::TickActor(float DeltaTime, enum ELevelTick TickType, FAct
 
 }
 
+static AActor* FindActorByName(const FString& ActorNameStr, const UWorld* InWorld)
+{
+	for (ULevel const* Level : InWorld->GetLevels())
+	{
+		if (Level)
+		{
+			for (AActor* Actor : Level->Actors)
+			{
+				if (Actor)
+				{
+					if (Actor->GetName() == ActorNameStr)
+					{
+						return Actor;
+					}
+				}
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+
+void AGhostPedestrian::Serialize(FArchive& Ar)
+{
+	Super::Serialize(Ar);
+	if (Ar.IsSaveGame() && Ar.IsLoading())
+	{
+		if (ANavigationRouteEditable* FoundActor = Cast<ANavigationRouteEditable>(FEditorUtils::FindActorByName(InitialRoute.ToSoftObjectPath(), GetWorld())))
+		{
+			InitialRoute = FoundActor;
+		}
+	}
+}
 
 void AGhostPedestrian::GoToLeftRoute(float StaticOffset, float VelocityToOffset)
 {
@@ -353,13 +388,13 @@ void AGhostPedestrian::GenerateDatasetDescription(soda::FBsonDocument& Doc) cons
 
 	FExtent Extent = USodaStatics::CalculateActorExtent(this);
 	*Doc
-		<< "extents" << open_document
-		<< "forward" << Extent.Forward
-		<< "backward" << Extent.Backward
-		<< "left" << Extent.Left
-		<< "right" << Extent.Right
-		<< "up" << Extent.Up
-		<< "down" << Extent.Down
+		<< "Extents" << open_document
+		<< "Forward" << Extent.Forward
+		<< "Backward" << Extent.Backward
+		<< "Left" << Extent.Left
+		<< "Right" << Extent.Right
+		<< "Up" << Extent.Up
+		<< "Down" << Extent.Down
 		<< close_document;
 }
 
@@ -382,10 +417,10 @@ void AGhostPedestrian::OnPushDataset() const
 			//FVector AngVel = FVector(0, 0, 0);
 
 			Dataset->GetRowDoc()
-				<< "ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SodaApp.GetSimulationTimestamp()))
-				<< "loc" << open_array << Location.X << Location.Y << Location.Z << close_array
-				<< "rot" << open_array << Rotation.Pitch << Rotation.Yaw << Rotation.Roll << close_array
-				<< "vel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array;
+				<< "Ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SodaApp.GetSimulationTimestamp()))
+				<< "Loc" << open_array << Location.X << Location.Y << Location.Z << close_array
+				<< "Rot" << open_array << Rotation.Pitch << Rotation.Yaw << Rotation.Roll << close_array
+				<< "Vel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array;
 
 			auto RouteDoc = Dataset->GetRowDoc() << "route" << open_document;
 			if (const FTrajectoryPlaner::FWayPoint* WayPoint = TrajectoryPlaner.GetCurrentWayPoint())

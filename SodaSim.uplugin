@@ -15,11 +15,17 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "SodaStyle",
-			"Type": "DeveloperTool"
+			"Name": "SodaPak",
+			"Type": "DeveloperTool",
+			"LoadingPhase": "EarliestPossible"
 		},
 		{
-			"Name": "SodaSimProto",
+			"Name": "SodaPakPostLoad",
+			"Type": "DeveloperTool",
+			"LoadingPhase": "PreEarlyLoadingScreen"
+		},
+		{
+			"Name": "SodaStyle",
 			"Type": "DeveloperTool"
 		},
 		{
@@ -32,6 +38,10 @@
 		},
 		{
 			"Name": "UnrealSoda",
+			"Type": "DeveloperTool"
+		},
+		{
+			"Name": "SodaProtoV1",
 			"Type": "DeveloperTool"
 		},
 		{
@@ -65,6 +75,10 @@
 		{
 			"Name": "GeometryProcessing",
 			"Enabled": true
+		},
+		{
+			"Name": "MassGameplay",
+			"Enabled": true		
 		}
 	]
 

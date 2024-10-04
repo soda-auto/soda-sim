@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -18,6 +18,9 @@ class FPrimitiveDrawInterface;
 class UCanvas;
 class ASodaVehicle;
 class UActorComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FVehicleComponentActivatedDelegate, UActorComponent*, Component);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FVehicleComponentDeactivateDelegate, UActorComponent*, Component);
 
 namespace soda
 {
@@ -79,16 +82,10 @@ struct FVehicleComponentCommon
 {
 	GENERATED_USTRUCT_BODY()
 
+public:
 	/** if true component will activated after BeginPlay() */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleComponent, SaveGame)
 	EVehicleComponentActivation Activation = EVehicleComponentActivation::None;
-
-	/**
-	  * The Topology Component means that other vehicle components may depend on this component.
-	  * This means that if this component is added, removed, renamed or activated, all other components of the vehicle will be reactivated.
-	  */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = VehicleComponent)
-	bool bIsTopologyComponent = false;
 
 	/** 
 	 * Component will update on frequency FPS/Divider.
@@ -109,12 +106,22 @@ struct FVehicleComponentCommon
 	  * Whether to write a dataset for this component. Valid only if this component supports dataset writing.
 	  * See USodaVehicleComponent::OnPushDataset().
 	  */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = VehicleComponent)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleComponent, SaveGame, meta = (EditInRuntime))
 	bool bWriteDataset = false;
 
 	/** Whether to allow this sensor to display any debug information. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Debug, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
 	bool bDrawDebugCanvas = false;
+
+
+public:
+	/**
+	  * The Topology Component means that other vehicle components may depend on this component.
+	  * This means that if this component is added, removed, renamed, activated or deactivated,
+	  * all other topology components of the vehicle will be reactivated if they are activeed.
+	  */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = VehicleComponent)
+	bool bIsTopologyComponent = false;
 
 	/** Only one component of this class can be active */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = VehicleComponent)
@@ -204,7 +211,7 @@ public:
 
 	/** This description will be displayed in the UI (Vehicle Components List) */
 	UFUNCTION(BlueprintCallable, Category = VehicleComponent)
-	virtual void GetRemark(FString & Info) const { Info = ""; }
+	virtual FString GetRemark() const { return ""; }
 
 	UFUNCTION(BlueprintCallable, Category = VehicleComponent)
 	virtual EVehicleComponentHealth GetHealth() const { return  Health; }
@@ -260,9 +267,14 @@ protected:
 
 protected:
 	virtual void OnRegistreVehicleComponent() {}
+
 	virtual void OnPreActivateVehicleComponent() {}
 	virtual bool OnActivateVehicleComponent();
+	virtual void OnPostActivateVehicleComponent() {}
+
+	virtual void OnPreDeactivateVehicleComponent() {}
 	virtual void OnDeactivateVehicleComponent();
+	virtual void OnPostDeactivateVehicleComponent() {}
 
 	/** 
 	 * Callen during scenario playing if the datset is recording for this vehicle.

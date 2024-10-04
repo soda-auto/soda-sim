@@ -1,5 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "RuntimePropertyEditor/StructurePropertyNode.h"
 #include "RuntimePropertyEditor/ItemPropertyNode.h"
@@ -20,7 +20,7 @@ namespace soda
 		for (TFieldIterator<FProperty> It(Struct); It; ++It)
 		{
 			FProperty* StructMember = *It;
-			if (PropertyEditorHelpers::ShouldBeVisible(*this, StructMember))
+			if (Cast<UFunction>(Struct) != nullptr || PropertyEditorHelpers::ShouldBeVisible(*this, StructMember)) // TODO: @ivanzhuk, check "Cast<UFunction>(Struct) != nullptr" is corrent 
 			{
 				StructMembers.Add(StructMember);
 			}

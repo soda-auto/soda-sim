@@ -1,10 +1,9 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Actors/OpenDriveTool.h"
 #include "Soda/UnrealSoda.h"
 #include "DrawDebugHelpers.h"
 #include "HAL/FileManager.h"
-#include "Soda/UnrealSoda.h"
 #include "opendrive/OpenDrive.hpp"
 #include "opendrive/geometry/CenterLine.hpp"
 #include "opendrive/geometry/GeometryGenerator.hpp"
@@ -13,7 +12,7 @@
 #include "Materials/Material.h"
 #include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/UI/SMessageBox.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -545,8 +544,7 @@ void AOpenDriveTool::ScenarioBegin()
 			auto Dataset = soda::FDBGateway::Instance().CreateActorDataset(GetName(), "opendrive", GetClass()->GetName(), Doc);
 			if (!Dataset)
 			{
-				SodaApp.GetGameModeChecked()->ScenarioStop(EScenarioStopReason::InnerError);
-				SodaApp.GetGameModeChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "Scenarip stoped", "Can't create dataset for \"" + GetName() + "\"");
+				SodaApp.GetSodaSubsystemChecked()->ScenarioStop(EScenarioStopReason::InnerError, EScenarioStopMode::RestartLevel, "Can't create dataset for \"" + GetName() + "\"");
 			}
 		}
 		else

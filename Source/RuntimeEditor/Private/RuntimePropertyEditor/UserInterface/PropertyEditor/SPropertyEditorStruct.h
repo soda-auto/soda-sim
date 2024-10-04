@@ -1,5 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -71,7 +71,7 @@ private:
 	 *
 	 * @return The Struct Picker widget.
 	 */
-	//TSharedRef<SWidget> GenerateStructPicker();
+	TSharedRef<SWidget> GenerateStructPicker();
 
 	/** 
 	 * Callback function from the Struct Picker for when a struct is picked.

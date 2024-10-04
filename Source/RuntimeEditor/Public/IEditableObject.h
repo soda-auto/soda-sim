@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -74,7 +74,7 @@ class RUNTIMEEDITOR_API UEditableObject: public UInterface
 
 /**
  * IEditableObject
- * The purpose of this interface is to “bring back” some functions from Object that are only available in editor mode to runtime mode.
+ * The purpose of this interface is to "bring back" some functions from Object that are only available in editor mode to runtime mode.
  * All "brougt back" functions have the prefix "Runtime". For example PostEditChangeProperty -> RuntimePostEditChangeProperty
  */
 class RUNTIMEEDITOR_API IEditableObject

@@ -1,11 +1,11 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
 #include "Runtime/Launch/Resources/Version.h"
 
 #define UNREALSODA_MAJOR_VERSION	1
-#define UNREALSODA_MINOR_VERSION	0
+#define UNREALSODA_MINOR_VERSION	2
 #define UNREALSODA_PATCH_VERSION	0
 
 #if defined(UNREALSODA_PIPLINE_VERSION)

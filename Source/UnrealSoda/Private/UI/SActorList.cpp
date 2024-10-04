@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/UI/SActorList.h"
 #include "Soda/UnrealSoda.h"
@@ -15,7 +15,7 @@
 #include "Soda/ISodaActor.h"
 //#include "RuntimeEditorModule.h"
 //#include "RuntimePropertyEditor/IDetailsView.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/SodaActorFactory.h"
 #include "Soda/LevelState.h"
 #include "Soda/Editor/SodaSelection.h"
@@ -48,13 +48,13 @@ public:
 
 	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, TWeakObjectPtr<AActor> InActor, TWeakPtr<SActorList> InActorListView)
 	{
-		USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-		check(GameMode);
-		ASodaActorFactory * ActorFactory = GameMode->GetActorFactory();
+		USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+		check(SodaSubsystem);
+		ASodaActorFactory * ActorFactory = SodaSubsystem->GetActorFactory();
 		check(ActorFactory);
 
 		Actor = InActor;
-		Desc = GameMode->GetSodaActorDescriptor(Actor->GetClass());
+		Desc = SodaSubsystem->GetSodaActorDescriptor(Actor->GetClass());
 		IsSpawnedActor = ActorFactory->CheckActorIsExist(Actor.Get());
 		ActorListView = InActorListView;
 
@@ -159,9 +159,9 @@ public:
 
 	void OnRenameActorCommited(const FText& NewName, ETextCommit::Type Type)
 	{
-		USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-		check(GameMode);
-		ASodaActorFactory* ActorFactory = GameMode->GetActorFactory();
+		USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+		check(SodaSubsystem);
+		ASodaActorFactory* ActorFactory = SodaSubsystem->GetActorFactory();
 		check(ActorFactory);
 
 		if (!Actor.IsValid())
@@ -173,7 +173,7 @@ public:
 			if (!ActorFactory->RenameActor(Actor.Get(), NewName.ToString()))
 			{
 				ActorListView.Pin()->RebuilActorList();
-				GameMode->LevelState->MarkAsDirty();
+				SodaSubsystem->LevelState->MarkAsDirty();
 			}
 		}
 	}
@@ -191,8 +191,8 @@ void SActorList::Construct(const FArguments& InArgs, USodaGameViewportClient * I
 {
 	check(IsValid(InViewportClient));
 	ViewportClient = InViewportClient;
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	ActorFactory = GameMode->GetActorFactory();
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	ActorFactory = SodaSubsystem->GetActorFactory();
 	OnSelectionChangedDelegate = InArgs._OnSelectionChanged;
 	bIsInteractiveMode = InArgs._bInteractiveMode.Get();
 	ActorFilter = InArgs._ActorFilter;
@@ -337,7 +337,7 @@ FReply SActorList::OnPinClicked(TWeakObjectPtr<AActor> Actor)
 			NotificationManager.AddNotification(Info);
 		}
 		SodaActor->MarkAsDirty();
-		USodaGameModeComponent::GetChecked()->LevelState->MarkAsDirty();
+		USodaSubsystem::GetChecked()->LevelState->MarkAsDirty();
 	}
 	return FReply::Handled();
 }
@@ -420,7 +420,7 @@ void SActorList::OnDeleteActor(AActor* SelectedActor)
 	if (IsValid(SelectedActor))
 	{
 		ActorFactory->RemoveActor(SelectedActor);
-		USodaGameModeComponent::GetChecked()->LevelState->MarkAsDirty();
+		USodaSubsystem::GetChecked()->LevelState->MarkAsDirty();
 	}
 	else
 	{

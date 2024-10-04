@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include <iostream>
 #include "dyncar_bicycle.h"
@@ -361,7 +361,7 @@ void DynamicCar::getDrag_PM() {
   car_state.Fdrag_PM = 0.0;
 
   return;
-
+  /*
   // turn resistance   //-----------------------------------------
 
   double acc_turn =
@@ -387,6 +387,7 @@ void DynamicCar::getDrag_PM() {
     // Here is located such evaluation. After Fdrag_PM having evaluated the
     // car_state.accel should be corrected
   }
+  */
 }
 //-----------------------------------------------------------------------------------------
 

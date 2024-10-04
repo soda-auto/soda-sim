@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -33,6 +33,7 @@ protected:
  * ANavigationRoute
  * This is a spline along which some other actors can move. First of all, these are AGhostVehicle, AGhostPedestrian, ASodaVehicle.
  * TODO: Finish Predecessor & Successor logic. Abilty to connect routes throw UI
+ * TODO: Look at UPathFollowingComponent
  */
 UCLASS()
 class UNREALSODA_API ANavigationRoute : public AActor
@@ -61,6 +62,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = NavigationRoute, EditAnywhere, SaveGame, meta = (EditInRuntime))
 	float Probability = 1.0;
+
+	UPROPERTY(BlueprintReadWrite, Category = NavigationRoute, EditAnywhere, SaveGame, meta = (EditInRuntime))
+	float ZOffset = 50;
 
 	/** Tags can be used to determine which traffic participants can use a given route and which cannot */
 	UPROPERTY(BlueprintReadWrite, Category = NavigationRoute, EditAnywhere, SaveGame, meta = (EditInRuntime))
@@ -101,13 +105,16 @@ public:
 	//ANavigationRoute* GetRandomSuccessor() const;
 
 	UFUNCTION(Category = NavigationRoute, BlueprintCallable, CallInEditor, meta = (CallInRuntime))
-	void UpdateViewMesh();
+	virtual void UpdateViewMesh();
 
 	UFUNCTION(Category = NavigationRoute, BlueprintCallable, CallInEditor, meta = (CallInRuntime))
-	void FitActorPosition();
+	virtual void FitActorPosition();
+
+	UFUNCTION(Category = NavigationRoute, BlueprintCallable, CallInEditor, meta = (CallInRuntime))
+	virtual void PullToGround();
 
 	UFUNCTION(Category = NavigationRoute, BlueprintCallable)
-	bool UpdateProcedureMeshSegment(int SegmentIndex);
+	virtual bool UpdateProcedureMeshSegment(int SegmentIndex);
 
 public:
 	ANavigationRoute(const FObjectInitializer& ObjectInitializer);
@@ -117,6 +124,8 @@ public:
 
 	void PropagetUpdatePredecessorRoute();
 	void PropagetUpdateSuccessorRoute();
+
+	bool GroundHitFilter(const FHitResult& Hit);
 
 protected:
 	virtual void BeginPlay() override;
@@ -195,6 +204,8 @@ public:
 public:
 	void UpdateNodes();
 
+	virtual void PullToGround() override;
+
 public:
 	/* Override from ISodaActor */
 	virtual void SetActorHiddenInScenario(bool bInHiddenInScenario) override { bHideInScenario = bInHiddenInScenario; }
@@ -235,5 +246,6 @@ protected:
 	bool bIsSelected = false;
 	bool bIsUnfreezeNotified = false;
 
-	static bool TraceForMousePosition(const APlayerController * PlayerController, TArray<struct FHitResult>& HitResults);
+	static bool TraceForMousePositionByChanel(const APlayerController * PlayerController, TArray<FHitResult>& HitResults, const TEnumAsByte<ECollisionChannel> & CollisionChannel);
+	static bool TraceForMousePositionByObject(const APlayerController* PlayerController, TArray<struct FHitResult>& HitResults, const TEnumAsByte<ECollisionChannel>& CollisionChannel);
 };

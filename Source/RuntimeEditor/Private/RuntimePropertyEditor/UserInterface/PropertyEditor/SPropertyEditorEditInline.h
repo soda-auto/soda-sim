@@ -1,5 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -70,7 +70,7 @@ private:
 	 *
 	 * @return The Class Picker widget.
 	 */
-	//TSharedRef<SWidget> GenerateClassPicker();
+	TSharedRef<SWidget> GenerateClassPicker();
 
 	/** 
 	 * Callback function from the Class Picker for when a Class is picked.

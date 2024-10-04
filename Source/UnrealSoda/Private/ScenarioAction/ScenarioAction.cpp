@@ -1,10 +1,10 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/ScenarioAction/ScenarioAction.h"
 #include "Components/BoxComponent.h"
 #include "Components/BillboardComponent.h"
 #include "Soda/SodaTypes.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "UI/ScenarioAction/SScenarioActionEditor.h"
 #include "SodaStyleSet.h"
 #include "Soda/ScenarioAction/ScenarioActionConditionFunctionLibrary.h"
@@ -50,7 +50,7 @@ void AScenarioAction::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (USodaGameModeComponent::Get()->IsScenarioRunning())
+	if (USodaSubsystem::Get()->IsScenarioRunning())
 	{
 		for (auto& It : ScenarioBlocks)
 		{

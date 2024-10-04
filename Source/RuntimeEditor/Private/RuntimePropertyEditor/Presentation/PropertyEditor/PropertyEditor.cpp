@@ -1,5 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "RuntimePropertyEditor/Presentation/PropertyEditor/PropertyEditor.h"
 #include "Modules/ModuleManager.h"
@@ -68,8 +68,6 @@ FText FPropertyEditor::GetDisplayName() const
 		PropertyNode->GetQualifiedName( DisplayName, true );
 		return FText::FromString(DisplayName);
 	}
-
-	return FText::GetEmpty();
 }
 
 FText FPropertyEditor::GetToolTipText() const

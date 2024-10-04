@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "RuntimeEditorModule.h"
 #include "UObject/UnrealType.h"
@@ -257,6 +257,8 @@ void FRuntimeEditorModule::StartupModule()
 	RegisterObjectCustomizations();
 	RegisterPropertyTypeCustomizations();
 
+	StructViewerModule.StartupModule();
+
 	Documentation = soda::FDocumentation::Create();
 	FMultiBoxSettings::ToolTipConstructor = FMultiBoxSettings::FConstructToolTip::CreateLambda([this](const TAttribute<FText>& ToolTipText, const TSharedPtr<SWidget>& OverrideContent, const TSharedPtr<const FUICommandInfo>& Action) 
 	{
@@ -298,6 +300,8 @@ void FRuntimeEditorModule::ShutdownModule()
 	AllSinglePropertyViews.Empty();
 
 	soda::SClassViewer::DestroyClassHierarchy();
+
+	StructViewerModule.ShutdownModule();
 }
 
 TSharedRef<SWindow> FRuntimeEditorModule::CreateFloatingDetailsView(const TArray< UObject* >& InObjects, bool bIsLockable)

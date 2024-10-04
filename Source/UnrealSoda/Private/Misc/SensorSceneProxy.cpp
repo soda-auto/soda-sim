@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Misc/SensorSceneProxy.h"
 #include "EngineGlobals.h"
@@ -112,7 +112,7 @@ void FSensorSceneProxy::GetDynamicMeshElements(const TArray<const FSceneView*>& 
 			{
 				FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer = Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
 
-				DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), GetLocalToWorld(), GetBounds(), GetLocalBounds(), true, false, AlwaysHasVelocity());
+				DynamicPrimitiveUniformBuffer.Set(Collector.GetRHICommandList(), GetLocalToWorld(), GetLocalToWorld(), GetBounds(), GetLocalBounds(), true, false, AlwaysHasVelocity());
 				
 
 				FMeshBatch& MeshBatch = Collector.AllocateMesh();
@@ -157,7 +157,7 @@ bool FSensorSceneProxy::CanBeOccluded() const
 	return !MaterialRelevance.bDisableDepthTest;
 }
 
-void FSensorSceneProxy::OnTransformChanged()
+void FSensorSceneProxy::OnTransformChanged(FRHICommandListBase& RHICmdList)
 {
-	FPrimitiveSceneProxy::OnTransformChanged();
+	FPrimitiveSceneProxy::OnTransformChanged(RHICmdList);
 }

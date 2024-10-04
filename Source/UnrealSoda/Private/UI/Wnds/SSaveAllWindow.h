@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -41,7 +41,7 @@ private:
 	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FSaveAllWindowItem> Item, const TSharedRef< STableViewBase >& OwnerTable);
 	FReply OnQuit();
 	FReply OnRestart();
-	FReply OnCancle();
+	FReply OnCancel();
 
 	TArray<TSharedPtr<FSaveAllWindowItem>> Source;
 	//SListView<TSharedPtr<FSaveAllWindowItem>> ListView;

@@ -1,10 +1,10 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/SodaActorFactory.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "UObject/UObjectHash.h"
 #include "Blueprint/WidgetTree.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/ISodaActor.h"
 #include "EngineUtils.h"
 #include "Soda/UnrealSoda.h"
@@ -71,9 +71,9 @@ AActor* ASodaActorFactory::SpawnActor(TSubclassOf<AActor> ActorClass, FTransform
 		return nullptr;
 	}
 
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		const FSodaActorDescriptor& Desc = GameMode->GetSodaActorDescriptor(ActorClass.Get());
+		const FSodaActorDescriptor& Desc = SodaSubsystem->GetSodaActorDescriptor(ActorClass.Get());
 		Transform.AddToTranslation(Desc.SpawnOffset);
 	}
 
@@ -105,7 +105,13 @@ void ASodaActorFactory::AddActor(AActor* Actor)
 
 void ASodaActorFactory::RemoveAllActors()
 {
-	for (auto& Actor : SpawnedActors) Actor->Destroy();
+	for (auto& Actor : SpawnedActors)
+	{
+		if (IsValid(Actor))
+		{
+			Actor->Destroy();
+		}
+	}
 	SpawnedActors.Empty();
 	OnInvalidateDelegate.Broadcast();
 }
@@ -138,7 +144,7 @@ void ASodaActorFactory::SpawnAllSavedActors(bool bSaved, bool bPinned)
 
 	if (bPinned)
 	{
-		if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+		if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 		{
 			for (auto& Record : LoadedPinnedActors)
 			{

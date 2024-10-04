@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/UI/SMessageBox.h"
 #include "SodaStyleSet.h"
@@ -99,7 +99,7 @@ void SMessageBox::Construct( const FArguments& InArgs )
 		.AutoWidth()
 		[
 			SNew(SButton)
-			.Text(FText::FromString("Cancle"))
+			.Text(FText::FromString("Cancl"))
 			.OnClicked(FOnClicked::CreateLambda([this]() {
 				ExecuteOnMessageBox(EMessageBoxButton::CANCEL);
 				return FReply::Handled();

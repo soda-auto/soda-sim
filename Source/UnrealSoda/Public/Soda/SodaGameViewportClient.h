@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -49,6 +49,7 @@ public:
 	virtual bool LockDuringCapture() override;
 	virtual bool ShouldAlwaysLockMouse() override;
 	virtual bool HideCursorDuringCapture() const override;
+	virtual void PostRender(UCanvas* Canvas) override;
 
 public:
 	/* override FViewElementDrawer */
@@ -67,6 +68,9 @@ public:
 	virtual void SetWidgetCoordSystemSpace(soda::ECoordSystem CoordSystem);
 	virtual void SetWidgetTarget(USceneComponent * WidgetTargetComponent);
 	virtual USceneComponent* GetWidgetTarget() const { return WidgetTargetComponent; }
+
+	void SetIsDrawVehicleDebugPanel(bool Val) { bIsDrawVehicleDebugPanel = Val; }
+	bool GetIsDrawVehicleDebugPanel() const { return bIsDrawVehicleDebugPanel; }
 
 	void DrawBoundingBox(const FSceneView* View, FPrimitiveDrawInterface* PDI, const AActor* Actor, const FLinearColor& InColor);
 
@@ -101,6 +105,7 @@ protected:
 	uint32 CachedMouseY = 0;
 
 	bool bIsWidgetDragging = false;
+	bool bIsDrawVehicleDebugPanel = true;
 
 	EEditorMouseCaptureMode EditorMouseCaptureMode = EEditorMouseCaptureMode::Default;
 	bool bEditorCaptureModeDragging = false;

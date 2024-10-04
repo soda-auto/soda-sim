@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Actors/V2VBox.h"
 #include "Soda/UnrealSoda.h"
@@ -8,7 +8,7 @@
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Soda/VehicleComponents/Inputs/VehicleInputAIComponent.h"
 
-AV2VBox::AV2VBox()
+AV2XBox::AV2XBox()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -33,29 +33,29 @@ AV2VBox::AV2VBox()
 	TriggerVolume->InitBoxExtent(Extent);
 	//TriggerVolume->SetMobility(EComponentMobility::Movable);
 
-	V2VTransmitter = CreateDefaultSubobject<UV2VTransmitterComponent>(TEXT("V2VTransmitter"));
-	V2VTransmitter->SetupAttachment(RootComponent);
+	V2XTransmitter = CreateDefaultSubobject<UV2XMarkerSensor>(TEXT("V2XTransmitter"));
+	V2XTransmitter->SetupAttachment(RootComponent);
 }
 
-void AV2VBox::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+void AV2XBox::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
 	ISodaActor::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
 
 	FProperty* MemberProperty = PropertyChangedEvent.PropertyChain.GetHead()->GetValue();
-	if (MemberProperty && MemberProperty->GetFName() == GET_MEMBER_NAME_CHECKED(AV2VBox, Extent))
+	if (MemberProperty && MemberProperty->GetFName() == GET_MEMBER_NAME_CHECKED(AV2XBox, Extent))
 	{
 		TriggerVolume->SetBoxExtent(Extent);
 	}
 }
 
-void AV2VBox::BeginPlay()
+void AV2XBox::BeginPlay()
 {
 	Super::BeginPlay();
 
 	TriggerVolume->SetBoxExtent(Extent);
 }
 
-const FSodaActorDescriptor* AV2VBox::GenerateActorDescriptor() const
+const FSodaActorDescriptor* AV2XBox::GenerateActorDescriptor() const
 {
 	static FSodaActorDescriptor Desc{
 		TEXT("V2V Box"), /*DisplayName*/

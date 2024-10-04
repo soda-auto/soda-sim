@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -13,27 +13,29 @@ class UNREALSODA_API UVehicleInputJoyComponent : public UVehicleInputComponent
 	GENERATED_UCLASS_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, meta = (EditInRuntime))
+	FWheeledVehicleInputState InputState{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/SodaSim.VehicleSteeringRackBaseComponent"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/UnrealSoda.VehicleSteeringRackBaseComponent"))
 	FSubobjectReference LinkToSteering { TEXT("SteeringRack") };
 
 	/** In the dead zone the break input will be zero. [0..1] */
-	UPROPERTY(EditAnywhere, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
 	float InputBrakeDeadzone = 0.02f;
 
 	/** 
 	 * Сontinue driving at a low speed when the accelerator pedal is released.
 	 * This is an imitation of the behavior of a real automatic transmission.
 	 */
-	UPROPERTY(EditAnywhere, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
 	bool bCreepMode = false;
 
 	/** Vehicle speed when the accelerator pedal is released and bCreepMode is enabled [km/h] */
-	UPROPERTY(EditAnywhere, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
 	float CreepSpeed = 7.f;
 
 	/** Maximum throttle input available for creep mode [0..1] */
-	UPROPERTY(EditAnywhere, Category = VehicleJoyInput)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleJoyInput, SaveGame, meta = (EditInRuntime))
 	float MaxCreepThrottle = 0.2f;
 
 	/** Enable the effect of returning the steering wheel to the center position in relation to vehicle speed. */
@@ -109,36 +111,28 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BumpEffect, SaveGame, meta = (EditInRuntime))
 	float BumpEffectForceCoef = 30;
 
+
 public:
 	UFUNCTION(Category = "VehicleJoyInput", BlueprintCallable, CallInEditor, meta = (CallInRuntime))
 	void ReinitDevice();
 
 public:
-	virtual void CopyInputStates(UVehicleInputComponent* Previous) override;
-	virtual float GetSteeringInput() const override { return SteeringInput; }
-	virtual float GetThrottleInput() const override { return ThrottleInput;  }
-	virtual float GetBrakeInput() const override { return BrakeInput;  }
-	virtual ENGear GetGearInput() const override { return  GearInput; }
+	virtual const FWheeledVehicleInputState& GetInputState() const override { return InputState; }
+	virtual FWheeledVehicleInputState& GetInputState() override { return InputState; }
 	virtual float GetDriverInputSteerTension() const override { return FeedbackDriverSteerTension; }
-	virtual void SetADMode(bool bIsADMode) { bFeedbackAutocenterEnabled = !bIsADMode; }
 	virtual void UpdateInputStates(float DeltaTime, float ForwardSpeed, const APlayerController* PlayerController) override;
 	virtual void SetHapticAutocenter(bool Enable) { bFeedbackAutocenterEnabled = Enable; }
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
-	virtual void SetGearInput(ENGear Value) override { GearInput = Value; }
 
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
+	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 	ISodaJoystickPlugin * Joy = nullptr;
 
 	float MaxSteer = 0;
-
-	float SteeringInput = 0.f;
-	float ThrottleInput = 0.f;
-	float BrakeInput = 0.f;
-	ENGear GearInput = ENGear::Drive;
 
 	float FeedbackDiffFactor = 0.f;
 	float FeedbackResistionFactor = 0.f;

@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/WheeledVehicleMovements/SodaChaosWheeledVehicleMovement.h"
 #include "Soda/UnrealSoda.h"
@@ -44,7 +44,7 @@ void USodaChaosWheeledVehicleSimulation::UpdateSimulation(float DeltaTime, const
 
 	//TODO: Add realtime indicator
 	//auto Diff = soda::Now() - VehicleSimData.SimulatedTimestamp;
-	//UE_LOG(LogSoda, Warning, TEXT("*** %f %f"), std::chrono::duration_cast<float>(Diff).count(), DeltaTime);
+	//UE_LOG(LogSoda, Warning, TEXT("*** %ims %ims"), std::chrono::duration_cast<std::chrono::milliseconds>(Diff).count(), int(DeltaTime * 1000));
 
 	FScopeLock ScopeLock(&WheeledVehicle->PhysicMutex);
 
@@ -74,7 +74,7 @@ void USodaChaosWheeledVehicleSimulation::UpdateSimulation(float DeltaTime, const
 		
 		SodaChaosWheelSetup[i].SodaWheel->Pitch = -ChaosWheels[i].GetAngularPosition();
 		SodaChaosWheelSetup[i].SodaWheel->Steer = ChaosWheels[i].GetSteeringAngle() / 180 * M_PI;
-		SodaChaosWheelSetup[i].SodaWheel->AngularVelocity = -ChaosWheels[i].GetAngularVelocity();
+		SodaChaosWheelSetup[i].SodaWheel->AngularVelocity = ChaosWheels[i].GetAngularVelocity();
 		SodaChaosWheelSetup[i].SodaWheel->Slip = FVector2D(std::cos(ChaosWheels[i].GetSlipAngle()), std::sin(ChaosWheels[i].GetSlipAngle())) * ChaosWheels[i].GetSlipMagnitude();
 		SodaChaosWheelSetup[i].SodaWheel->SuspensionOffset = PVehicle->Suspension[i].GetSuspensionOffset();
 	}
@@ -269,6 +269,7 @@ TUniquePtr<Chaos::FSimpleWheeledVehicle> USodaChaosWheeledVehicleMovementCompone
 {
 	WheeledVehicle = Cast<ASodaWheeledVehicle>(GetOwner());
 	VehicleSimulationPT = MakeUnique<USodaChaosWheeledVehicleSimulation>(WheeledVehicle, this);
+
 	return UChaosVehicleMovementComponent::CreatePhysicsVehicle();
 }
 
@@ -362,9 +363,10 @@ bool USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 	if (GetWheeledVehicle()->GetWheels().Num() == 0)
 	{
 		SetHealth(EVehicleComponentHealth::Error);
-		UE_LOG(LogSoda, Error, TEXT("USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent(); wheels num == 0"));
+		UE_LOG(LogSoda, Error, TEXT("USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent(); USodaVehicleWheel.Num() == 0"));
 		return false;
 	}
+
 
 	for (auto& It : SodaWheelSetups)
 	{
@@ -381,7 +383,7 @@ bool USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 			return false;
 		}
 
-		//(*SodaWheel)->Radius = It->WheelRadius;
+		//SodaWheel->Radius = Wheels[0]->WheelRadius; //It->WheelRadius;
 	}
 
 	if (UpdatedPrimitive)
@@ -392,6 +394,32 @@ bool USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 	/***    Activate chaos vehicle   ***/
 	bAllowCreatePhysicsState = true;
 	CreatePhysicsState(true);
+
+	if (SodaWheelSetups.Num() != Wheels.Num())
+	{
+		SetHealth(EVehicleComponentHealth::Error);
+		UE_LOG(LogSoda, Error, TEXT("USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent(); UChaosVehicleWheel.Num() != SodaWheelSetups.Num()"));
+		return false;
+	}
+
+	for (int i = 0; i < SodaWheelSetups.Num(); ++i)
+	{
+		if (SodaWheelSetups[i].bOverrideRadius)
+		{
+			SetWheelRadius(i, SodaWheelSetups[i].OverrideRadius);
+			SodaWheelSetups[i].SodaWheel->Radius = SodaWheelSetups[i].OverrideRadius;
+		}
+		else
+		{
+			SodaWheelSetups[i].SodaWheel->Radius = Wheels[i]->WheelRadius;
+		}
+
+		if (SodaWheelSetups[i].bOverrideFrictionMultiplier)
+		{
+			SetWheelFrictionMultiplier(i, SodaWheelSetups[i].OverrideFrictionMultiplier);
+		}
+
+	}
 
 
 	if (USkeletalMeshComponent* SkeletalMesh = GetSkeletalMesh())
@@ -409,15 +437,24 @@ bool USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 
 	bSynchronousMode = SodaApp.IsSynchronousMode();
 
+	ReceiveActivateVehicleComponent();
+
 	return true;
+}
+
+void USodaChaosWheeledVehicleMovementComponent::OnPreDeactivateVehicleComponent()
+{
+	ISodaVehicleComponent::OnPreDeactivateVehicleComponent();
+
+	DestroyPhysicsState();
+	bAllowCreatePhysicsState = false;
+
+	ReceiveDeactivateVehicleComponent();
 }
 
 void USodaChaosWheeledVehicleMovementComponent::OnDeactivateVehicleComponent()
 {
 	ISodaVehicleComponent::OnDeactivateVehicleComponent();
-
-	DestroyPhysicsState();
-	bAllowCreatePhysicsState = false;
 }
 
 bool USodaChaosWheeledVehicleMovementComponent::ShouldCreatePhysicsState() const
@@ -429,29 +466,35 @@ bool USodaChaosWheeledVehicleMovementComponent::ShouldCreatePhysicsState() const
 
 void USodaChaosWheeledVehicleMovementComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
+	if (!HasBegunPlay())
+	{
+		Super::PostEditChangeProperty(PropertyChangedEvent);
+	}
 }
 
 void USodaChaosWheeledVehicleMovementComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-
-	if ((PropertyChangedEvent.Property != nullptr) && (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UChaosWheeledVehicleMovementComponent, WheelSetups)))
+	if (!HasBegunPlay())
 	{
-		if (PropertyChangedEvent.ChangeType == EPropertyChangeType::ArrayAdd)
-		{
-			//const int32 AddedAtIndex = PropertyChangedEvent.GetArrayIndex(PropertyChangedEvent.Property->GetFName().ToString());
-			//check(AddedAtIndex != INDEX_NONE);
-			SodaWheelSetups.Add({});
-		}
-		else if (PropertyChangedEvent.ChangeType == EPropertyChangeType::ArrayRemove)
-		{
-			SodaWheelSetups.RemoveAt(SodaWheelSetups.Num() - 1);
-		}
+		Super::PostEditChangeChainProperty(PropertyChangedEvent);
 
-		if (SodaWheelSetups.Num() != WheelSetups.Num())
+		if ((PropertyChangedEvent.Property != nullptr) && (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UChaosWheeledVehicleMovementComponent, WheelSetups)))
 		{
-			SodaWheelSetups.SetNum(WheelSetups.Num());
+			if (PropertyChangedEvent.ChangeType == EPropertyChangeType::ArrayAdd)
+			{
+				//const int32 AddedAtIndex = PropertyChangedEvent.GetArrayIndex(PropertyChangedEvent.Property->GetFName().ToString());
+				//check(AddedAtIndex != INDEX_NONE);
+				SodaWheelSetups.Add({});
+			}
+			else if (PropertyChangedEvent.ChangeType == EPropertyChangeType::ArrayRemove)
+			{
+				SodaWheelSetups.RemoveAt(SodaWheelSetups.Num() - 1);
+			}
+
+			if (SodaWheelSetups.Num() != WheelSetups.Num())
+			{
+				SodaWheelSetups.SetNum(WheelSetups.Num());
+			}
 		}
 	}
 }

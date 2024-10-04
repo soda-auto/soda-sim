@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -29,6 +29,10 @@ public:
 	FVehicleComponentCommon Common;
 
 	virtual void InitializeComponent() override;
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
 
 public:
 	/* Override ISodaVehicleComponent */
@@ -40,6 +44,12 @@ public:
 
 	virtual const FVehicleComponentGUI& GetVehicleComponentGUI() const override { return GUI; }
 	virtual const FVehicleComponentCommon& GetVehicleComponentCommon() const override { return Common; }
+
+	UFUNCTION(BlueprintImplementableEvent, Category = VehicleComponent, meta = (DisplayName = "ActivateVehicleComponen"))
+	void ReceiveActivateVehicleComponent();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = VehicleComponent, meta = (DisplayName = "DeactivateVehicleComponent"))
+	void ReceiveDeactivateVehicleComponent();
 
 protected:
 	virtual bool OnActivateVehicleComponent() override;

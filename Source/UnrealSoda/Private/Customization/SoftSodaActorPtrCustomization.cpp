@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "SoftSodaActorPtrCustomization.h"
 #include "Containers/UnrealString.h"
@@ -13,7 +13,7 @@
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/Layout/SWidgetSwitcher.h"
 #include "RuntimeEditorUtils.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/UI/SActorList.h"
 #include "Soda/SodaGameViewportClient.h"
 
@@ -28,8 +28,8 @@ void FSoftSodaActorPtrCustomization::CustomizeHeader( TSharedRef<IPropertyHandle
 {
 	PropertyHandle = InPropertyHandle;
 
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	check(GameMode);
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	check(SodaSubsystem);
 	
 	CachedActor.Reset();
 	CachedPropertyAccess = FPropertyAccess::Fail;
@@ -50,7 +50,7 @@ void FSoftSodaActorPtrCustomization::CustomizeHeader( TSharedRef<IPropertyHandle
 		CachedActor = Cast<AActor>(TmpObject);
 		if (CachedActor.IsValid())
 		{
-			CachedActorDesc = GameMode->GetSodaActorDescriptor(CachedActor->GetClass());
+			CachedActorDesc = SodaSubsystem->GetSodaActorDescriptor(CachedActor->GetClass());
 		}
 	}
 
@@ -246,7 +246,7 @@ TSharedRef<SWidget> FSoftSodaActorPtrCustomization::OnGetMenuContent()
 			.MinDesiredWidth(200)
 			.MinDesiredHeight(300)
 			[
-				SNew(soda::SActorList, Cast<USodaGameViewportClient>(USodaGameModeComponent::GetChecked()->GetWorld()->GetGameViewport()))
+				SNew(soda::SActorList, Cast<USodaGameViewportClient>(USodaSubsystem::GetChecked()->GetWorld()->GetGameViewport()))
 				.bInteractiveMode(false)
 				.OnSelectionChanged(this, &FSoftSodaActorPtrCustomization::OnActorSelected)
 				.ActorFilter(FOnShouldFilterActor::CreateSP(this, &FSoftSodaActorPtrCustomization::IsFilteredActor))
@@ -295,9 +295,9 @@ void FSoftSodaActorPtrCustomization::OnPropertyValueChanged()
 		CachedActor = Cast<AActor>(TmpObject);
 		if (CachedActor.IsValid())
 		{
-			USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-			check(GameMode);
-			CachedActorDesc = GameMode->GetSodaActorDescriptor(CachedActor->GetClass());
+			USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+			check(SodaSubsystem);
+			CachedActorDesc = SodaSubsystem->GetSodaActorDescriptor(CachedActor->GetClass());
 		}
 	}
 }

@@ -1,8 +1,8 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/Others/OdometryTest.h"
 #include "Soda/UnrealSoda.h"
-#include "Soda/Misc/MathUtils.hpp"
+#include "Soda/Misc/Utils.h"
 #include "Soda/SodaTypes.h"
 #include "Engine/CanvasRenderTarget2D.h"
 #include "Kismet/KismetRenderingLibrary.h"
@@ -49,9 +49,9 @@ void UOdometryTestComponent::OnDeactivateVehicleComponent()
 	}
 }
 
-void UOdometryTestComponent::GetRemark(FString & Info) const
+FString UOdometryTestComponent::GetRemark() const
 {
-	Info = "";
+	return "";
 }
 
 void UOdometryTestComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)

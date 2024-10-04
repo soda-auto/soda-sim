@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "UI/Wnds/SLevelSaveLoadWindow.h"
 #include "SodaStyleSet.h"
@@ -12,7 +12,7 @@
 #include "Widgets/Input/SComboButton.h"
 #include "Soda/UI/SMessageBox.h"
 #include "Soda/LevelState.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/DBGateway.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 
@@ -21,13 +21,13 @@ namespace soda
 
 void SLevelSaveLoadWindow::Construct( const FArguments& InArgs )
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	if (!GameMode || !GameMode->LevelState)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	if (!SodaSubsystem || !SodaSubsystem->LevelState)
 	{
 		return;
 	}
 
-	if (FDBGateway::Instance().IsConnected() && GameMode->LevelState->Slot.SlotSource == ELeveSlotSource::Remote)
+	if (FDBGateway::Instance().IsConnected() && SodaSubsystem->LevelState->Slot.SlotSource == ELeveSlotSource::Remote)
 	{
 		SetMode(ELevelSaveLoadWindowMode::Remote);
 	}
@@ -167,8 +167,8 @@ void SLevelSaveLoadWindow::Construct( const FArguments& InArgs )
 
 void SLevelSaveLoadWindow::UpdateSlots()
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	if (!GameMode || !GameMode->LevelState)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	if (!SodaSubsystem || !SodaSubsystem->LevelState)
 	{
 		return;
 	}
@@ -188,7 +188,7 @@ void SLevelSaveLoadWindow::UpdateSlots()
 	{
 		if (!ALevelState::GetLevelSlotsRemotly(nullptr, Slots, true))
 		{
-			USodaGameModeComponent::GetChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "Error", "MongoDB error. See log for more information");
+			USodaSubsystem::GetChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "Error", "MongoDB error. See log for more information");
 		}
 	}
 
@@ -199,9 +199,9 @@ void SLevelSaveLoadWindow::UpdateSlots()
 
 	for (auto& It : Source)
 	{
-		if ((It->SlotSource == GameMode->LevelState->Slot.SlotSource) && (
-				(It->SlotSource == ELeveSlotSource::Local && It->SlotIndex == GameMode->LevelState->Slot.SlotIndex) ||
-				(It->SlotSource == ELeveSlotSource::Remote && It->ScenarioID == GameMode->LevelState->Slot.ScenarioID)))
+		if ((It->SlotSource == SodaSubsystem->LevelState->Slot.SlotSource) && (
+				(It->SlotSource == ELeveSlotSource::Local && It->SlotIndex == SodaSubsystem->LevelState->Slot.SlotIndex) ||
+				(It->SlotSource == ELeveSlotSource::Remote && It->ScenarioID == SodaSubsystem->LevelState->Slot.ScenarioID)))
 		{
 			ListView->SetSelection(It);
 			break;
@@ -302,7 +302,7 @@ void SLevelSaveLoadWindow::OnSelectionChanged(TSharedPtr<FLevelStateSlotDescript
 
 FReply SLevelSaveLoadWindow::OnSave()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
 		TSharedPtr<FLevelStateSlotDescription> SelectedItem;
 		if (ListView->GetSelectedItems().Num() == 1) SelectedItem = *ListView->GetSelectedItems().begin();
@@ -311,39 +311,41 @@ FReply SLevelSaveLoadWindow::OnSave()
 			if (SelectedItem->SlotSource == ELeveSlotSource::Remote)
 			{
 				check(SelectedItem->ScenarioID >= 0);
-				GameMode->LevelState->SaveLevelRemotlyAs(SelectedItem->ScenarioID, EditableTextBoxDesc->GetText().ToString());
+				SodaSubsystem->LevelState->SaveLevelRemotlyAs(SelectedItem->ScenarioID, EditableTextBoxDesc->GetText().ToString());
 			}
 			else
 			{
 				check(SelectedItem->SlotIndex >= 0);
-				GameMode->LevelState->SaveLevelLocallyAs(SelectedItem->SlotIndex, EditableTextBoxDesc->GetText().ToString());
+				SodaSubsystem->LevelState->SaveLevelLocallyAs(SelectedItem->SlotIndex, EditableTextBoxDesc->GetText().ToString());
 			}
 			this->UpdateSlots();
 		}
 	}
+	CloseWindow();
 	return FReply::Handled();
 }
 
 FReply SLevelSaveLoadWindow::OnNewSave()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
 		if (GetMode() == ELevelSaveLoadWindowMode::Local)
 		{
-			GameMode->LevelState->SaveLevelLocallyAs(-1, EditableTextBoxDesc->GetText().ToString());
+			SodaSubsystem->LevelState->SaveLevelLocallyAs(-1, EditableTextBoxDesc->GetText().ToString());
 		}
 		else
 		{
-			GameMode->LevelState->SaveLevelRemotlyAs(-1, EditableTextBoxDesc->GetText().ToString());
+			SodaSubsystem->LevelState->SaveLevelRemotlyAs(-1, EditableTextBoxDesc->GetText().ToString());
 		}
 		this->UpdateSlots();
 	}
+	CloseWindow();
 	return FReply::Handled();
 }
 
 FReply SLevelSaveLoadWindow::OnLoad()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
 		TSharedPtr<FLevelStateSlotDescription> SelectedItem;
 		if (ListView->GetSelectedItems().Num() == 1) SelectedItem = *ListView->GetSelectedItems().begin();
@@ -361,14 +363,15 @@ FReply SLevelSaveLoadWindow::OnLoad()
 			}
 		}
 	}
+	CloseWindow();
 	return FReply::Handled();
 }
 
 FReply SLevelSaveLoadWindow::OnDeleteSlot(TSharedPtr<FLevelStateSlotDescription> SelectedItem)
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		TSharedPtr<soda::SMessageBox> MsgBox = GameMode->ShowMessageBox(
+		TSharedPtr<soda::SMessageBox> MsgBox = SodaSubsystem->ShowMessageBox(
 			soda::EMessageBoxType::YES_NO_CANCEL,
 			"Delete Slot",
 			"Are you sure you want to delete the \"" + SelectedItem->Description + "\" slot?");

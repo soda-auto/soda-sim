@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -195,6 +195,9 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;
 	virtual FVector GetVelocity() const override;
+	virtual void Serialize(FArchive& Ar) override;
+
+	FTransform GetRealAxesTransform() const;
 
 protected:
 	void CalculateSpeedProfile();

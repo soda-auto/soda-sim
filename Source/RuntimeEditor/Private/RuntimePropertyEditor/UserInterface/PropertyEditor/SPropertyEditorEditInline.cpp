@@ -1,5 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "RuntimePropertyEditor/UserInterface/PropertyEditor/SPropertyEditorEditInline.h"
 #include "Modules/ModuleManager.h"
@@ -13,11 +13,13 @@
 #include "UObject/ConstructorHelpers.h"
 //#include "Editor.h"
 
+#include "RuntimeClassViewer/ClassViewerFilter.h"
 #include "RuntimeMetaData.h"
+#include "RuntimeClassViewer/SClassViewer.h"
 
 namespace soda
 {
-/*
+
 class FPropertyEditorInlineClassFilter : public IClassViewerFilter
 {
 public:
@@ -71,7 +73,7 @@ public:
 		return false;
 	}
 };
-*/
+
 
 void SPropertyEditorEditInline::Construct( const FArguments& InArgs, const TSharedRef< class FPropertyEditor >& InPropertyEditor )
 {
@@ -83,7 +85,7 @@ void SPropertyEditorEditInline::Construct( const FArguments& InArgs, const TShar
 	[
 		SAssignNew(ComboButton, SComboButton)
 		.IsEnabled(this, &SPropertyEditorEditInline::IsValueEnabled, WeakHandlePtr)
-		//.OnGetMenuContent(this, &SPropertyEditorEditInline::GenerateClassPicker)
+		.OnGetMenuContent(this, &SPropertyEditorEditInline::GenerateClassPicker)
 		.ContentPadding(0)
 		.ToolTipText(InPropertyEditor, &FPropertyEditor::GetValueAsText )
 		.ButtonContent()
@@ -169,7 +171,7 @@ bool SPropertyEditorEditInline::IsClassAllowed( UClass* CheckClass, bool bAllowA
 	check(CheckClass);
 	return PropertyEditorHelpers::IsEditInlineClassAllowed( CheckClass, bAllowAbstract ) &&  CheckClass->HasAnyClassFlags(CLASS_EditInlineNew);
 }
-/*
+
 TSharedRef<SWidget> SPropertyEditorEditInline::GenerateClassPicker()
 {
 	FClassViewerInitializationOptions Options;
@@ -201,9 +203,9 @@ TSharedRef<SWidget> SPropertyEditorEditInline::GenerateClassPicker()
 
 	FOnClassPicked OnPicked( FOnClassPicked::CreateRaw( this, &SPropertyEditorEditInline::OnClassPicked ) );
 
-	return FModuleManager::LoadModuleChecked<FClassViewerModule>("ClassViewer").CreateClassViewer(Options, OnPicked);
+	return SNew(SClassViewer, Options).OnClassPickedDelegate(OnPicked); //FModuleManager::LoadModuleChecked<FClassViewerModule>("ClassViewer").CreateClassViewer(Options, OnPicked);
 }
-*/
+
 void SPropertyEditorEditInline::OnClassPicked(UClass* InClass)
 {
 	TArray<FObjectBaseAddress> ObjectsToModify;

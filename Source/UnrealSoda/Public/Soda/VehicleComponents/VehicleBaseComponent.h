@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -7,8 +7,16 @@
 #include "VehicleBaseComponent.generated.h"
 
 class ASodaVehicle;
-class USodaGameModeComponent;
+class USodaSubsystem;
 class ALevelState;
+
+struct FSensorDataHeader
+{
+	TTimestamp Timestamp;
+	int64 FrameIndex;
+	//FString FrameName;
+};
+
 /**
  * UVehicleBaseComponent
  */
@@ -31,6 +39,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = VehicleComponent, SaveGame)
 	FVehicleComponentTick TickData;
 
+	UPROPERTY(BlueprintAssignable, Category = VehicleComponent)
+	FVehicleComponentActivatedDelegate OnVehicleComponentActivated;
+
+	UPROPERTY(BlueprintAssignable, Category = VehicleComponent)
+	FVehicleComponentDeactivateDelegate OnVehicleComponentDeactivated;
+
+public:
+	UFUNCTION(BlueprintImplementableEvent, Category = VehicleComponent, meta = (DisplayName = "ActivateVehicleComponen"))
+	void ReceiveActivateVehicleComponent();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = VehicleComponent, meta = (DisplayName = "DeactivateVehicleComponent"))
+	void ReceiveDeactivateVehicleComponent();
+
 public:
 	/* Override ISodaVehicleComponent */
 	virtual UActorComponent* AsActorComponent() override { return this; }
@@ -45,22 +66,31 @@ public:
 	virtual const FVehicleComponentCommon& GetVehicleComponentCommon() const override { return Common; }
 	virtual const FVehicleComponentTick& GetVehicleComponentTick() const override { return TickData; }
 
+	virtual bool OnActivateVehicleComponent() override;
+	virtual void OnDeactivateVehicleComponent() override;
+
 public:
 	/* Override AActorComponent */
 	virtual void InitializeComponent() override;
 	virtual void UninitializeComponent() override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(EEndPlayReason::Type EndPlayReason) override;
-
-	USodaGameModeComponent* GetGameMode() const { return GameMode; }
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
+	USodaSubsystem* GetSodaSubsystem() const { return SodaSubsystem; }
 	ALevelState* GetLevelState() const { return LevelState; }
+
+	FSensorDataHeader GetHeaderGameThread() const;
+	FSensorDataHeader GetHeaderVehicleThread() const;
 
 private:
 	UPROPERTY()
 	ASodaVehicle* Vehicle = nullptr;
 
 	UPROPERTY()
-	USodaGameModeComponent* GameMode = nullptr;
+	USodaSubsystem* SodaSubsystem = nullptr;
 
 	UPROPERTY()
 	ALevelState* LevelState = nullptr;

@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "SCameraViewportToolbar.h"
 #include "Styling/SlateTypes.h"
@@ -17,7 +17,7 @@
 #include "Soda/UI/SSodaViewport.h"
 #include "Soda/SodaGameViewportClient.h"
 #include "Soda/SodaSpectator.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 
 #define LOCTEXT_NAMESPACE "TransformToolBar"
@@ -146,10 +146,10 @@ TSharedRef<SWidget> SCameraViewportToolbar::GenerateProjectionMenu() const
 FText SCameraViewportToolbar::GetCameraSpeedLabel() const
 {
 	ESodaSpectatorMode Mode = ESodaSpectatorMode::Perspective;
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	if (GameMode && GameMode->SpectatorActor)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	if (SodaSubsystem && SodaSubsystem->SpectatorActor)
 	{
-		return FText::AsNumber(GameMode->SpectatorActor->GetSpeedProfile() + 1);
+		return FText::AsNumber(SodaSubsystem->SpectatorActor->GetSpeedProfile() + 1);
 	}
 	return FText::FromString("#");
 }
@@ -157,11 +157,11 @@ FText SCameraViewportToolbar::GetCameraSpeedLabel() const
 float SCameraViewportToolbar::GetCamSpeedSliderPosition() const
 {
 	ESodaSpectatorMode Mode = ESodaSpectatorMode::Perspective;
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	if (GameMode && GameMode->SpectatorActor)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	if (SodaSubsystem && SodaSubsystem->SpectatorActor)
 	{
-		const float MaxValue = GameMode->SpectatorActor->SpeedProfile.Num();
-		return (float)GameMode->SpectatorActor->GetSpeedProfile() / (MaxValue - 1.f);
+		const float MaxValue = SodaSubsystem->SpectatorActor->SpeedProfile.Num();
+		return (float)SodaSubsystem->SpectatorActor->GetSpeedProfile() / (MaxValue - 1.f);
 	}
 
 	return 0;
@@ -170,22 +170,22 @@ float SCameraViewportToolbar::GetCamSpeedSliderPosition() const
 void SCameraViewportToolbar::OnSetCamSpeed(float NewValue)
 {
 	ESodaSpectatorMode Mode = ESodaSpectatorMode::Perspective;
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	if (GameMode && GameMode->SpectatorActor)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	if (SodaSubsystem && SodaSubsystem->SpectatorActor)
 	{
-		const int32 MaxValue = GameMode->SpectatorActor->SpeedProfile.Num();
+		const int32 MaxValue = SodaSubsystem->SpectatorActor->SpeedProfile.Num();
 		const int32 NewSpeedSetting = NewValue * ((float)MaxValue - 1) + 0.5;
-		GameMode->SpectatorActor->SetSpeedProfile(NewSpeedSetting);
+		SodaSubsystem->SpectatorActor->SetSpeedProfile(NewSpeedSetting);
 	}
 }
 
 const FSlateBrush * SCameraViewportToolbar::GetProjectionIcon() const
 {
 	ESodaSpectatorMode Mode = ESodaSpectatorMode::Perspective;
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	if (GameMode && GameMode->SpectatorActor)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	if (SodaSubsystem && SodaSubsystem->SpectatorActor)
 	{
-		Mode = GameMode->SpectatorActor->GetMode();
+		Mode = SodaSubsystem->SpectatorActor->GetMode();
 	}
 	else
 	{

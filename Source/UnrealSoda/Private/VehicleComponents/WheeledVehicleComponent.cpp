@@ -1,11 +1,11 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/WheeledVehicleComponent.h"
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaApp.h"
 #include "Engine/Canvas.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "RuntimeEditorModule.h"
 
 UWheeledVehicleComponent::UWheeledVehicleComponent(const FObjectInitializer& ObjectInitializer)

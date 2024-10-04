@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <float.h>
 #include <chrono>
+#include "Misc/SpinLock.h"
 
 #define INT_DEFAULT (1000U)
 #define CANID_EXTENDED_FLAG ((uint32_t)0x80000000U)
@@ -34,9 +35,9 @@ enum ECanFrameFlags : uint8
 
 struct UNREALSODA_API FCanFrame
 {
-	uint32_t ID;
-	uint8_t Length;
-	uint8 Flags; // ECanFrameFlags
+	uint32_t ID{};
+	uint8_t Length{};
+	uint8 Flags{}; // ECanFrameFlags
 	uint8_t Data[64];
 
 	FCanFrame() {}
@@ -82,6 +83,8 @@ public:
 	std::chrono::nanoseconds Timeout{ 500000000ll };
 	//FCanDelegate OnPreSend;
 	//FCanDelegate OnAfterSerialize;
+
+	UE::FSpinLock SpinLockFrame;
 };
 
 class UNREALSODA_API FCANMessageDynamic : public FCANMessage

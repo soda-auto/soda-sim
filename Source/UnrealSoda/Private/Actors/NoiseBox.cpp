@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Actors/NoiseBox.h"
 #include "Soda/UnrealSoda.h"
@@ -7,7 +7,7 @@
 #include "Engine/Texture2D.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Soda/VehicleComponents/Inputs/VehicleInputAIComponent.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 
 ANoiseBox::ANoiseBox()
 {
@@ -120,14 +120,14 @@ void ANoiseBox::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ANoiseBox::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	if (!bActiveOnlyIfScenario || (GameMode && GameMode->IsScenarioRunning()))
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	if (!bActiveOnlyIfScenario || (SodaSubsystem && SodaSubsystem->IsScenarioRunning()))
 	{
 		if (ASodaVehicle* Vehicle = Cast<ASodaVehicle>(Other))
 		{
 			for (auto& Component : Vehicle->GetVehicleComponents())
 			{
-				if (UImuSensorComponent* Sensor = Cast<UImuSensorComponent>(Component))
+				if (UNavSensor* Sensor = Cast<UNavSensor>(Component))
 				{
 					Sensor->SetImuNoiseParams(DefaultNoiseParams);
 				}
@@ -138,14 +138,14 @@ void ANoiseBox::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Othe
 
 void ANoiseBox::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	if (!bActiveOnlyIfScenario || (GameMode && GameMode->IsScenarioRunning()))
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	if (!bActiveOnlyIfScenario || (SodaSubsystem && SodaSubsystem->IsScenarioRunning()))
 	{
 		if (ASodaVehicle* Vehicle = Cast<ASodaVehicle>(Other))
 		{
 			for (auto& Component : Vehicle->GetVehicleComponents())
 			{
-				if (UImuSensorComponent* Sensor = Cast<UImuSensorComponent>(Component))
+				if (UNavSensor* Sensor = Cast<UNavSensor>(Component))
 				{
 					Sensor->RestoreBaseImuNoiseParams();
 				}

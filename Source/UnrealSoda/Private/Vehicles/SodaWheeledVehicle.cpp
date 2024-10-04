@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -14,7 +14,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "DisplayDebugHelpers.h"
 #include "SodaJoystick.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/VehicleComponents/VehicleDriverComponent.h"
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 #include "Soda/VehicleComponents/Mechanicles/VehicleBrakeSystemComponent.h"
@@ -43,11 +43,11 @@ ASodaWheeledVehicle::ASodaWheeledVehicle(const FObjectInitializer& ObjectInitial
 	RootComponent = Mesh = CreateDefaultSubobject< USkeletalMeshComponent >(TEXT("VehicleMesh"));
 	Mesh->SetCollisionProfileName(UCollisionProfile::Vehicle_ProfileName);
 	Mesh->SetSimulatePhysics(false);
-	Mesh->SetNotifyRigidBodyCollision(true);
-	Mesh->SetUseCCD(true);
 	//Mesh->bBlendPhysics = true;
 	Mesh->SetGenerateOverlapEvents(true);
 	Mesh->SetCanEverAffectNavigation(false);
+	Mesh->BodyInstance.bNotifyRigidBodyCollision = true;
+	Mesh->BodyInstance.bUseCCD = true;
 
 
 	SpringArm = CreateDefaultSubobject< USpringArmComponent >(TEXT("SpringArm"));
@@ -70,6 +70,7 @@ void ASodaWheeledVehicle::SetDefaultMeshProfile()
 	Mesh->SetCanEverAffectNavigation(false);
 	Mesh->SetCollisionResponseToChannels(DefCollisionResponseToChannel);
 	Mesh->SetCollisionObjectType(DefCollisionObjectType);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
 void ASodaWheeledVehicle::BeginPlay() 
@@ -375,6 +376,8 @@ FWheeledVehicleState ASodaWheeledVehicle::GetVehicleState() const
 		}
 	}
 
+
+
 	return Ret;
 }
 
@@ -395,6 +398,8 @@ const FSodaActorDescriptor* ASodaWheeledVehicle::GenerateActorDescriptor() const
 
 void ASodaWheeledVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) const
 {
+	Super::OnPushDataset(InDataset);
+
 	using bsoncxx::builder::stream::document;
 	using bsoncxx::builder::stream::finalize;
 	using bsoncxx::builder::stream::open_document;
@@ -402,18 +407,17 @@ void ASodaWheeledVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) cons
 	using bsoncxx::builder::stream::open_array;
 	using bsoncxx::builder::stream::close_array;
 
-	Super::OnPushDataset(InDataset);
+	auto Doc = InDataset.GetRowDoc() << "WheeledVehicleData" << open_document;
 
-	InDataset.GetRowDoc()
-		<< "load" << GetEnginesLoad();
+	//Doc << "EngineLoad" << GetEnginesLoad();
 
 	if (UVehicleInputComponent* Input = GetActiveVehicleInput())
 	{
-		InDataset.GetRowDoc() << "inputs" << open_document
-			<< "break" << Input->GetBrakeInput()
-			<< "steer" << Input->GetSteeringInput()
-			<< "throttle" << Input->GetThrottleInput()
-			<< "gear" << int(Input->GetGearInput())
+		Doc << "Inputs" << open_document
+			<< "Break" << Input->GetInputState().Brake
+			<< "Steer" << Input->GetInputState().Steering
+			<< "Throttle" << Input->GetInputState().Throttle
+			<< "Gear" << int(Input->GetInputState().GearState)
 		<< close_document;
 	}
 
@@ -424,19 +428,21 @@ void ASodaWheeledVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) cons
 		{
 			const auto& Wheel = Wheels[i];
 			WheelsArray << open_document
-				<< "4wd_ind" << int(Wheel->WheelIndex4WD)
-				<< "ang_vel" << Wheel->ResolveAngularVelocity()
-				<< "req_torq" << Wheel->ReqTorq
-				<< "req_brake_torq" << Wheel->ReqBrakeTorque
-				<< "steer" << Wheel->Steer
-				<< "sus" << Wheel->SuspensionOffset
-				<< "long_slip" << Wheel->Slip.X
-				<< "lat_slip" << Wheel->Slip.Y
+				<< "4wdInd" << int(Wheel->WheelIndex4WD)
+				<< "AngVel" << Wheel->ResolveAngularVelocity()
+				<< "ReqTorq" << Wheel->ReqTorq
+				<< "ReqBrakeTorq" << Wheel->ReqBrakeTorque
+				<< "Steer" << Wheel->Steer
+				<< "Sus" << Wheel->SuspensionOffset
+				<< "LongSlip" << Wheel->Slip.X
+				<< "LatSlip" << Wheel->Slip.Y
 			<< close_document;
 		}
 
-		InDataset.GetRowDoc() << "wheels" << WheelsArray;
+		Doc << "Wheels" << WheelsArray;
 	}
+
+	Doc << close_document;
 }
 
 void ASodaWheeledVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) const
@@ -451,21 +457,21 @@ void ASodaWheeledVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) c
 	if (GetWheeledComponentInterface())
 	{
 		(*Doc)
-			<< "track_width" << GetWheeledComponentInterface()->GetTrackWidth()
-			<< "wheel_base_width" << GetWheeledComponentInterface()->GetWheelBaseWidth()
-			<< "mass" << GetWheeledComponentInterface()->GetVehicleMass();
+			<< "TrackWidth" << GetWheeledComponentInterface()->GetTrackWidth()
+			<< "WheelBaseWidth" << GetWheeledComponentInterface()->GetWheelBaseWidth()
+			<< "Mass" << GetWheeledComponentInterface()->GetVehicleMass();
 
 		bsoncxx::builder::stream::array WheelsArray;
 		for (int i = 0; i < Wheels.Num(); ++i)
 		{
 			const auto& Wheel = Wheels[i];
 			WheelsArray << open_document
-				<< "4wd_ind" << int(Wheel->WheelIndex4WD)
-				<< "radius" << Wheel->Radius
-				<< "location" << open_array << Wheel->RestingLocation.X << Wheel->RestingLocation.Y << Wheel->RestingLocation.Z << close_array
+				<< "4wdInd" << int(Wheel->WheelIndex4WD)
+				<< "Radius" << Wheel->Radius
+				<< "Location" << open_array << Wheel->RestingLocation.X << Wheel->RestingLocation.Y << Wheel->RestingLocation.Z << close_array
 			<< close_document;
 		}
-		(*Doc) << "wheels" << WheelsArray;
+		(*Doc) << "Wheels" << WheelsArray;
 	}
 }
 

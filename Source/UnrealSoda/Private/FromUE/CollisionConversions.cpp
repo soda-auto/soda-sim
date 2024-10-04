@@ -1,10 +1,11 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #if(!IS_MONOLITHIC)
 
 #include "Runtime/Engine/Private/Collision/CollisionConversions.h"
 #include "Engine/World.h"
+#include "Engine/OverlapResult.h"
 #include "Components/PrimitiveComponent.h"
 
 //#include "Collision/CollisionDebugDrawing.h"
@@ -817,4 +818,17 @@ FHitResult ConvertOverlapToHitResult(const FOverlapResult& Overlap)
 	Hit.HitObjectHandle = Overlap.OverlapObjectHandle;
 	return Hit;
 }
+
+bool FCompareFHitResultTime::operator()(const FHitResult& A, const FHitResult& B) const
+{
+	if (A.Time == B.Time)
+	{
+		// Sort blocking hits after non-blocking hits, if they are at the same time. Also avoid swaps if they are the same.
+		// This is important so initial touches are reported before processing stops on the first blocking hit.
+		return (A.bBlockingHit == B.bBlockingHit) ? true : B.bBlockingHit;
+	}
+
+	return A.Time < B.Time;
+}
+
 #endif // IS_MONOLITHIC

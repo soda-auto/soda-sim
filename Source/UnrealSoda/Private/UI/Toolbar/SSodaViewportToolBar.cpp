@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "SSodaViewportToolBar.h"
 #include "Framework/Commands/UIAction.h"
@@ -16,7 +16,7 @@
 #include "SodaStyleSet.h"
 #include "Camera/CameraActor.h"
 #include "GameFramework/WorldSettings.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Soda/SodaStatics.h"
 #include "Soda/SodaActorFactory.h"
@@ -33,6 +33,8 @@
 #include "UI/Wnds/SLevelSaveLoadWindow.h"
 #include "UI/Wnds/SVehcileManagerWindow.h"
 #include "UI/Wnds/SAboutWindow.h"
+#include "UI/Wnds/PakWindow/SPakWindow.h"
+#include "UI/Wnds/SQuickStartWindow.h"
 #include "SPlacementModeTools.h"
 #include "Soda/ISodaActor.h"
 #include "RuntimeEditorModule.h"
@@ -44,6 +46,8 @@
 #include "Soda/SodaUserSettings.h"
 #include "JoystickGameSettings.h"
 #include "SodaJoystick.h"
+#include "RemoteControlSettings.h"
+#include "GameFramework/GameUserSettings.h"
 
 #define LOCTEXT_NAMESPACE "SodaViewportToolBar"
 
@@ -171,14 +175,15 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 		//.Visibility(Viewport.Pin().Get(), &SSodaViewport::GetToolbarVisibility)
 		.OnClicked(FOnClicked::CreateLambda([this]()
 		{
-			USodaGameModeComponent * GameMode = USodaGameModeComponent::GetChecked();
-			if (GameMode->IsScenarioRunning())
+			USodaSubsystem * SodaSubsystem = USodaSubsystem::GetChecked();
+			if (SodaSubsystem->IsScenarioRunning())
 			{
-				GameMode->ScenarioStop(EScenarioStopReason::UserRequest);
+				const USodaUserSettings* Settings = SodaApp.GetSodaUserSettings();
+				SodaSubsystem->ScenarioStop(EScenarioStopReason::UserRequest, Settings->ScenarioStopMode);
 			}
 			else
 			{
-				GameMode->ScenarioPlay();
+				SodaSubsystem->ScenarioPlay();
 			}
 			return FReply::Handled();
 		}))
@@ -186,7 +191,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 			SNew(SImage)
 			.Image_Lambda([]()
 			{
-				return FSodaStyle::GetBrush(USodaGameModeComponent::Get()->IsScenarioRunning() ? "Icons.Toolbar.Stop" : "Icons.Toolbar.Play");
+				return FSodaStyle::GetBrush(USodaSubsystem::Get()->IsScenarioRunning() ? "Icons.Toolbar.Stop" : "Icons.Toolbar.Play");
 			})
 		]
 	);
@@ -195,7 +200,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 	ToolbarBuilder.AddWidget
 	(
 		SNew(SViewportToolBarButton)
-		.IsEnabled_Lambda([]() {return !USodaGameModeComponent::Get()->IsScenarioRunning(); })
+		.IsEnabled_Lambda([]() {return !USodaSubsystem::Get()->IsScenarioRunning(); })
 		.Image("Icons.Save")
 		.ToolTipText(FText::FromString(TEXT("Save/Load scenario")))
 		.OnClicked(FOnClicked::CreateLambda([this]()
@@ -261,7 +266,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 			}
 		})
 		.OnGetMenuContent(this, &SSodaViewportToolBar::GenerateDBMenu)
-		.IsEnabled_Lambda([]() {return !USodaGameModeComponent::Get()->IsScenarioRunning(); })
+		.IsEnabled_Lambda([]() {return !USodaSubsystem::Get()->IsScenarioRunning(); })
 	);
 
 	ToolbarBuilder.AddSeparator();
@@ -271,7 +276,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 		.ParentToolBar(SharedThis(this))
 		.Label(this, &SSodaViewportToolBar::GetModeMenuLabel)
 		.LabelIcon(this, &SSodaViewportToolBar::GetModeMenuLabelIcon)
-		//.IsEnabled_Lambda([]() {return !USodaGameModeComponent::Get()->IsScenarioRunning(); })
+		//.IsEnabled_Lambda([]() {return !USodaSubsystem::Get()->IsScenarioRunning(); })
 		.OnGetMenuContent(this, &SSodaViewportToolBar::GenerateModeMenu)
 		.ToolTipText(FText::FromString(TEXT("Change UI mode")))
 	);
@@ -384,6 +389,16 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateMainMenu()
 
 	{
 		FUIAction Action;
+		Action.ExecuteAction.BindSP(this, &SSodaViewportToolBar::OnOpenPakWindow);
+		MenuBuilder.AddMenuEntry(
+			FText::FromString(TEXT("Paks")),
+			FText::FromString(TEXT("Paks")),
+			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.Import"),
+			Action);
+	}
+
+	{
+		FUIAction Action;
 		Action.ExecuteAction.BindSP(this, &SSodaViewportToolBar::OnOpenLevelWindow);
 		MenuBuilder.AddMenuEntry(
 			FText::FromString(TEXT("Open Level")),
@@ -414,6 +429,16 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateMainMenu()
 
 	{
 		FUIAction Action;
+		Action.ExecuteAction.BindSP(this, &SSodaViewportToolBar::OnOpenQuickStartWindow);
+		MenuBuilder.AddMenuEntry(
+			FText::FromString(TEXT("Quick Start")),
+			FText::FromString(TEXT("Quick Start")),
+			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.Advanced"),
+			Action);
+	}
+
+	{
+		FUIAction Action;
 		Action.ExecuteAction.BindSP(this, &SSodaViewportToolBar::OnOpenAboutWindow);
 		MenuBuilder.AddMenuEntry(
 			FText::FromString(TEXT("About")),
@@ -438,14 +463,15 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 		FUIAction Action;
 		Action.ExecuteAction.BindLambda([]() 
 		{
-			USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
+			SodaApp.GetSodaUserSettings()->ReadGraphicSettings();
+			USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 			FRuntimeEditorModule& RuntimeEditorModule = FModuleManager::LoadModuleChecked<FRuntimeEditorModule>("RuntimeEditor");
 			soda::FDetailsViewArgs Args;
 			Args.bHideSelectionTip = true;
 			Args.bLockable = false;
 			TSharedPtr<soda::IDetailsView> DetailView = RuntimeEditorModule.CreateDetailView(Args);
 			DetailView->SetObject(SodaApp.GetSodaUserSettings());
-			GameMode->PushToolBox(
+			SodaSubsystem->PushToolBox(
 				SNew(SToolBox)
 				.Caption(FText::FromString("Common Settings"))
 				[
@@ -495,36 +521,17 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 	}
 
 	{
-		MenuBuilder.AddSubMenu(
-			FText::FromString("Graphics Settings"),
-			FText::FromString("Graphics Settings"),
-			FNewMenuDelegate::CreateLambda([](FMenuBuilder& MenuBuilder)
-				{
-					MenuBuilder.BeginSection(NAME_None);
-					FUIAction Action;
-					MenuBuilder.AddMenuEntry(
-						FText::FromString("TODO"),
-						FText::FromString("TODO"),
-						FSlateIcon(),
-						Action);
-					MenuBuilder.EndSection();
-				}),
-			false,
-			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaViewport.SubMenu.Stats"));
-	}
-
-	{
 		FUIAction Action;
 		Action.ExecuteAction.BindLambda([]() 
 		{
-			USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
+			USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 			FRuntimeEditorModule& RuntimeEditorModule = FModuleManager::LoadModuleChecked<FRuntimeEditorModule>("RuntimeEditor");
 			soda::FDetailsViewArgs Args;
 			Args.bHideSelectionTip = true;
 			Args.bLockable = false;
 			TSharedPtr<soda::IDetailsView> DetailView = RuntimeEditorModule.CreateDetailView(Args);
 			DetailView->SetObject(GetMutableDefault<UJoystickGameSettings>());
-			GameMode->PushToolBox(
+			SodaSubsystem->PushToolBox(
 				SNew(SToolBox)
 				.Caption(FText::FromString("Joystic Settings"))
 				[
@@ -572,6 +579,66 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 			FText::FromString("Joystic Settings"),
 			FText::FromString("Joystic Settings"),
 			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.Joystick"),
+			Action);
+	}
+
+	{
+		FUIAction Action;
+		Action.ExecuteAction.BindLambda([]() 
+		{
+			USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+			FRuntimeEditorModule& RuntimeEditorModule = FModuleManager::LoadModuleChecked<FRuntimeEditorModule>("RuntimeEditor");
+			soda::FDetailsViewArgs Args;
+			Args.bHideSelectionTip = true;
+			Args.bLockable = false;
+			TSharedPtr<soda::IDetailsView> DetailView = RuntimeEditorModule.CreateDetailView(Args);
+			DetailView->SetObject(GetMutableDefault<URemoteControlSettings>());
+			SodaSubsystem->PushToolBox(
+				SNew(SToolBox)
+				.Caption(FText::FromString("RC Settings"))
+				[
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot()
+					.FillHeight(1)
+					
+					[
+						DetailView.ToSharedRef()
+					]
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					.VAlign(VAlign_Top)
+					.HAlign(HAlign_Center)
+					[
+						SNew(SHorizontalBox)
+						+ SHorizontalBox::Slot()
+						.Padding(5)
+						[
+							SNew(SButton)
+							.Text(FText::FromString(TEXT("Save")))
+							.OnClicked(FOnClicked::CreateLambda([]()
+							{
+								GetMutableDefault<URemoteControlSettings>()->SaveConfig();
+								return FReply::Handled();
+							}))
+						]
+						+ SHorizontalBox::Slot()
+						.Padding(5)
+						[
+							SNew(SButton)
+							.Text(FText::FromString(TEXT("Reset")))
+							.OnClicked(FOnClicked::CreateLambda([]()
+							{
+								GetMutableDefault<URemoteControlSettings>()->LoadConfig();
+								return FReply::Handled();
+							}))
+						]
+					]
+				]);
+		});
+		MenuBuilder.AddMenuEntry(
+			FText::FromString("RC Settings"),
+			FText::FromString("RC Settings"),
+			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.World"),
 			Action);
 	}
 
@@ -630,7 +697,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateDBMenu()
 		});
 		Action.ExecuteAction.BindLambda([]() 
 		{
-			USodaGameModeComponent::GetChecked()->UpdateDBGateway(false);
+			USodaSubsystem::GetChecked()->UpdateDBGateway(false);
 		});
 		MenuBuilder.AddMenuEntry(
 			FText::FromString("Connect to DB"),
@@ -671,7 +738,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateAddMenu()
 	// Build menu by categiries
 	MenuBuilder.BeginSection(NAME_None);
 	TMap<FString, TMap<FString, TArray<TSoftClassPtr<AActor>>>> ActorsMap;
-	for (const auto & It : USodaGameModeComponent::GetChecked()->GetSodaActorDescriptors())
+	for (const auto & It : USodaSubsystem::GetChecked()->GetSodaActorDescriptors())
 	{
 		if (It.Value.bAllowSpawn)
 		{
@@ -704,7 +771,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateAddMenu()
 					MenuBuilder.BeginSection(NAME_None, FText::FromString(SubCategory == "" ? TEXT("Default") : *SubCategory));
 					for (auto & Actor : CategoryMap[SubCategory])
 					{
-						const FSodaActorDescriptor & Desc = USodaGameModeComponent::GetChecked()->GetSodaActorDescriptor(Actor);
+						const FSodaActorDescriptor & Desc = USodaSubsystem::GetChecked()->GetSodaActorDescriptor(Actor);
 						TSharedPtr<FPlaceableItem> Item = MakeShared<FPlaceableItem>(
 							Actor,
 							Desc.Icon, 
@@ -881,34 +948,49 @@ FLevelEditorViewportClient* ULevelViewportToolBarContext::GetLevelViewportClient
 
 void SSodaViewportToolBar::OnOpenLevelWindow()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		GameMode->OpenWindow("Choose Map", SNew(SChooseMapWindow));
+		SodaSubsystem->OpenWindow("Choose Map", SNew(SChooseMapWindow));
 	}	
 }
 
+void SSodaViewportToolBar::OnOpenPakWindow()
+{
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
+	{
+		SodaSubsystem->OpenWindow("Paks", SNew(SPakWindow));
+	}
+}
 
 void SSodaViewportToolBar::OnOpenAboutWindow()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		GameMode->OpenWindow("About SodaSim", SNew(SAboutWindow));
+		SodaSubsystem->OpenWindow("About SODA.Sim", SNew(SAboutWindow));
+	}
+}
+
+void SSodaViewportToolBar::OnOpenQuickStartWindow()
+{
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
+	{
+		SodaSubsystem->OpenWindow("Quick Start", SNew(SQuickStartWindow));
 	}
 }
 
 void SSodaViewportToolBar::OnOpenVehicleManagerWindow()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		GameMode->OpenWindow("Vehicle Manager", SNew(SVehcileManagerWindow, nullptr));
+		SodaSubsystem->OpenWindow("Vehicle Manager", SNew(SVehcileManagerWindow, nullptr));
 	}
 }
 
 void SSodaViewportToolBar::OnOpenSaveLoadWindow()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		GameMode->OpenWindow("Save & Load", SNew(SLevelSaveLoadWindow));
+		SodaSubsystem->OpenWindow("Save & Load", SNew(SLevelSaveLoadWindow));
 	}
 }
 
@@ -921,8 +1003,8 @@ EVisibility SSodaViewportToolBar::IsEditorMode() const
 
 EVisibility SSodaViewportToolBar::IsSpectatorMode() const
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	if (GameMode && GameMode->SpectatorActor)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	if (SodaSubsystem && SodaSubsystem->SpectatorActor)
 	{
 		return EVisibility::Visible;
 	}

@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaApp.h"
@@ -16,6 +16,8 @@
 #include "Soda/Misc/JsonArchive.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Misc/SodaVehicleCommonExporter.h"
+#include "Soda/SodaUserSettings.h"
+#include "Misc/ConfigContext.h"
 
 #define LOCTEXT_NAMESPACE "FUnrealSodaModule"
 
@@ -57,6 +59,7 @@ const FString FSodaVehicleJSONExporter::ExporterFileType = TEXT("Soda JSON Vehic
 
 void FUnrealSodaModule::StartupModule()
 {
+
 #if PLATFORM_WINDOWS
 	FString DllDirectory = FPaths::Combine(IPluginManager::Get().FindPlugin(TEXT("SodaSim"))->GetBaseDir(), TEXT("/Binaries/Win64"));
 	TArray<FString> DllNames = { "libsodium.dll", "libzmq-v141-mt-4_3_2.dll", "SDL2.dll" };
@@ -155,6 +158,8 @@ void FUnrealSodaModule::StartupModule()
 
 	SodaApp.RegisterVehicleExporter(MakeShared<FSodaVehicleJSONExporter>());
 	SodaApp.RegisterVehicleExporter(MakeShared<FSodaVehicleCommonExporter>());
+
+	UE_LOG(LogSoda, Log, TEXT("FUnrealSodaModule::StartupModule(); CustomConfig: \"%s\""), *FConfigCacheIni::GetCustomConfigString());
 }
 
 void FUnrealSodaModule::ShutdownModule()
@@ -178,6 +183,8 @@ void FUnrealSodaModule::ShutdownModule()
 		FPlatformProcess::FreeDllHandle(It);
 	}
 #endif
+
+	
 }
 
 #undef LOCTEXT_NAMESPACE

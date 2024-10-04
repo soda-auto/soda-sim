@@ -1,4 +1,4 @@
-﻿// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+﻿// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "UI/ScenarioAction/ActionNodeRow/SScenarioActionActorRow.h"
 #include "UI/ScenarioAction/SScenarioActionTree.h"
@@ -6,7 +6,7 @@
 #include "SodaStyleSet.h"
 #include "Soda/ScenarioAction/ScenarioActionUtils.h"
 #include "Soda/ISodaActor.h" 
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/ISodaVehicleComponent.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Widgets/Input/SButton.h"
@@ -18,13 +18,13 @@ void SScenarioActionActorRow::Construct(const FArguments& InArgs, const TSharedR
 	Node = InNode;
 	Tree = InTree;
 
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	check(GameMode);
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	check(SodaSubsystem);
 
 	FName Icon = TEXT("ClassIcon.Actor");
 	if (ISodaActor* SodaActor = Cast<ISodaActor>(Node->GetActor()))
 	{
-		const FSodaActorDescriptor& Desc = GameMode->GetSodaActorDescriptor(Node->GetActor()->GetClass());
+		const FSodaActorDescriptor& Desc = SodaSubsystem->GetSodaActorDescriptor(Node->GetActor()->GetClass());
 		Icon = Desc.Icon;
 	}
 

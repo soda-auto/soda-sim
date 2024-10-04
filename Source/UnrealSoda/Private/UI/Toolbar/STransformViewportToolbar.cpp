@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "STransformViewportToolbar.h"
 #include "EngineDefines.h"
@@ -20,7 +20,7 @@
 #include "UI/Toolbar/Common/SViewportToolBarButton.h"
 #include "Soda/UI/SSodaViewport.h"
 #include "Soda/SodaGameViewportClient.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 
 #define LOCTEXT_NAMESPACE "TransformToolBar"

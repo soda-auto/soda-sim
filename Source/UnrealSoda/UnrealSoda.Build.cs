@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 using System;
 using System.Diagnostics;
@@ -48,8 +48,9 @@ public class UnrealSoda : ModuleRules
 				"ToolMenus",
 				"TypedElementFramework",
 				"TypedElementRuntime",
-                "SodaSimProto",
                 "AnimGraphRuntime",
+                "MassActors",
+                "MassSpawner"
             }
 		);
 
@@ -72,7 +73,10 @@ public class UnrealSoda : ModuleRules
                 "Eigen",
                 "ApplicationCore",
                 "PROJ",
-                "GeometryAlgorithms"
+                "GeometryAlgorithms",
+                "MassEntity",
+				"SodaPak",
+                "StructUtils"
             } 
 		);
 
@@ -93,6 +97,7 @@ public class UnrealSoda : ModuleRules
 		SetupModulePhysicsSupport(Target);
 		//bUsePrecompiled = true;
 		bUseUnity = false;
+        //bUseRTTI = false;
 
         // The Shipping configuration isn't supported yet
         /*
@@ -105,6 +110,12 @@ public class UnrealSoda : ModuleRules
             PrecompileForTargets = PrecompileTargetsType.None;
         }
 		*/
+
+        // Temporary hack to fix build for Linux (Ubuntu)
+        if (Target.Platform == UnrealTargetPlatform.Linux)
+		{
+            PublicIncludePaths.Add("/usr/include/eigen3");
+        }	
 
         if (Target.Configuration == UnrealTargetConfiguration.Shipping)
         {

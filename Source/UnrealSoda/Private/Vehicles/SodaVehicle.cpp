@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/UnrealSoda.h"
@@ -13,7 +13,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "DisplayDebugHelpers.h"
 #include "Soda/SodaStatics.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/SodaActorFactory.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/Paths.h"
@@ -41,6 +41,7 @@
 #include "UI/ToolBoxes/SVehicleComponentsToolBox.h"
 #include "SodaStyleSet.h"
 #include "GlobalRenderResources.h"
+#include "GameFramework/PlayerController.h"
 
 #include "bsoncxx/builder/stream/helpers.hpp"
 #include "bsoncxx/exception/exception.hpp"
@@ -284,7 +285,7 @@ void ASodaVehicle::BeginPlay()
 {
 	Super::BeginPlay();
 
-	check(USodaGameModeComponent::Get());
+	check(USodaSubsystem::Get());
 
 	VehicelExtent = USodaStatics::CalculateActorExtent(this);
 	UpdateProperties();
@@ -309,6 +310,14 @@ void ASodaVehicle::BeginPlay()
 		}
 	}
 
+	for (auto& Component : GetVehicleComponents())
+	{
+		if (Component->IsVehicleComponentActiveted())
+		{
+			Component->OnPostActivateVehicleComponent();
+		}
+	}
+
 	PhysicMutex.Unlock();
 }
 
@@ -318,7 +327,25 @@ void ASodaVehicle::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		if (Component->IsVehicleComponentActiveted())
 		{
+			Component->OnPreDeactivateVehicleComponent();
+		}
+	}
+
+	TArray<ISodaVehicleComponent*> ComponentsToPostDeactivateVehicle;
+	for (auto& Component : GetVehicleComponents())
+	{
+		if (Component->IsVehicleComponentActiveted())
+		{
 			Component->OnDeactivateVehicleComponent();
+			ComponentsToPostDeactivateVehicle.Add(Component);
+		}
+	}
+
+	for (auto& Component : ComponentsToPostDeactivateVehicle)
+	{
+		if (Component->IsVehicleComponentActiveted())
+		{
+			Component->OnPostDeactivateVehicleComponent();
 		}
 	}
 
@@ -354,7 +381,7 @@ void ASodaVehicle::UnPossessed()
 		VehicleWidget2->RemoveFromParent();
 	}
 
-	USodaGameModeComponent::GetChecked()->UnpossesVehicle = this;
+	USodaSubsystem::GetChecked()->UnpossesVehicle = this;
 }
 
 void ASodaVehicle::Serialize(FArchive& Ar)
@@ -588,14 +615,14 @@ ASodaVehicle * ASodaVehicle::RespawnVehcile(FVector Location, FRotator Rotation,
 		NewVehicle->MarkAsDirty();
 	}
 
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
-	GameMode->NotifyLevelIsChanged();
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+	SodaSubsystem->NotifyLevelIsChanged();
 
-	if (GameMode->LevelState && GameMode->LevelState->ActorFactory)
+	if (SodaSubsystem->LevelState && SodaSubsystem->LevelState->ActorFactory)
 	{
-		GameMode->LevelState->ActorFactory->ReplaceActor(NewVehicle, this, false);
+		SodaSubsystem->LevelState->ActorFactory->ReplaceActor(NewVehicle, this, false);
 	}
-	if(GameMode->UnpossesVehicle == this) GameMode->UnpossesVehicle = NewVehicle;
+	if(SodaSubsystem->UnpossesVehicle == this) SodaSubsystem->UnpossesVehicle = NewVehicle;
 	
 
 	bool NeedPosses = IsPlayerControlled();
@@ -633,13 +660,13 @@ ASodaVehicle* ASodaVehicle::RespawnVehcileFromAddress(const FVechicleSaveAddress
 
 	ASodaVehicle* NewVehicle = ASodaVehicle::SpawnVehicleFormAddress(World, Address, SpawnTransform.GetTranslation(), SpawnTransform.GetRotation().Rotator(), NeedPosses);
 
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
-	GameMode->NotifyLevelIsChanged();
-	if (GameMode->LevelState && GameMode->LevelState->ActorFactory)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+	SodaSubsystem->NotifyLevelIsChanged();
+	if (SodaSubsystem->LevelState && SodaSubsystem->LevelState->ActorFactory)
 	{
-		GameMode->LevelState->ActorFactory->ReplaceActor(NewVehicle, this, false);
+		SodaSubsystem->LevelState->ActorFactory->ReplaceActor(NewVehicle, this, false);
 	}
-	if (GameMode->UnpossesVehicle == this) GameMode->UnpossesVehicle = NewVehicle;
+	if (SodaSubsystem->UnpossesVehicle == this) SodaSubsystem->UnpossesVehicle = NewVehicle;
 	
 	return NewVehicle;
 }
@@ -725,13 +752,15 @@ void ASodaVehicle::ReActivateVehicleComponents(bool bOnlyTopologyComponents)
 	{
 		if (!bOnlyTopologyComponents || It->GetVehicleComponentCommon().bIsTopologyComponent)
 		{
-			bool bIsNeedActivate =
+			const bool bNeedActivate =
 				(It->IsVehicleComponentActiveted() && It->GetDeferredTask() != EVehicleComponentDeferredTask::Deactivate) ||
 				It->GetDeferredTask() == EVehicleComponentDeferredTask::Activate;
-			ComponentsActive.Add(MakeTuple(It, bIsNeedActivate));
+			ComponentsActive.Add(MakeTuple(It, bNeedActivate));
 			if (It->IsVehicleComponentActiveted())
 			{
+				It->OnPreDeactivateVehicleComponent();
 				It->OnDeactivateVehicleComponent();
+				It->OnPostDeactivateVehicleComponent();
 			}
 		}
 	}
@@ -748,18 +777,12 @@ void ASodaVehicle::ReActivateVehicleComponents(bool bOnlyTopologyComponents)
 		if (It.Get<1>()) It.Get<0>()->OnActivateVehicleComponent();
 	}
 
-	bNotifyNeedReActivateComponents = false;
+	for (auto& It : ComponentsActive)
+	{
+		if (It.Get<1>()) It.Get<0>()->OnPostActivateVehicleComponent();
+	}
 }
 
-bool ASodaVehicle::ReActivateVehicleComponentsIfNeeded()
-{
-	if (bNotifyNeedReActivateComponents)
-	{
-		ReActivateVehicleComponents(true);
-		return true;
-	}
-	return false;
-}
 
 void ASodaVehicle::UpdateProperties()
 {
@@ -1099,7 +1122,7 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromJsonArchive(UWorld* World, const TSh
 	FVector Offset = FVector::ZeroVector;
 	if (bApplyOffset)
 	{
-		const FSodaActorDescriptor& Desc = USodaGameModeComponent::Get()->GetSodaActorDescriptor(VahicleClass);
+		const FSodaActorDescriptor& Desc = USodaSubsystem::Get()->GetSodaActorDescriptor(VahicleClass);
 		Offset = Desc.SpawnOffset;
 	}
 
@@ -1128,9 +1151,9 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromJsonArchive(UWorld* World, const TSh
 	NewVehicle->SetSaveAddress(Address);
 	NewVehicle->FinishSpawning(SpawnTransform);
 
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		GameMode->NotifyLevelIsChanged();
+		SodaSubsystem->NotifyLevelIsChanged();
 	}
 
 	APlayerController* PlayerController = World->GetFirstPlayerController();
@@ -1239,7 +1262,7 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromBin(const UObject* WorldContextObjec
 	FVector Offset = FVector::ZeroVector;
 	if (bApplyOffset)
 	{
-		const FSodaActorDescriptor& Desc = USodaGameModeComponent::Get()->GetSodaActorDescriptor(Class);
+		const FSodaActorDescriptor& Desc = USodaSubsystem::Get()->GetSodaActorDescriptor(Class);
 		Offset = Desc.SpawnOffset;
 	}
 
@@ -1283,9 +1306,9 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromBin(const UObject* WorldContextObjec
 
 	NewVehicle->FinishSpawning(SpawnTransform);
 
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
-		GameMode->NotifyLevelIsChanged();
+		SodaSubsystem->NotifyLevelIsChanged();
 	}
 
 	APlayerController* PlayerController = World->GetFirstPlayerController();
@@ -1358,7 +1381,7 @@ FString ASodaVehicle::ExportTo(const FString& ExporterName)
 		}
 		else
 		{
-			UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::ExportTo(); Faild to export to ExporterName: %\"%s\""), *ExporterName);
+			UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::ExportTo(); Faild to export to ExporterName: \"%s\""), *ExporterName);
 			return "";
 		}
 	}
@@ -1393,12 +1416,12 @@ void ASodaVehicle::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent
 
 bool ASodaVehicle::OnSetPinnedActor(bool bIsPinnedActor)
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
-	if (GameMode->LevelState && GameMode->LevelState->ActorFactory && GameMode->LevelState->ActorFactory->CheckActorIsExist(this))
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+	if (SodaSubsystem->LevelState && SodaSubsystem->LevelState->ActorFactory && SodaSubsystem->LevelState->ActorFactory->CheckActorIsExist(this))
 	{
 		if (bIsPinnedActor)
 		{
-			GameMode->OpenWindow(FString::Printf(TEXT("Pin \"%s\" Vehicle"), *GetName()), SNew(soda::SVehcileManagerWindow, this));
+			SodaSubsystem->OpenWindow(FString::Printf(TEXT("Pin \"%s\" Vehicle"), *GetName()), SNew(soda::SVehcileManagerWindow, this));
 		}
 		else
 		{
@@ -1495,14 +1518,21 @@ void ASodaVehicle::ScenarioBegin()
 		}
 		else
 		{
-			SodaApp.GetGameModeChecked()->ScenarioStop(EScenarioStopReason::InnerError);
-			SodaApp.GetGameModeChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "Scenarip stoped", "Can't create dataset for \"" + GetName() + "\"");
+			SodaApp.GetSodaSubsystemChecked()->ScenarioStop(EScenarioStopReason::InnerError, EScenarioStopMode::RestartLevel, "Can't create dataset for \"" + GetName() + "\"");
 		}
 	}
 
 	for (auto& Component : GetVehicleComponents())
 	{
 		Component->ScenarioBegin();
+	}
+
+	if (bPossesWhenScarioPlay)
+	{
+		if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+		{
+			PC->Possess(this);
+		}
 	}
 }
 
@@ -1528,6 +1558,25 @@ void ASodaVehicle::ScenarioEnd()
 	VehicleComponensForDataset.Empty();
 }
 
+#if WITH_EDITOR
+void ASodaVehicle::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	if (!HasActorBegunPlay())
+	{
+		Super::PostEditChangeProperty(PropertyChangedEvent);
+	}
+}
+
+void ASodaVehicle::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	if (!HasActorBegunPlay())
+	{
+		Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	}
+}
+#endif
+
+
 void ASodaVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) const
 {
 	using bsoncxx::builder::stream::document;
@@ -1548,14 +1597,16 @@ void ASodaVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) const
 	try
 	{
 		InDataset.GetRowDoc()
-			<< "sim_ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.SimulatedTimestamp))
-			<< "render_ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.RenderTimestamp))
-			<< "step" << SimData.SimulatedStep
-			<< "loc" << open_array << Location.X << Location.Y << Location.Z << close_array
-			<< "rot" << open_array << Rotation.Pitch << Rotation.Yaw << Rotation.Roll << close_array
-			<< "vel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array
-			<< "acc" << open_array << Acc.X << Acc.Y << Acc.Z << close_array
-			<< "ang_vel" << open_array << AngVel.X << AngVel.Y << AngVel.Z << close_array;
+			<< "VehicleData" << open_document
+			<< "SimTsUs" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.SimulatedTimestamp))
+			<< "RenderTsUs" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.RenderTimestamp))
+			<< "Step" << SimData.SimulatedStep
+			<< "Loc" << open_array << Location.X << Location.Y << Location.Z << close_array
+			<< "Rot" << open_array << Rotation.Roll << Rotation.Pitch << Rotation.Yaw << close_array
+			<< "Bel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array
+			<< "Acc" << open_array << Acc.X << Acc.Y << Acc.Z << close_array
+			<< "AngVel" << open_array << AngVel.X << AngVel.Y << AngVel.Z << close_array
+			<< close_document;
 	}
 	catch (const std::system_error& e)
 	{
@@ -1574,13 +1625,13 @@ void ASodaVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) const
 
 	const FExtent& Extent = GetVehicleExtent();
 	*Doc
-		<< "extents" << open_document
-		<< "forward" << Extent.Forward
-		<< "backward" << Extent.Backward
-		<< "left" << Extent.Left
-		<< "right" << Extent.Right
-		<< "up" << Extent.Up
-		<< "down" << Extent.Down
+		<< "Extents" << open_document
+		<< "Forward" << Extent.Forward
+		<< "Backward" << Extent.Backward
+		<< "Left" << Extent.Left
+		<< "Right" << Extent.Right
+		<< "Up" << Extent.Up
+		<< "Down" << Extent.Down
 		<< close_document;
 }
 
@@ -1594,16 +1645,16 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 		FUIAction(
 			FExecuteAction::CreateLambda([this] 
 			{
-				if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+				if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 				{
 					if (SaveAddress.Source != EVehicleSaveSource::NoSave &&
 						SaveAddress.Source == EVehicleSaveSource::BinLevel)
 					{
-						GameMode->OpenWindow("Save Vehicle As", SNew(soda::SSaveVehicleRequestWindow, this));
+						SodaSubsystem->OpenWindow("Save Vehicle As", SNew(soda::SSaveVehicleRequestWindow, this));
 					}
 					else
 					{
-						GameMode->OpenWindow("Save New Vehicle As", SNew(soda::SVehcileManagerWindow, this));
+						SodaSubsystem->OpenWindow("Save New Vehicle As", SNew(soda::SVehcileManagerWindow, this));
 					}
 				}
 			})),
@@ -1618,9 +1669,9 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 		FUIAction(
 			FExecuteAction::CreateLambda([this] 
 			{
-				if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+				if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 				{
-					GameMode->OpenWindow("Export Vehicle As", SNew(soda::SExportVehicleWindow, this));
+					SodaSubsystem->OpenWindow("Export Vehicle As", SNew(soda::SExportVehicleWindow, this));
 				}
 			})),
 		NAME_None, 
@@ -1663,9 +1714,9 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 		FUIAction(
 			FExecuteAction::CreateLambda([this] 
 			{
-				if(USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+				if(USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 				{
-					GameMode->PushToolBox(SNew(soda::SVehicleComponentsToolBox, this));
+					SodaSubsystem->PushToolBox(SNew(soda::SVehicleComponentsToolBox, this));
 				}
 			})),
 		NAME_None, 
@@ -1698,4 +1749,9 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 		[
 			ToolbarBuilder.MakeWidget()
 		];
+}
+
+void ASodaVehicle::NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+{
+	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 }

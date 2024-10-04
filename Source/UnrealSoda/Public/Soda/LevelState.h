@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -17,7 +17,7 @@ enum class ELeveSlotSource : uint8
 	NoSlot,
 	Local,
 	Remote,
-	NewSlot
+	NewSlot,
 };
 
 /*
@@ -106,41 +106,45 @@ public:
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	bool SaveLevelRemotlyAs(int64 ScenarioID, const FString& Description);
 
+	/** if SlotIndex < 0, SlotIndex will detect automaticly */
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	bool SaveLevelLocallyAs(int SlotIndex, const FString& Description);
+
+	UFUNCTION(BlueprintCallable, Category = LevelState)
+	bool SaveLevelToTransientSlot();
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	bool ReSaveLevel();
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static bool ReloadLevelEmpty(const UObject* WorldContextObject);
+	static bool ReloadLevelEmpty(const UObject* WorldContextObject, const FString& LevelName = TEXT(""));
 
 	/**
 	 * SlotIndex == -1 -  Find & open last saved slot
 	 */
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static bool ReloadLevelFromSlotLocally(const UObject* WorldContextObject, int SlotIndex = -1); 
+	static bool ReloadLevelFromSlotLocally(const UObject* WorldContextObject, int SlotIndex = -1, const FString& LevelName = TEXT(""));
 
 	/**
 	 * SlotIndex == -1 -  Find & open last saved slot
 	 */
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static bool ReloadLevelFromSlotRemotly(const UObject* WorldContextObject, int64 ScenarioID = -1);
+	static bool ReloadLevelFromSlotRemotly(const UObject* WorldContextObject, int64 ScenarioID = -1, const FString& LevelName = TEXT(""));
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static ALevelState* CreateOrLoad(const UObject* WorldContextObject, UClass * DefaultClass);
+	static ALevelState* CreateOrLoad(const UObject* WorldContextObject, UClass * DefaultClass, bool bFromTransientSlot = false);
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static bool DeleteLevelLocally(const UObject* WorldContextObject, int SlotIndex);
+	static bool DeleteLevelLocally(const UObject* WorldContextObject, int SlotIndex, const FString& LevelName = TEXT(""));
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	static bool DeleteLevelRemotly(const UObject* WorldContextObject, int64 ScenarioID);
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static bool GetLevelSlotsLocally(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription> & Slots, bool bSortByDateTime = false);
+	static bool GetLevelSlotsLocally(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription> & Slots, bool bSortByDateTime = false, const FString & LevelName = TEXT(""));
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static bool GetLevelSlotsRemotly(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription> & Slots, bool bSortByDateTime = false);
+	static bool GetLevelSlotsRemotly(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription> & Slots, bool bSortByDateTime = false, const FString& LevelName = TEXT(""));
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	void FinishLoadLevel();
@@ -174,11 +178,13 @@ public:
 	TArray<FActorRecord> AdditionalActorRecords;
 
 protected:
-	static FString GetLocalSaveSlotName(const UObject* WorldContextObject, int SlotIndex);
+	static FString GetLocalSaveSlotName(const UObject* WorldContextObject, int SlotIndex, const FString& LevelName = TEXT(""));
 	/* SlotIndex == -1 - load last saved slot */
-	static ULevelSaveGame* LoadSaveGameLocally(const UObject* WorldContextObject, int & SlotIndex);
+	static ULevelSaveGame* LoadSaveGameLocally(const UObject* WorldContextObject, int & SlotIndex, const FString& LevelName = TEXT(""));
 	/* SlotIndex == -1 - load last saved slot */
-	static ULevelSaveGame* LoadSaveGameRemotly(const UObject* WorldContextObject, int64 & ScenarioID);
+	static ULevelSaveGame* LoadSaveGameRemotly(const UObject* WorldContextObject, int64 & ScenarioID, const FString& LevelName = TEXT(""));
+
+	static ULevelSaveGame* LoadSaveGameTransient(const UObject* WorldContextObject);
 
 	static FLevelStateSlotDescription StaticSlot;
 

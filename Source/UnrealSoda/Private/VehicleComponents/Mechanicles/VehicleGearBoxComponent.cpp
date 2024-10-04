@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/Mechanicles/VehicleGearBoxComponent.h"
 #include "Soda/UnrealSoda.h"
@@ -6,6 +6,13 @@
 #include "Engine/Engine.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
+#include "Soda/DBGateway.h"
+
+#include "bsoncxx/builder/stream/helpers.hpp"
+#include "bsoncxx/exception/exception.hpp"
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/builder/stream/array.hpp"
+#include "bsoncxx/json.hpp"
 
 UVehicleGearBoxBaseComponent::UVehicleGearBoxBaseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -16,6 +23,78 @@ UVehicleGearBoxBaseComponent::UVehicleGearBoxBaseComponent(const FObjectInitiali
 	Common.Activation = EVehicleComponentActivation::OnStartScenario;
 }
 
+FString UVehicleGearBoxBaseComponent::GetGearChar() const
+{
+	switch (GetGearState())
+	{
+	case EGearState::Neutral: return TEXT("N");
+	//case EGearState::Drive: return TEXT("D");
+	case EGearState::Reverse: return TEXT("R");
+	case EGearState::Park: return TEXT("P");
+	}
+	
+	if (GetGearNum() == 0)
+	{
+		return TEXT("N");
+	}
+	else if(GetGearNum() == -1)
+	{
+		return TEXT("R");
+	}
+	else
+	{
+		return FString::FromInt(GetGearNum());
+	}
+}
+
+bool UVehicleGearBoxBaseComponent::AcceptGearFromVehicleInput(UVehicleInputComponent* VehicleInput)
+{
+	if (!VehicleInput)
+	{
+		return false;
+	}
+
+	if (VehicleInput->GetInputState().GearInputMode == EGearInputMode::ByState)
+	{
+		EGearState NewGear = VehicleInput->GetInputState().GearState;
+		if (GetGearState() != NewGear)
+		{
+			SetGearByState(NewGear);
+		}
+	}
+	if (VehicleInput->GetInputState().GearInputMode == EGearInputMode::ByNum)
+	{
+		int NewGear = VehicleInput->GetInputState().GearNum;
+		if (GetGearNum() != NewGear)
+		{
+			SetGearByNum(NewGear);
+		}
+	}
+	if (VehicleInput->GetInputState().bWasGearUpPressed)
+	{
+		if (GetGearNum() >= 0 && GetGearNum() < GetForwardGearsCount())
+		{
+			SetGearByNum(GetGearNum() + 1);
+			VehicleInput->GetInputState().GearNum = GetGearNum();
+			VehicleInput->GetInputState().GearState = GetGearState();
+		}
+		VehicleInput->GetInputState().bWasGearUpPressed = false;
+	}
+	if (VehicleInput->GetInputState().bWasGearDownPressed)
+	{
+		if (GetGearNum() > 0)
+		{
+			SetGearByNum(GetGearNum() - 1);
+			VehicleInput->GetInputState().GearNum = GetGearNum();
+			VehicleInput->GetInputState().GearState = GetGearState();
+		}
+		VehicleInput->GetInputState().bWasGearDownPressed = false;
+	}
+	return true;
+}
+
+//------------------------------------------------------------------------------------------------------------
+
 UVehicleGearBoxSimpleComponent::UVehicleGearBoxSimpleComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -25,6 +104,9 @@ UVehicleGearBoxSimpleComponent::UVehicleGearBoxSimpleComponent(const FObjectInit
 	PrimaryComponentTick.bCanEverTick = true;
 	bTickInEditor = false;
 	PrimaryComponentTick.TickGroup = TG_PrePhysics;
+
+	ReverseGearRatios.Add({ 10});
+	ForwardGearRatios.Add({ 10});
 }
 
 bool UVehicleGearBoxSimpleComponent::OnActivateVehicleComponent()
@@ -66,16 +148,16 @@ void UVehicleGearBoxSimpleComponent::OnDeactivateVehicleComponent()
 
 void UVehicleGearBoxSimpleComponent::PassTorque(float InTorque)
 {
-	DebugInTorq = InTorque;
+	InTorq = InTorque;
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		DebugOutTorq = InTorque * Ratio;
-		OutputTorqueTransmission->PassTorque(DebugOutTorq);
+		OutTorq = InTorque * Ratio;
+		OutputTorqueTransmission->PassTorque(OutTorq);
 	}
 	else
 	{
-		DebugInTorq = 0;
-		DebugOutTorq = 0;
+		InTorq = 0;
+		OutTorq = 0;
 	}
 }
 
@@ -83,65 +165,106 @@ float UVehicleGearBoxSimpleComponent::ResolveAngularVelocity() const
 {
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		DebugInAngularVelocity = OutputTorqueTransmission->ResolveAngularVelocity();
-		DebugOutAngularVelocity = DebugInAngularVelocity * Ratio;
-		return DebugOutAngularVelocity;
+		InAngularVelocity = OutputTorqueTransmission->ResolveAngularVelocity();
+		OutAngularVelocity = InAngularVelocity * Ratio;
+		return OutAngularVelocity;
 	}
 	else
 	{
-		DebugInAngularVelocity = 0;
-		DebugOutAngularVelocity = 0;
+		InAngularVelocity = 0;
+		OutAngularVelocity = 0;
 		return 0;
 	}
 }
 
-float UVehicleGearBoxSimpleComponent::FindWheelRadius() const
+
+bool UVehicleGearBoxSimpleComponent::FindWheelRadius(float& OutRadius) const
 {
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		return OutputTorqueTransmission->FindWheelRadius();
+		return OutputTorqueTransmission->FindWheelRadius(OutRadius);
 	}
-	return 0;
+	return false;
 }
 
-float UVehicleGearBoxSimpleComponent::FindToWheelRatio() const
+bool UVehicleGearBoxSimpleComponent::FindToWheelRatio(float& OutRatio) const
 {
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		return OutputTorqueTransmission->FindToWheelRatio() * Ratio;
+		float PrevRatio;
+		if (OutputTorqueTransmission->FindToWheelRatio(PrevRatio))
+		{
+			OutRatio = PrevRatio * Ratio;
+			return true;
+		}
 	}
-	return 1.0;
+	return false;
 }
 
-FString UVehicleGearBoxSimpleComponent::GetGearChar() const
+bool UVehicleGearBoxSimpleComponent::SetGearByState(EGearState InGearState)
 {
-	switch (Gear)
+	if (InGearState == TargetGearState)
 	{
-	case ENGear::Neutral: return TEXT("N");
-	case ENGear::Drive: return TEXT("D");
-	case ENGear::Reverse: return TEXT("R");
-	case ENGear::Park: return TEXT("P");
+		return true;
 	}
-	return TEXT("?");
-}
 
-void UVehicleGearBoxSimpleComponent::SetGear(ENGear InGear)
-{
-	Gear = InGear;
-
-	switch(Gear)
+	TargetGearState = InGearState;
+	switch(InGearState)
 	{
-	case ENGear::Drive:
-		Ratio = DGearRatio;
-		break;
-	case ENGear::Reverse:
-		Ratio = -RGearRatio;
-		break;
-	case ENGear::Park:
-	case ENGear::Neutral:
-		Ratio = 0;
-		break;
+	case EGearState::Drive:
+		if (GetGearNum() <= 0) return SetGearByNum(1);
+		else return true;
+	case EGearState::Reverse:
+		if (GetGearNum() >= 0) return SetGearByNum(-1);
+		else return true;
+	case EGearState::Park:
+	case EGearState::Neutral:
+		return SetGearByNum(0);
+	default:
+		return false;
 	};
+}
+
+bool UVehicleGearBoxSimpleComponent::SetGearByNum(int InGearNum)
+{
+	if (TargetGearNum == InGearNum)
+	{
+		return true;
+	}
+
+	if (InGearNum > 0) 
+	{
+		if (InGearNum > ForwardGearRatios.Num())
+		{
+			return false;
+		}
+		TargetGearState = EGearState::Drive;
+		TargetGearNum = InGearNum;
+		CurrentGearChangeTime = GearChangeTime;
+		return true;
+	}
+	else if (InGearNum < 0)
+	{
+		if (FMath::Abs(InGearNum) > ReverseGearRatios.Num())
+		{
+			return false;
+		}
+		TargetGearState = EGearState::Reverse;
+		TargetGearNum = InGearNum;
+		CurrentGearChangeTime = GearChangeTime;
+		return true;
+	}
+	else // InGearNum == 0
+	{
+
+		if (TargetGearState != EGearState::Park)
+		{
+			TargetGearState = EGearState::Neutral;
+		}
+		TargetGearNum = 0;
+		CurrentGearChangeTime = GearChangeTime;
+		return true;
+	}
 }
 
 void UVehicleGearBoxSimpleComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -152,10 +275,53 @@ void UVehicleGearBoxSimpleComponent::TickComponent(float DeltaTime, enum ELevelT
 	{
 		if (UVehicleInputComponent* VehicleInput = GetWheeledVehicle()->GetActiveVehicleInput())
 		{
-			ENGear NewGear = VehicleInput->GetGearInput();
-			if (Gear != NewGear)
+			AcceptGearFromVehicleInput(VehicleInput);
+		}
+	}
+
+	if (bUseAutomaticGears && GetGearState() == EGearState::Drive)
+	{
+		if (FMath::Abs(OutAngularVelocity) * ANG2RPM > ChangeUpRPM)
+		{
+			if (GetGearNum() < ForwardGearRatios.Num())
 			{
-				SetGear(NewGear);
+				//UE_LOG(LogSoda, Warning, TEXT("UVehicleGearBoxSimpleComponent::SetGearByNum(%i); Up "), GetGearNum() + 1);
+				SetGearByNum(GetGearNum() + 1);
+				OutAngularVelocity = InAngularVelocity * Ratio;
+				
+			}
+		}
+		else if (FMath::Abs(OutAngularVelocity) * ANG2RPM < ChangeDownRPM)
+		{
+			if (GetGearNum() > 1)
+			{
+				//UE_LOG(LogSoda, Warning, TEXT("UVehicleGearBoxSimpleComponent::SetGearByNum(%i); Down"), GetGearNum() - 1);
+				SetGearByNum(GetGearNum() - 1);
+				OutAngularVelocity = InAngularVelocity * Ratio;
+			}
+		}
+	}
+
+	if (CurrentGearNum != TargetGearNum || TargetGearState != CurrentGearState)
+	{
+		CurrentGearChangeTime -= DeltaTime;
+		if (CurrentGearChangeTime <= 0.f)
+		{
+			CurrentGearChangeTime = 0.f;
+			CurrentGearNum = TargetGearNum;
+			CurrentGearState = TargetGearState;
+
+			if (CurrentGearNum > 0)
+			{
+				Ratio = ForwardGearRatios[CurrentGearNum - 1];
+			}
+			else if (CurrentGearNum < 0)
+			{
+				Ratio = -ReverseGearRatios[FMath::Abs(CurrentGearNum) - 1];
+			}
+			else // CurrentGearNum == 0
+			{
+				Ratio = 0.f;
 			}
 		}
 	}
@@ -170,11 +336,38 @@ void UVehicleGearBoxSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, float
 		UFont* RenderFont = GEngine->GetSmallFont();
 		Canvas->SetDrawColor(FColor::White);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Gear: %s "), *GetGearChar()), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Ratio: %.2f "), Ratio), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InTorq: %.2f "), DebugInTorq), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutTorq: %.2f "), DebugOutTorq), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InAngVel: %.2f "), DebugInAngularVelocity), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutAngVel: %.2f "), DebugOutAngularVelocity), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Ratio: %.2f "), GetGearRatio()), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InTorq: %.2f "), InTorq), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutTorq: %.2f "), OutTorq), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InAngVel: %.2f "), InAngularVelocity), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutAngVel: %.2f "), OutAngularVelocity), 16, YPos);
 	}
 }
 
+void UVehicleGearBoxSimpleComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
+{
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::open_array;
+	using bsoncxx::builder::stream::close_array;
+
+	try
+	{
+		Dataset.GetRowDoc()
+			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
+			<< "GearNum" << GetGearNum()
+			<< "GearState" << int(GetGearState())
+			<< "GearRatio" << GetGearRatio()
+			<< "InTorq" << InTorq
+			<< "OutTorq" << OutTorq
+			<< "InAngVel" << InAngularVelocity
+			<< "OutAngVel" << OutAngularVelocity
+			<< close_document;
+	}
+	catch (const std::system_error& e)
+	{
+		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
+	}
+}

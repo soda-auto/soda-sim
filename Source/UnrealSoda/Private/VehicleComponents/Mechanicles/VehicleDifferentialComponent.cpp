@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/Mechanicles/VehicleDifferentialComponent.h"
 #include "Soda/UnrealSoda.h"
@@ -6,6 +6,13 @@
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
+#include "Soda/DBGateway.h"
+
+#include "bsoncxx/builder/stream/helpers.hpp"
+#include "bsoncxx/exception/exception.hpp"
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/builder/stream/array.hpp"
+#include "bsoncxx/json.hpp"
 
 UVehicleDifferentialBaseComponent::UVehicleDifferentialBaseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -48,26 +55,26 @@ void UVehicleDifferentialSimpleComponent::PassTorque(float InTorque)
 {
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		DebugInTorq = InTorque;
-		DebugOutTorq = InTorque * Ratio * 0.5;
+		InTorq = InTorque;
+		OutTorq = InTorque * Ratio * 0.5;
 
 		switch (DifferentialType)
 		{
 		case EVehicleDifferentialType::Open_FrontDrive:
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->ReqTorq += DebugOutTorq;
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->ReqTorq += DebugOutTorq;
+			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->ReqTorq += OutTorq;
+			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->ReqTorq += OutTorq;
 			break;
 
 		case EVehicleDifferentialType::Open_RearDrive:
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->ReqTorq += DebugOutTorq;
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->ReqTorq += DebugOutTorq;
+			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->ReqTorq += OutTorq;
+			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->ReqTorq += OutTorq;
 			break;
 		}
 	}
 	else
 	{
-		DebugInTorq = 0;
-		DebugOutTorq = 0;
+		InTorq = 0;
+		OutTorq = 0;
 	}
 }
 
@@ -78,31 +85,33 @@ float UVehicleDifferentialSimpleComponent::ResolveAngularVelocity() const
 		switch (DifferentialType)
 		{
 		case EVehicleDifferentialType::Open_FrontDrive:
-			DebugInAngularVelocity = std::max(GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->AngularVelocity, GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->AngularVelocity);
+			InAngularVelocity = std::max(GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->AngularVelocity, GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->AngularVelocity);
 			break;
 		case EVehicleDifferentialType::Open_RearDrive:
-			DebugInAngularVelocity = std::max(GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->AngularVelocity, GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->AngularVelocity);
+			InAngularVelocity = std::max(GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->AngularVelocity, GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->AngularVelocity);
 			break;
 		}
-		DebugOutAngularVelocity = DebugInAngularVelocity * Ratio;
-		return DebugOutAngularVelocity;
+		OutAngularVelocity = InAngularVelocity * Ratio;
+		return OutAngularVelocity;
 	}
 	return 0;
 }
 
-float UVehicleDifferentialSimpleComponent::FindWheelRadius() const
+bool UVehicleDifferentialSimpleComponent::FindWheelRadius(float& OutRadius) const
 {
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
 		switch (DifferentialType)
 		{
 		case EVehicleDifferentialType::Open_FrontDrive:
-			return (GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->Radius + GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->Radius) / 2.0;
+			OutRadius = (GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->Radius + GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->Radius) / 2.0;
+			return true;
 		case EVehicleDifferentialType::Open_RearDrive:
-			return (GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->Radius + GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->Radius) / 2.0;
+			OutRadius = (GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->Radius + GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->Radius) / 2.0;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 void UVehicleDifferentialSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
@@ -113,9 +122,34 @@ void UVehicleDifferentialSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, 
 	{
 		UFont* RenderFont = GEngine->GetSmallFont();
 		Canvas->SetDrawColor(FColor::White);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InTorq: %.2f "), DebugInTorq), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutTorq: %.2f "), DebugOutTorq), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InAngVel: %.2f "), DebugInAngularVelocity), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutAngVel: %.2f "), DebugOutAngularVelocity), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InTorq: %.2f "), InTorq), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutTorq: %.2f "), OutTorq), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("InAngVel: %.2f "), InAngularVelocity), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("OutAngVel: %.2f "), OutAngularVelocity), 16, YPos);
+	}
+}
+
+void UVehicleDifferentialSimpleComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
+{
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::open_array;
+	using bsoncxx::builder::stream::close_array;
+
+	try
+	{
+		Dataset.GetRowDoc()
+			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
+			<< "InTorq" << InTorq
+			<< "OutTorq" << OutTorq
+			<< "InAngVel" << InAngularVelocity
+			<< "OutAngVel" << OutAngularVelocity
+			<< close_document;
+	}
+	catch (const std::system_error& e)
+	{
+		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
 	}
 }

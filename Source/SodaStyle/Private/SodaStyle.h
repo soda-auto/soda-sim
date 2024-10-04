@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -51,6 +51,8 @@ public:
 		void SetupColorPickerStyle();
 		void SetupTutorialStyles();
 		void SetupScenarioEditorStyle();
+		void SetupPakWindowStyle();
+		void SetupQuickStartWindowStyle();
 
 		void SettingsChanged(UObject* ChangedObject, FPropertyChangedEvent& PropertyChangedEvent);
 		void SyncSettings();

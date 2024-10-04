@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -26,6 +26,80 @@ enum class  ECruiseControlMode : uint8
 	SpeedLimiterActive = 2,
 };
 
+UENUM(BlueprintType)
+enum class  EGearInputMode : uint8
+{
+	ByState,
+	ByNum,
+};
+
+USTRUCT(BlueprintType)
+struct UNREALSODA_API FWheeledVehicleInputState
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	float Steering = 0.f;
+
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	float Throttle = 0.f;
+
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	float Brake = 0.f;
+
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	EGearInputMode GearInputMode = EGearInputMode::ByState;
+
+	/** Valid only if  GearInputMode==EGearInputMode::ByState */
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	EGearState GearState = EGearState::Neutral;
+
+	/** Valid only if  GearInputMode==EGearInputMode::ByNum */
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	int GearNum = 0;
+
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	bool bWasGearUpPressed = false;
+
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	bool bWasGearDownPressed = false;
+
+	/** External request to enable the AD mode. */
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	bool bADModeEnbaled = false;
+
+	/** External request to enable the safe stop mode. */
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	bool bSafeStopEnbaled = false;
+
+	/** External request to enable the daytime running lights. */
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	bool bDaytimeRunningLightsEnabled = false;
+
+	/** External request to enable the revers lights. */
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	bool bHeadlightsEnabled = false;
+
+	/** External request to enable the horn. */
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	bool bHornEnabled = false;
+
+	/** Cruise Control / Speed Limiter mode */
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	ECruiseControlMode CruiseControlMode = ECruiseControlMode::Off;
+
+	TTimestamp UpdateTimestamp;
+
+	void SetGearState(EGearState InGearState);
+	void SetGearNum(int InGearNum);
+	void GearUp();
+	void GearDown();
+	bool IsForwardGear() const;
+	bool IsReversGear() const;
+	bool IsNeutralGear() const;
+	bool IsParkGear() const;
+};
+
 UCLASS(abstract, ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API UVehicleInputComponent : public UWheeledVehicleComponent
 {
@@ -36,57 +110,31 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = VehicleInput)
 	EVehicleInputType InputType = EVehicleInputType::Other;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleInput, meta = (EditInRuntime))
-	bool bADModeInput = false;
-
-	/** External request to enable the safe stop mode. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleInput, meta = (EditInRuntime))
-	bool bSafeStopInput = false;
-
-	/** External request to enable the daytime running lights. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleInput, meta = (EditInRuntime))
-	bool bEnabledDaytimeRunningLightsInput = false;
-
-	/** External request to enable the revers lights. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleInput, meta = (EditInRuntime))
-	bool bEnabledHeadlightsInput = false;
-
-	/** External request to enable the horn. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleInput, meta = (EditInRuntime))
-	bool bEnabledHornInput = false;
-
-	/** Cruise Control / Speed Limiter mode */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CruiseControl, meta = (EditInRuntime))
-	ECruiseControlMode CruiseControlMode = ECruiseControlMode::Off;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleInput, SaveGame, meta = (EditInRuntime))
+	bool bUpdateDefaultsButtonsFromKeyboard = true;
+	
+	//TODO: Move CruiseControl to the VehicleDriver
 	/** Cruise Control / Speed Limiter terget speed [km/h] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CruiseControl, meta = (EditInRuntime))
-	float CruiseControlTargetSpeed = 0.f;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CruiseControl, meta = (EditInRuntime))
+	//float CruiseControlTargetSpeed = 0.f;
 
 	/** Maximum throttle input available for Cruse Control input [0..1] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CruiseControl, SaveGame, meta = (EditInRuntime))
-	float MaxCruiseControlThrottle = 0.7f;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CruiseControl, SaveGame, meta = (EditInRuntime))
+	//float MaxCruiseControlThrottle = 0.7f;
 
 	/** Cruse Control Proportional Coef */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CruiseControl, SaveGame, meta = (EditInRuntime))
-	float CruiseControlPropCoef = 1.f;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CruiseControl, SaveGame, meta = (EditInRuntime))
+	//float CruiseControlPropCoef = 1.f;
 
 	/** Cruise Control / Speed Limiter Throttle Input */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CruiseControl)
-	float CCThrottleInput = 0.f;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CruiseControl)
+	//float CCThrottleInput = 0.f;
+	
 
 public:
 	UFUNCTION(BlueprintCallable, Category = VehicleInput)
-	virtual float GetSteeringInput() const { return 0; }
-
-	UFUNCTION(BlueprintCallable, Category = VehicleInput)
-	virtual float GetThrottleInput() const { return 0; }
-
-	UFUNCTION(BlueprintCallable, Category = VehicleInput)
-	virtual float GetBrakeInput() const { return 0; }
-
-	UFUNCTION(BlueprintCallable, Category = VehicleInput)
-	virtual ENGear GetGearInput() const { return  ENGear::Park; }
+	virtual const FWheeledVehicleInputState& GetInputState() const { static FWheeledVehicleInputState Dummy; return Dummy; }
+	virtual FWheeledVehicleInputState& GetInputState() { static FWheeledVehicleInputState Dummy; return Dummy; }
 
 	/** Get normailzed torque (-1...1) which the user (driver) has attached to the steering wheel. */
 	UFUNCTION(BlueprintCallable, Category = VehicleInput)
@@ -95,29 +143,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = VehicleInput)
 	virtual void SetHapticAutocenter(bool Enable) {}
 
-	UFUNCTION(BlueprintCallable, Category = VehicleInput, meta = (ScenarioAction))
-	virtual void SetADMode(bool bIsADMode) {}
+	//UFUNCTION(BlueprintCallable, Category = VehicleInput)
+	//virtual float GetCruiseControlModulatedThrottleInput(float ThrottleInput) const;
 
-	UFUNCTION(BlueprintCallable, Category = VehicleInput)
-	virtual float GetCruiseControlModulatedThrottleInput(float ThrottleInput) const;
-
-	UFUNCTION(BlueprintCallable, Category = VehicleInput, meta = (ScenarioAction))
-	virtual void SetSteeringInput(float Value);
-
-	UFUNCTION(BlueprintCallable, Category = VehicleInput, meta = (ScenarioAction))
-	virtual void SetThrottleInput(float Value);
-
-	UFUNCTION(BlueprintCallable, Category = VehicleInput, meta = (ScenarioAction))
-	virtual void SetBrakeInput(float Value);
-
-	UFUNCTION(BlueprintCallable, Category = VehicleInput, meta = (ScenarioAction))
-	virtual void SetGearInput(ENGear Value);
+	virtual void UpdateInputStatesDefaultsButtons(float DeltaTime, float ForwardSpeed, const APlayerController* PlayerController);
 
 public:
-	virtual void CopyInputStates(UVehicleInputComponent* PreviousInput) {}
+	virtual void CopyInputStates(UVehicleInputComponent* PreviousInput);
 	virtual void UpdateInputStates(float DeltaTime, float ForwardSpeed, const APlayerController* PlayerController);
 
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
+	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 };

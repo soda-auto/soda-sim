@@ -1,5 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -595,6 +595,7 @@ private:
 	};
 
 	/** Materials and colors to be used when drawing the items for each axis */
+	UMaterialInterface* AxisMaterialBase;
 	UMaterialInterface* TransparentPlaneMaterialXY;
 	UMaterialInterface* GridMaterial;
 

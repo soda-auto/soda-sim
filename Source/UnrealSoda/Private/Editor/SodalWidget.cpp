@@ -1,5 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "SodaWidget.h"
 #include "Soda/Misc/EditorUtils.h"
@@ -218,8 +218,6 @@ ASodaWidget::ASodaWidget(const FObjectInitializer& ObjectInitializer)
 
 	CurrentAxis = EAxisList::None;
 
-
-
 	bAbsoluteTranslationInitialOffsetCached = false;
 	InitialTranslationOffset                = FVector::ZeroVector;
 	InitialTranslationPosition              = FVector(0, 0, 0);
@@ -234,6 +232,22 @@ ASodaWidget::ASodaWidget(const FObjectInitializer& ObjectInitializer)
 
 	DragStartPos = FVector2D::ZeroVector;
 	LastDragPos  = FVector2D::ZeroVector;
+
+	AxisMaterialBase = (UMaterial*)StaticLoadObject(
+		UMaterial::StaticClass(), NULL,
+		TEXT("/SodaSim/Assets/CPP/EditorMaterials/GizmoMaterial.GizmoMaterial"), NULL, LOAD_None, NULL);
+	check(AxisMaterialBase);
+
+	TransparentPlaneMaterialXY = (UMaterial*)StaticLoadObject(
+		UMaterial::StaticClass(), NULL,
+		TEXT("/SodaSim/Assets/CPP/EditorMaterials/WidgetVertexColorMaterial.WidgetVertexColorMaterial"), NULL, LOAD_None, NULL);
+	check(TransparentPlaneMaterialXY);
+
+	GridMaterial = (UMaterial*)StaticLoadObject(
+		UMaterial::StaticClass(), NULL,
+		TEXT("/SodaSim/Assets/CPP/EditorMaterials/WidgetGridVertexColorMaterial_Ma.WidgetGridVertexColorMaterial_Ma"), NULL,
+		LOAD_None, NULL);
+	check(GridMaterial);
 }
 
 EAxisList::Type ASodaWidget::GetAxisListAtScreenPos(UWorld* World, const FVector2D& ScreenPos)
@@ -400,10 +414,6 @@ void ASodaWidget::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UMaterial* AxisMaterialBase = (UMaterial*)StaticLoadObject(
-		UMaterial::StaticClass(), NULL,
-		TEXT("/SodaSim/Assets/CPP/EditorMaterials/GizmoMaterial.GizmoMaterial"), NULL, LOAD_None, NULL);
-	check(AxisMaterialBase);
 
 	AxisMaterialX = UMaterialInstanceDynamic::Create(AxisMaterialBase, NULL);
 	AxisMaterialX->SetVectorParameterValue("GizmoColor", AxisColorX);
@@ -419,18 +429,6 @@ void ASodaWidget::BeginPlay()
 
 	OpaquePlaneMaterialXY = UMaterialInstanceDynamic::Create(AxisMaterialBase, NULL);
 	OpaquePlaneMaterialXY->SetVectorParameterValue("GizmoColor", FLinearColor::White);
-
-	TransparentPlaneMaterialXY = (UMaterial*)StaticLoadObject(
-		UMaterial::StaticClass(), NULL,
-		TEXT("/SodaSim/Assets/CPP/EditorMaterials/WidgetVertexColorMaterial.WidgetVertexColorMaterial"), NULL, LOAD_None, NULL);
-
-	GridMaterial = (UMaterial*)StaticLoadObject(
-		UMaterial::StaticClass(), NULL,
-		TEXT("/SodaSim/Assets/CPP/EditorMaterials/WidgetGridVertexColorMaterial_Ma.WidgetGridVertexColorMaterial_Ma"), NULL,
-		LOAD_None, NULL);
-
-	check(TransparentPlaneMaterialXY && GridMaterial);
-
 }
 
 void ASodaWidget::EndPlay(const EEndPlayReason::Type EndPlayReason)

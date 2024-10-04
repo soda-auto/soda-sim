@@ -1,20 +1,20 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
 #include "GameFramework/PawnMovementComponent.h"
 #include "Soda/VehicleComponents/WheeledVehicleMovementBaseComponent.h"
-#include "Curves/CurveFloat.h"
+#include "Soda/VehicleComponents/Sensors/Implementation/OXTS/OXTS.hpp"
 #include "Soda/Misc/BitStream.hpp"
-#include <thread>
-#include <mutex>
+#include "Curves/CurveFloat.h"
 #include "Sockets.h"
 #include "SocketSubsystem.h"
 #include "Common/UdpSocketReceiver.h"
 #include "Common/UdpSocketBuilder.h"
 #include "Interfaces/IPv4/IPv4Address.h"
 #include "Interfaces/IPv4/IPv4Endpoint.h"
-#include "SodaSimProto/OXTS.hpp"
+#include <thread>
+#include <mutex>
 #include "NCOMWheeledVehicleMovement.generated.h"
 
 class ALevelState;

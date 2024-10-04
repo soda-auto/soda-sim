@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "SoftSodaVehicleComponentPtrCustomization.h"
 #include "Containers/UnrealString.h"
@@ -13,7 +13,7 @@
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/Layout/SWidgetSwitcher.h"
 #include "RuntimeEditorUtils.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/UI/SVehicleComponentsList.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Components/ActorComponent.h"
@@ -29,8 +29,8 @@ void FSoftSodaVehicleComponentPtrCustomization::CustomizeHeader( TSharedRef<IPro
 {
 	PropertyHandle = InPropertyHandle;
 
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::Get();
-	check(GameMode);
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	check(SodaSubsystem);
 	
 	CachedSubobject.Reset();
 	CachedPropertyAccess = FPropertyAccess::Fail;

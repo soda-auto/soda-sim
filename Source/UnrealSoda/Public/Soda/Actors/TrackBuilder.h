@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -6,10 +6,18 @@
 #include "ProceduralMeshComponent.h"
 #include "Soda/Actors/NavigationRoute.h"
 #include "Soda/IToolActor.h"
+
+#include "bsoncxx/builder/stream/helpers.hpp"
+#include "bsoncxx/exception/exception.hpp"
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/builder/stream/array.hpp"
+#include "bsoncxx/json.hpp"
+
+
 #include "TrackBuilder.generated.h"
 
 class FJsonObject;
-
+class ALapCounter;
 /**
  * ATrackBuilder (Experimental)
  * Procedural generation of racing tracks based on a JSON custom format.
@@ -26,101 +34,97 @@ class UNREALSODA_API ATrackBuilder :
 public:
 	ATrackBuilder();
 
-	/** JSON file path to open in editor */
-	UPROPERTY(EditAnywhere, Category = LoadJsonTrack)
-	FString FileName;
-
 	/** Whether to import altitude from JSON file */
-	UPROPERTY(EditAnywhere, Category = LoadJsonTrack, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LoadJsonTrack, SaveGame, meta = (EditInRuntime))
 	bool bImportAltitude = false;
 
-	UPROPERTY(EditAnywhere, Category = LoadJsonTrack, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LoadJsonTrack, SaveGame, meta = (EditInRuntime))
 	bool bRelax = false;
 
-	UPROPERTY(EditAnywhere, Category = LoadJsonTrack, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LoadJsonTrack, SaveGame, meta = (EditInRuntime))
 	float RelaxSpeed = 0.5;
 
-	UPROPERTY(EditAnywhere, Category = LoadJsonTrack, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LoadJsonTrack, SaveGame, meta = (EditInRuntime))
 	float RelaxIterations = 10;
 
-	UPROPERTY(EditAnywhere, Category = LoadJsonTrack, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LoadJsonTrack, SaveGame, meta = (EditInRuntime))
 	float RelaxTargetAngel = 100;
 
-	UPROPERTY(EditAnywhere, Category = LoadJsonTrack, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LoadJsonTrack, SaveGame, meta = (EditInRuntime))
 	bool bIsClosedTrack = true;
 
 	/** The minimum distance between any two vertices of generated track[cm] or -1 if not used*/
-	UPROPERTY(EditAnywhere, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
 	float TrackMinSegmentLength = 100;
 
 	/** Whether to generate borders (right and left indent  of the track) */
-	UPROPERTY(EditAnywhere, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
 	bool bWithBorder = true;
 
-	UPROPERTY(EditAnywhere, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
 	float BorderWidth = 150.0;
 
 	UPROPERTY(EditAnywhere, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
 	float TrackElevation = 10;
 
 	/** The track is divided into segments. TrackSegmentStep - how many vertices of the center line should be included in one segment. */
-	UPROPERTY(EditAnywhere, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
 	int TrackSegmentStep  = 50;
 
 	/** How many segments to build. If -1 then build all segments. */
-	UPROPERTY(EditAnywhere, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
 	int TrackBuildSegmentCount  = -1;
 
 	/** Multiplier of V texture coordinates. */
-	UPROPERTY(EditAnywhere, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
 	float TrackTexScaleV = 0.0008;
 
 	/** Part of U texture (0...1) that will be allocated to the border.  */
-	UPROPERTY(EditAnywhere, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
 	float TrackTexBorderPartU = 0.1;
 
 	/** Generate track with center line. */
-	UPROPERTY(EditAnywhere, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
 	bool bTrackWithCenterLine = true;
 
-	UPROPERTY(EditAnywhere, Category = TrackBuilder)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TrackBuilder)
 	class UMaterialInterface* TrackMaterial = nullptr;
 
 	/** Generate track mesh during OnBegin. */
-	UPROPERTY(EditAnywhere, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TrackBuilder, SaveGame, meta = (EditInRuntime))
 	bool bGenerateTrackOnBeginPlay = true;
 
 	/** The minimum distance between any two vertices of generated route[cm] or -1 if not used*/
-	UPROPERTY(EditAnywhere, Category = RoutesBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RoutesBuilder, SaveGame, meta = (EditInRuntime))
 	float RouteMinSegmentLength = 500;
 
 	/** Generate routes  during OnBegin. */
-	UPROPERTY(EditAnywhere, Category = RoutesBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RoutesBuilder, SaveGame, meta = (EditInRuntime))
 	bool bGenerateLineRoutesOnBeginPlay = true;
 
-	UPROPERTY(EditAnywhere, Category = RoutesBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RoutesBuilder, SaveGame, meta = (EditInRuntime))
 	bool bGenerateRaceRouteOnBeginPlay = false;
 
-	UPROPERTY(EditAnywhere, Category = RoutesBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RoutesBuilder, SaveGame, meta = (EditInRuntime))
 	int NumRouteLanes = 1;
 
-	UPROPERTY(EditAnywhere, Category = RoutesBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RoutesBuilder, SaveGame, meta = (EditInRuntime))
 	FVector RouteOffset;
 
-	UPROPERTY(EditAnywhere, Category = MarkingsBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MarkingsBuilder, SaveGame, meta = (EditInRuntime))
 	float MarkingsMinSegmentLength = 30;
 
-	UPROPERTY(EditAnywhere, Category = MarkingsBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MarkingsBuilder, SaveGame, meta = (EditInRuntime))
 	float MarkingsWidth = 20;
 	
-	UPROPERTY(EditAnywhere, Category = MarkingsBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MarkingsBuilder, SaveGame, meta = (EditInRuntime))
 	float MarkingsTexScaleV = 0.004;
 		
-	UPROPERTY(EditAnywhere, Category = MarkingsBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MarkingsBuilder, SaveGame, meta = (EditInRuntime))
 	int MarkingsStep = 200;
 
 	/** Generate markings  during OnBegin. */
-	UPROPERTY(EditAnywhere, Category = MarkingsBuilder, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MarkingsBuilder, SaveGame, meta = (EditInRuntime))
 	bool bGeneratMarkingsOnBeginPlay = true;
 
 	UPROPERTY(EditAnywhere, Category = MarkingsBuilder)
@@ -129,15 +133,18 @@ public:
 	UPROPERTY(EditAnywhere, Category = StartPoint)
 	class UMaterialInterface* DecalMaterial = nullptr;
 
-	UPROPERTY(EditAnywhere, Category = StartPoint)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MarkingsBuilder, SaveGame, meta = (EditInRuntime))
 	float StartLineOffset = 300;
 
-	UPROPERTY(EditAnywhere, Category = StartPoint)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MarkingsBuilder, SaveGame, meta = (EditInRuntime))
 	float StartLineWidth = 50;
 
 	/** Generate start line during OnBegin. */
-	UPROPERTY(EditAnywhere, Category = StartPoint)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MarkingsBuilder, SaveGame, meta = (EditInRuntime))
 	bool bGeneratStartLineOnBeginPlay = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
+	bool bDrawDebug = false;
 
 public:
 	UPROPERTY(BlueprintReadOnly, Category = TrackBuilder, SaveGame)
@@ -173,6 +180,9 @@ public:
 	UPROPERTY(Category = RoutesBuilder, BlueprintReadOnly, Transient)
 	TArray<ANavigationRoute*> Routes;
 
+	UPROPERTY(Category = RoutesBuilder, BlueprintReadOnly, Transient)
+	ALapCounter* LapCounter = nullptr;
+
 	UPROPERTY(Category = StartPint, BlueprintReadOnly, Transient)
 	UDecalComponent * StartLineDecal = nullptr;
 
@@ -185,12 +195,18 @@ public:
 	UPROPERTY(SaveGame)
 	double RefPointAlt = 0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Dataset, SaveGame, meta = (EditInRuntime))
+	bool bRecordDataset = true;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Dataset, SaveGame, meta = (EditInRuntime))
+	//bool bStoreJSON = false;
+
 public:
 	UFUNCTION(BlueprintCallable, Category = LoadJsonTrack)
-	bool LoadJson(const FString& InFileName);
+	bool LoadJsonFromFile(const FString& InFileName);
 
 	UFUNCTION(CallInEditor, Category = LoadJsonTrack, meta = (DisplayName="Load JSON", CallInRuntime))
-	void LoadJson_Editor();
+	void LoadJson();
 
 	UFUNCTION(CallInEditor, BlueprintCallable, Category = LoadJsonTrack, meta = (CallInRuntime))
 	void UnloadJson();
@@ -223,13 +239,19 @@ public:
 	void UpdateGlobalRefpoint();
 
 	UFUNCTION(CallInEditor, BlueprintCallable, Category = StartPoint, meta = (CallInRuntime))
-	void UpdateActorsFactory();
-
-	UFUNCTION(CallInEditor, BlueprintCallable, Category = StartPoint, meta = (CallInRuntime))
 	void GenerateStartLine();
 
 	UFUNCTION(CallInEditor, BlueprintCallable, Category = StartPoint, meta = (CallInRuntime))
+	void GenerateLapCounter();
+
+	UFUNCTION(CallInEditor, BlueprintCallable, Category = StartPoint, meta = (CallInRuntime))
+	void ClearLapCounter();
+
+	UFUNCTION(CallInEditor, BlueprintCallable, Category = StartPoint, meta = (CallInRuntime))
 	void ClearStartLine();
+
+	UFUNCTION(BlueprintCallable)
+	bool FindNearestBorder(const FTransform& Pose, float& OutLeftOffset, float& OutRightOffset, float & OutCenterLineYaw) const;
 
 public:
 	/* Override from ISodaActor */
@@ -238,6 +260,9 @@ public:
 	virtual const FSodaActorDescriptor* GenerateActorDescriptor() const override;
 	//virtual bool OnSetPinnedActor(bool bIsPinnedActor) override;
 	//virtual bool IsPinnedActor() const override;
+	virtual TSharedPtr<SWidget> GenerateToolBar();
+	virtual void ScenarioBegin() override;
+	virtual void ScenarioEnd() override;
 
 public:
 	virtual void BeginPlay() override;
@@ -245,6 +270,7 @@ public:
 	virtual void TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void Serialize(FArchive& Ar) override { Super::Serialize(Ar); ToolActorSerialize(Ar); }
+
 
 protected:
 	static bool JSONReadLine(const TSharedPtr<FJsonObject>& JSON, const FString& FieldName, TArray<FVector>& OutPoints, bool ImportAltitude);

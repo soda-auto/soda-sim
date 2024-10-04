@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -21,17 +21,19 @@ public:
 		if (!TimerThread.joinable())
 		{
 			bIsTimerThreadWorking = true;
-			TimerThread = std::thread([this, Deltatime, StartupDelay]() {
+			TimerThread = std::thread([this, 
+									   Deltatime=std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(Deltatime),
+									   StartupDelay=std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(StartupDelay)]() {
 				std::this_thread::sleep_for(StartupDelay);
 				auto SleepUntil = std::chrono::high_resolution_clock::now();
 				while (bIsTimerThreadWorking)
 				{
 					SleepUntil += Deltatime;
 					auto Elapsed = std::chrono::high_resolution_clock::now() - SleepUntil;
-					if (Elapsed > std::chrono::nanoseconds::zero())
+					if (Elapsed > std::chrono::high_resolution_clock::duration::zero())
 					{
-						Elapsed = std::chrono::nanoseconds(
-							int64(double(std::chrono::duration_cast<std::chrono::nanoseconds>(Elapsed).count()) * RealtimeSmoothFactor));
+						Elapsed = std::chrono::high_resolution_clock::duration(
+							int64(double(std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(Elapsed).count()) * RealtimeSmoothFactor));
 						SleepUntil += Elapsed;
 					}
 					else

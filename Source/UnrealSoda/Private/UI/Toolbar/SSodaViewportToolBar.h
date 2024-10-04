@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -42,7 +42,9 @@ private:
 	bool ModeIs(EUIMode InMode) const;
 
 	void OnOpenLevelWindow();
+	void OnOpenPakWindow();
 	void OnOpenAboutWindow();
+	void OnOpenQuickStartWindow();
 	void OnOpenVehicleManagerWindow();
 	void OnOpenSaveLoadWindow();
 

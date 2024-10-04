@@ -1,10 +1,17 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/Inputs/VehicleInputExternalComponent.h"
 #include "Soda/UnrealSoda.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
+#include "Soda/DBGateway.h"
+
+#include "bsoncxx/builder/stream/helpers.hpp"
+#include "bsoncxx/exception/exception.hpp"
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/builder/stream/array.hpp"
+#include "bsoncxx/json.hpp"
 
 UVehicleInputExternalComponent::UVehicleInputExternalComponent(const FObjectInitializer &ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -16,49 +23,30 @@ UVehicleInputExternalComponent::UVehicleInputExternalComponent(const FObjectInit
 	InputType = EVehicleInputType::External;
 }
 
-bool UVehicleInputExternalComponent::OnActivateVehicleComponent()
+void UVehicleInputExternalComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
 {
-	return Super::OnActivateVehicleComponent();
-}
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::open_array;
+	using bsoncxx::builder::stream::close_array;
 
-void UVehicleInputExternalComponent::OnDeactivateVehicleComponent()
-{
-	Super::OnDeactivateVehicleComponent();
-}
-
-void UVehicleInputExternalComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
-{
-	if ((GetWheeledVehicle()->GetActiveVehicleInput() == this))
+	try
 	{
-		Super::DrawDebug(Canvas, YL, YPos);
-
-		if (Common.bDrawDebugCanvas && GetWheeledVehicle())
-		{
-			UFont* RenderFont = GEngine->GetSmallFont();
-			Canvas->SetDrawColor(FColor::White);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Steering: %.2f"), GetSteeringInput()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Throttle: %.2f"), GetThrottleInput()), 16, YPos);
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Brake: %.2f"), GetBrakeInput()), 16, YPos);
-		}
+		Dataset.GetRowDoc()
+			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
+			<< "Throttle" << GetInputState().Throttle
+			<< "Brake" << GetInputState().Brake
+			<< "Steering" << GetInputState().Steering
+			<< "GearState" << int(GetInputState().GearState)
+			<< "GearNum" << GetInputState().GearNum
+			<< "bADModeEnbaled" << GetInputState().bADModeEnbaled
+			<< "bSafeStopEnbaled" << GetInputState().bSafeStopEnbaled
+			<< close_document;
 	}
-}
-
-void UVehicleInputExternalComponent::CopyInputStates(UVehicleInputComponent* Previous)
-{
-	if (Previous)
+	catch (const std::system_error& e)
 	{
-		SteeringInput = Previous->GetSteeringInput();
-		ThrottleInput = Previous->GetThrottleInput();
-		BrakeInput = Previous->GetBrakeInput();
-		GearInput = Previous->GetGearInput();
+		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
 	}
-}
-
-void UVehicleInputExternalComponent::UpdateInputStates(float DeltaTime, float ForwardSpeed, const APlayerController* PlayerController)
-{
-	Super::UpdateInputStates(DeltaTime, ForwardSpeed, PlayerController);
-
-	ThrottleInput = ThrottleInputRate.InterpInputValue(DeltaTime, ThrottleInput, ThrottleInputTarget);
-	BrakeInput = BrakeInputRate.InterpInputValue(DeltaTime, BrakeInput, BrakeInputTarget);
-	SteeringInput = SteerInputRate.InterpInputValue(DeltaTime, SteeringInput, SteeringInputTarget);
 }

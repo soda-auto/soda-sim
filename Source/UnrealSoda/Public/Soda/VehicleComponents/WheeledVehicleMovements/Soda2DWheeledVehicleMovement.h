@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -19,31 +19,6 @@
 
 class DynamicCar;
 
-USTRUCT(BlueprintType, Blueprintable)
-struct FSodaVehicleWheel2WDSetup
-{
-	GENERATED_USTRUCT_BODY()
-
-	/** [cm] */
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
-	float SuspensionFall = 5;
-
-	/** [cm] */
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
-	float SuspensionRise = 5;
-
-	/** Suspension  distribution [0..1]*/
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
-	float SuspensionDist = 0.25;
-
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
-	float DampingRiseFactor = 0.1;
-
-	UPROPERTY(EditAnywhere, Category = WheelSetup)
-	float DampingFallFactor = 0.03;
-};
-
-
 
 /**
  * The USoda2DWheeledVehicleMovementComponent provides a physical vehicle simulation in 2D space.
@@ -56,41 +31,45 @@ class UNREALSODA_API USoda2DWheeledVehicleMovementComponent : public UWheeledVeh
 	GENERATED_UCLASS_BODY()
 
 public:
+	/** Offset from center of the mesh to rear wheel, [cm] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
+	FVector RearWheelOffset{};
+
 	/** Vehicle mass in kg */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float Mass = 1196.0;
 
-	/** Moment of inertia (Roll, Pitch, Yaw) for car [kg * m^2] */
+	/** Moment of inertia by Z axis for car [kg * m^2] */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	FVector MomentOfInertia{600.0f, 800.0f, 1260.0f};
+	float MomentOfInertia = 1260.0f;
 
-	/** Track Width [m]*/
+	/** Track Width [cm]*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float TrackWidth = 2;
+	float TrackWidth = 200;
 
-	/** Distance from CG to forward wheel [m] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float A = 1.7;
+	/** Distance from CoG to forward wheel [cm] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (DisplayName="CoG to Forward Wheel", EditInRuntime, ReactivateComponent))
+	float CoGToForwardWheel = 170;
 
-	/** Distance from CG to rear wheel [m] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float B = 1.168;
+	/** Distance from CoG to rear wheel [cm] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (DisplayName = "CoG to Rear Wheel", EditInRuntime, ReactivateComponent))
+	float CoGToRearWheel = 116.8;
 
-	/** High of CG [m] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float CGvert = 0.4;
+	/** High of CoG [cm] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (DisplayName = "CoG Vert", EditInRuntime, ReactivateComponent))
+	float CoGVert = 40;
 
 	/** Friction coefficient */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float Friction = 1.0;
 
-	/** Wheels radius [m]*/
+	/** Wheels radius [cm]*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float FrontWheelRadius = 0.31;
+	float FrontWheelRadius = 31;
 
-	/** Wheels radius [m]*/
+	/** Wheels radius [cm]*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float RearWheelRadius = 0.35;
+	float RearWheelRadius = 35;
 
 	/** Rear wheels stiffness of tyres in lateral direction */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
@@ -128,39 +107,33 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float MomentOfInertiaRearTrain = 2.06;
 
-	/** [cm/s^2] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuspensionSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	float Gravity = 980.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
+	bool bPullToGround = true;
 
-	/** Wheels setup [FL, FR, RL, RR]*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SuspensionSetup)
-	TArray<FSodaVehicleWheel2WDSetup> WheelSetups;
+	/** From center of promotive [cm] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
+	float PullToGroundOffset = 30;
 
-	UPROPERTY(EditAnywhere, Instanced, Category = SuspensionSetup, meta = (EditInRuntime))
-	TObjectPtr<UGroundScaner> GroundScaner = nullptr;
+	/** Experemental featuer */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ModelSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
+	bool bEnableCollisions = false;
 
-	UPROPERTY(EditAnywhere, Category = SuspensionSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	bool bUseGroundScaner = true;
+	/** Time of integration in milliseconds */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
+	int IntegrationTimeStep = 10;
 
-	UPROPERTY(EditAnywhere, Category = SuspensionSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	bool bDisableCollisions = false;
-
-	UPROPERTY(EditAnywhere, Category = SuspensionSetup, SaveGame, meta = (EditInRuntime))
-	float GlobalDampingFactor = 0.3;
-
-	/** Time of integration in msec*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime))
-	int TimeStep = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
+	double SpeedFactor = 1.0;
 
 	/** If 1 then drag forces being taked into account*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	int FlDragTaking = 1;
 
-	/** 0 || 1 || 2 ; 2 is default value (combined slip mode)*/
+	/** 0 || 1 || 2 ; 2 is default value (combined slip mode) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	int FlLongCirc = 3;
 
-	/** 1 for static case of loads on rear and forward wheel*/
+	/** 1 for static case of loads on rear and forward wheel */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	int FlStaticLoad = 0;
 
@@ -168,11 +141,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	int FlRunKut = 0;
 
-	/** sampling for integration on [t,t+dt] interval */
+	/** Sampling for integration on [t,t+dt] interval */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	int NSteps = 10;
 
-	/** Lawes for actuators;*/
+	/** Lawes for actuators */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CalculationSetup, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	int FlActLow = 2;
 
@@ -186,31 +159,17 @@ public:
 	int CorrImplStep = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	bool bDrawTelemetry = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	bool bLogPhysStemp = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Vehicle, SaveGame, meta = (EditInRuntime))
 	float ModelStartUpDelay = 0.5;
-	
-public:
-	struct FWheelData
-	{
-		float ToGround = 0; /** [cm] */
-		float ToGroundVelocity = 0;
-		float SpringForce = 0; /** [kg*cm/s^2] */
-		float DampingForce = 0; /** [kg*cm/s^2] */
-	};
-
-	FWheelData WheelsData[4];
 
 public:
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	UFUNCTION(BlueprintCallable, Category = Vehicle)
+	bool SetVehicleVelocity(float InVelocity);
+
+public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	virtual void InitializeComponent() override;
-	virtual void UninitializeComponent() override;
 
 public:
 	virtual void UpdateSimulation(const std::chrono::nanoseconds& Deltatime, const std::chrono::nanoseconds& Elapsed);
@@ -221,30 +180,20 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual void OnPreActivateVehicleComponent() override;
+	virtual void OnPreDeactivateVehicleComponent() override;
 
 public:
 	/* Overrides from  IWheeledVehicleMovementInterface  */
 	virtual float GetVehicleMass() const override { return Mass; }
-	virtual const FVehicleSimData& GetSimData() const { return VehicleSimData; }
-	virtual bool SetVehiclePosition(const FVector& NewLocation, const FRotator& NewRotation);
+	virtual const FVehicleSimData& GetSimData() const override { return VehicleSimData; }
+	virtual bool SetVehiclePosition(const FVector& NewLocation, const FRotator& NewRotation) override;
 
 protected:
 	FVehicleSimData VehicleSimData;
-
+	std::mutex Mutex;
 	TSharedPtr<DynamicCar> DynCar;
 	FPrecisionTimer PrecisionTimer;
-
-	float ZDotDot =  0;
-	float PitchDotDot = 0;
-	float RollDotDot = 0;
-
-	float ZDot = 0;
-	float PitchDot = 0;
-	float RollDot = 0;
-
-	FVector Euler;
-	
-	FTelemetryGraphGrid TelemetryGrid;
-
 	bool bSynchronousMode = false;
+	FVector CoF;
+	float ZOffset;
 };

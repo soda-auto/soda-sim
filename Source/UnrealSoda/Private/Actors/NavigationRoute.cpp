@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/Actors/NavigationRoute.h"
 #include "Soda/UnrealSoda.h"
@@ -16,7 +16,7 @@
 #include "Slate/SceneViewport.h"
 #include "Soda/Misc/EditorUtils.h"
 #include "Soda/SodaGameViewportClient.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/SodaActorFactory.h"
 #include "Soda/Editor/SodaSelection.h"
 #include "Materials/MaterialInterface.h"
@@ -32,6 +32,7 @@ static bool IsSplineValid(const URouteSplineComponent* SplineComponent)
 	return (SplineComponent != nullptr) &&
 		   (SplineComponent->GetNumberOfSplinePoints() > 1);
 }
+
 
 /*****************************************************************************************
                                 ANavigationRoute
@@ -166,6 +167,24 @@ void ANavigationRoute::Serialize(FArchive& Ar)
 
 			}
 			SetRoutePoints(Ponints, false);
+
+
+			if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(LeftRoute.ToSoftObjectPath(), GetWorld())))
+			{
+				LeftRoute = FoundActor;
+			}
+			if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(RightRoute.ToSoftObjectPath(), GetWorld())))
+			{
+				RightRoute = FoundActor;
+			}
+			if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(PredecessorRoute.ToSoftObjectPath(), GetWorld())))
+			{
+				PredecessorRoute = FoundActor;
+			}
+			if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(SuccessorRoute.ToSoftObjectPath(), GetWorld())))
+			{
+				SuccessorRoute = FoundActor;
+			}
 		}
 	}
 }
@@ -394,8 +413,8 @@ void ANavigationRoute::PropagetUpdateSuccessorRoute()
 
 void ANavigationRoute::UpdateRouteNetwork(const ANavigationRoute* Initiator, bool bIsInitiatorPredecessor)
 {
-	USodaGameModeComponent* GameMode = USodaGameModeComponent::GetChecked();
-	ASodaActorFactory * ActorFactory = GameMode->GetActorFactory();
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+	ASodaActorFactory * ActorFactory = SodaSubsystem->GetActorFactory();
 	check(ActorFactory);
 
 	for (AActor* Actor : ActorFactory->GetActors())
@@ -419,6 +438,43 @@ bool ANavigationRoute::IsRouteTagsAllowed(const TSet<FString>& AllowedRouteTags)
 	return false;
 }
 
+bool ANavigationRoute::GroundHitFilter(const FHitResult& Hit)
+{
+	return
+		Hit.GetActor() != this &&
+		!Hit.GetActor()->IsRootComponentMovable() &&
+		(Hit.GetComponent()->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic || Hit.GetComponent()->GetCollisionObjectType() == ECollisionChannel::ECC_WorldDynamic);
+}
+
+void ANavigationRoute::PullToGround()
+{
+	FVector2D ScreenPosition;
+	FVector WorldOrigin;
+	FVector WorldDirection;
+
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	check(PlayerController);
+	FHitResult Hit;
+
+	for (int i = 0; i < Spline->GetNumberOfSplinePoints(); ++i)
+	{
+		const FVector Point = Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World);
+		if(PlayerController->GetWorld()->LineTraceSingleByChannel(
+			Hit,
+			Point - FVector(0, 0, 100), Point + FVector(0, 0, 1000),
+			ECollisionChannel::ECC_GameTraceChannel2)) // ECC_GameTraceChannel2 -  camera (any collision) // ECollisionChannel::ECC_WorldDynamic;
+		{
+			if (GroundHitFilter(Hit))
+			{
+				Spline->SetLocationAtSplinePoint(i, Hit.Location + FVector(0, 0, ZOffset), ESplineCoordinateSpace::World, false);
+			}
+		}
+	}
+
+	Spline->UpdateSpline();
+	UpdateViewMesh();
+}
+
 /*****************************************************************************************
 								URoutePlannerEditableNode
 *****************************************************************************************/
@@ -427,7 +483,7 @@ URoutePlannerEditableNode::URoutePlannerEditableNode(const FObjectInitializer& O
 	: Super(ObjectInitializer)
 {
 	static ConstructorHelpers::FObjectFinder< UStaticMesh > MeshAsset(TEXT("/Engine/BasicShapes/Cylinder"));
-	static ConstructorHelpers::FObjectFinder< UMaterial > MatAsset(TEXT("/SodaSim/Assets/CPP/AxesMatDense"));
+	static ConstructorHelpers::FObjectFinder< UMaterial > MatAsset(TEXT("/SodaSim/Assets/CPP/RouteNodeMat"));
 	if (MeshAsset.Succeeded()) 	SetStaticMesh(MeshAsset.Object);
 	if (MatAsset.Succeeded()) 	SetMaterial(0, MatAsset.Object);
 	PrimaryComponentTick.bCanEverTick = true;
@@ -547,15 +603,16 @@ void ANavigationRouteEditable::Tick(float DeltaTime)
 		URoutePlannerEditableNode* PreSelectedNode = SelectedNode;
 		bool bHidePreviewNode = true;
 
-		TArray<FHitResult> HitResults; 
-		TraceForMousePosition(PlayerController, HitResults);
+		TArray<FHitResult> HitActors; 
+		TraceForMousePositionByObject(PlayerController, HitActors, SodaApp.GetSodaUserSettings()->SelectTraceChannel);
 
 		HoverNode = nullptr;		
 
 		if (!SelectedNode && !PreviewNode->IsVisible() && !bLeftCtrPresed)
 		{
 			// Find Hover Node
-			for (auto& Hit : HitResults)
+
+			for (auto& Hit : HitActors)
 			{
 				if (Hit.GetActor() == this)
 				{
@@ -567,7 +624,7 @@ void ANavigationRouteEditable::Tick(float DeltaTime)
 					}
 				}
 			}
-
+			
 			// Select Node
 			if (bMousePresed && HoverNode)
 			{
@@ -598,7 +655,8 @@ void ANavigationRouteEditable::Tick(float DeltaTime)
 			// Draw  Preview node
 			float Key{};
 			FVector Location{};
-			for (auto& Hit : HitResults)
+
+			for (auto& Hit : HitActors)
 			{
 				if (Hit.GetComponent() && Hit.GetComponent() == ProceduralMesh)
 				{
@@ -635,30 +693,33 @@ void ANavigationRouteEditable::Tick(float DeltaTime)
 		// Move selected node
 		if (SelectedNode)
 		{
-			for (auto& Hit : HitResults)
+			TArray<FHitResult> HitGround;
+			if (TraceForMousePositionByChanel(PlayerController, HitGround, ECollisionChannel::ECC_WorldDynamic)) // && GroundHitFilter(Hit))
 			{
-				if (Hit.GetActor() != this && !Hit.GetActor()->IsRootComponentMovable() && (Hit.GetComponent()->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic || Hit.GetComponent()->GetCollisionObjectType() == ECollisionChannel::ECC_WorldDynamic))
+				for (auto& Hit : HitGround)
 				{
-					const float ZOffset = 50;
-					const FVector Dir = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal();
-					FVector HitLocation = Hit.Location + Dir * ZOffset / Dir.Z;
-					SelectedNode->SetWorldLocation(HitLocation);
-					Spline->SetLocationAtSplinePoint(SelectedNode->PointIndex, HitLocation, ESplineCoordinateSpace::World, true);
-					UpdateProcedureMeshSegment(SelectedNode->PointIndex - 2);
-					UpdateProcedureMeshSegment(SelectedNode->PointIndex - 1);
-					UpdateProcedureMeshSegment(SelectedNode->PointIndex + 0);
-					UpdateProcedureMeshSegment(SelectedNode->PointIndex + 1);
-					UpdateProcedureMeshSegment(SelectedNode->PointIndex + 2);
-					if (SelectedNode->PointIndex == 0)
+					if (!Cast<ISodaActor>(Hit.GetActor()))
 					{
-						PropagetUpdatePredecessorRoute();
+						const FVector Dir = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal();
+						FVector HitLocation = Hit.Location + Dir * ZOffset / Dir.Z;
+						SelectedNode->SetWorldLocation(HitLocation);
+						Spline->SetLocationAtSplinePoint(SelectedNode->PointIndex, HitLocation, ESplineCoordinateSpace::World, true);
+						UpdateProcedureMeshSegment(SelectedNode->PointIndex - 2);
+						UpdateProcedureMeshSegment(SelectedNode->PointIndex - 1);
+						UpdateProcedureMeshSegment(SelectedNode->PointIndex + 0);
+						UpdateProcedureMeshSegment(SelectedNode->PointIndex + 1);
+						UpdateProcedureMeshSegment(SelectedNode->PointIndex + 2);
+						if (SelectedNode->PointIndex == 0)
+						{
+							PropagetUpdatePredecessorRoute();
+						}
+						else if (SelectedNode->PointIndex == Spline->GetNumberOfSplinePoints() - 1)
+						{
+							PropagetUpdateSuccessorRoute();
+						}
+						MarkAsDirty();
+						break;
 					}
-					else if(SelectedNode->PointIndex == Spline->GetNumberOfSplinePoints() - 1)
-					{
-						PropagetUpdateSuccessorRoute();
-					}
-					MarkAsDirty();
-					break;
 				}
 			}
 		}
@@ -772,19 +833,38 @@ void ANavigationRouteEditable::UpdateNodes()
 	}
 }
 
-bool ANavigationRouteEditable::TraceForMousePosition(const APlayerController* PlayerController, TArray<struct FHitResult>& HitResults)
+bool ANavigationRouteEditable::TraceForMousePositionByChanel(const APlayerController* PlayerController, TArray<FHitResult>& HitResults, const TEnumAsByte<ECollisionChannel> & CollisionChannel)
 {
 	FVector2D ScreenPosition;
 	FVector WorldOrigin;
 	FVector WorldDirection;
 
-	FCollisionObjectQueryParams ObjectQueryParams(FCollisionObjectQueryParams::AllObjects);
+	const float HitResultTraceDistance = 100000.f;
+	if (PlayerController->GetMousePosition(ScreenPosition.X, ScreenPosition.Y) &&
+		FEditorUtils::DeprojectScreenToWorld(PlayerController->GetLocalPlayer(), ScreenPosition, WorldOrigin, WorldDirection) &&
+		PlayerController->GetWorld()->LineTraceMultiByChannel(
+			HitResults,
+			WorldOrigin, WorldOrigin + WorldDirection * HitResultTraceDistance, CollisionChannel))
+			//ECollisionChannel::ECC_GameTraceChannel2)) // ECC_GameTraceChannel2 -  camera (any collision) // ECollisionChannel::ECC_WorldDynamic;
+	{
+		return true;
+	}
 
+	return false;
+}
+
+bool ANavigationRouteEditable::TraceForMousePositionByObject(const APlayerController* PlayerController, TArray<FHitResult>& HitResults, const TEnumAsByte<ECollisionChannel>& CollisionChannel)
+{
+	FVector2D ScreenPosition;
+	FVector WorldOrigin;
+	FVector WorldDirection;
 
 	const float HitResultTraceDistance = 100000.f;
 	if (PlayerController->GetMousePosition(ScreenPosition.X, ScreenPosition.Y) &&
 		FEditorUtils::DeprojectScreenToWorld(PlayerController->GetLocalPlayer(), ScreenPosition, WorldOrigin, WorldDirection) &&
-		PlayerController->GetWorld()->LineTraceMultiByObjectType(HitResults, WorldOrigin, WorldOrigin + WorldDirection * HitResultTraceDistance, ObjectQueryParams))
+		PlayerController->GetWorld()->LineTraceMultiByObjectType(
+			HitResults,
+			WorldOrigin, WorldOrigin + WorldDirection * HitResultTraceDistance, FCollisionObjectQueryParams(CollisionChannel)))
 	{
 		return true;
 	}
@@ -809,6 +889,10 @@ void ANavigationRouteEditable::RuntimePostEditChangeProperty(FPropertyChangedEve
 		//UpdateRouteNetwork(this, false);
 		PropagetUpdateSuccessorRoute();
 	}
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(ANavigationRoute, ZOffset))
+	{
+		PullToGround();
+	}
 }
 
 void ANavigationRouteEditable::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
@@ -828,6 +912,16 @@ void ANavigationRouteEditable::RuntimePostEditChangeChainProperty(FPropertyChang
 		//UpdateRouteNetwork(this, false);
 		PropagetUpdateSuccessorRoute();
 	}
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(ANavigationRoute, ZOffset))
+	{
+		PullToGround();
+	}
+}
+
+void ANavigationRouteEditable::PullToGround()
+{
+	Super::PullToGround();
+	UpdateNodes();
 }
 
 const FSodaActorDescriptor* ANavigationRouteEditable::GenerateActorDescriptor() const

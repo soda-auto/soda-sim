@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -8,6 +8,7 @@
 
 class UActorComponent;
 
+/** TODO: Thinking to use FJsonArchiveInputFormatterEx/FJsonArchiveOutputFormatterEx insted of FJsonObjectConverter */
 USTRUCT()
 struct UNREALSODA_API FJsonArchive
 {

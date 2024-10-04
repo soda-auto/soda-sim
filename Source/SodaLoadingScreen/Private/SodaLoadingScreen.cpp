@@ -13,9 +13,13 @@
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Images/SImage.h"
+#include "Widgets/Text/STextBlock.h"
 #include "Widgets/SOverlay.h"
 #include "Engine/Texture2D.h"
+#include "Engine/Font.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Materials/MaterialInterface.h"
+#include "../../UnrealSoda/Public/Soda/UnrealSodaVersion.h"
 
 #define LOCTEXT_NAMESPACE "FSodaLoadingScreenModule"
 
@@ -28,21 +32,33 @@ class SSodaLoadingScreen : public SCompoundWidget
 	void Construct(const FArguments& InArgs)
 	{
 		if (UTexture2D* Tex = Cast<UTexture2D>(SodaLoadingMaterialPath.TryLoad()))
-		//if(UMaterialInterface* Tex = Cast<UMaterialInterface>(SodaLoadingMaterialPath.TryLoad()))
-		{ 
+		{
 			SodaLoadingBrush = MakeShareable(new FSlateImageBrush(Tex, FVector2D(1024 * 0.3, 512 * 0.3)));
-			//SodaLoadingBrush = MakeShareable(new FSlateMaterialBrush(*Tex, FVector2D(1024 * 0.3, 512 * 0.3)));
 			check(SodaLoadingBrush.IsValid());
+		}
 
-			ChildSlot
+		if (UTexture2D* BackgroundTex = Cast<UTexture2D>(SodaBackgroundMaterialPath.TryLoad()))
+		{
+			SodaBackgroundBrush = MakeShareable(new FSlateImageBrush(BackgroundTex, FVector2D(2160 * 0.3, 2160 * 0.3)));
+			check(SodaBackgroundBrush.IsValid());
+		}
+		ChildSlot
 			.HAlign(HAlign_Fill)
 			.VAlign(VAlign_Fill)
 			[
-				SNew(SBorder)
-				.BorderBackgroundColor(FColor(0,0, 0))
-				.BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
-				[
-					SNew(SOverlay)
+				SNew(SOverlay)
+					+ SOverlay::Slot()
+					[
+						SNew(SBox)
+						.HAlign(HAlign_Center)
+						.VAlign(VAlign_Center)
+						[
+							SAssignNew(BackgroundImageWidget, SImage)
+							.Image(SodaBackgroundBrush.Get())
+							.RenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(RotationAngle))))
+							.RenderTransformPivot(FVector2D(0.5f, 0.5f))
+						]
+					]
 					+ SOverlay::Slot()
 					[
 						SNew(SBox)
@@ -69,9 +85,27 @@ class SSodaLoadingScreen : public SCompoundWidget
 							.Image(SodaLoadingBrush.Get())
 						]
 					]
-				]
+					+ SOverlay::Slot()
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Center)
+					.Padding(FMargin(0, 110, 0, 0))
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString("SIM"))
+						.Font(MainFont)
+						.ColorAndOpacity(FLinearColor::White)
+					]
+					+ SOverlay::Slot()
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Center)
+					.Padding(FMargin(0, 325, 0, 0))
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString(VersionText))
+						.Font(VersionFont)
+						.ColorAndOpacity(FLinearColor::White)
+					]
 			];
-		}
 	}
 
 	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override
@@ -85,11 +119,38 @@ class SSodaLoadingScreen : public SCompoundWidget
 
 			BackgroundBlur->SetBlurStrength(FMath::Cos(InCurrentTime / (2 * PI) * Period) * Amplitude);
 		}
+
+		if (BackgroundImageWidget)
+		{
+			const float RotationSpeed = 30.0f;
+			RotationAngle += RotationSpeed * InDeltaTime;
+
+			if (RotationAngle > 360.0f)
+			{
+				RotationAngle -= 360.0f;
+			}
+
+			BackgroundImageWidget->SetRenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(RotationAngle))));
+			BackgroundImageWidget->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		}
+		
 	}
 
 	SSodaLoadingScreen()
-		:SodaLoadingMaterialPath(TEXT("/SodaSim/Assets/CPP/ScreenLoading/Logo"))
-	{}
+		: SodaLoadingMaterialPath(TEXT("/SodaSim/Assets/CPP/ScreenLoading/Logo"))
+		, SodaBackgroundMaterialPath(TEXT("/SodaSim/Assets/CPP/ScreenLoading/T_LaunchScreenLoad"))
+		, RotationAngle(0.0f)
+	{
+		const FSoftObjectPath RobotoPath(TEXT("/Engine/EngineFonts/Roboto.Roboto"));
+		FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+		UFont* DefaultFont = Cast<UFont>(AssetRegistryModule.Get().GetAssetByObjectPath(RobotoPath).GetAsset());
+
+		if (DefaultFont)
+		{
+			MainFont = FSlateFontInfo(DefaultFont, 26);
+			VersionFont = FSlateFontInfo(DefaultFont, 16);
+		}
+	}
 
 	virtual ~SSodaLoadingScreen()
 	{
@@ -97,12 +158,24 @@ class SSodaLoadingScreen : public SCompoundWidget
 		{
 			SodaLoadingBrush->SetResourceObject(nullptr);
 		}
+
+		if (SodaBackgroundBrush.IsValid())
+		{
+			SodaBackgroundBrush->SetResourceObject(nullptr);
+		}
 	}
 
 private:
 	FSoftObjectPath SodaLoadingMaterialPath;
+	FSoftObjectPath SodaBackgroundMaterialPath;
 	TSharedPtr<FSlateBrush> SodaLoadingBrush;
 	TSharedPtr<SBackgroundBlur> BackgroundBlur;
+	TSharedPtr<FSlateBrush> SodaBackgroundBrush;
+	TSharedPtr<SImage> BackgroundImageWidget;
+	float RotationAngle;
+	FSlateFontInfo MainFont;
+	FSlateFontInfo VersionFont;
+	FString VersionText = FString::Printf(TEXT("Version %s"), *FString(UNREALSODA_VERSION_STRING));
 };
 
 void FSodaLoadingScreenModule::StartupModule()
@@ -118,6 +191,8 @@ void FSodaLoadingScreenModule::StartupModule()
 
 		SetupLoadingScreen();
 	}	
+
+	FCommandLine::Append(TEXT(" -RCWebControlEnable"));
 }
 
 void FSodaLoadingScreenModule::ShutdownModule()

@@ -1,5 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #if(!IS_MONOLITHIC)
 
@@ -248,7 +248,6 @@ namespace
 				return &Container;
 			}
 
-			return nullptr;
 		}
 
 		static constexpr bool IsPhysScene()

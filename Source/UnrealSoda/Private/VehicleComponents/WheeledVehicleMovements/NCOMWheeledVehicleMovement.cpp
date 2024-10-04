@@ -1,6 +1,8 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/VehicleComponents/WheeledVehicleMovements/NCOMWheeledVehicleMovement.h"
+#include "Soda/VehicleComponents/Sensors/Implementation/OXTS/NComRxC.h"
+#include "Soda/VehicleComponents/Sensors/Implementation/OXTS/NComRxDefines.h"
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaApp.h"
 #include "Engine/Engine.h"
@@ -8,18 +10,10 @@
 #include "Engine/CollisionProfile.h"
 #include "Soda/SodaStatics.h"
 #include "Soda/LevelState.h"
-#include "SodaSimProto/NComRxC.h"
-#include "SodaSimProto/NComRxDefines.h"
 #include "Components/SkinnedMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 
-#if PLATFORM_LINUX
-#include "BSDSockets/SocketsBSD.h"
-#	ifndef SO_REUSEPORT 
-#		define SO_REUSEPORT	15
-#	endif
-#endif
 
 UNCOMWheeledVehicleMovement::UNCOMWheeledVehicleMovement(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -115,14 +109,10 @@ bool UNCOMWheeledVehicleMovement::OnActivateVehicleComponent()
 
 	if (ListenSocket)
 	{
-#if PLATFORM_LINUX
-		SOCKET RawSocket = ((FSocketBSD*)ListenSocket)->GetNativeSocket();
-		int Param = 1;
-		if (setsockopt(RawSocket, SOL_SOCKET, SO_REUSEPORT, (char*)&Param, sizeof(Param)) != 0)
+		if (!ListenSocket->SetReuseAddr(true))
 		{
-			UE_LOG(LogSoda, Warning, TEXT("UNCOMWheeledVehicleMovement::BeginPlay(). Can't setsockopt(SO_REUSEPORT)"));
+			UE_LOG(LogSoda, Warning, TEXT("UNCOMWheeledVehicleMovement::BeginPlay(). Can't set SetReuseAddr(true)"));
 		}
-#endif
 		FTimespan ThreadWaitTime = FTimespan::FromMilliseconds(100);
 		UDPReceiver = new FUdpSocketReceiver(ListenSocket, ThreadWaitTime, TEXT("NCOMWheeledVehicleMovement"));
 		UDPReceiver->OnDataReceived().BindLambda([this](const FArrayReaderPtr& ArrayReaderPtr, const FIPv4Endpoint& EndPt)

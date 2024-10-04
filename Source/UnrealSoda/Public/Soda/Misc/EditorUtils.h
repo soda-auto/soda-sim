@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -107,5 +107,11 @@ bool AbsoluteToScreenPosition(const UGameViewportClient* ViewportClient, const F
 FName MakeUniqueObjectName(UObject* Parent, const UClass* Class, FName InBaseName = NAME_None);
 
 AActor* FindOuterActor(const UObject* InObject);
+
+AActor* FindActorByName(const FString& ActorNameStr, const UWorld* InWorld);
+
+FString GetOwningActorOf(const FSoftObjectPath& SoftObjectPath);
+
+AActor* FindActorByName(const FSoftObjectPath& SoftObjectPath, const UWorld* InWorld);
 
 } // FEditorUtils

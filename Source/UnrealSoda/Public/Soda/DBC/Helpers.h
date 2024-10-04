@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
@@ -62,6 +62,7 @@ public:
 
     TArray<FCANMessageWrapper*> Messages;
     UCANBusComponent* CANBus = nullptr; // Don't use TWeakObjectPtr, becouse it is slow
+    bool bSendImmediately = false;
 };
 
 /**
@@ -222,8 +223,11 @@ struct FCANMessageStaticWrapper : public FCANMessageWrapper
     {
         if (GetDir() == ECanFrameDir::Output && MessageMap)
         {
-            Msg->OnPreSend();
-            MessageMap->CANBus->SendFrame(Msg->Frame);
+            {
+                UE::TScopeLock<UE::FSpinLock> ScopeLock(Msg->SpinLockFrame);
+                Msg->OnPreSend();
+            }
+            if(MessageMap->bSendImmediately || !MessageMap->CANBus->bUseIntervaledSendingFrames) MessageMap->CANBus->SendFrame(Msg->Frame);
             return true;
         }
         return false;
@@ -234,9 +238,12 @@ struct FCANMessageStaticWrapper : public FCANMessageWrapper
     {
         if (GetDir() == ECanFrameDir::Output && MessageMap)
         {
-            Msg->OnPreSend();
-            OnAfterSer(Msg->Frame);
-            MessageMap->CANBus->SendFrame(Msg->Frame);
+            {
+                UE::TScopeLock<UE::FSpinLock> ScopeLock(Msg->SpinLockFrame);
+                Msg->OnPreSend();
+                OnAfterSer(Msg->Frame);
+            }
+            if (MessageMap->bSendImmediately || !MessageMap->CANBus->bUseIntervaledSendingFrames) MessageMap->CANBus->SendFrame(Msg->Frame);
             return true;
         }
         return false;
@@ -247,9 +254,12 @@ struct FCANMessageStaticWrapper : public FCANMessageWrapper
     {
         if (GetDir() == ECanFrameDir::Output && MessageMap)
         {
-            Msg->OnPreSend();
-            OnAfterSer(Msg->Frame, Vars...);
-            MessageMap->CANBus->SendFrame(Msg->Frame);
+            {
+                UE::TScopeLock<UE::FSpinLock> ScopeLock(Msg->SpinLockFrame);
+                Msg->OnPreSend();
+                OnAfterSer(Msg->Frame, Vars...);
+            }
+            if (MessageMap->bSendImmediately || !MessageMap->CANBus->bUseIntervaledSendingFrames) MessageMap->CANBus->SendFrame(Msg->Frame);
             return true;
         }
         return false;

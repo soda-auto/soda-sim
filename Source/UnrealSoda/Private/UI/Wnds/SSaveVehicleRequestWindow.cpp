@@ -1,4 +1,4 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "UI/Wnds/SSaveVehicleRequestWindow.h"
 #include "SodaStyleSet.h"
@@ -9,7 +9,7 @@
 #include "UI/Wnds/SVehcileManagerWindow.h"
 #include "Soda/UI/SMessageBox.h"
 #include "Soda/Vehicles/SodaVehicle.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 
 namespace soda
 {
@@ -61,8 +61,8 @@ void SSaveVehicleRequestWindow::Construct( const FArguments& InArgs, TWeakObject
 				.AutoWidth()
 				[
 					SNew(SButton)
-					.Text(FText::FromString("Cancle"))
-					.OnClicked(this, &SSaveVehicleRequestWindow::OnCancle)
+					.Text(FText::FromString("Cancel"))
+					.OnClicked(this, &SSaveVehicleRequestWindow::OnCancel)
 				]
 			]
 		]
@@ -71,11 +71,11 @@ void SSaveVehicleRequestWindow::Construct( const FArguments& InArgs, TWeakObject
 
 FReply SSaveVehicleRequestWindow::OnSaveAs()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
 		if (Vehicle.IsValid())
 		{
-			GameMode->OpenWindow("Save Vehicle As", SNew(SVehcileManagerWindow, Vehicle.Get()));
+			SodaSubsystem->OpenWindow("Save Vehicle As", SNew(SVehcileManagerWindow, Vehicle.Get()));
 		}
 	}
 	CloseWindow();
@@ -84,11 +84,11 @@ FReply SSaveVehicleRequestWindow::OnSaveAs()
 
 FReply SSaveVehicleRequestWindow::OnResave()
 {
-	if (USodaGameModeComponent* GameMode = USodaGameModeComponent::Get())
+	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 	{
 		if (!(Vehicle.IsValid() && Vehicle->Resave()))
 		{
-			TSharedPtr<soda::SMessageBox> MsgBox = GameMode->ShowMessageBox(
+			TSharedPtr<soda::SMessageBox> MsgBox = SodaSubsystem->ShowMessageBox(
 				soda::EMessageBoxType::OK, "Error", "Can't save vehilce");
 		}
 	}
@@ -96,7 +96,7 @@ FReply SSaveVehicleRequestWindow::OnResave()
 	return FReply::Handled();
 }
 
-FReply SSaveVehicleRequestWindow::OnCancle()
+FReply SSaveVehicleRequestWindow::OnCancel()
 {
 	CloseWindow();
 	return FReply::Handled();

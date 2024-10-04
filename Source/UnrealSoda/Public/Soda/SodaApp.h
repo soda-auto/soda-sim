@@ -1,29 +1,21 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
 #include "CoreGlobals.h"
-#if PLATFORM_WINDOWS
-#include "Windows/AllowWindowsPlatformTypes.h"
-#endif
-#include <zmq.hpp>
-#if PLATFORM_WINDOWS
-#include "Windows/HideWindowsPlatformTypes.h"
-#endif
 #include "Engine/EngineBaseTypes.h"
 #include "GameFramework/WorldSettings.h"
 #include "Soda/Misc/LLConverter.h"
 #include "Soda/Misc/AsyncTaskManager.h"
-#include "Soda/Misc/MathUtils.hpp"
+#include "Soda/Misc/Utils.h"
 #include "Soda/Misc/Time.h"
 #include "Soda/Vehicles/ISodaVehicleExporter.h"
 #include "JsonObjectWrapper.h"
 #include <cmath>
 
 class IHttpRouter;
-class USodaGameModeComponent;
+class USodaSubsystem;
 class USodaUserSettings;
-
 
 namespace dbc
 {
@@ -33,6 +25,11 @@ namespace dbc
 namespace soda
 {
 	class FOutputLogHistory;
+}
+
+namespace zmq
+{
+	class context_t;
 }
 
 class UNREALSODA_API FSodaApp
@@ -51,7 +48,7 @@ public:
 	inline TTimestamp GetRealtimeTimestamp() const { return RealtimeTimestamp; }
 
 	void SetSynchronousMode(bool bEnable, double DeltaSeconds);
-	void NotifyInitGame(USodaGameModeComponent* InGameMode);
+	void NotifyInitGame(USodaSubsystem* InSodaSubsystem);
 	void NotifyEndGame();
 	inline bool IsSynchronousMode() const { return bSynchronousMode; }
 	inline int GetFrameIndex() const { return FrameIndex; }
@@ -59,10 +56,10 @@ public:
 	/** One tick simulation in the synchronous mode */
 	bool SynchTick(int64& TimestampMs, int& FramIndex);
 
-	TSharedPtr<IHttpRouter> & GetHttpRouter() { return HttpRouter; }
+	TSharedPtr<IHttpRouter>& GetHttpRouter() { return HttpRouter; }
 
-	USodaGameModeComponent* GetGameMode() const;
-	USodaGameModeComponent* GetGameModeChecked() const;
+	USodaSubsystem* GetSodaSubsystem() const;
+	USodaSubsystem* GetSodaSubsystemChecked() const;
 
 	const USodaUserSettings* GetSodaUserSettings() const;
 	USodaUserSettings* GetSodaUserSettings();
@@ -92,15 +89,15 @@ protected:
 
 	FDelegateHandle OnHttpServerStartedHandle;
 	FDelegateHandle OnHttpServerStoppedHandle;
-	
+
 	void OnPreTick(UWorld* World, ELevelTick TickType, float DeltaSeconds);
 	void OnPostTick(UWorld* World, ELevelTick TickType, float DeltaSeconds);
 
 	void OnHttpServerStarted(uint32 Port);
 	void OnHttpServerStopped();
 
-	void SetGameMode(USodaGameModeComponent* InGameMode);
-	void ResetGameMode();
+	void SetSodaSubsystem(USodaSubsystem* InSodaSubsystem);
+	void ResetSodaSubsystem();
 
 	void CreateSodaUserSettings();
 
@@ -123,7 +120,7 @@ protected:
 	/* HTTP */
 	TSharedPtr<IHttpRouter> HttpRouter;
 
-	TWeakObjectPtr<USodaGameModeComponent> GameMode;
+	TWeakObjectPtr<USodaSubsystem> SodaSubsystem;
 	bool bInitialized = false;
 
 	TWeakObjectPtr<USodaUserSettings> SodaUserSettings;

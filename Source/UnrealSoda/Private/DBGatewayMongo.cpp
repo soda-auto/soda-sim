@@ -1,9 +1,9 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #include "Soda/DBGatewayMongo.h"
 #include "Soda/UnrealSoda.h"
 #include "Soda/UnrealSodaVersion.h"
-#include "Soda/SodaGameMode.h"
+#include "Soda/SodaSubsystem.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/LevelState.h"
 #include "Soda/Misc/Time.h"
@@ -124,7 +124,7 @@ void FDBGatewayMongo::Configure(const FString& URL, const FString& InDatabaseNam
 			Status = EDBGatewayStatus::Faild;
 			::AsyncTask(ENamedThreads::GameThread, [LastError = LastError]() 
 			{
-				USodaGameModeComponent::GetChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "MongoDB Faild", *LastError);
+				USodaSubsystem::GetChecked()->ShowMessageBox(soda::EMessageBoxType::OK, "MongoDB Faild", *LastError);
 			});
 			return false;
 		}
@@ -650,7 +650,7 @@ bool FDBGatewayMongo::LoadLevelData(int64 ScenarioID, TArray<uint8>& OutObjectBy
 		}
 		catch (const std::system_error& e)
 		{
-			UE_LOG(LogSoda, Error, TEXT("FDBGatewayMongo::LoadLevelData(); MongoDB error: \"%s\""), *UTF8_TO_TCHAR(e.what()));
+			UE_LOG(LogSoda, Error, TEXT("FDBGatewayMongo::LoadLevelData(); MongoDB error: \"%s\""), UTF8_TO_TCHAR(e.what()));
 			return false;
 		}
 

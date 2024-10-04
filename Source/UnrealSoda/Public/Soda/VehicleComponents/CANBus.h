@@ -1,11 +1,13 @@
-// © 2023 SODA.AUTO UK LTD. All Rights Reserved.
+// Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
 #pragma once
 
 #include "Soda/VehicleComponents/VehicleBaseComponent.h"
 #include "Soda/DBC/Common.h"
 #include "Soda/SodaTypes.h"
+#include "Soda/Misc/PrecisionTimer.hpp"
 #include <unordered_map>
+#include <mutex>
 #include "CANBus.generated.h"
 
 #define CANID_DEFAULT -1
@@ -18,7 +20,7 @@ class UCANDevComponent;
  * UCANBusComponent
  * CAN bus or network imitation
  */
-UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable)
+UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API UCANBusComponent : public UVehicleBaseComponent
 {
 	GENERATED_UCLASS_BODY()
@@ -32,12 +34,33 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = CANBus, SaveGame, meta = (EditInRuntime, ReactivateActor))
 	bool bLoopFrames = false; 
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = CANBus, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	bool bUseIntervaledSendingFrames = false;
+
+	/** [ms] */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = CANBus, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	int IntevalStep = 10;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	bool bLogSendFrames = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	bool bLogRecvFrames = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	bool bShowRegRecvMsgs = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	bool bShowRegSendMsgs = false;
+
 	FCanDevRecvFrameDelegate RecvDelegate;
 
 public:
 	virtual bool ProcessRecvMessage(const TTimestamp& Timestamp, const dbc::FCanFrame& CanFrame);
 	virtual int SendFrame(const dbc::FCanFrame& CanFrame);
+
 	virtual void RegisterCanDev(UCANDevComponent* CANDev);
+	virtual bool UnregisterCanDev(UCANDevComponent* CANDev);
 
 public:
 	virtual void OnPreActivateVehicleComponent() override;
@@ -55,6 +78,7 @@ public:
 	{
 		CAN_ID = (CAN_ID == CANID_DEFAULT ? T::Default_CANID : CAN_ID);
 		auto Msg = MakeShared<T>(CAN_ID);
+		std::lock_guard<std::mutex> Lock{ regMsgsMutex };
 		RecvMessages[CAN_ID] = Msg;
 		return Msg;
 	}
@@ -64,6 +88,7 @@ public:
 	{
 		CAN_ID = (CAN_ID == CANID_DEFAULT ? T::Default_CANID : CAN_ID);
 		auto Msg = MakeShared<T>(CAN_ID);
+		std::lock_guard<std::mutex> Lock{ regMsgsMutex };
 		SendMessages[CAN_ID] = Msg;
 		return Msg;
 	}
@@ -88,7 +113,7 @@ public:
 	void UnregSendMsgJ1939(const FString& MessageName, uint8 SourceAddress = 0xFE);
 
 public:
-	virtual void GetRemark(FString& Info) const override;
+	virtual FString GetRemark() const override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 
 protected:
@@ -102,4 +127,9 @@ protected:
 
 	std::unordered_map<std::uint64_t, TSharedPtr<dbc::FCANMessage>> RecvMessages;
 	std::unordered_map<std::uint64_t, TSharedPtr<dbc::FCANMessage>> SendMessages;
+
+	FPrecisionTimer PrecisionTimer;
+	int IntervaledThreadCounter;
+
+	std::mutex regMsgsMutex;
 };
