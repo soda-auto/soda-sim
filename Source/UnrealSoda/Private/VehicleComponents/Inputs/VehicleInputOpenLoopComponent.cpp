@@ -364,7 +364,7 @@ void UVehicleInputOpenLoopComponent::GetNewInput(float DeltaTime)
 
 	if (ScenarioSt.ScenarioStatus == EScenarioStatus::Completed && bBrakeWhenScenarioIsDone)
 	{
-		WheelFL->ReqBrakeTorque = BrkTqReqWhenScenarioIsDone * 0.5 * BrkTqBalance;
+		WheelFL->ReqBrakeTorque = BrkTqReqWhenScenarioIsDone * 0.5 * BrkTqBalance; 
 		WheelFR->ReqBrakeTorque = BrkTqReqWhenScenarioIsDone * 0.5 * BrkTqBalance;
 		WheelRL->ReqBrakeTorque = BrkTqReqWhenScenarioIsDone * 0.5 * (1 - BrkTqBalance);
 		WheelRR->ReqBrakeTorque = BrkTqReqWhenScenarioIsDone * 0.5 * (1 - BrkTqBalance);
