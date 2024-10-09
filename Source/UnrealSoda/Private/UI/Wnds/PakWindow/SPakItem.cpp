@@ -35,7 +35,7 @@ void SPakItem::Construct( const FArguments& Args, const TSharedRef<SPakItemList>
 
 FText SPakItem::GetPakNameText() const
 {
-	return FText::FromString(SodaPak->GetDescriptor().FriendlyName);
+	return FText::FromString(SodaPak->GetDescriptor().PakName);
 }
 
 void SPakItem::RecreateWidgets()
@@ -102,7 +102,7 @@ void SPakItem::RecreateWidgets()
 						.Text(FText::FromString(PakDescriptor.CreatedBy))
 						.ToolTipText(FText::Format(LOCTEXT("NavigateToCreatedByURL", "Visit the vendor's web site ({0})"), FText::FromString(CreatedByURL)))
 						.OnNavigate_Lambda([=]() { FPlatformProcess::LaunchURL(*CreatedByURL, nullptr, nullptr); })
-						.Style(FAppStyle::Get(), "HoverOnlyHyperlink")
+						.Style(FSodaStyle::Get(), "HoverOnlyHyperlink")
 				]
 
 			+ SHorizontalBox::Slot()
@@ -112,7 +112,7 @@ void SPakItem::RecreateWidgets()
 				[
 					SNew(SImage)
 					.ColorAndOpacity(FSlateColor::UseForeground())
-					.Image(FAppStyle::Get().GetBrush("Icons.OpenInBrowser"))
+					.Image(FSodaStyle::Get().GetBrush("Icons.OpenInBrowser"))
 				];
 		}
 	}
@@ -259,9 +259,9 @@ void SPakItem::RecreateWidgets()
 													.ColorAndOpacity(FSlateColor::UseForeground())
 													.Image_Lambda([this]() {
 
-														if (SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Broken) return FAppStyle::Get().GetBrush("Icons.ErrorWithColor");
-														else if (SodaPak->IsMounted()) return FAppStyle::Get().GetBrush("Icons.SuccessWithColor");
-														else return FAppStyle::Get().GetBrush("Icons.InfoWithColor");
+														if (SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Broken) return FSodaStyle::Get().GetBrush("Icons.ErrorWithColor");
+														else if (SodaPak->IsMounted()) return FSodaStyle::Get().GetBrush("Icons.SuccessWithColor");
+														else return FSodaStyle::Get().GetBrush("Icons.InfoWithColor");
 													})
 												]
 
@@ -313,6 +313,8 @@ void SPakItem::OnEnablePluginCheckboxChanged(ECheckBoxState NewCheckedState)
 {
 	const bool bNewEnabledState = NewCheckedState == ECheckBoxState::Checked;
 
+	auto PrevStatus = SodaPak->GetInstallStatus();
+	
 	if (bNewEnabledState)
 	{
 		SodaPak->Install();
@@ -324,8 +326,9 @@ void SPakItem::OnEnablePluginCheckboxChanged(ECheckBoxState NewCheckedState)
 		SodaPak->Uninstall();
 	}
 
-	if ((SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Installed && !SodaPak->IsMounted()) ||
-		(SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Uninstalled && SodaPak->IsMounted()) )
+	if ((SodaPak->GetInstallStatus() != PrevStatus) && (
+		(SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Installed && !SodaPak->IsMounted()) ||
+		(SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Uninstalled && SodaPak->IsMounted())))
 	{
 		FNotificationInfo Info(FText::FromString(TEXT("You must restart SODA.Sim for your changes to take effect")));
 		Info.ExpireDuration = 5.0f;

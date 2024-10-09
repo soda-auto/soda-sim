@@ -195,6 +195,7 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;
 	virtual FVector GetVelocity() const override;
+	virtual void Serialize(FArchive& Ar) override;
 
 	FTransform GetRealAxesTransform() const;
 

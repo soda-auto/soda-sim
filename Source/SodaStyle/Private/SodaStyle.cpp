@@ -197,6 +197,7 @@ void FStarshipSodaStyle::FStyle::Initialize()
 	SetupTutorialStyles();
 	SetupScenarioEditorStyle();
 	SetupPakWindowStyle();
+	SetupQuickStartWindowStyle();
 
 	AuditDuplicatedCoreStyles(*this);
 	
@@ -409,6 +410,7 @@ void FStarshipSodaStyle::FStyle::SetupGeneralStyles()
 		Set("Icons.SkeletalMesh", new IMAGE_BRUSH_SVG("Starship/Common/SkeletalMesh", Icon16x16));
 		Set("Icons.OpenInExternalEditor", new IMAGE_BRUSH_SVG("Starship/Common/OpenInExternalEditor", Icon16x16));
 		Set("Icons.OpenSourceLocation", new IMAGE_BRUSH_SVG("Starship/Common/OpenSourceLocation", Icon16x16));
+		Set("Icons.OpenInBrowser", new IMAGE_BRUSH_SVG("Starship/Common/WebBrowser", Icon16x16));
 		Set("Icons.Find", new IMAGE_BRUSH_SVG("Starship/Common/Find", Icon16x16));
 		Set("Icons.Validate", new IMAGE_BRUSH_SVG("Starship/Common/validate", Icon16x16));
 		Set("Icons.Pinned", new IMAGE_BRUSH_SVG("Starship/Common/Pinned", Icon16x16));
@@ -2796,6 +2798,19 @@ void FStarshipSodaStyle::FStyle::SetupPakWindowStyle()
 		.SetPressed(FSlateRoundedBoxBrush(FStyleColors::Header, 4.0f, FStyleColors::Header, 2.0f))
 		.SetNormalPadding(FMargin(2, 2, 2, 2))
 		.SetPressedPadding(FMargin(2, 3, 2, 1)));
+}
+
+void FStarshipSodaStyle::FStyle::SetupQuickStartWindowStyle()
+{
+	
+	Set("QuickStart.Icons.Docs", new IMAGE_BRUSH_SVG("QuickStart/docs", Icon64x64));
+	Set("QuickStart.Icons.Enter", new IMAGE_BRUSH_SVG("QuickStart/enter", Icon64x64));
+	Set("QuickStart.Icons.F2", new IMAGE_BRUSH_SVG("QuickStart/f2", Icon64x64));
+	Set("QuickStart.Icons.F3", new IMAGE_BRUSH_SVG("QuickStart/f3", Icon64x64));
+	Set("QuickStart.Icons.Git", new IMAGE_BRUSH_SVG("QuickStart/git", Icon64x64));
+	Set("QuickStart.Icons.Mouse", new IMAGE_BRUSH_SVG("QuickStart/mouse", Icon64x64));
+	Set("QuickStart.Icons.WASD", new IMAGE_BRUSH_SVG("QuickStart/wasd", Icon64x64));
+	Set("QuickStart.Icons.YouTube", new IMAGE_BRUSH_SVG("QuickStart/youtube", Icon64x64));
 }
 
 #undef DEFAULT_FONT

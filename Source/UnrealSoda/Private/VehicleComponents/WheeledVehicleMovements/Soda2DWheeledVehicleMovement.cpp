@@ -176,7 +176,9 @@ void USoda2DWheeledVehicleMovementComponent::TickComponent(float DeltaTime, enum
 		const FVector RefPoint = VehicleSimData.VehicleKinematic.Curr.GlobalPose.TransformPosition(RearWheelOffset + FVector(CoGToRearWheel, 0.0, 0.0));
 
 		FHitResult Hit;
-		GetWorld()->LineTraceSingleByChannel(Hit, RefPoint + FVector(0, 0, 50), RefPoint + FVector(0, 0, -100),
+		GetWorld()->LineTraceSingleByChannel(
+			Hit, 
+			RefPoint + FVector(0, 0, 50), RefPoint + FVector(0, 0, -100),
 			ECollisionChannel::ECC_WorldDynamic,
 			FCollisionQueryParams(NAME_None, false, GetOwner()));
 

@@ -104,7 +104,7 @@ void SPakItemList::RebuildAndFilterPluginList()
 			{
 				bool operator()(const TSharedRef<FSodaPak>& A, const TSharedRef<FSodaPak>& B) const
 				{
-					return A->GetDescriptor().FriendlyName < B->GetDescriptor().FriendlyName;
+					return A->GetDescriptor().PakName < B->GetDescriptor().PakName;
 				}
 			};
 			PakListItems.Sort( FPluginListItemSorter() );

@@ -258,17 +258,19 @@ bool ALevelState::ReSaveLevel()
 	}
 }
 
-ULevelSaveGame* ALevelState::LoadSaveGameLocally(const UObject* WorldContextObject, int & SlotIndex)
+ULevelSaveGame* ALevelState::LoadSaveGameLocally(const UObject* WorldContextObject, int & SlotIndex, const FString& InLevelName)
 {
 	if (!WorldContextObject)
 	{
 		WorldContextObject = USodaStatics::GetGameWorld();
 	}
 
+	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
+
 	if (SlotIndex < 0)
 	{
 		TArray<FLevelStateSlotDescription> Slots;
-		GetLevelSlotsLocally(WorldContextObject, Slots, true);
+		GetLevelSlotsLocally(WorldContextObject, Slots, true, LevelName);
 		if (Slots.Num())
 		{
 			SlotIndex = Slots[0].SlotIndex;
@@ -276,7 +278,7 @@ ULevelSaveGame* ALevelState::LoadSaveGameLocally(const UObject* WorldContextObje
 	}
 	if (SlotIndex >= 0)
 	{
-		return Cast<ULevelSaveGame>(UGameplayStatics::LoadGameFromSlot(GetLocalSaveSlotName(WorldContextObject, SlotIndex), 0));
+		return Cast<ULevelSaveGame>(UGameplayStatics::LoadGameFromSlot(GetLocalSaveSlotName(WorldContextObject, SlotIndex, LevelName), 0));
 	}
 	else
 	{
@@ -294,17 +296,19 @@ ULevelSaveGame* ALevelState::LoadSaveGameTransient(const UObject* WorldContextOb
 	return Cast<ULevelSaveGame>(UGameplayStatics::LoadGameFromSlot(TRANSIENT_SLOT, 0));
 }
 
-ULevelSaveGame* ALevelState::LoadSaveGameRemotly(const UObject* WorldContextObject, int64 & ScenarioID)
+ULevelSaveGame* ALevelState::LoadSaveGameRemotly(const UObject* WorldContextObject, int64 & ScenarioID, const FString& InLevelName)
 {
 	if (!WorldContextObject)
 	{
 		WorldContextObject = USodaStatics::GetGameWorld();
 	}
 
+	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
+
 	if (ScenarioID < 0)
 	{
 		TArray<FLevelStateSlotDescription> Slots;
-		GetLevelSlotsRemotly(WorldContextObject, Slots, true);
+		GetLevelSlotsRemotly(WorldContextObject, Slots, true, LevelName);
 		if (Slots.Num())
 		{
 			ScenarioID = Slots[0].SlotIndex;
@@ -324,28 +328,30 @@ ULevelSaveGame* ALevelState::LoadSaveGameRemotly(const UObject* WorldContextObje
 	return Cast<ULevelSaveGame>(UGameplayStatics::LoadGameFromMemory(ObjectBytes));
 }
 
-FString ALevelState::GetLocalSaveSlotName(const UObject* WorldContextObject, int SlotIndex)
+FString ALevelState::GetLocalSaveSlotName(const UObject* WorldContextObject, int SlotIndex, const FString& InLevelName)
 {
 	if (!WorldContextObject)
 	{
 		WorldContextObject = USodaStatics::GetGameWorld();
 	}
 
-	FString LevelName = UGameplayStatics::GetCurrentLevelName(WorldContextObject, true);
+	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
 	//LevelName.ReplaceCharInline('/', '_');
 	//LevelName.ReplaceCharInline('\\', '_');
 	return FString(TEXT("LevelState")) + TEXT("_") + LevelName + TEXT("_") + FString::FromInt(SlotIndex);
 }
 
 
-bool ALevelState::DeleteLevelLocally(const UObject* WorldContextObject, int SlotIndex)
+bool ALevelState::DeleteLevelLocally(const UObject* WorldContextObject, int SlotIndex, const FString& InLevelName)
 {
 	if (!WorldContextObject)
 	{
 		WorldContextObject = USodaStatics::GetGameWorld();
 	}
 
-	return UGameplayStatics::DeleteGameInSlot(GetLocalSaveSlotName(WorldContextObject, SlotIndex), 0);
+	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
+
+	return UGameplayStatics::DeleteGameInSlot(GetLocalSaveSlotName(WorldContextObject, SlotIndex, LevelName), 0);
 }
 
 bool ALevelState::DeleteLevelRemotly(const UObject* /*WorldContextObject*/, int64 ScenarioID)
@@ -353,7 +359,7 @@ bool ALevelState::DeleteLevelRemotly(const UObject* /*WorldContextObject*/, int6
 	return soda::FDBGateway::Instance().DeleteLevelData(ScenarioID);
 }
 
-bool ALevelState::GetLevelSlotsLocally(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription>& Slots, bool bSortByDateTime)
+bool ALevelState::GetLevelSlotsLocally(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription>& Slots, bool bSortByDateTime, const FString& InLevelName)
 {
 	if (!WorldContextObject)
 	{
@@ -362,18 +368,20 @@ bool ALevelState::GetLevelSlotsLocally(const UObject* WorldContextObject, TArray
 
 	Slots.Empty();
 
+	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
+
 	for (int i = 0; i < 255; ++i)
 	{
-		if (UGameplayStatics::DoesSaveGameExist(GetLocalSaveSlotName(WorldContextObject, i), 0))
+		if (UGameplayStatics::DoesSaveGameExist(GetLocalSaveSlotName(WorldContextObject, i, LevelName), 0))
 		{
-			if (ULevelSaveGame* SaveGameSlot = LoadSaveGameLocally(WorldContextObject, i))
+			if (ULevelSaveGame* SaveGameSlot = LoadSaveGameLocally(WorldContextObject, i, LevelName))
 			{
 				FLevelStateSlotDescription Slot;
 				Slot.SlotIndex = i;
 				Slot.ScenarioID = -1;
 				Slot.Description = SaveGameSlot->Description;
 				Slot.DateTime = SaveGameSlot->DateTime;
-				Slot.LevelName = UGameplayStatics::GetCurrentLevelName(WorldContextObject, true);
+				Slot.LevelName = LevelName;
 				Slot.SlotSource = ELeveSlotSource::Local;
 				Slots.Add(Slot);
 			}
@@ -388,24 +396,24 @@ bool ALevelState::GetLevelSlotsLocally(const UObject* WorldContextObject, TArray
 	return true;
 }
 
-bool ALevelState::GetLevelSlotsRemotly(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription>& Slots, bool bSortByDateTime)
+bool ALevelState::GetLevelSlotsRemotly(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription>& Slots, bool bSortByDateTime, const FString& InLevelName)
 {
 	if (!WorldContextObject)
 	{
 		WorldContextObject = USodaStatics::GetGameWorld();
 	}
-	FString LevelName = UGameplayStatics::GetCurrentLevelName(WorldContextObject, true);
+	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
 	return soda::FDBGateway::Instance().LoadLevelList(LevelName, bSortByDateTime, Slots);
 }
 
-bool ALevelState::ReloadLevelEmpty(const UObject* WorldContextObject)
+bool ALevelState::ReloadLevelEmpty(const UObject* WorldContextObject, const FString& InLevelName)
 {
 	if (!WorldContextObject)
 	{
 		WorldContextObject = USodaStatics::GetGameWorld();
 	}
 
-	FString LevelName = UGameplayStatics::GetCurrentLevelName(WorldContextObject, true);
+	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
 	StaticSlot.LevelName = LevelName;
 	StaticSlot.SlotIndex = -1;
 	StaticSlot.ScenarioID = -1;
@@ -415,14 +423,14 @@ bool ALevelState::ReloadLevelEmpty(const UObject* WorldContextObject)
 }
 
 
-bool ALevelState::ReloadLevelFromSlotLocally(const UObject* WorldContextObject, int SlotIndex)
+bool ALevelState::ReloadLevelFromSlotLocally(const UObject* WorldContextObject, int SlotIndex, const FString& InLevelName)
 {
 	if (!WorldContextObject)
 	{
 		WorldContextObject = USodaStatics::GetGameWorld();
 	}
 
-	FString LevelName = UGameplayStatics::GetCurrentLevelName(WorldContextObject, true);
+	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
 	StaticSlot.LevelName = LevelName;
 	StaticSlot.SlotIndex = SlotIndex;
 	StaticSlot.ScenarioID = -1;
@@ -431,14 +439,14 @@ bool ALevelState::ReloadLevelFromSlotLocally(const UObject* WorldContextObject, 
 	return true;
 }
 
-bool ALevelState::ReloadLevelFromSlotRemotly(const UObject* WorldContextObject, int64 ScenarioID)
+bool ALevelState::ReloadLevelFromSlotRemotly(const UObject* WorldContextObject, int64 ScenarioID, const FString& InLevelName)
 {
 	if (!WorldContextObject)
 	{
 		WorldContextObject = USodaStatics::GetGameWorld();
 	}
 
-	FString LevelName = UGameplayStatics::GetCurrentLevelName(WorldContextObject, true);
+	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
 	StaticSlot.LevelName = LevelName;
 	StaticSlot.SlotIndex = -1;
 	StaticSlot.ScenarioID = ScenarioID;

@@ -44,6 +44,7 @@ private:
 	void OnOpenLevelWindow();
 	void OnOpenPakWindow();
 	void OnOpenAboutWindow();
+	void OnOpenQuickStartWindow();
 	void OnOpenVehicleManagerWindow();
 	void OnOpenSaveLoadWindow();
 

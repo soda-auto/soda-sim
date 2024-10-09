@@ -8,13 +8,13 @@ SODAPAK_API DECLARE_LOG_CATEGORY_EXTERN(LogSodaPak, Log, All);
 struct SODAPAK_API FSodaPakDescriptor
 {
 	/** File name of the pak in the Saved/SodaPaks folder without extension */
-	FString PakName{};
+	FString PakFileName{};
 
 	/** Content pak priority */
 	//int32 PakOrder = 0;
 
-	/** Friendly name of the pak */
-	FString FriendlyName{};
+	/** Name of the pak */
+	FString PakName{};
 
 	/** Description of the pak */
 	FString Description{};
@@ -33,10 +33,16 @@ struct SODAPAK_API FSodaPakDescriptor
 
 	FString CreatedByURL{};
 
-	// Custom Config uses for this pak. It is located in the "Config/Custom/{CUSTOMCONFIG}". See Misc/ConfigHierarchy.h
+	/* Custom Config uses for this pak.It is located in the "Config/Custom/{CUSTOMCONFIG}".See Misc / ConfigHierarchy.h */
 	FString CustomConfig{};
 
 	//TArray<FString> MountPoints{};
+
+	/* List of packs with which this pack is incompatible */
+	TArray<FString> PakBlackListNames;
+
+	// Wildcard to filter maps for current pak. Example: "/Game/MyProj/Maps/*" or "*/MyMaps/*" 
+	TArray<FString> MapsWildcardFilters;
 
 	//bool bIsEnabled = false;
 };
@@ -58,13 +64,15 @@ public:
 	ESodaPakInstallStatus GetInstallStatus() const { return InstallStatus; }
 	bool IsMounted() const { return bIsMounted; }
 	const FString& GetBaseDir() const { return BaseDir; }
-	FString GetIconFileName() const { return GetBaseDir() / GetDescriptor().PakName + TEXT(".png"); }
+	FString GetIconFileName() const { return GetBaseDir() / GetDescriptor().PakFileName + TEXT(".png"); }
 
 	bool Install();
 	bool Uninstall();
 
 	void UpdateInstallStatus();
 	void UpdateMountStatus();
+
+	bool CheckIsCompatibleWith(const FString& PakName) const;
 
 private:
 	FSodaPakDescriptor Descriptor{};
@@ -83,7 +91,7 @@ class SODAPAK_API FSodaPakModule : public IModuleInterface
 public:
 	static inline FSodaPakModule& Get()
 	{
-		return FModuleManager::LoadModuleChecked< FSodaPakModule >( "SodaPak" );
+		return FModuleManager::LoadModuleChecked< FSodaPakModule >("SodaPak");
 	}
 
 	virtual void StartupModule() override;

@@ -1,4 +1,4 @@
-#include "SodaPak.h"
+ #include "SodaPak.h"
 #include "Serialization/ArrayReader.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonWriter.h"
@@ -12,6 +12,8 @@
 #include "Dom/JsonObject.h"
 #include "Misc/ConfigContext.h"
 #include "Misc/ConfigHierarchy.h"
+#include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Notifications/SNotificationList.h"
 
 namespace
 {
@@ -49,6 +51,32 @@ public:
 	}
 };
 
+static bool GetJsonArrayStrings(TSharedPtr<FJsonObject>& JSON, const FString& Name, TArray<FString>& Out)
+{
+	Out.Empty();
+	const TArray<TSharedPtr<FJsonValue>>* ArrayValues;
+	if (JSON->TryGetArrayField(Name, ArrayValues))
+	{
+		for (auto& It : *ArrayValues)
+		{
+			FString Val;
+			if (It->TryGetString(Val))
+			{
+				Out.Add(Val);
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
+static void SetJsonArrayStrings(TSharedRef<FJsonObject>& JSON, const FString& Name, const TArray<FString>& In)
+{
+	TArray<TSharedPtr<FJsonValue>> ArrayValues;
+	for (auto& It : In) ArrayValues.Add(MakeShared<FJsonValueString>(It));
+	JSON->SetArrayField(Name, ArrayValues);
+}
+
 
 static bool LoadFromJson(const FString& FileName, FSodaPakDescriptor& Out)
 {
@@ -67,7 +95,7 @@ static bool LoadFromJson(const FString& FileName, FSodaPakDescriptor& Out)
 		return false;
 	}
 
-	Out.PakName = FPaths::GetBaseFilename(FileName);
+	Out.PakFileName = FPaths::GetBaseFilename(FileName);
 	/*
 	if (!JSON->TryGetNumberField(TEXT("PakOrder"), Out.PakOrder))
 	{
@@ -75,9 +103,9 @@ static bool LoadFromJson(const FString& FileName, FSodaPakDescriptor& Out)
 		return false;
 	}
 	*/
-	if (!JSON->TryGetStringField(TEXT("FriendlyName"), Out.FriendlyName))
+	if (!JSON->TryGetStringField(TEXT("PakName"), Out.PakName))
 	{
-		Out.FriendlyName = Out.PakName;
+		Out.PakName = Out.PakName;
 	}
 	JSON->TryGetStringField(TEXT("Description"), Out.Description);
 	JSON->TryGetStringField(TEXT("Category"), Out.Category);
@@ -86,27 +114,10 @@ static bool LoadFromJson(const FString& FileName, FSodaPakDescriptor& Out)
 	JSON->TryGetStringField(TEXT("CreatedByURL"), Out.CreatedByURL);
 	JSON->TryGetStringField(TEXT("CreatedBy"), Out.CreatedBy);
 	JSON->TryGetStringField(TEXT("CustomConfig"), Out.CustomConfig);
-	
 	//JSON->TryGetBoolField(TEXT("IsEnabled"), Out.bIsEnabled);
-
-	/*
-	const TArray<TSharedPtr<FJsonValue>>* MountPointsArray;
-	if (JSON->TryGetArrayField(TEXT("MountPoints"), MountPointsArray))
-	{
-		for (auto& It : *MountPointsArray)
-		{
-			FString Val;
-			if (It->TryGetString(Val))
-			{
-				Out.MountPoints.Add(Val);
-			}
-		}
-	}
-	*/
-
-	//"PluginsDependencies"
-	//"PaksDependencies"
-
+	//GetJsonArrayStrings(JSON, TEXT("MountPoints"), Out.MountPoints);
+	GetJsonArrayStrings(JSON, TEXT("PakBlackListNames"), Out.PakBlackListNames);
+	GetJsonArrayStrings(JSON, TEXT("MapsWildcardFilters"), Out.MapsWildcardFilters);
 	return true;
 }
 
@@ -115,7 +126,7 @@ static bool SaveToJson(const FString& FileName, const FSodaPakDescriptor& In)
 	TSharedRef<FJsonObject> JSON = MakeShared<FJsonObject>();
 
 	//JSON->SetNumberField(TEXT("PakOrder"), In.PakOrder);
-	JSON->SetStringField(TEXT("FriendlyName"), In.FriendlyName);
+	JSON->SetStringField(TEXT("PakName"), In.PakName);
 	JSON->SetStringField(TEXT("Description"), In.Description);
 	JSON->SetStringField(TEXT("Category"), In.Category);
 	JSON->SetNumberField(TEXT("PakVersion"), In.PakVersion);
@@ -124,11 +135,9 @@ static bool SaveToJson(const FString& FileName, const FSodaPakDescriptor& In)
 	JSON->SetStringField(TEXT("CreatedBy"), In.CreatedBy);
 	JSON->SetStringField(TEXT("CustomConfig"), In.CustomConfig);
 	//JSON->SetBoolField(TEXT("IsEnabled"), In.bIsEnabled);
-	/*
-	TArray<TSharedPtr<FJsonValue>> MountPointsArray;
-	for (auto& It : In.MountPoints) MountPointsArray.Add(MakeShared<FJsonValueString>(It));
-	JSON->SetArrayField(TEXT("MountPoints"), MoveTemp(MountPointsArray));
-	*/
+	//SetJsonArrayStrings(JSON, TEXT("MountPoints"), In.MountPoints);
+	SetJsonArrayStrings(JSON, TEXT("PakBlackListNames"), In.PakBlackListNames);
+	SetJsonArrayStrings(JSON, TEXT("MapsWildcardFilters"), In.MapsWildcardFilters);
 
 	FString JsonString;
 	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&JsonString);
@@ -150,8 +159,8 @@ FSodaPak::FSodaPak(const FSodaPakDescriptor& Descriptor, const FString& BaseDir)
 	: Descriptor(Descriptor)
 	, BaseDir(BaseDir)
 {
-	InstalledPakFile = BaseDir / Descriptor.PakName + PAK_EXT;
-	UninstalledPakFile = BaseDir / Descriptor.PakName + PAK_UNINSTALEED_EXT;
+	InstalledPakFile = BaseDir / Descriptor.PakFileName + PAK_EXT;
+	UninstalledPakFile = BaseDir / Descriptor.PakFileName + PAK_UNINSTALEED_EXT;
 
 	UpdateInstallStatus();
 	UpdateMountStatus();
@@ -159,11 +168,31 @@ FSodaPak::FSodaPak(const FSodaPakDescriptor& Descriptor, const FString& BaseDir)
 
 bool FSodaPak::Install()
 {
+	for (auto& Pak : FSodaPakModule::Get().GetSodaPaks())
+	{
+		if (this != Pak.Get() && Pak->GetInstallStatus() != ESodaPakInstallStatus::Uninstalled)
+		{
+			for (auto& It : Pak->GetDescriptor().PakBlackListNames)
+			{
+				if (It == GetDescriptor().PakName)
+				{
+					FNotificationInfo Info(FText::FromString(FString::Printf(TEXT("Pak \"%s\" confilct with pak \"%s\""), *GetDescriptor().PakName, *Pak->GetDescriptor().PakName)));
+					Info.ExpireDuration = 2.0f;
+					Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
+					FSlateNotificationManager::Get().AddNotification(Info);
+
+					return false;
+				}
+			}
+		}
+	}
+
 	if (InstallStatus != ESodaPakInstallStatus::Installed)
 	{
 		bool bRes = IFileManager::Get().Move(*InstalledPakFile, *UninstalledPakFile);
 		InstallStatus = bRes ? ESodaPakInstallStatus::Installed : ESodaPakInstallStatus::Broken;
 	}
+
 	return InstallStatus == ESodaPakInstallStatus::Installed;
 }
 
@@ -201,6 +230,7 @@ void FSodaPak::UpdateInstallStatus()
 		InstallStatus = ESodaPakInstallStatus::Uninstalled;
 	}
 }
+
 
 void FSodaPak::UpdateMountStatus()
 {
@@ -284,7 +314,7 @@ void FSodaPakModule::StartupModule()
 		else
 		{
 			FSodaPakDescriptor Desc;
-			Desc.FriendlyName = Desc.PakName = PakName;
+			Desc.PakName = Desc.PakName = PakName;
 			SaveToJson(SPakPath, Desc);
 			TSharedPtr<FSodaPak> Pak = MakeShared<FSodaPak>(Desc, GetSodaPakDir());
 			SodaPaks.Add(Pak);

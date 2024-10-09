@@ -24,7 +24,9 @@ public class SodaPak : ModuleRules
             {
                 "AssetRegistry",
                 "PakFile",
-				"Json"
+				"Json",
+				"Slate",
+                "SlateCore"
             }
         );
 

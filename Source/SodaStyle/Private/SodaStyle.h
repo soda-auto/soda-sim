@@ -52,6 +52,7 @@ public:
 		void SetupTutorialStyles();
 		void SetupScenarioEditorStyle();
 		void SetupPakWindowStyle();
+		void SetupQuickStartWindowStyle();
 
 		void SettingsChanged(UObject* ChangedObject, FPropertyChangedEvent& PropertyChangedEvent);
 		void SyncSettings();

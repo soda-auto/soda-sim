@@ -56,7 +56,7 @@ public:
 	/** One tick simulation in the synchronous mode */
 	bool SynchTick(int64& TimestampMs, int& FramIndex);
 
-	TSharedPtr<IHttpRouter> & GetHttpRouter() { return HttpRouter; }
+	TSharedPtr<IHttpRouter>& GetHttpRouter() { return HttpRouter; }
 
 	USodaSubsystem* GetSodaSubsystem() const;
 	USodaSubsystem* GetSodaSubsystemChecked() const;
@@ -89,7 +89,7 @@ protected:
 
 	FDelegateHandle OnHttpServerStartedHandle;
 	FDelegateHandle OnHttpServerStoppedHandle;
-	
+
 	void OnPreTick(UWorld* World, ELevelTick TickType, float DeltaSeconds);
 	void OnPostTick(UWorld* World, ELevelTick TickType, float DeltaSeconds);
 

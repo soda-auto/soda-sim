@@ -119,36 +119,29 @@ bool FEditorUtils::DeprojectScreenToWorld(const ULocalPlayer* LocalPlayer, const
 
 FEditorUtils::FActorPositionTraceResult FEditorUtils::TraceWorldForPosition(const UWorld* InWorld, const FVector& RayStart, const FVector& RayEnd, const TArray<AActor*>* IgnoreActors)
 {
-	TArray<FHitResult> Hits;
-
-	FCollisionQueryParams Param(SCENE_QUERY_STAT(DragDropTrace), true);
+	FCollisionQueryParams CollisionQueryParams(SCENE_QUERY_STAT(DragDropTrace), true);
 
 	if (IgnoreActors)
 	{
-		Param.AddIgnoredActors(*IgnoreActors);
+		CollisionQueryParams.AddIgnoredActors(*IgnoreActors);
 	}
 
 	FActorPositionTraceResult Results;
-	if (InWorld->LineTraceMultiByObjectType(Hits, RayStart, RayEnd, FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllObjects), Param))
+	FHitResult Hit;
+	if (InWorld->LineTraceSingleByChannel(
+		Hit, 
+		RayStart, RayEnd, 
+		ECollisionChannel::ECC_GameTraceChannel2, // ECC_GameTraceChannel2 -  camera (any collision) // ECollisionChannel::ECC_WorldDynamic;
+		CollisionQueryParams, 
+		FCollisionResponseParams())) 
 	{
-		// Go through all hits and find closest
-		float ClosestHitDistanceSqr = TNumericLimits<float>::Max();
-
-		for (const FHitResult& Hit : Hits)
-		{
-			const float DistanceToHitSqr = (Hit.ImpactPoint - RayStart).SizeSquared();
-			if (DistanceToHitSqr < ClosestHitDistanceSqr)
-			{
-				ClosestHitDistanceSqr = DistanceToHitSqr;
-				Results.Location = Hit.Location;
-				Results.SurfaceNormal = Hit.Normal.GetSafeNormal();
-				Results.State = FActorPositionTraceResult::HitSuccess;
-				Results.HitActor = Hit.HitObjectHandle.GetManagingActor();
-			}
-		}
+		const float DistanceToHitSqr = (Hit.ImpactPoint - RayStart).SizeSquared();
+		Results.Location = Hit.Location;
+		Results.SurfaceNormal = Hit.Normal.GetSafeNormal();
+		Results.State = FActorPositionTraceResult::HitSuccess;
+		Results.HitActor = Hit.HitObjectHandle.GetManagingActor();
 	}
-
-	if (Results.State == FActorPositionTraceResult::Failed)
+	else
 	{
 		Results.State = FActorPositionTraceResult::Default;
 		const float DistanceMultiplier = 20000; // And put it in front of the camera
@@ -289,6 +282,57 @@ AActor* FEditorUtils::FindOuterActor(const UObject* InObject)
 		{
 			return Component->GetOwner();
 		}
+	}
+	return nullptr;
+}
+
+
+AActor* FEditorUtils::FindActorByName(const FString& ActorNameStr, const UWorld* InWorld)
+{
+	for (ULevel const* Level : InWorld->GetLevels())
+	{
+		if (Level)
+		{
+			for (AActor* Actor : Level->Actors)
+			{
+				if (Actor)
+				{
+					if (Actor->GetName() == ActorNameStr)
+					{
+						return Actor;
+					}
+				}
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+FString FEditorUtils::GetOwningActorOf(const FSoftObjectPath& SoftObjectPath)
+{
+	// Example of an actor called floor
+	// SoftObjectPath = { AssetPath = {PackageName = "/Game/Maps/SyncBoxLevel", AssetName = "SyncBoxLevel"}, SubPathString = "PersistentLevel.Floor" } }
+	const FString& SubPathString = SoftObjectPath.GetSubPathString();
+
+	constexpr int32 PersistentLevelStringLength = 16; // "PersistentLevel." has 16 characters
+	const bool bIsWorldObject = SubPathString.Contains(TEXT("PersistentLevel."), ESearchCase::CaseSensitive);
+	if (!bIsWorldObject)
+	{
+		// Not a path to a world object
+		return {};
+	}
+
+	const FString NewSubstring = SubPathString.RightChop(PersistentLevelStringLength);
+	return NewSubstring;
+}
+
+AActor* FEditorUtils::FindActorByName(const FSoftObjectPath& SoftObjectPath, const UWorld* InWorld)
+{
+	FString ActorName = GetOwningActorOf(SoftObjectPath);
+	if (!ActorName.IsEmpty())
+	{
+		return FindActorByName(ActorName, InWorld);
 	}
 	return nullptr;
 }

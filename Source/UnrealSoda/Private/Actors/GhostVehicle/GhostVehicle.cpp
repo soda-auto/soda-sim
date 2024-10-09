@@ -7,6 +7,7 @@
 #include "Components/BoxComponent.h"
 #include "Soda/SodaSubsystem.h"
 #include "Soda/SodaStatics.h"
+#include "Soda/Misc/EditorUtils.h"
 #include "Actors/GhostVehicle/SpeedProfile/UnifiedSpeedProfile.h"
 #include "Actors/GhostVehicle/SpeedProfile/Curvature.h"
 #include "Soda/DBGateway.h"
@@ -194,7 +195,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 			{
 				auto& Wheel = Wheels[i];
 				GetWorld()->LineTraceSingleByChannel(Wheel.Hit, VehicleTransform.TransformPosition(Wheel.Location + FVector(0, 0, Wheel.Radius)), VehicleTransform.TransformPosition(Wheel.Location + FVector(0, 0, -Wheel.Radius - RayCastDepth)),
-					ECollisionChannel::ECC_WorldDynamic,
+					ECollisionChannel::ECC_GameTraceChannel2, //ECollisionChannel::ECC_WorldDynamic,
 					FCollisionQueryParams(NAME_None, false, this));
 
 				if (Wheel.Hit.bBlockingHit)
@@ -286,6 +287,17 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 
 }
 
+void AGhostVehicle::Serialize(FArchive& Ar)
+{
+	Super::Serialize(Ar);
+	if (Ar.IsSaveGame() && Ar.IsLoading())
+	{
+		if (ANavigationRouteEditable* FoundActor = Cast<ANavigationRouteEditable>(FEditorUtils::FindActorByName(InitialRoute.ToSoftObjectPath(), GetWorld())))
+		{
+			InitialRoute = FoundActor;
+		}
+	}
+}
 
 void AGhostVehicle::GoToLeftRoute(float StaticOffset, float VelocityToOffset)
 {

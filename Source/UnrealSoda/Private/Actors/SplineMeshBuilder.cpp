@@ -87,12 +87,12 @@ void ASplineMeshBuilder::PlaceMeshesAlongSpline()
 			SplineMeshComponent->SetStaticMesh(MeshOnSpline);
 		}
 
-		
-
-		SplineMeshComponent->SetMobility(EComponentMobility::Movable);
+		SplineMeshComponent->SetMobility(EComponentMobility::Static);
+		SplineMeshComponent->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
 		SplineMeshComponent->CreationMethod = EComponentCreationMethod::UserConstructionScript;
 		SplineMeshComponent->RegisterComponentWithWorld(GetWorld());
 		SplineMeshComponent->AttachToComponent(SplineRoadBackComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
 
 		FVector StartPoint = SplineRoadBackComponent->GetLocationAtDistanceAlongSpline(CurDst, ESplineCoordinateSpace::Local);
 		FVector StartTangent = SplineRoadBackComponent->GetTangentAtDistanceAlongSpline(CurDst, ESplineCoordinateSpace::Local);
@@ -102,11 +102,6 @@ void ASplineMeshBuilder::PlaceMeshesAlongSpline()
 
 		StartTangent = StartTangent.GetSafeNormal(0.0001) * FMath::Min(StartTangent.Size(), TileLength);
 		EndTangent = EndTangent.GetSafeNormal(0.0001) * FMath::Min(EndTangent.Size(), TileLength);
-
-		SplineMeshComponent->bRenderCustomDepth = true;
-		SplineMeshComponent->CustomDepthStencilValue = 5;
-		SplineMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);		
-		SplineMeshComponent->SetMobility(EComponentMobility::Static);
 
 		if (OverrideMaterial)
 		{	

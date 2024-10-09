@@ -75,7 +75,8 @@ public class UnrealSoda : ModuleRules
                 "PROJ",
                 "GeometryAlgorithms",
                 "MassEntity",
-				"SodaPak"
+				"SodaPak",
+                "StructUtils"
             } 
 		);
 
@@ -109,6 +110,12 @@ public class UnrealSoda : ModuleRules
             PrecompileForTargets = PrecompileTargetsType.None;
         }
 		*/
+
+        // Temporary hack to fix build for Linux (Ubuntu)
+        if (Target.Platform == UnrealTargetPlatform.Linux)
+		{
+            PublicIncludePaths.Add("/usr/include/eigen3");
+        }	
 
         if (Target.Configuration == UnrealTargetConfiguration.Shipping)
         {
