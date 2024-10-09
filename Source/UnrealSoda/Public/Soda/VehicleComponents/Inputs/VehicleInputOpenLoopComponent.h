@@ -196,7 +196,7 @@ public:
 
 	/** Total braking torque request to apply when scenario is done, affected by BrkTqBalance, N*m */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "OpenLoopGeneralParameters", meta = (EditCondition = "bBrakeWhenScenarioIsDone"))
-	float BrkTqReqWhenScenarioIsDone = 2000; 
+	float BrkTqReqWhenScenarioIsDone = 2000;
 	
 
 	/** Select maneuver type to unlock the settings for it */
