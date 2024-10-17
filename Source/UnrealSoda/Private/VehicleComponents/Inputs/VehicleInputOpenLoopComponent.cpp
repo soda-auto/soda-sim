@@ -16,7 +16,7 @@
 
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
-#include "HAL/PlatformFileManager.h"
+#include "HAL/PlatformFilemanager.h"
 #include "Containers/UnrealString.h"
 #include "Misc/OutputDeviceDebug.h"
 #include "DesktopPlatformModule.h"
@@ -362,6 +362,13 @@ void UVehicleInputOpenLoopComponent::GetNewInput(float DeltaTime)
 
 	}
 
+	if (ScenarioSt.ScenarioStatus == EScenarioStatus::Completed && bBrakeWhenScenarioIsDone)
+	{
+		WheelFL->ReqBrakeTorque = BrkTqReqWhenScenarioIsDone * 0.5 * BrkTqBalance;
+		WheelFR->ReqBrakeTorque = BrkTqReqWhenScenarioIsDone * 0.5 * BrkTqBalance;
+		WheelRL->ReqBrakeTorque = BrkTqReqWhenScenarioIsDone * 0.5 * (1 - BrkTqBalance);
+		WheelRR->ReqBrakeTorque = BrkTqReqWhenScenarioIsDone * 0.5 * (1 - BrkTqBalance);
+	}
 
 }
 

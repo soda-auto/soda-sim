@@ -190,6 +190,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "TorqueBalance", meta = (ClampMin = "0"), meta = (ClampMax = "1"))
 	float BrkTqBalance = 0.5;
 
+	/** True to stop the vehicle to zero velocity when scenario is done  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "OpenLoopGeneralParameters")
+	bool bBrakeWhenScenarioIsDone = true;
+
+	/** Total braking torque request to apply when scenario is done, affected by BrkTqBalance, N*m */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "OpenLoopGeneralParameters", meta = (EditCondition = "bBrakeWhenScenarioIsDone"))
+	float BrkTqReqWhenScenarioIsDone = 2000;
 	
 
 	/** Select maneuver type to unlock the settings for it */
@@ -248,6 +255,7 @@ protected:
 
 	void GetNewInput(float DeltaTime);
 	void ScenarioIsDone();
+
 
 	IWheeledVehicleMovementInterface* WheeledComponentInterface = nullptr;
 
