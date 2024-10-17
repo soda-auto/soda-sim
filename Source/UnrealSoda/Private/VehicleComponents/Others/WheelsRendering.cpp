@@ -26,7 +26,7 @@ void UWheelsRenderingComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	for (int32 i = 0; i < 4; ++i)
 	{
 		FWheelAnimationData& WheelInstance = WheelsAnimationData[i];
-		const USodaVehicleWheelComponent* SodaWheel = GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex(i));
+		const USodaVehicleWheelComponent* SodaWheel = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex(i));
 		UStaticMeshComponent* WheelMesheComponent = WheelMesheComponents[i];
 		bool bFlip = bool(((i % 2 != 0) + bFlipWheelsMesh) % 2);
 
@@ -70,7 +70,7 @@ void UWheelsRenderingComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 		WheelInstance.RotOffset.Yaw = SodaWheel->Steer / M_PI * 180 + (bFlip ? 180 : 0);
 		WheelInstance.RotOffset.Roll = 0.f;
-		WheelInstance.LocOffset = FVector(0, 0, SodaWheel->SuspensionOffset);
+		WheelInstance.LocOffset = SodaWheel->SuspensionOffset2;
 
 		/*
 		if (i % 2)

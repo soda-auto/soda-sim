@@ -15,28 +15,28 @@
 class USodaChaosWheeledVehicleMovementComponent;
 
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct UNREALSODA_API FSodaChaosWheelSetup
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditInRuntime, AllowedClasses = "/Script/UnrealSoda.SodaVehicleWheelComponent"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheelSetup, SaveGame, meta = (EditInRuntime, AllowedClasses = "/Script/UnrealSoda.SodaVehicleWheelComponent"))
 	FSubobjectReference ConnectedSodaWheel;
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditCondition = "bOverrideRadius", EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheelSetup, SaveGame, meta = (EditCondition = "bOverrideRadius", EditInRuntime))
 	float OverrideRadius = 25;
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
 	bool bOverrideRadius = false;
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditCondition = "bOverrideFrictionMultiplier", EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheelSetup, SaveGame, meta = (EditCondition = "bOverrideFrictionMultiplier", EditInRuntime))
 	float OverrideFrictionMultiplier = 1.0;
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
 	bool bOverrideFrictionMultiplier = false;
 
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	USodaVehicleWheelComponent* SodaWheel = nullptr;
 
 	FSodaChaosWheelSetup() {}
@@ -90,7 +90,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
 	bool bLogPhysStemp = false;
 
-	UPROPERTY(EditAnywhere, Category = WheelSetup, EditFixedSize, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WheelSetup, EditFixedSize, SaveGame, meta = (EditInRuntime))
 	TArray<FSodaChaosWheelSetup> SodaWheelSetups;
 
 public:

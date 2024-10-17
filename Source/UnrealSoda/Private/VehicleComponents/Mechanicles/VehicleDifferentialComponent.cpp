@@ -61,13 +61,13 @@ void UVehicleDifferentialSimpleComponent::PassTorque(float InTorque)
 		switch (DifferentialType)
 		{
 		case EVehicleDifferentialType::Open_FrontDrive:
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->ReqTorq += OutTorq;
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->ReqTorq += OutTorq;
+			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->ReqTorq += OutTorq;
+			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->ReqTorq += OutTorq;
 			break;
 
 		case EVehicleDifferentialType::Open_RearDrive:
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->ReqTorq += OutTorq;
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->ReqTorq += OutTorq;
+			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->ReqTorq += OutTorq;
+			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->ReqTorq += OutTorq;
 			break;
 		}
 	}
@@ -85,10 +85,10 @@ float UVehicleDifferentialSimpleComponent::ResolveAngularVelocity() const
 		switch (DifferentialType)
 		{
 		case EVehicleDifferentialType::Open_FrontDrive:
-			InAngularVelocity = std::max(GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->AngularVelocity, GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->AngularVelocity);
+			InAngularVelocity = std::max(GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->AngularVelocity, GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->AngularVelocity);
 			break;
 		case EVehicleDifferentialType::Open_RearDrive:
-			InAngularVelocity = std::max(GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->AngularVelocity, GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->AngularVelocity);
+			InAngularVelocity = std::max(GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->AngularVelocity, GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->AngularVelocity);
 			break;
 		}
 		OutAngularVelocity = InAngularVelocity * Ratio;
@@ -104,10 +104,10 @@ bool UVehicleDifferentialSimpleComponent::FindWheelRadius(float& OutRadius) cons
 		switch (DifferentialType)
 		{
 		case EVehicleDifferentialType::Open_FrontDrive:
-			OutRadius = (GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->Radius + GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->Radius) / 2.0;
+			OutRadius = (GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->Radius + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->Radius) / 2.0;
 			return true;
 		case EVehicleDifferentialType::Open_RearDrive:
-			OutRadius = (GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->Radius + GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->Radius) / 2.0;
+			OutRadius = (GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->Radius + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->Radius) / 2.0;
 			return true;
 		}
 	}

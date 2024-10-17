@@ -44,6 +44,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = Vehicle, meta = (AllowPrivateAccess = "true"))
 	class UPawnMovementComponent *VehicleMovement = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Vehicle, SaveGame, meta = (EditInRuntime, ReactivateActor))
+	bool bIs4WDVehicle = false;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
@@ -71,16 +73,13 @@ public:
 	virtual FWheeledVehicleState GetVehicleState() const;
 
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
-	virtual USodaVehicleWheelComponent* GetWheel4WD(E4WDWheelIndex Ind) const;
+	virtual USodaVehicleWheelComponent* GetWheelByIndex(EWheelIndex Ind) const;
 
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
 	virtual const TArray<USodaVehicleWheelComponent*>& GetWheels() const { return Wheels; }
 
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
-	virtual const TArray<USodaVehicleWheelComponent*>& GetWheels4WD() const { return Wheels4WD; }
-
-	UFUNCTION(BlueprintCallable, Category = Vehicle)
-	bool Is4WDVehicle() const { return Wheels4WD.Num() == 4; }
+	bool Is4WDVehicle() const { return bIs4WDVehicle; }
 
 	/** Compute the steering request as the arithmetic average of the steering request of the two front wheels. */
 	virtual float GetReqSteer() const;
@@ -160,9 +159,6 @@ protected:
 
 	UPROPERTY(Transient)
 	TArray<USodaVehicleWheelComponent*> Wheels;
-
-	UPROPERTY(Transient)
-	TArray<USodaVehicleWheelComponent*> Wheels4WD;
 
 	int Zoom = 0;
 

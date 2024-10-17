@@ -98,9 +98,9 @@ void UVehicleBrakeSystemSimpleComponent::InitializeComponent()
 	Super::InitializeComponent();
 }
 
-UWheelBrakeSimple* UVehicleBrakeSystemSimpleComponent::GetWheelSimple4WD(E4WDWheelIndex Ind) const
+UWheelBrakeSimple* UVehicleBrakeSystemSimpleComponent::GetWheelSimple4WD(EWheelIndex Ind) const
 {
-	if (WheelBrakes4WD.Num() == 4 && Ind != E4WDWheelIndex::None)
+	if (WheelBrakes4WD.Num() == 4 && Ind != EWheelIndex::None)
 	{
 		return WheelBrakes4WD[int(Ind)].Get();;
 	}
@@ -142,18 +142,18 @@ bool UVehicleBrakeSystemSimpleComponent::OnActivateVehicleComponent()
 
 	if (GetWheeledVehicle()->Is4WDVehicle())
 	{
-		auto Add4WDWheel = [this](E4WDWheelIndex Index)
+		auto Add4WDWheel = [this](EWheelIndex Index)
 		{
-			if (UWheelBrakeSimple** Wheel = WheelBrakes.FindByPredicate([this, Index](const UWheelBrakeSimple* Wheel) { return IsValid(Wheel->ConnectedWheel) && Wheel->ConnectedWheel->WheelIndex4WD == Index; }))
+			if (UWheelBrakeSimple** Wheel = WheelBrakes.FindByPredicate([this, Index](const UWheelBrakeSimple* Wheel) { return IsValid(Wheel->ConnectedWheel) && Wheel->ConnectedWheel->WheelIndex == Index; }))
 			{
 				WheelBrakes4WD.Add(*Wheel);
 			}
 		};
 
-		Add4WDWheel(E4WDWheelIndex::FL);
-		Add4WDWheel(E4WDWheelIndex::FR);
-		Add4WDWheel(E4WDWheelIndex::RL);
-		Add4WDWheel(E4WDWheelIndex::RR);
+		Add4WDWheel(EWheelIndex::Ind0_FL);
+		Add4WDWheel(EWheelIndex::Ind1_FR);
+		Add4WDWheel(EWheelIndex::Ind2_RL);
+		Add4WDWheel(EWheelIndex::Ind3_RR);
 		if (WheelBrakes4WD.Num() != 4)
 		{
 			WheelBrakes4WD.Empty();

@@ -111,7 +111,7 @@ void FSodaVehicleAnimationInstanceProxy::PreUpdate(UAnimInstance* InAnimInstance
 				}
 				WheelInstance.RotOffset.Yaw = VehicleWheel->Steer / M_PI * 180.0;
 				WheelInstance.RotOffset.Roll = 0.f;
-				WheelInstance.LocOffset = -FVector(0, 0, 1) * VehicleWheel->SuspensionOffset;
+				WheelInstance.LocOffset = VehicleWheel->SuspensionOffset2;
 			}
 		}
 	}

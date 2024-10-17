@@ -10,19 +10,32 @@
  * Wheeled vehicle wheel indexes
  */
 UENUM(BlueprintType)
-enum class  E4WDWheelIndex: uint8
+enum class  EWheelIndex: uint8
 {
-	/** Front left */
-	FL = 0,
+	/** 0 or Front left */
+	Ind0_FL = 0,
 
-	/** Front right */
-	FR = 1,
+	/** 1 or Front right */
+	Ind1_FR = 1,
 
-	/** Rear left */
-	RL = 2,
+	/** 2 or Rear left */
+	Ind2_RL = 2,
 
-	/** Rear right */
-	RR = 3,
+	/** 3 or Rear right */
+	Ind3_RR = 3,
+
+	Ind4,
+	Ind5,
+	Ind6,
+	Ind7,
+	Ind8,
+	Ind9,
+	Ind10,
+	Ind11,
+	Ind12,
+	Ind13,
+	Ind14,
+	Ind15,
 
 	/** Current vehicle isn't 4WD */
 	None = 0xFF,
@@ -31,6 +44,7 @@ enum class  E4WDWheelIndex: uint8
 
 /**
  * USodaVehicleWheelComponent object
+ * TODO: Rename to UVehicleWheelInterfaceComponent 
  */
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))   
 class UNREALSODA_API USodaVehicleWheelComponent 
@@ -46,7 +60,7 @@ public:
 
 	/** if current vehicle is 4WD, this is index of current wheel */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
-	E4WDWheelIndex WheelIndex4WD = E4WDWheelIndex::None;
+	EWheelIndex WheelIndex = EWheelIndex::None;
 
 	/** Additional offset to give the wheels for this axle */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
@@ -94,8 +108,12 @@ public:
 	FVector2D Slip;
 
 	/** Current suspension z - offset in [cm] */
+	//UPROPERTY(Category = VehicleWheel, BlueprintReadOnly)
+	//float SuspensionOffset = 0;
+
+	/** Current relative location */
 	UPROPERTY(Category = VehicleWheel, BlueprintReadOnly)
-	float SuspensionOffset = 0;
+	FVector SuspensionOffset2;
 
 public:
 	/** Wheel radius [Cm]*/

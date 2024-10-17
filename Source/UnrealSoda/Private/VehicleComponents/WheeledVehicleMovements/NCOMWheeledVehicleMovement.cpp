@@ -65,10 +65,10 @@ void UNCOMWheeledVehicleMovement::OnPreActivateVehicleComponent()
 
 	if (GetWheeledVehicle()->Is4WDVehicle())
 	{
-		GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->Radius = FrontWheelRadius;
-		GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->Radius = FrontWheelRadius;
-		GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->Radius = RearWheelRadius;
-		GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->Radius = RearWheelRadius;
+		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->Radius = FrontWheelRadius;
+		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->Radius = FrontWheelRadius;
+		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->Radius = RearWheelRadius;
+		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->Radius = RearWheelRadius;
 	}
 
 

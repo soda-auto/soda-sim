@@ -10,7 +10,7 @@ float IWheeledVehicleMovementInterface::GetWheelBaseWidth() const
 
 	if (WheeledVehicle->Is4WDVehicle())
 	{
-		return FMath::Abs(WheeledVehicle->GetWheel4WD(E4WDWheelIndex::FL)->RestingLocation.X - WheeledVehicle->GetWheel4WD(E4WDWheelIndex::RL)->RestingLocation.X);
+		return FMath::Abs(WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind0_FL)->RestingLocation.X - WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind2_RL)->RestingLocation.X);
 	}
 	else
 	{
@@ -25,7 +25,7 @@ float IWheeledVehicleMovementInterface::GetTrackWidth() const
 
 	if (WheeledVehicle->Is4WDVehicle())
 	{
-		return FMath::Abs(WheeledVehicle->GetWheel4WD(E4WDWheelIndex::FL)->RestingLocation.Y - WheeledVehicle->GetWheel4WD(E4WDWheelIndex::FR)->RestingLocation.Y);
+		return FMath::Abs(WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind0_FL)->RestingLocation.Y - WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind1_FR)->RestingLocation.Y);
 	}
 	else
 	{

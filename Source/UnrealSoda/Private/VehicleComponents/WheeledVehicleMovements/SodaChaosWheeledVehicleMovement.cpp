@@ -76,7 +76,7 @@ void USodaChaosWheeledVehicleSimulation::UpdateSimulation(float DeltaTime, const
 		SodaChaosWheelSetup[i].SodaWheel->Steer = ChaosWheels[i].GetSteeringAngle() / 180 * M_PI;
 		SodaChaosWheelSetup[i].SodaWheel->AngularVelocity = ChaosWheels[i].GetAngularVelocity();
 		SodaChaosWheelSetup[i].SodaWheel->Slip = FVector2D(std::cos(ChaosWheels[i].GetSlipAngle()), std::sin(ChaosWheels[i].GetSlipAngle())) * ChaosWheels[i].GetSlipMagnitude();
-		SodaChaosWheelSetup[i].SodaWheel->SuspensionOffset = PVehicle->Suspension[i].GetSuspensionOffset();
+		SodaChaosWheelSetup[i].SodaWheel->SuspensionOffset2 = -PVehicle->Suspension[i].Setup().SuspensionAxis * PVehicle->Suspension[i].GetSuspensionOffset();
 	}
 
 	WheeledVehicleComponent->PostPhysicSimulation(DeltaTime, VehicleSimData.VehicleKinematic, VehicleSimData.SimulatedTimestamp);

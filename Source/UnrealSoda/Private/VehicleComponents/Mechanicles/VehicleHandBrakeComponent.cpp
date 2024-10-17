@@ -58,18 +58,18 @@ void UVehicleHandBrakeSimpleComponent::RequestByRatio(float InRatio)
 		switch (HandBrakeMode)
 		{
 		case EHandBrakeMode::FrontWheels:
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
+			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
+			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
 			break;
 		case EHandBrakeMode::RearWheels:
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
+			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
+			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
 			break;
 		case EHandBrakeMode::FourWheel:
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RL)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
-			GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::RR)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
+			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
+			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
+			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
+			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->ReqBrakeTorque += MaxHandBrakeTorque * InRatio;
 			break;
 		}
 

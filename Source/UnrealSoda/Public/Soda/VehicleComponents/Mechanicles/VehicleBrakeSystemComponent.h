@@ -77,7 +77,7 @@ public:
 	virtual UWheelBrake* GetWheel(int Ind) const { return nullptr; }
 
 	UFUNCTION(BlueprintCallable, Category = BrakeSystem)
-	virtual UWheelBrake* GetWheel4WD(E4WDWheelIndex Ind) const { return nullptr; }
+	virtual UWheelBrake* GetWheelByIndex(EWheelIndex Ind) const { return nullptr; }
 
 	UFUNCTION(BlueprintCallable, Category = BrakeSystem)
 	virtual float ComputeFullTorqByRatio(float InRatio) { return 0; }
@@ -174,11 +174,11 @@ public:
 	virtual void RequestByRatio(float InRatio, double DeltaTime) override;
 	virtual void RequestByPressure(float InBar, double DeltaTime) override;
 	virtual UWheelBrake* GetWheel(int Ind) const override { return WheelBrakes[Ind]; }
-	virtual UWheelBrake* GetWheel4WD(E4WDWheelIndex Ind) const override { return GetWheelSimple4WD(Ind); }
+	virtual UWheelBrake* GetWheelByIndex(EWheelIndex Ind) const override { return GetWheelSimple4WD(Ind); }
 	virtual float ComputeFullTorqByRatio(float InRatio) override;
 
 	UWheelBrakeSimple* GetWheelSimple(int Ind) const { return WheelBrakes[Ind]; }
-	UWheelBrakeSimple* GetWheelSimple4WD(E4WDWheelIndex Ind) const;
+	UWheelBrakeSimple* GetWheelSimple4WD(EWheelIndex Ind) const;
 
 public:
 	virtual void InitializeComponent() override;

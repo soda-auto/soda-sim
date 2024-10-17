@@ -184,7 +184,7 @@ void UGenericWheeledVehicleSensor::OnPushDataset(soda::FActorDatasetData& Datase
 		auto GearState = GearBox ? GearBox->GetGearState() : EGearState::Neutral;
 		int GearNum = GearBox ? GearBox->GetGearNum() : 0;
 		float Steer = WheeledVehicle->Is4WDVehicle() 
-			? (WheeledVehicle->GetWheel4WD(E4WDWheelIndex::FL)->Steer + WheeledVehicle->GetWheel4WD(E4WDWheelIndex::FR)->Steer) / 2 
+			? (WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind0_FL)->Steer + WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind1_FR)->Steer) / 2 
 			: 0;
 
 		bsoncxx::builder::stream::document& Doc = Dataset.GetRowDoc();
@@ -200,14 +200,14 @@ void UGenericWheeledVehicleSensor::OnPushDataset(soda::FActorDatasetData& Datase
 		{
 			WheelsArray
 				<< open_document
-				<< "WheelIndex4WD" << int(Wheel->WheelIndex4WD)
+				<< "WheelIndex" << int(Wheel->WheelIndex)
 				<< "ReqTorq" << Wheel->ReqTorq
 				<< "ReqBrakeTorque" << Wheel->ReqBrakeTorque
 				<< "ReqSteer" << Wheel->ReqSteer
 				<< "Steer" << Wheel->Steer
 				<< "Pitch" << Wheel->Pitch
 				<< "AngularVelocity" << Wheel->AngularVelocity
-				<< "SuspensionOffset" << Wheel->SuspensionOffset
+				<< "SuspensionOffset" << open_array << Wheel->SuspensionOffset2.X << Wheel->SuspensionOffset2.Y << Wheel->SuspensionOffset2.Z << close_array
 				<< "Slip" << open_array << Wheel->Slip.X << Wheel->Slip.Y << close_array
 				<< close_document;
 		}

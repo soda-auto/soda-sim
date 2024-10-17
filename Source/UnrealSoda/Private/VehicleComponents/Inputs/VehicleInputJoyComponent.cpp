@@ -214,8 +214,8 @@ void UVehicleInputJoyComponent::UpdateInputStates(float DeltaTime, float Forward
 
 	if (bEnableBumpEffect && GetWheeledVehicle()->Is4WDVehicle())
 	{
-		float NewOffsetLeft = GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->SuspensionOffset;
-		float NewOffsetRight = GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->SuspensionOffset;
+		float NewOffsetLeft = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->SuspensionOffset2.Length();
+		float NewOffsetRight = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->SuspensionOffset2.Length();
 		float SuspensionTranslationSpeedLeft = (FrontWheelPrevSuspensionOffset[0] - NewOffsetLeft) / DeltaTime;
 		float SuspensionTranslationSpeedRight = (FrontWheelPrevSuspensionOffset[1] - NewOffsetRight) / DeltaTime;
 		FrontWheelPrevSuspensionOffset[0] = NewOffsetLeft;

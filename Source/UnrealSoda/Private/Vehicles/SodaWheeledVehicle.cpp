@@ -122,11 +122,11 @@ const FVehicleSimData& ASodaWheeledVehicle::GetSimData() const
 	return GetWheeledComponentInterface() ? GetWheeledComponentInterface()->GetSimData() : FVehicleSimData::Zero; 
 }
 
-USodaVehicleWheelComponent* ASodaWheeledVehicle::GetWheel4WD(E4WDWheelIndex Ind) const
+USodaVehicleWheelComponent* ASodaWheeledVehicle::GetWheelByIndex(EWheelIndex Ind) const
 { 
-	if (Is4WDVehicle() && Ind != E4WDWheelIndex::None)
+	if (Ind != EWheelIndex::None)
 	{
-		return Wheels4WD[int(Ind)];
+		return Wheels[int(Ind)];
 	}
 	else
 	{
@@ -232,24 +232,17 @@ void ASodaWheeledVehicle::ReRegistreVehicleComponents()
 	GetComponents<UVehicleHandBrakeBaseComponent>(VehicleHandBrakes);
 	GetComponents<UVehicleDifferentialBaseComponent>(VehicleDifferentials);
 
-	Wheels4WD.Empty();
-	if (Wheels.Num() == 4)
-	{
-		auto Add4WDWheel = [this](E4WDWheelIndex Index)
-		{
-			if (USodaVehicleWheelComponent** Wheel = Wheels.FindByPredicate([this, Index](const USodaVehicleWheelComponent* Wheel) { return Wheel->WheelIndex4WD == Index; }))
-			{
-				Wheels4WD.Add(*Wheel);
-			}
-		};
+	Wheels.Sort([](const USodaVehicleWheelComponent & L, const USodaVehicleWheelComponent & R) 
+	{ 
+		return (uint8)L.WheelIndex < (uint8)R.WheelIndex;
+	});
 
-		Add4WDWheel(E4WDWheelIndex::FL);
-		Add4WDWheel(E4WDWheelIndex::FR);
-		Add4WDWheel(E4WDWheelIndex::RL);
-		Add4WDWheel(E4WDWheelIndex::RR);
-		if (Wheels4WD.Num() != 4)
+	for (int i = 0; i < Wheels.Num(); ++i)
+	{
+		if (Wheels[i]->WheelIndex != EWheelIndex(i))
 		{
-			Wheels4WD.Empty();
+			Wheels[i]->WheelIndex = EWheelIndex(i);
+			UE_LOG(LogSoda, Warning, TEXT("ASodaWheeledVehicle::ReRegistreVehicleComponents(); Wheels indexes is inconsistency. Check WheelIndex for all weels"));
 		}
 	}
 
@@ -325,7 +318,7 @@ float ASodaWheeledVehicle::GetReqSteer() const
 {
 	if (Is4WDVehicle())
 	{
-		return (GetWheel4WD(E4WDWheelIndex::FL)->ReqSteer + GetWheel4WD(E4WDWheelIndex::FR)->ReqSteer) / 2.0;
+		return (GetWheelByIndex(EWheelIndex::Ind0_FL)->ReqSteer + GetWheelByIndex(EWheelIndex::Ind1_FR)->ReqSteer) / 2.0;
 	}
 	else
 	{
@@ -337,7 +330,7 @@ float ASodaWheeledVehicle::GetSteer() const
 {
 	if (Is4WDVehicle())
 	{
-		return (GetWheel4WD(E4WDWheelIndex::FL)->Steer + GetWheel4WD(E4WDWheelIndex::FR)->Steer) / 2.0;
+		return (GetWheelByIndex(EWheelIndex::Ind0_FL)->Steer + GetWheelByIndex(EWheelIndex::Ind1_FR)->Steer) / 2.0;
 	}
 	else
 	{
@@ -369,10 +362,10 @@ FWheeledVehicleState ASodaWheeledVehicle::GetVehicleState() const
 				Out.Steer = In.Steer;
 			};
 
-			WheelDataConv(*GetWheel4WD(E4WDWheelIndex::FL), Ret.WheelsFL);
-			WheelDataConv(*GetWheel4WD(E4WDWheelIndex::FR), Ret.WheelsFR);
-			WheelDataConv(*GetWheel4WD(E4WDWheelIndex::RL), Ret.WheelsRL);
-			WheelDataConv(*GetWheel4WD(E4WDWheelIndex::RR), Ret.WheelsRR);
+			WheelDataConv(*GetWheelByIndex(EWheelIndex::Ind0_FL), Ret.WheelsFL);
+			WheelDataConv(*GetWheelByIndex(EWheelIndex::Ind1_FR), Ret.WheelsFR);
+			WheelDataConv(*GetWheelByIndex(EWheelIndex::Ind2_RL), Ret.WheelsRL);
+			WheelDataConv(*GetWheelByIndex(EWheelIndex::Ind3_RR), Ret.WheelsRR);
 		}
 	}
 
@@ -428,12 +421,12 @@ void ASodaWheeledVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) cons
 		{
 			const auto& Wheel = Wheels[i];
 			WheelsArray << open_document
-				<< "4wdInd" << int(Wheel->WheelIndex4WD)
+				//<< "4wdInd" << int(Wheel->WheelIndex)
 				<< "AngVel" << Wheel->ResolveAngularVelocity()
 				<< "ReqTorq" << Wheel->ReqTorq
 				<< "ReqBrakeTorq" << Wheel->ReqBrakeTorque
 				<< "Steer" << Wheel->Steer
-				<< "Sus" << Wheel->SuspensionOffset
+				<< "Sus" << Wheel->SuspensionOffset2.Z
 				<< "LongSlip" << Wheel->Slip.X
 				<< "LatSlip" << Wheel->Slip.Y
 			<< close_document;
@@ -466,7 +459,7 @@ void ASodaWheeledVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) c
 		{
 			const auto& Wheel = Wheels[i];
 			WheelsArray << open_document
-				<< "4wdInd" << int(Wheel->WheelIndex4WD)
+				//<< "4wdInd" << int(Wheel->WheelIndex)
 				<< "Radius" << Wheel->Radius
 				<< "Location" << open_array << Wheel->RestingLocation.X << Wheel->RestingLocation.Y << Wheel->RestingLocation.Z << close_array
 			<< close_document;
