@@ -48,11 +48,14 @@
 #include "SodaJoystick.h"
 #include "RemoteControlSettings.h"
 #include "GameFramework/GameUserSettings.h"
+#include "RuntimeEditorUtils.h"
 
 #define LOCTEXT_NAMESPACE "SodaViewportToolBar"
 
+
 namespace soda
 {
+
 
 static void FillShowMenuStatic(FMenuBuilder& MenuBuilder, TArray< FSodalViewportCommands::FShowMenuCommand > MenuCommands, int32 EntryOffset)
 {
@@ -318,7 +321,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 			.FillWidth(1.0)
 			.Padding(ToolbarSlotPadding)
 			[
-				ToolbarBuilder.MakeWidget()
+				FRuntimeEditorUtils::MakeWidget_HackTooltip(ToolbarBuilder)
 			]
 			+ SHorizontalBox::Slot()
 			.AutoWidth()
@@ -451,7 +454,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateMainMenu()
 
 	MenuBuilder.EndSection();
 
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }
 
 TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu() 
@@ -681,7 +684,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 	}
 
 	MenuBuilder.EndSection();
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }
 
 TSharedRef<SWidget> SSodaViewportToolBar::GenerateDBMenu()
@@ -728,7 +731,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateDBMenu()
 	MenuBuilder.AddMenuEntry(FSodalViewportCommands::Get().RecordDataset);
 
 	MenuBuilder.EndSection();
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }
 
 TSharedRef<SWidget> SSodaViewportToolBar::GenerateAddMenu()
@@ -863,7 +866,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateAddMenu()
 		MenuBuilder.EndSection();
 	}
 	
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }
 
 TSharedRef<SWidget> SSodaViewportToolBar::GenerateModeMenu()
@@ -903,7 +906,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateModeMenu()
 
 
 	MenuBuilder.EndSection();
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }
 
 

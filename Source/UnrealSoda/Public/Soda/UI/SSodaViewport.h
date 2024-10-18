@@ -118,6 +118,10 @@ public:
 	void ToggleStatCommand(FString CommandName) const;
 	void BindStatCommand(const TSharedPtr<FUICommandInfo> InMenuItem, const FString& InCommandName);
 
+	//~ Begin SWidget overrides
+	virtual bool OnVisualizeTooltip(const TSharedPtr<SWidget>& TooltipContent) override;
+	//~ End SWidget overrides
+
 protected:
 	//~ Begin SWidget overrides
 	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
@@ -128,7 +132,7 @@ protected:
 	virtual void OnDragLeave(const FDragDropEvent& DragDropEvent) override;
 	virtual FReply OnDragOver(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent) override;
 	virtual FReply OnDrop(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent) override;
-	virtual bool OnVisualizeTooltip(const TSharedPtr<SWidget>& TooltipContent) override;
+
 	//~ End SWidget overrides
 
 	//virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;

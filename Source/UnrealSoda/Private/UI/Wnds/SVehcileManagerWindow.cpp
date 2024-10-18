@@ -16,6 +16,7 @@
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "RuntimeEditorUtils.h"
 
 namespace soda
 {
@@ -322,7 +323,7 @@ TSharedRef<SWidget> SVehcileManagerWindow::GetComboMenuContent()
 
 	MenuBuilder.EndSection();
 
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);;
 }
 
 void SVehcileManagerWindow::OnSelectionChanged(TSharedPtr<FVechicleSaveAddress> Address, ESelectInfo::Type SelectInfo)

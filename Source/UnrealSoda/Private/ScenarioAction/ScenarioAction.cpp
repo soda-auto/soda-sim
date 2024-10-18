@@ -16,6 +16,7 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Widgets/SWindow.h"
 #include "Soda/Misc/SerializationHelpers.h"
+#include "RuntimeEditorUtils.h"
 
 AScenarioAction::AScenarioAction()
 {
@@ -156,7 +157,7 @@ TSharedPtr<SWidget> AScenarioAction::GenerateToolBar()
 		.BorderBackgroundColor(FStyleColors::Panel)
 		.Padding(3)
 		[
-			ToolbarBuilder.MakeWidget()
+			FRuntimeEditorUtils::MakeWidget_HackTooltip(ToolbarBuilder)
 		];
 }
 

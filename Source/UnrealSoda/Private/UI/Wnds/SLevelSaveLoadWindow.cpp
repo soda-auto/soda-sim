@@ -15,9 +15,116 @@
 #include "Soda/SodaSubsystem.h"
 #include "Soda/DBGateway.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "RuntimeEditorUtils.h"
 
 namespace soda
 {
+
+static const FName Column_DateTime("DateTime");
+static const FName Column_Description("Description");
+static const FName Column_DeleteButton("DeleteButton");
+//static const FName Column_Startup("Startup");
+
+class SLevelSaveLoadRow : public SMultiColumnTableRow<TSharedPtr<FLevelStateSlotDescription>>
+{
+public:
+	SLATE_BEGIN_ARGS(SLevelSaveLoadRow)
+		{}
+	SLATE_END_ARGS()
+
+	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, TSharedPtr<FLevelStateSlotDescription> InSlot, TWeakPtr<SLevelSaveLoadWindow> InParent)
+	{
+		Slot = InSlot;
+		Parent = InParent;
+		FSuperRowType::FArguments OutArgs;
+		OutArgs.Padding(3);
+		//OutArgs._SignalSelectionMode = ETableRowSignalSelectionMode::Instantaneous;
+		SMultiColumnTableRow<TSharedPtr<FLevelStateSlotDescription>>::Construct(OutArgs, InOwnerTable);
+	}
+
+	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& InColumnName) override
+	{
+		if (InColumnName == Column_DateTime)
+		{
+			return SNew(STextBlock)
+				.Text(FText::FromString(Slot->DateTime.ToString()))
+				.ColorAndOpacity(Slot == Parent.Pin()->GetCurrentSlot() ? FLinearColor::Yellow : FLinearColor::White);
+		}
+
+		if (InColumnName == Column_Description)
+		{
+			return SNew(STextBlock)
+				.Text(FText::FromString(Slot->Description))
+				.ColorAndOpacity(Slot == Parent.Pin()->GetCurrentSlot() ? FLinearColor::Yellow : FLinearColor::White);
+		}
+
+		if (InColumnName == Column_DeleteButton)
+		{
+			return SNew(SBox)
+				.VAlign(VAlign_Center)
+				.HAlign(HAlign_Center)
+				[
+					SNew(SButton)
+					.ButtonStyle(FSodaStyle::Get(), "MenuWindow.DeleteButton")
+					.OnClicked(this, &SLevelSaveLoadRow::OnDeleteSlot, Slot)
+				];
+		}
+		/*
+		if (InColumnName == Column_Startup)
+		{
+			return SNew(SCheckBox)
+				.IsChecked_Lambda([this]() { return Slot->bUseLikeStartup ? ECheckBoxState::Checked : ECheckBoxState::Unchecked; })
+				.OnCheckStateChanged(this, &SLevelSaveLoadRow::OnStartupChange);
+		}
+		*/
+
+		return SNullWidget::NullWidget;
+	}
+
+	FReply OnDeleteSlot(TSharedPtr<FLevelStateSlotDescription> SelectedItem)
+	{
+		if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
+		{
+			TSharedPtr<soda::SMessageBox> MsgBox = SodaSubsystem->ShowMessageBox(
+				soda::EMessageBoxType::YES_NO_CANCEL,
+				"Delete Slot",
+				"Are you sure you want to delete the \"" + SelectedItem->Description + "\" slot?");
+			MsgBox->SetOnMessageBox(soda::FOnMessageBox::CreateLambda([this, SelectedItem](soda::EMessageBoxButton Button)
+			{
+				if (Button == soda::EMessageBoxButton::YES)
+				{
+					if (SelectedItem->SlotSource == ELeveSlotSource::Remote)
+					{
+						check(SelectedItem->ScenarioID >= 0);
+						ALevelState::DeleteLevelRemotly(nullptr, SelectedItem->ScenarioID);
+					}
+					else
+					{
+						check(SelectedItem->SlotIndex >= 0);
+						ALevelState::DeleteLevelLocally(nullptr, SelectedItem->SlotIndex);
+					}
+					Parent.Pin()->UpdateSlots();
+				}
+			}));
+		}
+		return FReply::Handled();
+	}
+
+	void OnStartupChange(ECheckBoxState NewState)
+	{
+
+	}
+
+	TWeakObjectPtr<AActor> Actor;
+	FSodaActorDescriptor Desc;
+	bool IsSpawnedActor;
+	TWeakPtr<SLevelSaveLoadWindow> Parent;
+	TSharedPtr<SInlineEditableTextBlock> InlineTextBlock;
+
+	TSharedPtr<FLevelStateSlotDescription> Slot;
+};
+
+
 
 void SLevelSaveLoadWindow::Construct( const FArguments& InArgs )
 {
@@ -81,6 +188,21 @@ void SLevelSaveLoadWindow::Construct( const FArguments& InArgs )
 					.SelectionMode(ESelectionMode::Single)
 					.OnGenerateRow(this, &SLevelSaveLoadWindow::OnGenerateRow)
 					.OnSelectionChanged(this, &SLevelSaveLoadWindow::OnSelectionChanged)
+					.HeaderRow(
+						SNew(SHeaderRow)
+						+ SHeaderRow::Column(Column_DateTime)
+						.DefaultLabel(FText::FromString("DateTime"))
+						.FixedWidth(140)
+						+ SHeaderRow::Column(Column_Description)
+						.DefaultLabel(FText::FromString("Description"))
+						.FillWidth(1)
+						//+ SHeaderRow::Column(Column_Startup)
+						//.FixedWidth(24)
+						//.DefaultLabel(FText::FromString(""))
+						+ SHeaderRow::Column(Column_DeleteButton)
+						.FixedWidth(24)
+						.DefaultLabel(FText::FromString(""))
+					)
 				]
 			]
 			+ SVerticalBox::Slot()
@@ -174,6 +296,7 @@ void SLevelSaveLoadWindow::UpdateSlots()
 	}
 
 	Source.Empty();
+	CurrentSlot.Reset();
 
 	SaveButton->SetEnabled(false);
 	LoadButton->SetEnabled(false);
@@ -197,12 +320,14 @@ void SLevelSaveLoadWindow::UpdateSlots()
 		Source.Add(MakeShared<FLevelStateSlotDescription>(Slot));
 	}
 
+
 	for (auto& It : Source)
 	{
 		if ((It->SlotSource == SodaSubsystem->LevelState->Slot.SlotSource) && (
 				(It->SlotSource == ELeveSlotSource::Local && It->SlotIndex == SodaSubsystem->LevelState->Slot.SlotIndex) ||
 				(It->SlotSource == ELeveSlotSource::Remote && It->ScenarioID == SodaSubsystem->LevelState->Slot.ScenarioID)))
 		{
+			CurrentSlot = It;
 			ListView->SetSelection(It);
 			break;
 		}
@@ -252,36 +377,12 @@ TSharedRef<SWidget> SLevelSaveLoadWindow::GetComboMenuContent()
 
 	MenuBuilder.EndSection();
 
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);;
 }
 
 TSharedRef<ITableRow> SLevelSaveLoadWindow::OnGenerateRow(TSharedPtr<FLevelStateSlotDescription> Slot, const TSharedRef< STableViewBase >& OwnerTable)
 {
-	return 
-		SNew(STableRow<TSharedPtr<FLevelStateSlotDescription>>, OwnerTable)
-		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot()
-			.Padding(FMargin(0, 0, 5, 0))
-			.AutoWidth()
-			[
-				SNew(STextBlock)
-				.Text(FText::FromString(Slot->DateTime.ToString()))
-			]
-			+ SHorizontalBox::Slot()
-			.FillWidth(1.0)
-			[
-				SNew(STextBlock)
-				.Text(FText::FromString(Slot->Description))
-			]
-			+ SHorizontalBox::Slot()
-			.AutoWidth()
-			[
-				SNew(SButton)
-				.ButtonStyle(FSodaStyle::Get(), "MenuWindow.DeleteButton")
-				.OnClicked(this, &SLevelSaveLoadWindow::OnDeleteSlot, Slot)
-			]
-		];
+	return SNew(SLevelSaveLoadRow, OwnerTable, Slot, SharedThis(this));
 }
 
 void SLevelSaveLoadWindow::OnSelectionChanged(TSharedPtr<FLevelStateSlotDescription> Slot, ESelectInfo::Type SelectInfo)
@@ -367,34 +468,7 @@ FReply SLevelSaveLoadWindow::OnLoad()
 	return FReply::Handled();
 }
 
-FReply SLevelSaveLoadWindow::OnDeleteSlot(TSharedPtr<FLevelStateSlotDescription> SelectedItem)
-{
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		TSharedPtr<soda::SMessageBox> MsgBox = SodaSubsystem->ShowMessageBox(
-			soda::EMessageBoxType::YES_NO_CANCEL,
-			"Delete Slot",
-			"Are you sure you want to delete the \"" + SelectedItem->Description + "\" slot?");
-		MsgBox->SetOnMessageBox(soda::FOnMessageBox::CreateLambda([this, SelectedItem](soda::EMessageBoxButton Button)
-		{
-			if (Button == soda::EMessageBoxButton::YES)
-			{
-				if (SelectedItem->SlotSource == ELeveSlotSource::Remote)
-				{
-					check(SelectedItem->ScenarioID >= 0);
-					ALevelState::DeleteLevelRemotly(nullptr, SelectedItem->ScenarioID);
-				}
-				else
-				{
-					check(SelectedItem->SlotIndex >= 0);
-					ALevelState::DeleteLevelLocally(nullptr, SelectedItem->SlotIndex);
-				}
-				this->UpdateSlots();
-			}
-		}));
-	}
-	return FReply::Handled();
-}
+
 
 } // namespace soda
 

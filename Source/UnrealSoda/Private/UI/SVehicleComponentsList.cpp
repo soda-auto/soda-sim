@@ -29,6 +29,7 @@
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Components/ActorComponent.h"
 #include "Components/PrimitiveComponent.h"
+#include "RuntimeEditorUtils.h"
 
 #define LOCTEXT_NAMESPACE "VehicleComponentsBar"
 
@@ -562,7 +563,7 @@ public:
 
 		MenuBuilder.EndSection();
 
-		return MenuBuilder.MakeWidget();
+		return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 	}
 
 	virtual EComponentsBarTreeType GetType() override { return EComponentsBarTreeType::Component; }

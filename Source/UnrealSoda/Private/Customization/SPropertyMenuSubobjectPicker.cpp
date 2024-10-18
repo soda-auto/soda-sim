@@ -18,6 +18,7 @@
 #include "HAL/PlatformApplicationMisc.h"
 #include "Soda/Misc/EditorUtils.h"
 #include "Soda/ISodaVehicleComponent.h"
+#include "RuntimeEditorUtils.h"
 
 #define LOCTEXT_NAMESPACE "PropertyEditor"
 
@@ -186,7 +187,7 @@ void SPropertyMenuSubobjectPicker::Construct(const FArguments& InArgs)
 
 	ChildSlot
 	[
-		MenuBuilder.MakeWidget()
+		FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000)
 	];
 }
 

@@ -22,6 +22,7 @@
 #include "Soda/SodaGameViewportClient.h"
 #include "Soda/SodaSubsystem.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "RuntimeEditorUtils.h"
 
 #define LOCTEXT_NAMESPACE "TransformToolBar"
 
@@ -43,7 +44,7 @@ void STransformViewportToolBar::Construct( const FArguments& InArgs )
 
 TSharedRef< SWidget > STransformViewportToolBar::MakeTransformToolBar( const TSharedPtr< FExtender > InExtenders )
 {
-	FSlimHorizontalToolBarBuilder ToolbarBuilder( CommandList, FMultiBoxCustomization::None, InExtenders );
+	FSlimHorizontalToolBarBuilder ToolbarBuilder( CommandList, FMultiBoxCustomization::None, InExtenders);
 
 	// Use a custom style
 	FName ToolBarStyle = "EditorViewportToolBar";
@@ -102,7 +103,7 @@ TSharedRef< SWidget > STransformViewportToolBar::MakeTransformToolBar( const TSh
 
 	ToolbarBuilder.EndSection();
 
-	return ToolbarBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(ToolbarBuilder);
 }
 
 FReply STransformViewportToolBar::OnCycleCoordinateSystem()

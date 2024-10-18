@@ -8,6 +8,7 @@
 #include "RuntimePropertyEditor/IStructureDetailsView.h"
 #include "Soda/ScenarioAction/ScenarioActionUtils.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "RuntimeEditorUtils.h"
 
 void SScenarioActionPropertyRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, TWeakObjectPtr<UScenarioActionPropertyNode> InNode, const TSharedRef<SScenarioActionTree>& InTree)
 {
@@ -89,7 +90,7 @@ TSharedRef<SWidget> SScenarioActionPropertyRow::GenerateAddMenu()
 				}
 				MenuBuilder.EndSection();
 			}
-			return MenuBuilder.MakeWidget();
+			return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 		}
 	}
 
