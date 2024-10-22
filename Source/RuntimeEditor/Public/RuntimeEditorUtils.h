@@ -199,6 +199,6 @@ namespace FRuntimeEditorUtils
 	/**
 	* Fix disabled tooltip in SMultiBoxWidget in not editor modes. See SMultiBoxWidget::OnVisualizeTooltip(). I hope Epic Game will fix it in the future.
 	*/
-	TSharedRef< class SWidget > MakeWidget_HackTooltip(FMultiBoxBuilder& MultiBoxBuilder, FMultiBox::FOnMakeMultiBoxBuilderOverride* InMakeMultiBoxBuilderOverride = nullptr, TAttribute<float> InMaxHeight = TAttribute<float>());
+	RUNTIMEEDITOR_API TSharedRef< SWidget > MakeWidget_HackTooltip(FMultiBoxBuilder& MultiBoxBuilder, FMultiBox::FOnMakeMultiBoxBuilderOverride* InMakeMultiBoxBuilderOverride = nullptr, TAttribute<float> InMaxHeight = TAttribute<float>());
 };
 

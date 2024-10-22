@@ -247,34 +247,6 @@ void FSodaPak::UpdateMountStatus()
 	}
 }
 
-static bool LoadCustomConfig(const FString& CustomConfig, const FString& IniName)
-{ 
-	FConfigContext Contet = FConfigContext::ForceReloadIntoGConfig();
-	Contet.OverrideLayers = TArray<FConfigLayer>(GConfigLayers, UE_ARRAY_COUNT(GConfigLayers));
-	int CustomConfigInd = Contet.OverrideLayers.IndexOfByPredicate([](const auto& It) { return FString(TEXT("CustomConfig")) == It.EditorName; });
-	check(CustomConfigInd >= 0);
-	FString Layer = FString::Printf(TEXT("{PROJECT}/Config/Custom/%s/Default{TYPE}.ini"), *CustomConfig);
-	Contet.OverrideLayers.Insert({ TEXT("PakConfig"), *Layer }, CustomConfigInd);
-	FString ConfigName;
-	UE_LOG(LogSodaPak, Log, TEXT("LoadCustomConfig(); Layer:\"%s\"; IniName: \"%s\""), *Layer, *IniName);
-	return Contet.Load(*IniName, ConfigName);
-}
-
-static void LoadAllCustomConfigs(const FString& CustomConfig)
-{
-	FString CustomConfigDir = FPaths::ProjectConfigDir() / TEXT("Custom") / CustomConfig;
-	TArray<FString>FoundIni;
-	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-	FFindByWildcardVisitor Visitor(TEXT("*Default*.ini"), FoundIni);
-	PlatformFile.IterateDirectoryRecursively(*CustomConfigDir, Visitor);
-	for (const FString & Ini : FoundIni)
-	{
-		FString IniName = FPaths::GetBaseFilename(Ini);
-		IniName.RemoveFromStart(TEXT("Default"));
-		LoadCustomConfig(CustomConfig, IniName);
-	}
-}
-
 void FSodaPakModule::StartupModule()
 {
 	TArray<FString>	FoundPaksInstalled;
@@ -321,18 +293,59 @@ void FSodaPakModule::StartupModule()
 		}
 	}
 
+	TArray<FConfigLayer> ConfigLayers;
+	TArray<FString> Layers;
+	TArray<FString> ConfigNames;
+
 	for (const auto& Pak : SodaPaks)
 	{
 		if (Pak->GetInstallStatus() == ESodaPakInstallStatus::Installed)
 		{
 			if (!Pak->GetDescriptor().CustomConfig.IsEmpty())
 			{
-				LoadAllCustomConfigs(Pak->GetDescriptor().CustomConfig);
+				const FString CustomConfig = Pak->GetDescriptor().CustomConfig;
+				const FString CustomConfigDir = FPaths::ProjectConfigDir() / TEXT("Custom") / CustomConfig;
+				const FString & Layer = Layers.Add_GetRef(FString::Printf(TEXT("{PROJECT}/Config/Custom/%s/Default{TYPE}.ini"), *CustomConfig));
+				ConfigLayers.Add({ TEXT("PakConfig"), *Layer });
+
+				TArray<FString>FoundIni;
+				FFindByWildcardVisitor Visitor(TEXT("*Default*.ini"), FoundIni);
+				PlatformFile.IterateDirectoryRecursively(*CustomConfigDir, Visitor);
+				for (const FString& Ini : FoundIni)
+				{
+					FString IniName = FPaths::GetBaseFilename(Ini);
+					IniName.RemoveFromStart(TEXT("Default"));
+					ConfigNames.Add(IniName);
+				}
+				UE_LOG(LogSodaPak, Log, TEXT("FSodaPakModule::StartupModule(); Added CustomConfig layer:\"%s\""), ConfigLayers.Last().Path);
 			}
 		}
 	}
 
-	//LoadAllCustomConfigs(TEXT("CitySample"));
+	//const FString Layer = FString::Printf(TEXT("{PROJECT}/Config/Custom/%s/Default{TYPE}.ini"), TEXT("SodaProvingGround"));
+	//ConfigLayers.Add({ TEXT("PakConfig"), *Layer});
+	//ConfigNames.Add(TEXT("Engine"));
+
+	if (!ConfigNames.IsEmpty())
+	{
+		FConfigContext Contet = FConfigContext::ForceReloadIntoGConfig();
+		Contet.OverrideLayers = TArray<FConfigLayer>(GConfigLayers, UE_ARRAY_COUNT(GConfigLayers));
+		int CustomConfigInd = Contet.OverrideLayers.IndexOfByPredicate([](const auto& It) { return FString(TEXT("CustomConfig")) == It.EditorName; });
+		check(CustomConfigInd >= 0);
+		Contet.OverrideLayers.Insert(ConfigLayers, CustomConfigInd);
+
+		for (const FString& ConfigName : ConfigNames)
+		{
+			if (Contet.Load(*ConfigName))
+			{
+				UE_LOG(LogSodaPak, Log, TEXT("FSodaPakModule::StartupModule(); Load CustomConfig for: \"%s\""), *ConfigName);
+			}
+			else
+			{
+				UE_LOG(LogSodaPak, Error, TEXT("FSodaPakModule::StartupModule(); Faild load CustomConfig for \"%s\""), *ConfigName);
+			}
+		}
+	}
 }
 
 void FSodaPakModule::ShutdownModule()
