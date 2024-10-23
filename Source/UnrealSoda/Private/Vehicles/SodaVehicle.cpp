@@ -42,6 +42,7 @@
 #include "SodaStyleSet.h"
 #include "GlobalRenderResources.h"
 #include "GameFramework/PlayerController.h"
+#include "RuntimeEditorUtils.h"
 
 #include "bsoncxx/builder/stream/helpers.hpp"
 #include "bsoncxx/exception/exception.hpp"
@@ -1747,7 +1748,7 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 		.BorderBackgroundColor(FStyleColors::Panel)
 		.Padding(3)
 		[
-			ToolbarBuilder.MakeWidget()
+			FRuntimeEditorUtils::MakeWidget_HackTooltip(ToolbarBuilder)
 		];
 }
 

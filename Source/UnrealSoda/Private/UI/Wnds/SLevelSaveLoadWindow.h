@@ -36,8 +36,10 @@ public:
 	ELevelSaveLoadWindowMode GetMode() const { return Mode; }
 	void SetMode(ELevelSaveLoadWindowMode InMode) { Mode = InMode; }
 
-protected:
 	void UpdateSlots();
+	const TSharedPtr<FLevelStateSlotDescription> GetCurrentSlot() const { return CurrentSlot; }
+
+protected:
 
 	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FLevelStateSlotDescription> Slot, const TSharedRef< STableViewBase >& OwnerTable);
 	void OnSelectionChanged(TSharedPtr<FLevelStateSlotDescription> Slot, ESelectInfo::Type SelectInfo);
@@ -46,7 +48,6 @@ protected:
 	FReply OnSave();
 	FReply OnNewSave();
 	FReply OnLoad();
-	FReply OnDeleteSlot(TSharedPtr<FLevelStateSlotDescription> Slot);
 
 	TArray<TSharedPtr<FLevelStateSlotDescription>> Source;
 	TSharedPtr<SListView<TSharedPtr<FLevelStateSlotDescription>>> ListView;
@@ -55,6 +56,8 @@ protected:
 	TSharedPtr<SButton> LoadButton;
 
 	ELevelSaveLoadWindowMode Mode = ELevelSaveLoadWindowMode::Local;
+
+	TSharedPtr<FLevelStateSlotDescription> CurrentSlot;
 };
 
 

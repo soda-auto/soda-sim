@@ -101,6 +101,7 @@ void USodaUserSettings::SetToDefaults()
 void USodaUserSettings::ReadGraphicSettings()
 {
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
+	check(Settings);
 
 	ResolutionScale = Settings->GetResolutionScaleNormalized() * 100;
 	ViewDistanceQuality = (EQualityLevel)Settings->GetViewDistanceQuality();
@@ -131,6 +132,7 @@ void USodaUserSettings::ApplyGraphicSettings()
 	Settings->SetVisualEffectQuality((int32)EffectsQuality);
 	Settings->SetFoliageQuality((int32)FoliageQuality);
 	Settings->SetShadingQuality((int32)ShadingQuality);
+	//Settings->SetLandscapeQuality((int32)LandscapeQuality);
 	Settings->SetFrameRateLimit((int32)FrameRateLimit);
 
 	Settings->ApplySettings(false);

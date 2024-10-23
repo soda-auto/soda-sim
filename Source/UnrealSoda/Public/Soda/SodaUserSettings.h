@@ -162,6 +162,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
 	EQualityLevel ShadingQuality;
 
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
+	//EQualityLevel LandscapeQuality;
+
 	/** Sets the user's frame rate limit (0 will disable frame rate limiting) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graphic Settings", meta = (EditInRuntime))
 	float FrameRateLimit;

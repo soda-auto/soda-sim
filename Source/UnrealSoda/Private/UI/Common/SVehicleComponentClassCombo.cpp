@@ -20,6 +20,7 @@
 #include "Soda/UnrealSoda.h"
 #include "Soda/ISodaVehicleComponent.h"
 #include "UObject/UObjectIterator.h"
+#include "RuntimeEditorUtils.h"
 
 #define LOCTEXT_NAMESPACE "VehicleComponentClassCombo"
 
@@ -817,7 +818,7 @@ TSharedRef<SWidget> SVehicleComponentClassCombo::GetFilterOptionsMenuContent()
 	}
 	*/
 
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }
 
 /*

@@ -45,7 +45,7 @@
 #include "SPositiveActionButton.h"
 
 #include "Soda/SodaGameViewportClient.h"
-
+#include "RuntimeEditorUtils.h"
 
 
 #define LOCTEXT_NAMESPACE "ScenarioBlock"
@@ -590,7 +590,7 @@ TSharedRef<SWidget> SScenarioActionBlock::GenerateAddEventMenu()
 			MenuBuilder.EndSection();
 		}
 
-		return MenuBuilder.MakeWidget();
+		return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 
 
 	}
@@ -625,7 +625,7 @@ TSharedRef<SWidget> SScenarioActionBlock::GenerateAddConditionalMenu(int RowInde
 			MenuBuilder.EndSection();
 		}
 
-		return MenuBuilder.MakeWidget();
+		return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 	}
 	else
 	{
@@ -683,7 +683,7 @@ TSharedRef<SWidget> SScenarioActionBlock::GenerateAddActionMenu()
 		MenuBuilder.EndSection();
 	}
 
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }
 
 void SScenarioActionBlock::OnAddActorActionNode(TWeakObjectPtr<AActor> Actor, ESelectInfo::Type SelectInfo)
@@ -763,7 +763,7 @@ TSharedRef<SWidget> SScenarioActionBlock::GetComboModeContent()
 
 	MenuBuilder.EndSection();
 
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }
 
 

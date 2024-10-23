@@ -27,6 +27,7 @@
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "RuntimeEditorUtils.h"
 
 #define LOCTEXT_NAMESPACE "ActorBar"
 
@@ -320,7 +321,7 @@ TSharedPtr<SWidget> SActorList::OnMenuOpening()
 	}
 		
 	MenuBuilder.EndSection();
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }
 
 FReply SActorList::OnPinClicked(TWeakObjectPtr<AActor> Actor)

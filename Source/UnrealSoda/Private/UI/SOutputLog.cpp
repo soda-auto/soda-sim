@@ -32,7 +32,7 @@
 #include "SodaStyleSet.h"
 #include "SodaOutputLogSettings.h"
 //#include "OutputLogStyle.h"
-
+#include "RuntimeEditorUtils.h"
 
 #define LOCTEXT_NAMESPACE "SOutputLog"
 
@@ -725,7 +725,7 @@ TSharedRef<SWidget> SConsoleInputBox::GetCommandExecutorMenuContent()
 	}
 	MenuBuilder.EndSection();
 
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }
 
 FReply SConsoleInputBox::OnKeyDownHandler(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
@@ -1693,7 +1693,7 @@ TSharedRef<SWidget> SOutputLog::MakeAddFilterMenu()
 		);
 	}
 
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }
 
 void SOutputLog::MakeSelectCategoriesSubMenu(FMenuBuilder& MenuBuilder)
@@ -1939,7 +1939,7 @@ TSharedRef<SWidget> SOutputLog::GetViewButtonContent(EOutputLogSettingsMenuFlags
 		);
 	}
 
-	return MenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }
 
 TSharedRef<SWidget> SOutputLog::CreateDrawerDockButton()

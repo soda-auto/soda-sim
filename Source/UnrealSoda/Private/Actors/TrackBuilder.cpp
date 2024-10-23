@@ -33,6 +33,7 @@
 #include "Soda/SodaApp.h"
 #include "Soda/SodaSubsystem.h"
 #include "Soda/UI/SMessageBox.h"
+#include "RuntimeEditorUtils.h"
 #include <map>
 
 struct FPolyline;
@@ -1608,7 +1609,7 @@ TSharedPtr<SWidget> ATrackBuilder::GenerateToolBar()
 		.BorderBackgroundColor(FStyleColors::Panel)
 		.Padding(3)
 		[
-			ToolbarBuilder.MakeWidget()
+			FRuntimeEditorUtils::MakeWidget_HackTooltip(ToolbarBuilder)
 		];
 }
 
