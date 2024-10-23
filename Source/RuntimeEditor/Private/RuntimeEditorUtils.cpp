@@ -599,5 +599,42 @@ FString GetDisplayNameHelper(const FField& Object)
 	return Object.GetName();
 }
 
+//------------------------------------------------------------------------------
+TSharedRef< class SWidget > MakeWidget_HackTooltip(FMultiBoxBuilder& MultiBoxBuilder, FMultiBox::FOnMakeMultiBoxBuilderOverride* InMakeMultiBoxBuilderOverride, TAttribute<float> InMaxHeight)
+{
+	class SMultiBoxWidget_HackTooltip : public SMultiBoxWidget
+	{
+		virtual bool OnVisualizeTooltip(const TSharedPtr<SWidget>& TooltipContent) override
+		{
+			return false;
+		}
+	};
+
+	TSharedRef< SMultiBoxWidget > NewMultiBoxWidget =
+		SNew(SMultiBoxWidget_HackTooltip);
+
+	// Set whether this box should be searched
+	NewMultiBoxWidget->SetSearchable(false);
+
+	// Assign ourselves to the MultiBox widget
+	NewMultiBoxWidget->SetMultiBox(MultiBoxBuilder.GetMultiBox());
+
+	// Set the maximum height the MultiBox widget should be
+	NewMultiBoxWidget->SetMaxHeight(InMaxHeight);
+
+	if ((InMakeMultiBoxBuilderOverride != nullptr) && (InMakeMultiBoxBuilderOverride->IsBound()))
+	{
+		TSharedRef<FMultiBox> ThisMultiBox = MultiBoxBuilder.GetMultiBox();
+		InMakeMultiBoxBuilderOverride->Execute(ThisMultiBox, NewMultiBoxWidget);
+	}
+	else
+	{
+		// Build up the widget
+		NewMultiBoxWidget->BuildMultiBoxWidget();
+	}
+
+	return NewMultiBoxWidget;
+}
+
 }
 

@@ -497,7 +497,7 @@ ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass
 		case ELeveSlotSource::NoSlot:
 			StaticSlot.SlotIndex = -1;
 			LevelSaveGame = LoadSaveGameLocally(WorldContextObject, StaticSlot.SlotIndex);
-			//StaticSlot.SlotSource = ELeveSlotSource::Local;
+			StaticSlot.SlotSource = ELeveSlotSource::Local;
 			break;
 		case ELeveSlotSource::NewSlot:
 			StaticSlot.SlotIndex = -1;
@@ -505,11 +505,11 @@ ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass
 			break;
 		case ELeveSlotSource::Local:
 			LevelSaveGame = LoadSaveGameLocally(WorldContextObject, StaticSlot.SlotIndex);
-			//StaticSlot.SlotSource = ELeveSlotSource::Local;
+			StaticSlot.SlotSource = ELeveSlotSource::Local;
 			break;
 		case ELeveSlotSource::Remote:
 			LevelSaveGame = LoadSaveGameRemotly(WorldContextObject, StaticSlot.ScenarioID);
-			//StaticSlot.SlotSource = ELeveSlotSource::Remote;
+			StaticSlot.SlotSource = ELeveSlotSource::Remote;
 			break;
 		}
 	}
@@ -554,7 +554,7 @@ ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass
 	}
 	else
 	{
-		LevelState->Slot = FLevelStateSlotDescription();
+		StaticSlot = LevelState->Slot = FLevelStateSlotDescription();
 	}
 
 	StaticSlot = LevelState->Slot;

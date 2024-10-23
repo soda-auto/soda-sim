@@ -11,6 +11,7 @@
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Widgets/Input/SButton.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "RuntimeEditorUtils.h"
 
 void SScenarioActionActorRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, TWeakObjectPtr<UScenarioActionActorNode> InNode, const TSharedRef<SScenarioActionTree>& InTree)
 {
@@ -118,7 +119,7 @@ TSharedRef<SWidget> SScenarioActionActorRow::GenerateAddMenu()
 			MenuBuilder.EndSection();
 		}
 		
-		return MenuBuilder.MakeWidget();
+		return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 	}
 	else
 	{

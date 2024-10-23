@@ -10,6 +10,7 @@
 #include "Widgets/Input/SButton.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Components/ActorComponent.h"
+#include "RuntimeEditorUtils.h"
 
 void SScenarioActionComponentRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, TWeakObjectPtr<UScenarioActionComponentNode> InNode, const TSharedRef<SScenarioActionTree>& InTree)
 {
@@ -103,7 +104,7 @@ TSharedRef<SWidget> SScenarioActionComponentRow::GenerateAddMenu()
 			MenuBuilder.EndSection();
 		}
 
-		return MenuBuilder.MakeWidget();
+		return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 	}
 	else
 	{

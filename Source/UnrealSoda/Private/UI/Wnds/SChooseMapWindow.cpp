@@ -34,15 +34,20 @@ void SChooseMapWindow::Construct( const FArguments& InArgs )
 
 	ChildSlot
 	[
-		SNew(SBorder)
-		.BorderImage(FSodaStyle::GetBrush("MenuWindow.Content"))
-		.Padding(5.0f)
+		SNew(SBox)
+		.MinDesiredWidth(600)
+		.MinDesiredHeight(400)
 		[
-			SNew(SListView<TSharedPtr<FLevelInfo>>)
-			.ListItemsSource(&Source)
-			.SelectionMode(ESelectionMode::Single)
-			.OnGenerateRow(this, &SChooseMapWindow::OnGenerateRow)
-			.OnMouseButtonDoubleClick(this, &SChooseMapWindow::OnDoubleClick)
+			SNew(SBorder)
+			.BorderImage(FSodaStyle::GetBrush("MenuWindow.Content"))
+			.Padding(5.0f)
+			[
+				SNew(SListView<TSharedPtr<FLevelInfo>>)
+				.ListItemsSource(&Source)
+				.SelectionMode(ESelectionMode::Single)
+				.OnGenerateRow(this, &SChooseMapWindow::OnGenerateRow)
+				.OnMouseButtonDoubleClick(this, &SChooseMapWindow::OnDoubleClick)
+			]
 		]
 	];
 }

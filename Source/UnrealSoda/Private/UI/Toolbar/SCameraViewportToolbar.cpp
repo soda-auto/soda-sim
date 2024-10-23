@@ -19,6 +19,7 @@
 #include "Soda/SodaSpectator.h"
 #include "Soda/SodaSubsystem.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "RuntimeEditorUtils.h"
 
 #define LOCTEXT_NAMESPACE "TransformToolBar"
 
@@ -73,7 +74,7 @@ TSharedRef< SWidget > SCameraViewportToolbar::GenerateCameraToolBar(const TShare
 	}
 	ToolbarBuilder.EndSection();
 
-	TSharedRef < SWidget > Widget = ToolbarBuilder.MakeWidget();
+	TSharedRef < SWidget > Widget = FRuntimeEditorUtils::MakeWidget_HackTooltip(ToolbarBuilder);
 
 
 	return Widget;
@@ -140,7 +141,7 @@ TSharedRef<SWidget> SCameraViewportToolbar::GenerateProjectionMenu() const
 	CameraMenuBuilder.AddMenuEntry(FSodalViewportCommands::Get().Back);
 	CameraMenuBuilder.EndSection();
 
-	return CameraMenuBuilder.MakeWidget();
+	return FRuntimeEditorUtils::MakeWidget_HackTooltip(CameraMenuBuilder);
 }
 
 FText SCameraViewportToolbar::GetCameraSpeedLabel() const

@@ -8,6 +8,8 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Input/SHyperlink.h"
+#include "Widgets/Layout/SScrollBox.h"
+#include "Widgets/Layout/SWrapBox.h"
 #include "Soda/SodaSubsystem.h"
 #include "Soda/SodaApp.h"
 #include "Soda/SodaUserSettings.h"
@@ -142,78 +144,154 @@ void SQuickStartWindow::Construct(const FArguments& InArgs)
 			SNew(SBorder)
 			.BorderImage(FSodaStyle::GetBrush("MenuWindow.Content"))
 			[
-				SNew(SBox)
-				.Padding(10)
-				.MinDesiredWidth(500)
-				//.MinDesiredHeight(150)
+				SNew(SScrollBox)
+				.Orientation(Orient_Vertical)
+				+ SScrollBox::Slot()
 				[
-					SNew(SVerticalBox)
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					.Padding(0, 0, 0, 0)
+					SNew(SBox)
+					.Padding(10)
+					.MinDesiredWidth(600)
+					//.MinDesiredHeight(150)
 					[
-						SNew(STextBlock)
-						.Text(FText::FromString("Controls"))
-						.Font(FSodaStyle::GetFontStyle("Font.Large"))
-					]
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					.Padding(0, 0, 0, 0)
-					.HAlign(HAlign_Left)
-					[
-						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot()
+						SNew(SVerticalBox)
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						.Padding(0, 0, 0, 0)
 						[
-							MakeTextItem("QuickStart.Icons.WASD", TEXT("Move Vehicle /"), TEXT("Move Camera"))
+							SNew(STextBlock)
+							.Text(FText::FromString("Basic Controls"))
+							.Font(FSodaStyle::GetFontStyle("Font.Large"))
 						]
-						+ SHorizontalBox::Slot()
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						.Padding(0, 0, 0, 0)
+						.HAlign(HAlign_Left)
 						[
-							MakeTextItem("QuickStart.Icons.Enter", TEXT("Possess Vehicle /"), TEXT("Free Camera"))
+							SNew(SHorizontalBox)
+							+ SHorizontalBox::Slot()
+							[
+								MakeTextItem("QuickStart.Icons.WASD", TEXT("Move Vehicle /"), TEXT("Move Camera"))
+							]
+							+ SHorizontalBox::Slot()
+							[
+								MakeTextItem("QuickStart.Icons.Enter", TEXT("Possess Vehicle /"), TEXT("Free Camera"))
+							]
+							+ SHorizontalBox::Slot()
+							[
+								MakeTextItem("QuickStart.Icons.Mouse", TEXT("Look Around"))
+							]
 						]
-						+ SHorizontalBox::Slot()
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						.Padding(0, 0, 0, 5)
 						[
-							MakeTextItem("QuickStart.Icons.Mouse", TEXT("Look Around"))
+							SNew(STextBlock)
+							.Text(FText::FromString("Tips"))
+							.Font(FSodaStyle::GetFontStyle("Font.Large"))
 						]
-					]
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					.Padding(0, 0, 0, 10)
-					[
-						SNew(STextBlock)
-						.Text(FText::FromString("Demo Scenarios"))
-						.Font(FSodaStyle::GetFontStyle("Font.Large"))
-					]
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					.Padding(20, 0, 0, 0)
-					[
-						DemoList
-					]
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					.Padding(0, 10, 0, 0)
-					[
-						SNew(STextBlock)
-						.Text(FText::FromString("Useful Resources"))
-						.Font(FSodaStyle::GetFontStyle("Font.Large"))
-					]
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					.Padding(0, 0, 0, 0)
-					.HAlign(HAlign_Left)
-					[
-						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot()
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						.Padding(20, 0, 0, 5)
 						[
-							MakeLinkItem("QuickStart.Icons.YouTube", TEXT("Quick Start"), TEXT("https://www.youtube.com/@soda-sim/videos"))
+							SNew(SVerticalBox)
+							+ SVerticalBox::Slot()
+							[
+								SNew(SWrapBox)
+								.UseAllottedSize(true)
+								.Orientation(Orient_Horizontal)
+								+ SWrapBox::Slot()
+								[
+									SNew(STextBlock)
+									.Text(FText::FromString("By default, low graphics settings are used. Go to"))
+								]
+								+ SWrapBox::Slot()
+								.Padding(3,0,3,0)
+								[
+									SNew(SImage)
+									.Image(FSodaStyle::GetBrush("Icons.Toolbar.Settings"))
+								]
+								+ SWrapBox::Slot()
+								[
+									SNew(STextBlock)
+									.Text(FText::FromString("Settings ->"))
+									.Font(FSodaStyle::GetFontStyle("NormalFontBold"))
+								]
+								+ SWrapBox::Slot()
+								.Padding(3,0,3,0)
+								[
+									SNew(SImage)
+									.Image(FSodaStyle::GetBrush("Icons.Adjust"))
+								]
+								+ SWrapBox::Slot()
+								[
+									SNew(STextBlock)
+									.Text(FText::FromString("Common Settings -> "))
+									.Font(FSodaStyle::GetFontStyle("NormalFontBold"))
+								]
+								+ SWrapBox::Slot()
+								[
+									SNew(STextBlock)
+									.Text(FText::FromString("Graphics Settings "))
+									.Font(FSodaStyle::GetFontStyle("NormalFontBold"))
+								]
+								+ SWrapBox::Slot()
+								[
+									SNew(STextBlock)
+									.Text(FText::FromString("to increase the graphics quality."))
+								]
+							]
+							/*
+							+ SVerticalBox::Slot()
+							[
+								SNew(STextBlock)
+								.Text(FText::FromString("Tip2"))
+							]
+							*/
 						]
-						+ SHorizontalBox::Slot()
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						.Padding(0, 10, 0, 0)
 						[
-							MakeLinkItem("QuickStart.Icons.Git", TEXT("GitHub"), TEXT("https://github.com/soda-auto/soda-sim"))
+							SNew(STextBlock)
+							.Text(FText::FromString("Demo Scenarios"))
+							.Font(FSodaStyle::GetFontStyle("Font.Large"))
 						]
-						+ SHorizontalBox::Slot()
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						.Padding(20, 0, 0, 0)
 						[
-							MakeLinkItem("QuickStart.Icons.Docs", TEXT("Documentation"), TEXT("https://docs.soda.auto/projects/soda-sim/en/latest/"))
+							DemoList
+						]
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						.Padding(0, 15, 0, 0)
+						[
+							SNew(STextBlock)
+							.Text(FText::FromString("Useful Resources"))
+							.Font(FSodaStyle::GetFontStyle("Font.Large"))
+						]
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						.Padding(0, 0, 0, 0)
+						.HAlign(HAlign_Left)
+						[
+							SNew(SHorizontalBox)
+							+ SHorizontalBox::Slot()
+							[
+								MakeLinkItem("QuickStart.Icons.YouTube", TEXT("Quick Start"), TEXT("https://www.youtube.com/watch?v=_IWOFE-wUS4"))
+							]
+							+ SHorizontalBox::Slot()
+							[
+								MakeLinkItem("QuickStart.Icons.YouTube", TEXT("YouTube Channel"), TEXT("https://www.youtube.com/@soda-sim/videos"))
+							]
+							+ SHorizontalBox::Slot()
+							[
+								MakeLinkItem("QuickStart.Icons.Git", TEXT("GitHub"), TEXT("https://github.com/soda-auto/soda-sim"))
+							]
+							+ SHorizontalBox::Slot()
+							[
+								MakeLinkItem("QuickStart.Icons.Docs", TEXT("Documentation"), TEXT("https://docs.soda.auto/projects/soda-sim/en/latest/"))
+							]
 						]
 					]
 				]
