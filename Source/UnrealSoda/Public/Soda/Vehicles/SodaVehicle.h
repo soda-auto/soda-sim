@@ -326,6 +326,8 @@ public:
 
 	virtual void GenerateDatasetDescription(soda::FBsonDocument& Doc) const;
 
+	virtual void DrawVisualization(USodaGameViewportClient* ViewportClient, const FSceneView* View, FPrimitiveDrawInterface* PDI) override;
+
 public:
 	/* Override from IEditableObject */
 	virtual void RuntimePostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

@@ -123,6 +123,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	ASodaActorFactory * GetActorFactory();
 
+	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
+	const TSet<AActor*>& GetSodaActors() const { return SodaActors; }
+
 	const FSodaActorDescriptor& GetSodaActorDescriptor(TSoftClassPtr<AActor> Class) const;
 	const TMap<TSoftClassPtr<AActor>, FSodaActorDescriptor> & GetSodaActorDescriptors() const;
 
@@ -161,10 +164,15 @@ protected:
 	void OnPostGarbageCollect(float Delay);
 	void AfterScenarioStop();
 
+	void OnActorSpawned(AActor* InActor);
+	void OnActorDestroyed(AActor* InActor);
+
 protected:
 	bool bIsScenarioRunning = false;
 	FDelegateHandle InitGameHandle;
 	FDelegateHandle PreEndGameHandle;
+	FDelegateHandle ActorSpawnedDelegateHandle;
+	FDelegateHandle ActorDestroyedDelegateHandle;
 	FTimerHandle TimerHandle;
 	TMap<TSoftClassPtr<AActor>, FSodaActorDescriptor> SodaActorDescriptors;
 	TSharedPtr<soda::SSodaViewport> SodaViewport;
@@ -181,4 +189,7 @@ protected:
 		//inline const bool IsValid() { return Memory.Num(); }
 	};
 	static FScenarioLevelSavedData ScenarioLevelSavedData;
+
+	UPROPERTY()
+	TSet<AActor*> SodaActors;
 };

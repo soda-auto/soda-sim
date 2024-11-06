@@ -63,12 +63,12 @@ void UNCOMWheeledVehicleMovement::OnPreActivateVehicleComponent()
 {
 	Super::OnPreActivateVehicleComponent();
 
-	if (GetWheeledVehicle()->Is4WDVehicle())
+	if (GetWheeledVehicle()->IsXWDVehicle(4))
 	{
-		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->Radius = FrontWheelRadius;
-		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->Radius = FrontWheelRadius;
-		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->Radius = RearWheelRadius;
-		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->Radius = RearWheelRadius;
+		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FL)->Radius = FrontWheelRadius;
+		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FR)->Radius = FrontWheelRadius;
+		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::RL)->Radius = RearWheelRadius;
+		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::RR)->Radius = RearWheelRadius;
 	}
 
 
@@ -333,7 +333,7 @@ void UNCOMWheeledVehicleMovement::Recv(const FArrayReaderPtr& ArrayReaderPtr, co
 
 	bIsOXTSDataValid = bIsOXTSDataValidTmp;
 
-	for (auto& Wheel : GetWheeledVehicle()->GetWheels())
+	for (auto& Wheel : GetWheeledVehicle()->GetWheelsSorted())
 	{
 		Wheel->AngularVelocity = 0;
 		Wheel->AngularVelocity = 0;

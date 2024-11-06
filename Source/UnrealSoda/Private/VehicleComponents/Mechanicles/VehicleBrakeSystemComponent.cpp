@@ -98,6 +98,7 @@ void UVehicleBrakeSystemSimpleComponent::InitializeComponent()
 	Super::InitializeComponent();
 }
 
+/*
 UWheelBrakeSimple* UVehicleBrakeSystemSimpleComponent::GetWheelSimple4WD(EWheelIndex Ind) const
 {
 	if (WheelBrakes4WD.Num() == 4 && Ind != EWheelIndex::None)
@@ -109,6 +110,7 @@ UWheelBrakeSimple* UVehicleBrakeSystemSimpleComponent::GetWheelSimple4WD(EWheelI
 		return nullptr;
 	}
 }
+*/
 
 bool UVehicleBrakeSystemSimpleComponent::OnActivateVehicleComponent()
 {
@@ -120,9 +122,7 @@ bool UVehicleBrakeSystemSimpleComponent::OnActivateVehicleComponent()
 	PedalPos = 0;
 
 	WheelBrakes.Empty();
-	WheelBrakes4WD.Empty();
 
-	const TArray<USodaVehicleWheelComponent*> & Wheels = GetWheeledVehicle()->GetWheels();
 	for (auto& Setup : WheelBrakesSetup)
 	{
 		UWheelBrakeSimple * WheelBrake = NewObject<UWheelBrakeSimple>(this);
@@ -140,25 +140,7 @@ bool UVehicleBrakeSystemSimpleComponent::OnActivateVehicleComponent()
 		WheelBrakes.Add(WheelBrake);
 	}
 
-	if (GetWheeledVehicle()->Is4WDVehicle())
-	{
-		auto Add4WDWheel = [this](EWheelIndex Index)
-		{
-			if (UWheelBrakeSimple** Wheel = WheelBrakes.FindByPredicate([this, Index](const UWheelBrakeSimple* Wheel) { return IsValid(Wheel->ConnectedWheel) && Wheel->ConnectedWheel->WheelIndex == Index; }))
-			{
-				WheelBrakes4WD.Add(*Wheel);
-			}
-		};
 
-		Add4WDWheel(EWheelIndex::Ind0_FL);
-		Add4WDWheel(EWheelIndex::Ind1_FR);
-		Add4WDWheel(EWheelIndex::Ind2_RL);
-		Add4WDWheel(EWheelIndex::Ind3_RR);
-		if (WheelBrakes4WD.Num() != 4)
-		{
-			WheelBrakes4WD.Empty();
-		}
-	}
 
 	return true;
 }
@@ -171,7 +153,6 @@ void UVehicleBrakeSystemSimpleComponent::OnDeactivateVehicleComponent()
 		It->ConditionalBeginDestroy();
 	}
 	WheelBrakes.Empty();
-	WheelBrakes4WD.Empty();
 	PedalPos = 0;
 }
 

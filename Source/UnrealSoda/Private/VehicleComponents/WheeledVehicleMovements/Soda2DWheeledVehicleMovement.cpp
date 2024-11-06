@@ -34,10 +34,13 @@ void USoda2DWheeledVehicleMovementComponent::OnPreActivateVehicleComponent()
 {
 	Super::OnPreActivateVehicleComponent();
 
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->Radius = FrontWheelRadius;
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->Radius = FrontWheelRadius;
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->Radius = RearWheelRadius;
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->Radius = RearWheelRadius;
+	if (!GetWheeledVehicle()->IsXWDVehicle(4))
+	{
+		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FL)->Radius = FrontWheelRadius;
+		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FR)->Radius = FrontWheelRadius;
+		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::RL)->Radius = RearWheelRadius;
+		GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::RR)->Radius = RearWheelRadius;
+	}
 
 	OnSetActiveMovement();
 }
@@ -52,7 +55,7 @@ bool USoda2DWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 
 	check(GetWheeledVehicle());
 
-	if (!GetWheeledVehicle()->Is4WDVehicle())
+	if (!GetWheeledVehicle()->IsXWDVehicle(4))
 	{
 		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only 4WD vehicles"));
 		return false;
@@ -260,11 +263,11 @@ void USoda2DWheeledVehicleMovementComponent::UpdateSimulation(const std::chrono:
 	PrePhysicSimulation(DeltaTime, VehicleSimData.VehicleKinematic, VehicleSimData.SimulatedTimestamp);
 
     {
-		const float Steer = -(GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->ReqSteer + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->ReqSteer) / 2;
-		const float FrontTorq = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->ReqTorq + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->ReqTorq;
-		const float RearTorq = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->ReqTorq + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->ReqTorq;
-		const float BrakeFrontTorq = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->ReqBrakeTorque + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->ReqBrakeTorque;
-		const float BrakeRearTorq = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->ReqBrakeTorque + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->ReqBrakeTorque;
+		const float Steer = -(GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FL)->ReqSteer + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FR)->ReqSteer) / 2;
+		const float FrontTorq = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FL)->ReqTorq + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FR)->ReqTorq;
+		const float RearTorq = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::RL)->ReqTorq + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::RR)->ReqTorq;
+		const float BrakeFrontTorq = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FL)->ReqBrakeTorque + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FR)->ReqBrakeTorque;
+		const float BrakeRearTorq = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::RL)->ReqBrakeTorque + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::RR)->ReqBrakeTorque;
 
 		// UE_LOG(LogSoda, Warning, TEXT("USoda2DWheeledVehicleMovementComponent::UpdateSimulation(). %.2f; %.2f"), FrontTorq, RearTorq);
 
@@ -279,14 +282,13 @@ void USoda2DWheeledVehicleMovementComponent::UpdateSimulation(const std::chrono:
 	const float Vt_FL = V_FL.GetRotated(-DynCar->car_state.steer_alpha / M_PI * 180.0).X;
 	const float Vt_FR = V_FR.GetRotated(-DynCar->car_state.steer_alpha / M_PI * 180.0).X;
 
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->AngularVelocity = CalcWheelSpeed(Vt_FL, DynCar->car_state.long_slip_f, FrontWheelRadius / 100.0);
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->AngularVelocity = CalcWheelSpeed(Vt_FR, DynCar->car_state.long_slip_f, FrontWheelRadius / 100.0);
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->AngularVelocity = CalcWheelSpeed(V_RL.X, DynCar->car_state.long_slip_r, RearWheelRadius / 100.0);
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->AngularVelocity = CalcWheelSpeed(V_RR.X, DynCar->car_state.long_slip_r, RearWheelRadius / 100.0);
+	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FL)->AngularVelocity = CalcWheelSpeed(Vt_FL, DynCar->car_state.long_slip_f, FrontWheelRadius / 100.0);
+	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FR)->AngularVelocity = CalcWheelSpeed(Vt_FR, DynCar->car_state.long_slip_f, FrontWheelRadius / 100.0);
+	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::RL)->AngularVelocity = CalcWheelSpeed(V_RL.X, DynCar->car_state.long_slip_r, RearWheelRadius / 100.0);
+	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::RR)->AngularVelocity = CalcWheelSpeed(V_RR.X, DynCar->car_state.long_slip_r, RearWheelRadius / 100.0);
 
-	for(int i = 0; i < 4; i++)
+	for(auto & Wheel: GetWheeledVehicle()->GetWheelsSorted())
 	{
-		USodaVehicleWheelComponent * Wheel = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex(i));
 		Wheel->Pitch = NormAngRad(Wheel->Pitch - Wheel->AngularVelocity * DeltaTime);
 		Wheel->SuspensionOffset2 = FVector::ZeroVector;
 	}
@@ -297,11 +299,11 @@ void USoda2DWheeledVehicleMovementComponent::UpdateSimulation(const std::chrono:
 
 	const FVector Pos = FVector( DynCar->car_state.xc * 100, -DynCar->car_state.yc * 100, ZOffset) + FRotator(0, Rot.Yaw, 0).RotateVector(FVector(CoF.X, CoF.Y, 0));
 	
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->Steer = -DynCar->car_state.steer_alpha;
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->Steer = -DynCar->car_state.steer_alpha;
+	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FL)->Steer = -DynCar->car_state.steer_alpha;
+	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FR)->Steer = -DynCar->car_state.steer_alpha;
 
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->Slip = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->Slip = FVector2D(DynCar->car_state.long_slip_f, DynCar->car_state.slipAng_f);
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->Slip = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->Slip = FVector2D(DynCar->car_state.long_slip_r, DynCar->car_state.slipAng_r);
+	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FL)->Slip = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FR)->Slip = FVector2D(DynCar->car_state.long_slip_f, DynCar->car_state.slipAng_f);
+	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::RL)->Slip = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::RR)->Slip = FVector2D(DynCar->car_state.long_slip_r, DynCar->car_state.slipAng_r);
 
 	VehicleSimData.VehicleKinematic.Push(DeltaTime);
 	VehicleSimData.VehicleKinematic.Curr.GlobalPose = FTransform(Rot, Pos, FVector::ZeroVector);

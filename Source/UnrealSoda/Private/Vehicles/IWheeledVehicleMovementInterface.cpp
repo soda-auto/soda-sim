@@ -8,9 +8,9 @@ float IWheeledVehicleMovementInterface::GetWheelBaseWidth() const
 {
 	ASodaWheeledVehicle* WheeledVehicle = GetWheeledVehicle();
 
-	if (WheeledVehicle->Is4WDVehicle())
+	if (WheeledVehicle->IsXWDVehicle(4))
 	{
-		return FMath::Abs(WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind0_FL)->RestingLocation.X - WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind2_RL)->RestingLocation.X);
+		return FMath::Abs(WheeledVehicle->GetWheelByIndex(EWheelIndex::FL)->RestingLocation.X - WheeledVehicle->GetWheelByIndex(EWheelIndex::RL)->RestingLocation.X);
 	}
 	else
 	{
@@ -23,13 +23,13 @@ float IWheeledVehicleMovementInterface::GetTrackWidth() const
 {
 	ASodaWheeledVehicle* WheeledVehicle = GetWheeledVehicle();
 
-	if (WheeledVehicle->Is4WDVehicle())
+	if (WheeledVehicle->IsXWDVehicle(4))
 	{
-		return FMath::Abs(WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind0_FL)->RestingLocation.Y - WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind1_FR)->RestingLocation.Y);
+		return FMath::Abs(WheeledVehicle->GetWheelByIndex(EWheelIndex::FL)->RestingLocation.Y - WheeledVehicle->GetWheelByIndex(EWheelIndex::FR)->RestingLocation.Y);
 	}
 	else
 	{
-		checkf(false, TEXT("Nessessory override GetTrackWidth() for no 4WD vehicle"));
+		checkf(false, TEXT("Nessessory override GetTrackWidth() for not 4WD vehicle"));
 		return 100;
 	}
 	
@@ -37,7 +37,7 @@ float IWheeledVehicleMovementInterface::GetTrackWidth() const
 
 void IWheeledVehicleMovementInterface::PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
 {
-	for (auto & Wheel : GetWheeledVehicle()->GetWheels())
+	for (auto & Wheel : GetWheeledVehicle()->GetWheelsSorted())
 	{
 		Wheel->ReqTorq = 0;
 		Wheel->ReqBrakeTorque = 0;

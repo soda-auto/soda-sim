@@ -50,7 +50,7 @@ bool UGenericWheeledVehicleSensor::OnActivateVehicleComponent()
 
 	WheeledVehicle = Cast<ASodaWheeledVehicle>(GetVehicle());
 
-	if (!WheeledVehicle && !WheeledVehicle->Is4WDVehicle())
+	if (!WheeledVehicle && !WheeledVehicle->IsXWDVehicle(4))
 	{
 		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only 4WD vehicles"));
 		return false;
@@ -59,7 +59,7 @@ bool UGenericWheeledVehicleSensor::OnActivateVehicleComponent()
 	//Engine = LinkToEngine.GetObject<UVehicleEngineBaseComponent>(GetOwner());
 	//SteeringRack = LinkToSteering.GetObject<UVehicleSteeringRackBaseComponent>(GetOwner());
 	//BrakeSystem = LinkToBrakeSystem.GetObject<UVehicleBrakeSystemBaseComponent>(GetOwner());
-	//HandBrake = LinkToHandBrake.GetObject<UVehicleHandBrakeBaseComponent>(GetOwner());
+	//HandBrake = LinkToHandBrake.GetObject<UVehicleBrakeSystemBaseComponent>(GetOwner());
 	GearBox = LinkToGearBox.GetObject<UVehicleGearBoxBaseComponent>(GetOwner());
 	VehicleDriver = LinkToGearBox.GetObject<UVehicleDriverComponent>(GetOwner());
 
@@ -183,24 +183,24 @@ void UGenericWheeledVehicleSensor::OnPushDataset(soda::FActorDatasetData& Datase
 		auto DriveMode = VehicleDriver ? VehicleDriver->GetDriveMode() : ESodaVehicleDriveMode::Manual;
 		auto GearState = GearBox ? GearBox->GetGearState() : EGearState::Neutral;
 		int GearNum = GearBox ? GearBox->GetGearNum() : 0;
-		float Steer = WheeledVehicle->Is4WDVehicle() 
-			? (WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind0_FL)->Steer + WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind1_FR)->Steer) / 2 
-			: 0;
+		//float Steer = WheeledVehicle->IsXWDVehicle(4)
+		//	? (WheeledVehicle->GetWheelByIndex(EWheelIndex::FL)->Steer + WheeledVehicle->GetWheelByIndex(EWheelIndex::FR)->Steer) / 2 
+		//	: 0;
 
 		bsoncxx::builder::stream::document& Doc = Dataset.GetRowDoc();
 		Doc << std::string(TCHAR_TO_UTF8(*GetName())) << open_document
 			<< "DriveMode" << int(DriveMode)
 			<< "GearState" << int(GearState)
-			<< "GearNum" << GearNum
-			<< "bIs4WDVehicle" << WheeledVehicle->Is4WDVehicle()
-			<< "Steer" << Steer;
+			<< "GearNum" << GearNum;
+		//	<< "bIs4WDVehicle" << WheeledVehicle->Is4WDVehicle()
+		//	<< "Steer" << Steer;
 
 		auto WheelsArray = Doc << "Wheels" << open_array;
-		for (auto & Wheel : WheeledVehicle->GetWheels())
+		for (auto & Wheel : WheeledVehicle->GetWheelsSorted())
 		{
 			WheelsArray
 				<< open_document
-				<< "WheelIndex" << int(Wheel->WheelIndex)
+				<< "WheelIndex" << int(Wheel->GetWheelIndex())
 				<< "ReqTorq" << Wheel->ReqTorq
 				<< "ReqBrakeTorque" << Wheel->ReqBrakeTorque
 				<< "ReqSteer" << Wheel->ReqSteer

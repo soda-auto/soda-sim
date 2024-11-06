@@ -13,6 +13,8 @@ namespace FEditorUtils
 
 class SWidget;
 class USodaGameViewportClient;
+class FSceneView;
+class PDI;
 
 /**
  * FSodaActorDescriptor
@@ -134,7 +136,7 @@ public:
 	virtual bool GetActorHiddenInScenario() const { return false; }
 
 	// TODO: may by add these in the future
-	//virtual void DrawVisualization(USodaGameViewportClient* ViewportClient, const FSceneView* View, FPrimitiveDrawInterface* PDI) {}
+
 	//virtual bool HandleClick(USodaGameViewportClient* ViewportClient, UActorComponent* ActorComponent, const FEditorUtils::FViewportClick& Click) { return false; }
 	//virtual bool GetWidgetLocation(const USodaGameViewportClient* ViewportClient, FVector& OutLocation) const { return false; }
 	//virtual bool GetCustomInputCoordinateSystem(const USodaGameViewportClient* ViewportClient, FMatrix& OutMatrix) const { return false; }
@@ -144,6 +146,7 @@ public:
 	//virtual void EndEditing() {}
 	//virtual TSharedPtr<SWidget> GenerateContextMenu() const { return SNullWidget::NullWidget; }
 	virtual void InputWidgetDelta(const USceneComponent* WidgetTargetComponent, FTransform & NewWidgetTransform) {}
+	virtual void DrawVisualization(USodaGameViewportClient* ViewportClient, const FSceneView* View, FPrimitiveDrawInterface* PDI) {}
 
 public:
 	/* Override from IEditableObject */

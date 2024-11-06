@@ -21,11 +21,11 @@ void UWheelsSkidEffectComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	if (!HealthIsWorkable()) return;
 
-	if (MarkParticleSystem.Num() == SmokeParticleSystem.Num() == GetWheeledVehicle()->GetWheels().Num())
+	if (MarkParticleSystem.Num() == SmokeParticleSystem.Num() == GetWheeledVehicle()->GetWheelsSorted().Num())
 	{
-		for (int i = 0; i < GetWheeledVehicle()->GetWheels().Num(); ++i)
+		for (int i = 0; i < GetWheeledVehicle()->GetWheelsSorted().Num(); ++i)
 		{
-			USodaVehicleWheelComponent * SodaWheel = GetWheeledVehicle()->GetWheels()[i];
+			USodaVehicleWheelComponent * SodaWheel = GetWheeledVehicle()->GetWheelsSorted()[i];
 
 			FVector GlobalVelocity = GetWheeledComponentInterface()->GetSimData().VehicleKinematic.Curr.GetGlobaVelocityAtGlobalPoint(SodaWheel->GetWheelLocation(true, true));
 			//FVector LocalVelocity = GetVehicleDriver()->GetLastOutputRegs().Dyn.Curr.GlobalPose.Rotator().UnrotateVector(GlobalVelocity);
@@ -33,7 +33,7 @@ void UWheelsSkidEffectComponent::TickComponent(float DeltaTime, ELevelTick TickT
 			//FVector2D Slip2D = GetWheeledComponentInterface()->GetWheelSlip(i);
 			//float Slip = FMath::Abs(GetWheeledComponentInterface()->GetWheelSlip(i).Size());
 
-			FVector WheelVelocity = GetWheeledVehicle()->GetWheels()[i]->GetWheelLocalVelocity();
+			FVector WheelVelocity = GetWheeledVehicle()->GetWheelsSorted()[i]->GetWheelLocalVelocity();
 
 			float SlipVx = WheelVelocity.X - SodaWheel->AngularVelocity * SodaWheel->Radius;
 			float SlipVy = WheelVelocity.Y;
@@ -70,7 +70,7 @@ bool UWheelsSkidEffectComponent::OnActivateVehicleComponent()
 
 	if (MarkEmitterTemplate)
 	{
-		for (int i = 0; i < GetWheeledVehicle()->GetWheels().Num(); ++i)
+		for (int i = 0; i < GetWheeledVehicle()->GetWheelsSorted().Num(); ++i)
 		{
 			UParticleSystemComponent* PSC = NewObject<UParticleSystemComponent>(this);
 			PSC->SetupAttachment(GetWheeledVehicle()->GetMesh());
@@ -90,7 +90,7 @@ bool UWheelsSkidEffectComponent::OnActivateVehicleComponent()
 
 	if (SmokeEmitterTemplate)
 	{
-		for (int i = 0; i < GetWheeledVehicle()->GetWheels().Num(); ++i)
+		for (int i = 0; i < GetWheeledVehicle()->GetWheelsSorted().Num(); ++i)
 		{
 			UParticleSystemComponent* PSC = NewObject<UParticleSystemComponent>(this);
 			PSC->SetupAttachment(GetWheeledVehicle()->GetMesh());

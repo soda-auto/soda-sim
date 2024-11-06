@@ -37,11 +37,32 @@ bool UVehicleDifferentialSimpleComponent::OnActivateVehicleComponent()
 		return false;
 	}
 
-	if (!GetWheeledVehicle()->Is4WDVehicle())
+	UObject* TorqueTransmissionObject1 = LinkToTorqueTransmission1.GetObject<UObject>(GetOwner());
+	ITorqueTransmission* TorqueTransmissionInterface1 = Cast<ITorqueTransmission>(TorqueTransmissionObject1);
+	if (TorqueTransmissionObject1 && TorqueTransmissionInterface1)
 	{
-		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only 4WD vehicles"));
+		OutputTorqueTransmission1.SetInterface(TorqueTransmissionInterface1);
+		OutputTorqueTransmission1.SetObject(TorqueTransmissionObject1);
+	}
+	else
+	{
+		SetHealth(EVehicleComponentHealth::Error, TEXT("Transmission1 isn't connected"));
 		return false;
 	}
+
+	UObject* TorqueTransmissionObject2 = LinkToTorqueTransmission2.GetObject<UObject>(GetOwner());
+	ITorqueTransmission* TorqueTransmissionInterface2 = Cast<ITorqueTransmission>(TorqueTransmissionObject2);
+	if (TorqueTransmissionObject2 && TorqueTransmissionInterface2)
+	{
+		OutputTorqueTransmission2.SetInterface(TorqueTransmissionInterface2);
+		OutputTorqueTransmission2.SetObject(TorqueTransmissionObject2);
+	}
+	else
+	{
+		SetHealth(EVehicleComponentHealth::Error, TEXT("Transmission2 isn't connected"));
+		return false;
+	}
+	
 
 	return true;
 }
@@ -58,18 +79,8 @@ void UVehicleDifferentialSimpleComponent::PassTorque(float InTorque)
 		InTorq = InTorque;
 		OutTorq = InTorque * Ratio * 0.5;
 
-		switch (DifferentialType)
-		{
-		case EVehicleDifferentialType::Open_FrontDrive:
-			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->ReqTorq += OutTorq;
-			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->ReqTorq += OutTorq;
-			break;
-
-		case EVehicleDifferentialType::Open_RearDrive:
-			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->ReqTorq += OutTorq;
-			GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->ReqTorq += OutTorq;
-			break;
-		}
+		OutputTorqueTransmission1->PassTorque(OutTorq);
+		OutputTorqueTransmission2->PassTorque(OutTorq);
 	}
 	else
 	{
@@ -82,15 +93,7 @@ float UVehicleDifferentialSimpleComponent::ResolveAngularVelocity() const
 {
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		switch (DifferentialType)
-		{
-		case EVehicleDifferentialType::Open_FrontDrive:
-			InAngularVelocity = std::max(GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->AngularVelocity, GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->AngularVelocity);
-			break;
-		case EVehicleDifferentialType::Open_RearDrive:
-			InAngularVelocity = std::max(GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->AngularVelocity, GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->AngularVelocity);
-			break;
-		}
+		InAngularVelocity = std::max(OutputTorqueTransmission1->ResolveAngularVelocity(), OutputTorqueTransmission2->ResolveAngularVelocity());
 		OutAngularVelocity = InAngularVelocity * Ratio;
 		return OutAngularVelocity;
 	}
@@ -101,13 +104,10 @@ bool UVehicleDifferentialSimpleComponent::FindWheelRadius(float& OutRadius) cons
 {
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		switch (DifferentialType)
+		float Radius1, Radius2;
+		if (OutputTorqueTransmission1->FindWheelRadius(Radius1) && OutputTorqueTransmission2->FindWheelRadius(Radius2))
 		{
-		case EVehicleDifferentialType::Open_FrontDrive:
-			OutRadius = (GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->Radius + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->Radius) / 2.0;
-			return true;
-		case EVehicleDifferentialType::Open_RearDrive:
-			OutRadius = (GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind2_RL)->Radius + GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind3_RR)->Radius) / 2.0;
+			OutRadius = (Radius1 + Radius1) / 2;
 			return true;
 		}
 	}

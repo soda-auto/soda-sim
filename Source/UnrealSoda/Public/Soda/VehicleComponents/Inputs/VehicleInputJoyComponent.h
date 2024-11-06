@@ -7,6 +7,8 @@
 #include "Soda/Vehicles/VehicleBaseTypes.h"
 #include "VehicleInputJoyComponent.generated.h"
 
+class UVehicleSteeringRackBaseComponent;
+
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API UVehicleInputJoyComponent : public UVehicleInputComponent
 {
@@ -131,6 +133,9 @@ protected:
 
 protected:
 	ISodaJoystickPlugin * Joy = nullptr;
+
+	UPROPERTY()
+	UVehicleSteeringRackBaseComponent* SteeringRack = nullptr;
 
 	float MaxSteer = 0;
 

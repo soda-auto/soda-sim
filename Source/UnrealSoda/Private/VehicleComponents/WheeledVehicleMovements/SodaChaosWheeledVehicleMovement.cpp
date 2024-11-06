@@ -353,14 +353,14 @@ bool USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 		return false;
 	}
 
-	if (GetWheeledVehicle()->GetWheels().Num() != SodaWheelSetups.Num())
+	if (GetWheeledVehicle()->GetWheelsSorted().Num() != SodaWheelSetups.Num())
 	{
 		SetHealth(EVehicleComponentHealth::Error);
-		UE_LOG(LogSoda, Error, TEXT("USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent(); Mismatch count of SodaWheels[%i] and SodaWheelSetups[%i]"), GetWheeledVehicle()->GetWheels().Num(), SodaWheelSetups.Num());
+		UE_LOG(LogSoda, Error, TEXT("USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent(); Mismatch count of SodaWheels[%i] and SodaWheelSetups[%i]"), GetWheeledVehicle()->GetWheelsSorted().Num(), SodaWheelSetups.Num());
 		return false;
 	}
 
-	if (GetWheeledVehicle()->GetWheels().Num() == 0)
+	if (GetWheeledVehicle()->GetWheelsSorted().Num() == 0)
 	{
 		SetHealth(EVehicleComponentHealth::Error);
 		UE_LOG(LogSoda, Error, TEXT("USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent(); USodaVehicleWheel.Num() == 0"));

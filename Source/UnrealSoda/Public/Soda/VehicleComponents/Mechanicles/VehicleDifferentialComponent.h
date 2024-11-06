@@ -42,12 +42,25 @@ class UNREALSODA_API UVehicleDifferentialSimpleComponent : public UVehicleDiffer
 {
 	GENERATED_UCLASS_BODY()
 
+	UPROPERTY(BlueprintReadOnly, Category = Differential)
+	TScriptInterface<ITorqueTransmission> OutputTorqueTransmission1;
+
+	UPROPERTY(BlueprintReadOnly, Category = Differential)
+	TScriptInterface<ITorqueTransmission> OutputTorqueTransmission2;
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Differential, SaveGame, meta = (EditInRuntime))
 	EVehicleDifferentialType DifferentialType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "TorqueTransmission"))
+	FSubobjectReference LinkToTorqueTransmission1 { TEXT("WheelFL") };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "TorqueTransmission"))
+	FSubobjectReference LinkToTorqueTransmission2 { TEXT("WheelFR") };
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Differential, SaveGame, meta = (EditInRuntime))
 	float Ratio = 1.0;
+
 
 protected:
 	virtual bool OnActivateVehicleComponent() override;

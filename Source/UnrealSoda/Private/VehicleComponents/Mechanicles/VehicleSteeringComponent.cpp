@@ -52,9 +52,9 @@ bool UVehicleSteeringRackSimpleComponent::OnActivateVehicleComponent()
 
 	SteerInputRatio = 0;
 
-	if (!GetWheeledVehicle()->Is4WDVehicle())
+	if (GetWheeledVehicle()->GetNumChassis() <= 0)
 	{
-		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only 4WD vehicles"));
+		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only xWD vehicles"));
 		return false;
 	}
 
@@ -92,8 +92,8 @@ void UVehicleSteeringRackSimpleComponent::UpdateSteer(float DeltaTime, const FPh
 	CurrentSteerAng += std::abs(DeltaSteerReq) < std::abs(DeltaSteer) ? DeltaSteerReq : DeltaSteer;
 	CurrentSteerAng = FMath::Clamp(CurrentSteerAng, -MaxSteerAngle, MaxSteerAngle);
 
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->ReqSteer = CurrentSteerAng;
-	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->ReqSteer = CurrentSteerAng;
+	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FL)->ReqSteer = CurrentSteerAng;
+	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FR)->ReqSteer = CurrentSteerAng;
 }
 
 void UVehicleSteeringRackSimpleComponent::PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp & Timestamp)

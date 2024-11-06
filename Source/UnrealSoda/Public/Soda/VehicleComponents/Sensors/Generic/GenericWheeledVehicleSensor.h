@@ -13,7 +13,6 @@ class UVehicleGearBoxBaseComponent;
 //class UVehicleBrakeSystemBaseComponent;
 //class UVehicleEngineBaseComponent;
 //class UVehicleSteeringRackBaseComponent;
-//class UVehicleHandBrakeBaseComponent;
 
 
 struct UNREALSODA_API FWheeledVehicleSensorData
@@ -69,7 +68,7 @@ public:
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/UnrealSoda.VehicleBrakeSystemBaseComponent"))
 	//FSubobjectReference LinkToBrakeSystem{ TEXT("BrakeSystem") };
 
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/UnrealSoda.VehicleHandBrakeBaseComponent"))
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/UnrealSoda.VehicleBrakeSystemBaseComponent"))
 	//FSubobjectReference LinkToHandBrake{ TEXT("HandBrake") };
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/UnrealSoda.VehicleGearBoxBaseComponent"))
@@ -90,7 +89,7 @@ protected:
 	//UVehicleSteeringRackBaseComponent* SteeringRack = nullptr;
 
 	//UPROPERTY(BlueprintReadOnly, Category = Link)
-	//UVehicleHandBrakeBaseComponent* HandBrake = nullptr;
+	//UVehicleBrakeSystemBaseComponent* HandBrake = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, Category = Link)
 	UVehicleGearBoxBaseComponent* GearBox = nullptr;

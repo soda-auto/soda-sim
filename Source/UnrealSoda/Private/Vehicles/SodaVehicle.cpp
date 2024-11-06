@@ -1756,3 +1756,11 @@ void ASodaVehicle::NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, c
 {
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 }
+
+void ASodaVehicle::DrawVisualization(USodaGameViewportClient* ViewportClient, const FSceneView* View, FPrimitiveDrawInterface* PDI)
+{
+	for (auto& Component : GetVehicleComponents())
+	{
+		Component->DrawVisualization(ViewportClient, View, PDI);
+	}
+}
