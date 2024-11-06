@@ -83,7 +83,8 @@ bool UVehicleInputJoyComponent::OnActivateVehicleComponent()
 		return false;
 	}
 
-	if (UVehicleSteeringRackBaseComponent* SteeringRack = LinkToSteering.GetObject<UVehicleSteeringRackBaseComponent>(GetOwner()))
+	SteeringRack = LinkToSteering.GetObject<UVehicleSteeringRackBaseComponent>(GetOwner());
+	if (SteeringRack)
 	{
 		MaxSteer = SteeringRack->GetMaxSteer() / M_PI * 180.0;
 	}
@@ -104,6 +105,7 @@ void UVehicleInputJoyComponent::OnDeactivateVehicleComponent()
 		Joy->StopConstantForceEffect();
 	}
 	Joy = nullptr;
+	SteeringRack = nullptr;
 }
 
 void UVehicleInputJoyComponent::UpdateInputStates(float DeltaTime, float ForwardSpeed, const APlayerController* PlayerController)
@@ -166,7 +168,7 @@ void UVehicleInputJoyComponent::UpdateInputStates(float DeltaTime, float Forward
 	}
 		
 	const float InputSteeringSpeed = (InputState.Steering - PrevSteeringInput) / DeltaTime;
-	const float CurrSteer = GetWheeledVehicle()->GetSteer() / M_PI * 180.0;
+	const float CurrSteer = SteeringRack ? SteeringRack->GetCurrentSteer() / M_PI * 180.0 : 0;
 
 	FeedbackAutocenterFactor = 0;
 	FeedbackDiffFactor = 0;
@@ -212,10 +214,10 @@ void UVehicleInputJoyComponent::UpdateInputStates(float DeltaTime, float Forward
 	//UE_LOG(LogSoda, Warning, TEXT("---- %f %f"), GetMaxSteerAngle() * SteeringInput, OutputRegs.GetSteer() / M_PI * 180.0);
 	//UE_LOG(LogSoda, Warning, TEXT("**** %f %f %f %f %f"), DriverInputSteerTension, WheelTension, AutocenterCurveValue, FullTension, SteeringInputSpeed);
 
-	if (bEnableBumpEffect && GetWheeledVehicle()->Is4WDVehicle())
+	if (bEnableBumpEffect && GetWheeledVehicle()->IsXWDVehicle(4))
 	{
-		float NewOffsetLeft = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind0_FL)->SuspensionOffset2.Length();
-		float NewOffsetRight = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::Ind1_FR)->SuspensionOffset2.Length();
+		float NewOffsetLeft = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FL)->SuspensionOffset2.Length();
+		float NewOffsetRight = GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FR)->SuspensionOffset2.Length();
 		float SuspensionTranslationSpeedLeft = (FrontWheelPrevSuspensionOffset[0] - NewOffsetLeft) / DeltaTime;
 		float SuspensionTranslationSpeedRight = (FrontWheelPrevSuspensionOffset[1] - NewOffsetRight) / DeltaTime;
 		FrontWheelPrevSuspensionOffset[0] = NewOffsetLeft;

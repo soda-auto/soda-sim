@@ -69,6 +69,17 @@ void USodaSubsystem::PostInitialize()
 
 	InitGameHandle = FGameModeEvents::GameModeInitializedEvent.AddUObject(this, &USodaSubsystem::InitGame);
 	PreEndGameHandle = FWorldDelegates::OnWorldBeginTearDown.AddUObject(this, &USodaSubsystem::PreEndGame);
+
+	ActorSpawnedDelegateHandle = GetWorldRef().AddOnActorSpawnedHandler(FOnActorSpawned::FDelegate::CreateUObject(this, &USodaSubsystem::OnActorSpawned));
+	ActorDestroyedDelegateHandle = GetWorldRef().AddOnActorDestroyedHandler(FOnActorSpawned::FDelegate::CreateUObject(this, &USodaSubsystem::OnActorDestroyed));
+
+	for (TActorIterator<AActor> It(&GetWorldRef()); It; ++It)
+	{
+		if (It->GetClass()->ImplementsInterface(USodaActor::StaticClass()))
+		{
+			SodaActors.Add(*It);
+		}
+	}
 }
 
 void USodaSubsystem::Deinitialize()
@@ -76,6 +87,9 @@ void USodaSubsystem::Deinitialize()
 	Super::Deinitialize();
 
 	SodaApp.NotifyEndGame();
+
+	GetWorldRef().RemoveOnActorSpawnedHandler(ActorSpawnedDelegateHandle);
+	GetWorldRef().RemoveOnActorDestroyededHandler(ActorDestroyedDelegateHandle);
 }
 
 void USodaSubsystem::InitGame(AGameModeBase* GameMode)
@@ -762,3 +776,18 @@ bool USodaSubsystem::CloseWaitingPanel(bool bCloseAll)
 	}
 }
 
+void USodaSubsystem::OnActorSpawned(AActor* InActor)
+{
+	if (InActor->GetClass()->ImplementsInterface(USodaActor::StaticClass()))
+	{
+		SodaActors.Add(InActor);
+	}
+}
+
+void USodaSubsystem::OnActorDestroyed(AActor* InActor)
+{
+	if (InActor->GetClass()->ImplementsInterface(USodaActor::StaticClass()))
+	{
+		SodaActors.Remove(InActor);
+	}
+}

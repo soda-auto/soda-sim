@@ -167,6 +167,8 @@ public:
 	virtual bool FindToWheelRatio(float & OutRatio) const = 0;
 };
 
+/*
+* 
 USTRUCT(BlueprintType)
 struct FWheeledVehicleWheelState
 {
@@ -217,6 +219,7 @@ struct FWheeledVehicleState
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = VehicleInputRate)
 	FWheeledVehicleWheelState WheelsRR;
 };
+*/
 
 struct FVehicleSimData
 {

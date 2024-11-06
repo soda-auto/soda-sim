@@ -19,7 +19,6 @@
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 #include "Soda/VehicleComponents/Mechanicles/VehicleBrakeSystemComponent.h"
 #include "Soda/VehicleComponents/Mechanicles/VehicleEngineComponent.h"
-#include "Soda/VehicleComponents/Mechanicles/VehicleHandBrakeComponent.h"
 #include "Soda/VehicleComponents/Mechanicles/VehicleSteeringComponent.h"
 #include "Soda/VehicleComponents/Mechanicles/VehicleDifferentialComponent.h"
 #include "Soda/VehicleComponents/Mechanicles/VehicleGearBoxComponent.h"
@@ -29,6 +28,7 @@
 #include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
 #include "Soda/SodaUserSettings.h"
+#include <algorithm>
 
 /******************************************************************************************
  * ASodaWheeledVehicle
@@ -124,7 +124,7 @@ const FVehicleSimData& ASodaWheeledVehicle::GetSimData() const
 
 USodaVehicleWheelComponent* ASodaWheeledVehicle::GetWheelByIndex(EWheelIndex Ind) const
 { 
-	if (Ind != EWheelIndex::None)
+	if (Ind != EWheelIndex::Undefined)
 	{
 		return Wheels[int(Ind)];
 	}
@@ -229,20 +229,49 @@ void ASodaWheeledVehicle::ReRegistreVehicleComponents()
 	GetComponents<UVehicleDriverComponent>(VehicleDrivers);
 	GetComponents<UVehicleGearBoxBaseComponent>(GearBoxes);
 	GetComponents<UVehicleSteeringRackBaseComponent>(VehicleSteeringRacks);
-	GetComponents<UVehicleHandBrakeBaseComponent>(VehicleHandBrakes);
+	GetComponents<UVehicleBrakeSystemBaseComponent>(VehicleHandBrakes);
 	GetComponents<UVehicleDifferentialBaseComponent>(VehicleDifferentials);
 
 	Wheels.Sort([](const USodaVehicleWheelComponent & L, const USodaVehicleWheelComponent & R) 
 	{ 
-		return (uint8)L.WheelIndex < (uint8)R.WheelIndex;
+		return (uint8)L.GetWheelIndex() < (uint8)R.GetWheelIndex();
 	});
 
+	/*
 	for (int i = 0; i < Wheels.Num(); ++i)
 	{
 		if (Wheels[i]->WheelIndex != EWheelIndex(i))
 		{
 			Wheels[i]->WheelIndex = EWheelIndex(i);
 			UE_LOG(LogSoda, Warning, TEXT("ASodaWheeledVehicle::ReRegistreVehicleComponents(); Wheels indexes is inconsistency. Check WheelIndex for all weels"));
+		}
+	}
+	*/
+
+	WheelsByIndex.Reset();
+	WheelsByIndex.SetNumZeroed(256);
+	for (auto& Wheel : Wheels)
+	{
+		WheelsByIndex[(int)Wheel->GetWheelIndex()] = Wheel;
+
+		UE_LOG(LogSoda, Warning, TEXT("******* %i"), (int)Wheel->GetWheelIndex());
+	}
+
+	if (bIsCustomWheelsScheme || Wheels.Num() % 2 != 0)
+	{
+		NumChassis = -1;
+	}
+	else
+	{
+		NumChassis = Wheels.Num() / 2;
+		for (int i = 0; i < NumChassis; ++i)
+		{
+			if ((uint8(Wheels[i * 2 + 0]->GetWheelIndex()) != ((uint8(i) << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Left)) ||
+				(uint8(Wheels[i * 2 + 1]->GetWheelIndex()) != ((uint8(i) << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Right)))
+			{
+				NumChassis = -1;
+				break;
+			}
 		}
 	}
 
@@ -314,11 +343,12 @@ float ASodaWheeledVehicle::GetEnginesLoad() const
 	return Load / VehicleEngines.Num();
 }
 
+/*
 float ASodaWheeledVehicle::GetReqSteer() const
 {
 	if (Is4WDVehicle())
 	{
-		return (GetWheelByIndex(EWheelIndex::Ind0_FL)->ReqSteer + GetWheelByIndex(EWheelIndex::Ind1_FR)->ReqSteer) / 2.0;
+		return (GetWheelByIndex(EWheelIndex::FL)->ReqSteer + GetWheelByIndex(EWheelIndex::FR)->ReqSteer) / 2.0;
 	}
 	else
 	{
@@ -330,7 +360,7 @@ float ASodaWheeledVehicle::GetSteer() const
 {
 	if (Is4WDVehicle())
 	{
-		return (GetWheelByIndex(EWheelIndex::Ind0_FL)->Steer + GetWheelByIndex(EWheelIndex::Ind1_FR)->Steer) / 2.0;
+		return (GetWheelByIndex(EWheelIndex::FL)->Steer + GetWheelByIndex(EWheelIndex::FR)->Steer) / 2.0;
 	}
 	else
 	{
@@ -362,17 +392,16 @@ FWheeledVehicleState ASodaWheeledVehicle::GetVehicleState() const
 				Out.Steer = In.Steer;
 			};
 
-			WheelDataConv(*GetWheelByIndex(EWheelIndex::Ind0_FL), Ret.WheelsFL);
-			WheelDataConv(*GetWheelByIndex(EWheelIndex::Ind1_FR), Ret.WheelsFR);
-			WheelDataConv(*GetWheelByIndex(EWheelIndex::Ind2_RL), Ret.WheelsRL);
-			WheelDataConv(*GetWheelByIndex(EWheelIndex::Ind3_RR), Ret.WheelsRR);
+			WheelDataConv(*GetWheelByIndex(EWheelIndex::FL), Ret.WheelsFL);
+			WheelDataConv(*GetWheelByIndex(EWheelIndex::FR), Ret.WheelsFR);
+			WheelDataConv(*GetWheelByIndex(EWheelIndex::RL), Ret.WheelsRL);
+			WheelDataConv(*GetWheelByIndex(EWheelIndex::RR), Ret.WheelsRR);
 		}
 	}
 
-
-
 	return Ret;
 }
+*/
 
 void ASodaWheeledVehicle::ScenarioBegin()
 {
@@ -421,7 +450,7 @@ void ASodaWheeledVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) cons
 		{
 			const auto& Wheel = Wheels[i];
 			WheelsArray << open_document
-				//<< "4wdInd" << int(Wheel->WheelIndex)
+				<< "Ind" << int(Wheel->GetWheelIndex())
 				<< "AngVel" << Wheel->ResolveAngularVelocity()
 				<< "ReqTorq" << Wheel->ReqTorq
 				<< "ReqBrakeTorq" << Wheel->ReqBrakeTorque

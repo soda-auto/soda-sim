@@ -53,10 +53,10 @@ bool UVehicleInputOpenLoopComponent::OnActivateVehicleComponent()
 
 	WheeledComponentInterface = GetWheeledComponentInterface();
 	Veh = WheeledComponentInterface->GetWheeledVehicle();
-	WheelFL = Veh->GetWheelByIndex(EWheelIndex::Ind0_FL);
-	WheelFR = Veh->GetWheelByIndex(EWheelIndex::Ind1_FR);
-	WheelRL = Veh->GetWheelByIndex(EWheelIndex::Ind2_RL);
-	WheelRR = Veh->GetWheelByIndex(EWheelIndex::Ind3_RR);
+	WheelFL = Veh->GetWheelByIndex(EWheelIndex::FL);
+	WheelFR = Veh->GetWheelByIndex(EWheelIndex::FR);
+	WheelRL = Veh->GetWheelByIndex(EWheelIndex::RL);
+	WheelRR = Veh->GetWheelByIndex(EWheelIndex::RR);
 
 	switch (OpenLoopManeuverType)
 	{

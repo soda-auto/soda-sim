@@ -9,7 +9,6 @@
 class UVehicleBrakeSystemBaseComponent;
 class UVehicleEngineBaseComponent;
 class UVehicleSteeringRackBaseComponent;
-class UVehicleHandBrakeBaseComponent;
 class UVehicleGearBoxBaseComponent;
 
 USTRUCT(BlueprintType)

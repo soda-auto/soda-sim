@@ -13,7 +13,6 @@ class UVehicleDriverComponent;
 class UVehicleBrakeSystemBaseComponent;
 class UVehicleEngineBaseComponent;
 class UVehicleSteeringRackBaseComponent;
-class UVehicleHandBrakeBaseComponent;
 class UVehicleDifferentialBaseComponent;
 class UVehicleGearBoxBaseComponent;
 
@@ -44,8 +43,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = Vehicle, meta = (AllowPrivateAccess = "true"))
 	class UPawnMovementComponent *VehicleMovement = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Vehicle, SaveGame, meta = (EditInRuntime, ReactivateActor))
-	bool bIs4WDVehicle = false;
+	/** Must be set if EWheelIndex::IndX are used. 
+	  * Should be used if it is not possible to describe the location of the wheels with default EWheelIndex.
+	  * That is, the vehicle is not a symmetrical N-wheel vehicle, or a bicycle or a tricycle.
+	  */
+	UPROPERTY(BlueprintReadOnly, Category = Vehicle, meta = (AllowPrivateAccess = "true"))
+	bool bIsCustomWheelsScheme = false;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
@@ -69,23 +72,32 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
 	virtual float GetEnginesLoad() const;
 
-	UFUNCTION(BlueprintCallable, Category = Vehicle)
-	virtual FWheeledVehicleState GetVehicleState() const;
+	//UFUNCTION(BlueprintCallable, Category = Vehicle)
+	//virtual FWheeledVehicleState GetVehicleState() const;
 
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
 	virtual USodaVehicleWheelComponent* GetWheelByIndex(EWheelIndex Ind) const;
 
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
-	virtual const TArray<USodaVehicleWheelComponent*>& GetWheels() const { return Wheels; }
+	virtual const TArray<USodaVehicleWheelComponent*>& GetWheelsSorted() const { return Wheels; }
 
+	/** Return 256 size array. Use EWheelIndex to get element from the array */
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
-	bool Is4WDVehicle() const { return bIs4WDVehicle; }
+	virtual const TArray<USodaVehicleWheelComponent*>& GetWheelsByIndex() const { return WheelsByIndex; } 
+
+	/** Check this vehicle is symmetrical wheeled vehicle (the same number of wheels on the left and right sides) with InNumChassis   */
+	UFUNCTION(BlueprintCallable, Category = Vehicle)
+	bool IsXWDVehicle(int InNumChassis) const { return NumChassis > 0 || NumChassis == InNumChassis; }
+
+	/** Return -1 if the vehicle isn't xWD (symmetrical) vehicle */
+	UFUNCTION(BlueprintCallable, Category = Vehicle)
+	int GetNumChassis() const { return NumChassis; }
 
 	/** Compute the steering request as the arithmetic average of the steering request of the two front wheels. */
-	virtual float GetReqSteer() const;
+	//virtual float GetReqSteer() const;
 
 	/** Compute the actual steering as the arithmetic average of the actual steering of the two front wheels. */
-	virtual float GetSteer() const;
+	//virtual float GetSteer() const;
 
 public:
 	virtual class USkeletalMeshComponent* GetMesh() const { return Mesh; }
@@ -152,7 +164,7 @@ protected:
 	TArray<UVehicleSteeringRackBaseComponent*> VehicleSteeringRacks;
 
 	UPROPERTY(Transient)
-	TArray<UVehicleHandBrakeBaseComponent*> VehicleHandBrakes;
+	TArray<UVehicleBrakeSystemBaseComponent*> VehicleHandBrakes;
 
 	UPROPERTY(Transient)
 	TArray<UVehicleDifferentialBaseComponent*> VehicleDifferentials;
@@ -160,8 +172,13 @@ protected:
 	UPROPERTY(Transient)
 	TArray<USodaVehicleWheelComponent*> Wheels;
 
+	UPROPERTY(Transient)
+	TArray<USodaVehicleWheelComponent*> WheelsByIndex; // 256 static size
+
 	int Zoom = 0;
 
 	FCollisionResponseContainer DefCollisionResponseToChannel;
 	ECollisionChannel DefCollisionObjectType;
+
+	int NumChassis = -1; // -1 means the vehicle isn't xWD (symmetrical) vehicle 
 };

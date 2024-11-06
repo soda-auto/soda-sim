@@ -88,14 +88,14 @@ bool UProtoV1WheeledVehiclePublisher::Publish(float DeltaTime, const FSensorData
 	Msg.gear_state = soda::sim::proto_v1::EGearState(SensorData.GearBox ? SensorData.GearBox->GetGearState() : EGearState::Neutral);
 	Msg.gear_num = SensorData.GearBox ? SensorData.GearBox->GetGearNum() : 0;
 	Msg.mode = soda::sim::proto_v1::EControlMode(SensorData.VehicleDriver ? SensorData.VehicleDriver->GetDriveMode() : ESodaVehicleDriveMode::Manual);
-	Msg.steer = SensorData.WheeledVehicle->Is4WDVehicle()
-		? -(SensorData.WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind0_FL)->Steer + SensorData.WheeledVehicle->GetWheelByIndex(EWheelIndex::Ind1_FR)->Steer) / 2
+	Msg.steer = SensorData.WheeledVehicle->IsXWDVehicle(4)
+		? -(SensorData.WheeledVehicle->GetWheelByIndex(EWheelIndex::FL)->Steer + SensorData.WheeledVehicle->GetWheelByIndex(EWheelIndex::FR)->Steer) / 2
 		: 0;
-	if (SensorData.WheeledVehicle->Is4WDVehicle())
+	if (SensorData.WheeledVehicle->IsXWDVehicle(4))
 	{
 		for (int i = 0; i < 4; i++)
 		{
-			const auto & Wheel = SensorData.WheeledVehicle->GetWheels()[i];
+			const auto & Wheel = SensorData.WheeledVehicle->GetWheelsSorted()[i];
 			Msg.wheels_state[i].ang_vel = Wheel->AngularVelocity;
 			Msg.wheels_state[i].torq = Wheel->ReqTorq;
 			Msg.wheels_state[i].brake_torq = Wheel->ReqBrakeTorque;

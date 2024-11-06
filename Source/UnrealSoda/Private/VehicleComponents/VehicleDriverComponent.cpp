@@ -33,7 +33,7 @@ UVehicleDriverComponent::UVehicleDriverComponent(const FObjectInitializer &Objec
 
 bool UVehicleDriverComponent::IsEnabledBrakeLight() const 
 {
-	for (auto & Wheel : GetWheeledVehicle()->GetWheels())
+	for (auto & Wheel : GetWheeledVehicle()->GetWheelsSorted())
 	{
 		if(Wheel->ReqBrakeTorque > 0.1) return true;
 	}

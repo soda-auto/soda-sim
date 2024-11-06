@@ -166,6 +166,14 @@ void USodaGameViewportClient::Draw(const FSceneView* View, FPrimitiveDrawInterfa
 
 		USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 
+		for (auto& It : SodaSubsystem->GetSodaActors())
+		{
+			if (ISodaActor* SodaActor = Cast<ISodaActor>(It))
+			{
+				SodaActor->DrawVisualization(this, View, PDI);
+			}
+		}
+
 		AActor* SelectedActor = Selection->GetSelectedActor();
 		ISodaActor* SodaActor = Cast<ISodaActor>(SelectedActor);
 		if (SelectedActor && (!SodaActor || SodaActor->ShowSelectBox()))

@@ -40,7 +40,7 @@ void FSodaVehicleAnimationInstanceProxy::SetVehicle(const ASodaWheeledVehicle* S
 {
 	check(SodaVehicle);
 
-	const int32 NumOfwheels = SodaVehicle->GetWheels().Num();
+	const int32 NumOfwheels = SodaVehicle->GetWheelsSorted().Num();
 	WheelInstances.Empty(NumOfwheels);
 	if (NumOfwheels > 0)
 	{
@@ -49,7 +49,7 @@ void FSodaVehicleAnimationInstanceProxy::SetVehicle(const ASodaWheeledVehicle* S
 		for (int32 WheelIndex = 0; WheelIndex < WheelInstances.Num(); ++WheelIndex)
 		{
 			FSodaWheelAnimationData& WheelInstance = WheelInstances[WheelIndex];
-			const auto & Wheel = SodaVehicle->GetWheels()[WheelIndex];
+			const auto & Wheel = SodaVehicle->GetWheelsSorted()[WheelIndex];
 
 			// set data
 			WheelInstance.BoneName = Wheel->BoneName;
@@ -71,7 +71,7 @@ void FSodaVehicleAnimationInstanceProxy::PreUpdate(UAnimInstance* InAnimInstance
 			FSodaWheelAnimationData& WheelInstance = WheelInstances[WheelIndex];
 			//if (Vehicle->Wheels.IsValidIndex(WheelIndex))
 			{
-				const auto & VehicleWheel = Vehicle->GetWheels()[WheelIndex];
+				const auto & VehicleWheel = Vehicle->GetWheelsSorted()[WheelIndex];
 				if (WheelSpokeCount > 0 && ShutterSpeed > 0 && MaxAngularVelocity > SMALL_NUMBER) // employ stagecoach effect
 				{
 					// normalized spoke transition value

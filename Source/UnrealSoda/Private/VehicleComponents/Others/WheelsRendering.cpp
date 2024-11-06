@@ -100,13 +100,13 @@ bool UWheelsRenderingComponent::OnActivateVehicleComponent()
 		return false;
 	}
 
-	if (!GetWheeledVehicle()->Is4WDVehicle())
+	if (GetWheeledVehicle()->GetNumChassis() <= 0)
 	{
-		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only 4WD vehicles"));
+		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only xWD vehicles"));
 		return false;
 	}
 
-	for (size_t i = 0; i < GetWheeledVehicle()->GetWheels().Num(); i++)
+	for (size_t i = 0; i < GetWheeledVehicle()->GetWheelsSorted().Num(); i++)
 	{
 		UStaticMeshComponent* WheelMeshComponent = NewObject<UStaticMeshComponent>(this);
 		WheelMeshComponent->SetupAttachment(GetWheeledVehicle()->GetMesh());

@@ -10,7 +10,6 @@
 #include "Soda/VehicleComponents/Mechanicles/VehicleSteeringComponent.h"
 #include "Soda/VehicleComponents/Mechanicles/VehicleEngineComponent.h"
 #include "Soda/VehicleComponents/Mechanicles/VehicleBrakeSystemComponent.h"
-#include "Soda/VehicleComponents/Mechanicles/VehicleHandBrakeComponent.h"
 #include "Soda/VehicleComponents/Mechanicles/VehicleGearBoxComponent.h"
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 #include "Soda/LevelState.h"
@@ -49,7 +48,7 @@ bool UGenericVehicleDriverComponentComponent::OnActivateVehicleComponent()
 		return false;
 	}
 
-	if (!GetWheeledVehicle()->Is4WDVehicle())
+	if (!GetWheeledVehicle()->IsXWDVehicle(4))
 	{
 		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only 4WD vehicles"));
 		return false;
@@ -58,7 +57,7 @@ bool UGenericVehicleDriverComponentComponent::OnActivateVehicleComponent()
 	Engine = LinkToEngine.GetObject<UVehicleEngineBaseComponent>(GetOwner()); 
 	SteeringRack = LinkToSteering.GetObject<UVehicleSteeringRackBaseComponent>(GetOwner());
 	BrakeSystem = LinkToBrakeSystem.GetObject<UVehicleBrakeSystemBaseComponent>(GetOwner());
-	HandBrake = LinkToHandBrake.GetObject<UVehicleHandBrakeBaseComponent>(GetOwner());
+	HandBrake = LinkToHandBrake.GetObject<UVehicleBrakeSystemBaseComponent>(GetOwner());
 	GearBox = LinkToGearBox.GetObject<UVehicleGearBoxBaseComponent>(GetOwner());
 
 	if (!Engine)
@@ -166,7 +165,7 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 			if (Engine) Engine->RequestByRatio(ThrottleReq);
 			if (BrakeSystem) BrakeSystem->RequestByRatio(BrakeReq, DeltaTime);
 			if (SteeringRack) SteeringRack->RequestByRatio(SteerReq);
-			if (HandBrake) HandBrake->RequestByRatio(HandBrakeReq);
+			if (HandBrake) HandBrake->RequestByRatio(HandBrakeReq, DeltaTime);
 		}
 	}
 	else if ((GetDriveMode() == ESodaVehicleDriveMode::SafeStop) || (GetDriveMode() == ESodaVehicleDriveMode::AD && !bVapiPing)) // SafeStop mode
@@ -175,7 +174,7 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 		if (Engine) Engine->RequestByRatio(0.0);
 		if (BrakeSystem) BrakeSystem->RequestByRatio(0.0, DeltaTime);
 		if (SteeringRack) SteeringRack->RequestByRatio(0.0);
-		if (HandBrake) HandBrake->RequestByRatio(1.0);
+		if (HandBrake) HandBrake->RequestByRatio(1.0, DeltaTime);
 	}
 	else // AD mode
 	{
@@ -333,11 +332,11 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 		{
 			if (GearState == EGearState::Park)
 			{
-				HandBrake->RequestByRatio(1.0);
+				HandBrake->RequestByRatio(1.0, DeltaTime);
 			}
 			else
 			{
-				HandBrake->RequestByRatio(0.0);
+				HandBrake->RequestByRatio(0.0, DeltaTime);
 			}
 		}
 	}

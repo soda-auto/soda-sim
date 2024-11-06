@@ -14,6 +14,8 @@
 
 class SWidget;
 class FSceneView;
+class USodaGameViewportClient;
+class PDI;
 class FPrimitiveDrawInterface;
 class UCanvas;
 class ASodaVehicle;
@@ -254,6 +256,8 @@ public:
 	virtual void ScenarioEnd() {}
 
 	virtual void DrawSelection(const FSceneView* View, FPrimitiveDrawInterface* PDI);
+
+	virtual void DrawVisualization(USodaGameViewportClient* ViewportClient, const FSceneView* View, FPrimitiveDrawInterface* PDI) {}
 
 	EVehicleComponentDeferredTask GetDeferredTask() const { return DeferredTask; }
 	void SetDeferredTask(EVehicleComponentDeferredTask Task) { DeferredTask = Task; }
