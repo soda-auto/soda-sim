@@ -51,6 +51,12 @@ bool UVehicleInputOpenLoopComponent::OnActivateVehicleComponent()
 {
 	Super::OnActivateVehicleComponent();
 
+	if (!GetWheeledVehicle() && !GetWheeledVehicle()->IsXWDVehicle(4))
+	{
+		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only 4WD vehicles"));
+		return false;
+	}
+
 	WheeledComponentInterface = GetWheeledComponentInterface();
 	Veh = WheeledComponentInterface->GetWheeledVehicle();
 	WheelFL = Veh->GetWheelByIndex(EWheelIndex::FL);
