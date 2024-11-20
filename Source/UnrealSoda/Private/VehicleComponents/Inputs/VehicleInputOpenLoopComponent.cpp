@@ -59,6 +59,15 @@ bool UVehicleInputOpenLoopComponent::OnActivateVehicleComponent()
 
 	WheeledComponentInterface = GetWheeledComponentInterface();
 	Veh = WheeledComponentInterface->GetWheeledVehicle();
+
+	const TArray<USodaVehicleWheelComponent*>& Wheels = Veh->GetWheelsSorted();
+
+	if (!GetWheeledVehicle()->IsXWDVehicle(4))
+	{
+		SetHealth(EVehicleComponentHealth::Error, TEXT("Supports only 4wd vehicle"));
+		return false;
+	}
+
 	WheelFL = Veh->GetWheelByIndex(EWheelIndex::FL);
 	WheelFR = Veh->GetWheelByIndex(EWheelIndex::FR);
 	WheelRL = Veh->GetWheelByIndex(EWheelIndex::RL);
@@ -120,6 +129,9 @@ void UVehicleInputOpenLoopComponent::SetupDoubleStepSteer()
 	float MaxSteeringAngleSigned = (DoubleTripleStepSteerPrm.bSteerPositive ? 1.0 : -1.0) * DoubleTripleStepSteerPrm.MaxSteeringAngle;
 
 	ResetInputCurves();
+
+	ScenarioSt.TimeToStart = DoubleTripleStepSteerPrm.TimeToStartScenario;
+
 
 	CurveFloatSteering->FloatCurve.AddKey(LastTime, 0 * PI / 180);
 
@@ -253,7 +265,12 @@ void UVehicleInputOpenLoopComponent::GetNewInput(float DeltaTime)
 	float SpeedNorm = SimData.VehicleKinematic.Curr.GlobalVelocityOfCenterMass.Size() / 100;
 
 	LocalTime = LocalTime + DeltaTime;
+	GlobalTime = GlobalTime + DeltaTime;
 
+	if (GlobalTime < ScenarioSt.TimeToStart)
+	{
+		return;
+	}
 
 
 	if (ScenarioSt.bScenarioAcv)
@@ -580,10 +597,14 @@ void UVehicleInputOpenLoopComponent::ScenarioIsDone()
 	WheelRR->ReqBrakeTorque = 0.0;
 	WheelRR->ReqSteer = 0.0;
 
-	FNotificationInfo Info(FText::FromString(FString("Scenario is done, you can stop simulation now")));
-	Info.ExpireDuration = 5.0f;
-	Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.SuccessWithColor"));
-	FSlateNotificationManager::Get().AddNotification(Info);
+	if (bGenerateNotificationWhenDone)
+	{
+		FNotificationInfo Info(FText::FromString(FString("Scenario is done, you can stop simulation now")));
+		Info.ExpireDuration = 5.0f;
+		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.SuccessWithColor"));
+		FSlateNotificationManager::Get().AddNotification(Info);
+	}
+
 }
 
 float UVehicleInputOpenLoopComponent::Lut1(float x, float x0, float x1, float y0, float y1)

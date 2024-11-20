@@ -53,6 +53,7 @@ ASodaWheeledVehicle::ASodaWheeledVehicle(const FObjectInitializer& ObjectInitial
 	SpringArm = CreateDefaultSubobject< USpringArmComponent >(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(Mesh);
 	SpringArm->TargetArmLength = 700;
+	SpringArm->CameraRotationLagSpeed = 1.0;
 
 	FollowCamera = CreateDefaultSubobject< UCameraComponent >(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
@@ -126,7 +127,7 @@ USodaVehicleWheelComponent* ASodaWheeledVehicle::GetWheelByIndex(EWheelIndex Ind
 { 
 	if (Ind != EWheelIndex::Undefined)
 	{
-		return Wheels[int(Ind)];
+		return WheelsByIndex[int(Ind)];
 	}
 	else
 	{
@@ -200,6 +201,11 @@ void ASodaWheeledVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, F
 		SpringArm->SetRelativeRotation(FRotator(Pitch, Yaw, 0));
 		SpringArm->TargetArmLength = SavedSpringArmLength + Zoom * Zoom * 100;
 	}
+
+
+	SpringArm->bEnableCameraLag = bEnableCameraLag;
+	SpringArm->bEnableCameraRotationLag = bEnableCameraLag;
+	
 }
 
 UPawnMovementComponent* ASodaWheeledVehicle::GetMovementComponent() const

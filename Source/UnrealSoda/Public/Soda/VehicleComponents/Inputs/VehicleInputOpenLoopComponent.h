@@ -29,6 +29,10 @@ struct FDoubleStepSteerPrms
 	GENERATED_BODY()
 
 public:
+	/** Timout before start of the acceleration, sec */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), meta = (ClampMin = "0"))
+	float TimeToStartScenario = 1.0;
+
 	/** Rate of steering input, deg/s */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), meta = (ClampMin = "0.1"), meta = (ClampMax = "5000"))
 	float SteeringRate = 50;
@@ -194,6 +198,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "OpenLoopGeneralParameters")
 	bool bBrakeWhenScenarioIsDone = true;
 
+	/** True to generate notification when scenario is done  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "OpenLoopGeneralParameters")
+	bool bGenerateNotificationWhenDone = true;
+
 	/** Total braking torque request to apply when scenario is done, affected by BrkTqBalance, N*m */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "OpenLoopGeneralParameters", meta = (EditCondition = "bBrakeWhenScenarioIsDone"))
 	float BrkTqReqWhenScenarioIsDone = 2000;
@@ -244,6 +252,7 @@ protected:
 
 	FScenarioRunner ScenarioSt;
 	float LocalTime = 0;
+	float GlobalTime = 0;
 
 	void SetupDoubleStepSteer();
 	void SetupRampSteer();

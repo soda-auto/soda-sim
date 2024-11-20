@@ -181,4 +181,15 @@ protected:
 	ECollisionChannel DefCollisionObjectType;
 
 	int NumChassis = -1; // -1 means the vehicle isn't xWD (symmetrical) vehicle 
+
+
+
+public:
+
+	/** True to enable camera lag during vehicle movement */
+	UPROPERTY(EditAnywhere, Category = "Camera", SaveGame, meta = (EditInRuntime))
+	bool bEnableCameraLag = true;
+
+
+
 };
