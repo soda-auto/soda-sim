@@ -112,6 +112,13 @@ UWheelBrakeSimple* UVehicleBrakeSystemSimpleComponent::GetWheelSimple4WD(EWheelI
 }
 */
 
+UWheelBrake* UVehicleBrakeSystemSimpleComponent::FindWheelByIndex(EWheelIndex Ind) const
+{
+	auto Found = WheelBrakes.FindByPredicate([Ind](auto& WheelBrake) { return WheelBrake->ConnectedWheel->GetWheelIndex() == Ind; });
+	if (Found) return *Found;
+	else return nullptr;
+}
+
 bool UVehicleBrakeSystemSimpleComponent::OnActivateVehicleComponent()
 {
 	if (!Super::OnActivateVehicleComponent())

@@ -77,7 +77,7 @@ public:
 	virtual UWheelBrake* GetWheel(int Ind) const { return nullptr; }
 
 	UFUNCTION(BlueprintCallable, Category = BrakeSystem)
-	virtual UWheelBrake* GetWheelByIndex(EWheelIndex Ind) const { return nullptr; }
+	virtual UWheelBrake* FindWheelByIndex(EWheelIndex Ind) const { return nullptr; }
 
 	UFUNCTION(BlueprintCallable, Category = BrakeSystem)
 	virtual float ComputeFullTorqByRatio(float InRatio) { return 0; }
@@ -123,7 +123,7 @@ struct FWheelBrakeSetup
  * UWheelBrakeSimple
  */
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
-class UWheelBrakeSimple: public UWheelBrake
+class UNREALSODA_API UWheelBrakeSimple: public UWheelBrake
 {
 	friend UVehicleBrakeSystemSimpleComponent;
 
@@ -174,6 +174,7 @@ public:
 	virtual void RequestByRatio(float InRatio, double DeltaTime) override;
 	virtual void RequestByPressure(float InBar, double DeltaTime) override;
 	virtual UWheelBrake* GetWheel(int Ind) const override { return WheelBrakes[Ind]; }
+	virtual UWheelBrake* FindWheelByIndex(EWheelIndex Ind) const override;
 	virtual float ComputeFullTorqByRatio(float InRatio) override;
 
 	UWheelBrakeSimple* GetWheelSimple(int Ind) const { return WheelBrakes[Ind]; }
