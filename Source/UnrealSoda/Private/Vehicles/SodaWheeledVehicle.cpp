@@ -259,8 +259,6 @@ void ASodaWheeledVehicle::ReRegistreVehicleComponents()
 	for (auto& Wheel : Wheels)
 	{
 		WheelsByIndex[(int)Wheel->GetWheelIndex()] = Wheel;
-
-		UE_LOG(LogSoda, Warning, TEXT("******* %i"), (int)Wheel->GetWheelIndex());
 	}
 
 	if (bIsCustomWheelsScheme || Wheels.Num() % 2 != 0)

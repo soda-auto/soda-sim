@@ -145,7 +145,7 @@ enum class EVehicleComponentPostDeferredPhysTickGroup : uint8
 };
 
 UINTERFACE(Blueprintable)
-class UTorqueTransmission : public UInterface
+class UNREALSODA_API UTorqueTransmission : public UInterface
 {
 	GENERATED_BODY()
 };

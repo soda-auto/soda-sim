@@ -17,9 +17,6 @@ public:
 	FSubobjectReference LinkToIOBus;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ThrottalPedal, SaveGame, meta = (EditInRuntime, ReactivateActor))
-	FName IOBusNodeName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ThrottalPedal, SaveGame, meta = (EditInRuntime, ReactivateActor))
 	TArray<FIOPinSetup> Pins;
 
 public:
@@ -35,5 +32,6 @@ protected:
 	UIOBusComponent* IOBus{};
 
 	UPROPERTY();
-	UIOBusNode* Node {};
+	TArray<TObjectPtr<UIOPin>> PinInterfaces{};
+	
 };

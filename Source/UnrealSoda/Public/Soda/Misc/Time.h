@@ -6,6 +6,8 @@
 #include <chrono>
 #include <string>
 
+#include "Time.generated.h"
+
 typedef std::chrono::time_point<std::chrono::system_clock> TTimestamp;
 
 namespace soda 
@@ -49,3 +51,25 @@ namespace soda
 		return soda::ToString(int64(soda::RawTimestamp<Units>(Timestamp)));
 	}
 }
+
+USTRUCT(BlueprintType)
+struct UNREALSODA_API FTimestamp
+{
+	GENERATED_BODY()
+
+	FTimestamp() = default;
+	FTimestamp(TTimestamp Timestamp)
+		:Timestamp(Timestamp)
+	{}
+
+	TTimestamp& operator *()
+	{ 
+		return Timestamp;
+	}
+
+	const TTimestamp& operator *() const 
+	{ 
+		return Timestamp; 
+	}
+	TTimestamp Timestamp{};
+};
