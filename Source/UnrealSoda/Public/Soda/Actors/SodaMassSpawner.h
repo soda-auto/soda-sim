@@ -25,6 +25,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Traffic, meta = (EditInRuntime))
 	bool bSpawnTrafficOnScenarioStart = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Traffic, meta = (EditInRuntime))
+	int32 OverridenCount = 20;
+
 	UFUNCTION(BlueprintCallable, Category = "Traffic", CallInEditor)
 	void ToggleSpawnTraffic();
 
@@ -36,6 +39,8 @@ public:
 	virtual void SetActorHiddenInScenario(bool bInHiddenInScenario) override;
 	virtual bool GetActorHiddenInScenario() const override;
 	virtual bool ShowSelectBox() const override { return false; }
+	virtual void ScenarioBegin() override;
+	virtual void ScenarioEnd() override;
 
 private:
 	bool bHiddenInScenario = false;
