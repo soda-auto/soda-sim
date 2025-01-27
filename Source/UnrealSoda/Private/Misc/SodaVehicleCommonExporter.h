@@ -12,10 +12,10 @@ class FSodaVehicleCommonExporter : public ISodaVehicleExporter
 {
 public:
 	virtual bool ExportToString(const ASodaVehicle* Vehicle, FString& String) override;
-	virtual const FString& GetExporterName() const override { return ExporterName; }
+	virtual const FName& GetExporterName() const override { return ExporterName; }
 	virtual const FString& GetFileTypes() const override { return ExporterFileType; }
 
-	static const FString ExporterName;
+	static const FName ExporterName;
 	static const FString ExporterFileType;
 
 	static TSharedPtr<FJsonObject> GetImuIntrinsics(const UNavSensor* Sensor);

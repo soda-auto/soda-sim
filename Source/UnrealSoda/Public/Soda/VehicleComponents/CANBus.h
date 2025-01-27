@@ -56,6 +56,8 @@ public:
 	FCanDevRecvFrameDelegate RecvDelegate;
 
 public:
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	virtual bool ProcessRecvMessage(const TTimestamp& Timestamp, const dbc::FCanFrame& CanFrame);
 	virtual int SendFrame(const dbc::FCanFrame& CanFrame);
 

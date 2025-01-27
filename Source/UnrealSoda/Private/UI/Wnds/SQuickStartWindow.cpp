@@ -12,7 +12,7 @@
 #include "Widgets/Layout/SWrapBox.h"
 #include "Soda/SodaSubsystem.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "SodaStyleSet.h"
 #include "Widgets/Layout/SUniformGridPanel.h"
 #include "Soda/LevelState.h"
@@ -317,12 +317,13 @@ void SQuickStartWindow::Construct(const FArguments& InArgs)
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Lambda([](ECheckBoxState NewState) 
 				{
-					SodaApp.GetSodaUserSettings()->bShowQuickStartAtStartUp = (NewState == ECheckBoxState::Checked ? true : false);
-					SodaApp.GetSodaUserSettings()->SaveSettings();
+					GetMutableDefault<USodaCommonSettings>()->bShowQuickStartAtStartUp = (NewState == ECheckBoxState::Checked ? true : false);
+					GetMutableDefault<USodaCommonSettings>()->SaveConfig();
+					//GetMutableDefault<USodaCommonSettings>()->SaveSettings();
 				})
 				.IsChecked_Lambda([]() 
 				{ 
-					return SodaApp.GetSodaUserSettings()->bShowQuickStartAtStartUp ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+					return GetDefault<USodaCommonSettings>()->bShowQuickStartAtStartUp ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
 				})
 			]
 		]

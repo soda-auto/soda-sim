@@ -8,7 +8,7 @@
 #include "Soda/SodaSubsystem.h"
 #include "Soda/LevelState.h"
 #include "Soda/UnrealSodaVersion.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -172,9 +172,9 @@ USodaSubsystem* USodaStatics::GetSodaSubsystem()
 	return USodaSubsystem::Get();
 }
 
-USodaUserSettings* USodaStatics::GetSodaUserSettings()
+USodaCommonSettings* USodaStatics::GetSodaCommonSettings()
 {
-	return SodaApp.GetSodaUserSettings();
+	return GetMutableDefault<USodaCommonSettings>();
 }
 
 FName USodaStatics::GetLevelName(const UObject* WorldContextObject)
@@ -293,7 +293,7 @@ void USodaStatics::TagActor(AActor* Actor, bool bTagForSemanticSegmentation, EAc
 			Component->ComponentTags.AddUnique(TEXT("CusomSegmTag"));
 		}
 		SetStencilValue(*Component, Label, bTagForSemanticSegmentation);
-		Component->SetCollisionResponseToChannel(SodaApp.GetSodaUserSettings()->RadarCollisionChannel, ECollisionResponse::ECR_Overlap);
+		Component->SetCollisionResponseToChannel(GetDefault<USodaCommonSettings>()->RadarCollisionChannel, ECollisionResponse::ECR_Overlap);
 	}
 }
 

@@ -10,12 +10,12 @@
 #include "Soda/Misc/Utils.h"
 #include "Soda/Misc/Time.h"
 #include "Soda/Vehicles/ISodaVehicleExporter.h"
+#include "Soda/ISodaDataset.h"
 #include "JsonObjectWrapper.h"
 #include <cmath>
 
 class IHttpRouter;
 class USodaSubsystem;
-class USodaUserSettings;
 
 namespace dbc
 {
@@ -61,15 +61,22 @@ public:
 	USodaSubsystem* GetSodaSubsystem() const;
 	USodaSubsystem* GetSodaSubsystemChecked() const;
 
-	const USodaUserSettings* GetSodaUserSettings() const;
-	USodaUserSettings* GetSodaUserSettings();
-
 	TSharedPtr<dbc::FMessageSerializator> FindDBCSerializator(const FString& MessageName, const FString& Namespace = FString());
 	bool RegisterDBC(const FString& Namespace, const FString& FileName);
 
-	void RegisterVehicleExporter(TSharedPtr<ISodaVehicleExporter> Exporter);
-	void UnregisterVehicleExporter(const FString& ExporteName);
-	const TMap<FString, TSharedPtr<ISodaVehicleExporter>>& GetVehicleExporters() const { return VehicleExporters; }
+	void RegisterVehicleExporter(TSharedRef<ISodaVehicleExporter> Exporter);
+	void UnregisterVehicleExporter(const FName& ExporteName);
+	const TMap<FName, TSharedPtr<ISodaVehicleExporter>>& GetVehicleExporters() const { return VehicleExporters; }
+
+	void RegisterDatasetManager(FName DatasetName, TSharedRef<soda::IDatasetManager> DatasetManager);
+	void UnregisterDatasetManager(FName DatasetName);
+	const TMap<FName, TSharedPtr<soda::IDatasetManager>>& GetDatasetManagers() const { return DatasetManagers; }
+
+	//void SetActiveDatasetManager(const FName& Name);
+	//void SetActiveDatasetManager(TSharedPtr<soda::IDatasetManager> DatasetManager);
+	//TSharedPtr<soda::IDatasetManager> GetActiveDatasetManager();
+	//soda::IDatasetManager * GetActiveDatasetManagerPtr();
+
 
 	TSharedPtr<soda::FOutputLogHistory> GetOutputLogHistory() { return OutputLogHistory; }
 
@@ -99,8 +106,6 @@ protected:
 	void SetSodaSubsystem(USodaSubsystem* InSodaSubsystem);
 	void ResetSodaSubsystem();
 
-	void CreateSodaUserSettings();
-
 	zmq::context_t* ZmqCtx = nullptr;
 
 	// Current GameWorld
@@ -123,11 +128,10 @@ protected:
 	TWeakObjectPtr<USodaSubsystem> SodaSubsystem;
 	bool bInitialized = false;
 
-	TWeakObjectPtr<USodaUserSettings> SodaUserSettings;
-
 	TMap<FString, TMap<FString, TSharedPtr<dbc::FMessageSerializator>>> DBCPool;
 
-	TMap<FString, TSharedPtr<ISodaVehicleExporter>> VehicleExporters;
+	TMap<FName, TSharedPtr<ISodaVehicleExporter>> VehicleExporters;
+	TMap<FName, TSharedPtr<soda::IDatasetManager>> DatasetManagers;
 
 	TSharedPtr<soda::FOutputLogHistory> OutputLogHistory;
 };

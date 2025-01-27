@@ -9,7 +9,6 @@
 #include "Engine/CollisionProfile.h"
 #include "Soda/Misc/Utils.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
 #include "Components/SkeletalMeshComponent.h"
 
 DECLARE_CYCLE_STAT(TEXT("BicycleCompute"), STAT_BicycleCompute, STATGROUP_SodaVehicle);
@@ -327,6 +326,8 @@ void USoda2DWheeledVehicleMovementComponent::UpdateSimulation(const std::chrono:
 	PostPhysicSimulationDeferred(DeltaTime, VehicleSimData.VehicleKinematic, VehicleSimData.SimulatedTimestamp);
 
 	WheeledVehicle->PhysicMutex.Unlock();
+
+	SyncDataset();
 }
 
 void USoda2DWheeledVehicleMovementComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)

@@ -80,6 +80,9 @@ float USodaVehicleWheelComponent::ResolveAngularVelocity() const
 	{
 		UE_LOG(LogSoda, Log, TEXT("USodaVehicleWheelComponent::ResolveAngularVelocity(); AngularVelocity: %f"), AngularVelocity);
 	}
+
+	SyncDataset();
+
 	return  AngularVelocity; 
 }
 

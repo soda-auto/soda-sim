@@ -61,6 +61,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Differential, SaveGame, meta = (EditInRuntime))
 	float Ratio = 1.0;
 
+	float GetInTorq() const { return InTorq; }
+	float GetOutTorq() const{ return OutTorq; }
+	float GetInAngularVelocity() const{ return InAngularVelocity; }
+	float GetOutAngularVelocity() const{ return OutAngularVelocity; }
 
 protected:
 	virtual bool OnActivateVehicleComponent() override;
@@ -72,7 +76,6 @@ public:
 	virtual float ResolveAngularVelocity() const override;
 	virtual bool FindWheelRadius(float& OutRadius) const override;
 	virtual bool FindToWheelRatio(float& OutRatio) const override { OutRatio = Ratio; return true; }
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 	mutable float InTorq = 0;

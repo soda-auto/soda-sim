@@ -197,14 +197,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Sensor)
 	void RestoreBaseImuNoiseParams();
 
+	const FPhysBodyKinematic& GetStoredBodyKinematic() const { return StoredBodyKinematic; }
+
 protected:
-	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FTransform & RelativeTransform, const FPhysBodyKinematic& VehicleKinematic) { return false; }
+	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FTransform & RelativeTransform, const FPhysBodyKinematic& VehicleKinematic) { SyncDataset(); return false; }
 
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 	FImuNoiseParams StoredParams;

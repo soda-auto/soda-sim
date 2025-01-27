@@ -55,8 +55,3 @@ void UWheeledVehicleComponent::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
 }
-
-void UWheeledVehicleComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
-{
-	Super::OnPushDataset(Dataset);
-}

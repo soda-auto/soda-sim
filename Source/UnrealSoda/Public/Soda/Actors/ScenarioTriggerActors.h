@@ -6,6 +6,7 @@
 #include "UObject/ObjectMacros.h"
 #include "GameFramework/Actor.h"
 #include "Soda/ISodaActor.h"
+#include "Soda/ISodaDataset.h"
 #include "ScenarioTriggerActors.generated.h"
 
 class UBillboardComponent;
@@ -13,9 +14,10 @@ class UShapeComponent;
 
 /** An actor used to generate collision events (begin/end overlap) in the level. */
 UCLASS(ClassGroup=Soda, abstract, ConversionRoot)
-class UNREALSODA_API AScenarioTriggerBase : 
-	public AActor,
-	public ISodaActor
+class UNREALSODA_API AScenarioTriggerBase 
+	: public AActor
+	, public ISodaActor
+	, public IObjectDataset
 {
 	GENERATED_UCLASS_BODY()
 

@@ -7,13 +7,15 @@
 #include "Components/SplineComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Soda/ISodaActor.h"
+#include "Soda/ISodaDataset.h"
 #include "NavigationRoute.generated.h"
 
 class USodaRandomEngine;
 class UProceduralMeshComponent;
 
 UCLASS(meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API URouteSplineComponent : public USplineComponent
+class UNREALSODA_API URouteSplineComponent 
+	: public USplineComponent
 {
 	GENERATED_BODY()
 
@@ -188,9 +190,10 @@ protected:
  * TODO: Save route to dataset
  */
 UCLASS()
-class UNREALSODA_API ANavigationRouteEditable : 
-	public ANavigationRoute,
-	public ISodaActor
+class UNREALSODA_API ANavigationRouteEditable 
+	: public ANavigationRoute
+	, public ISodaActor
+	, public IObjectDataset
 {
 	GENERATED_BODY()
 

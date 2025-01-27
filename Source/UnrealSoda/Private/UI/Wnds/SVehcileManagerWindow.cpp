@@ -9,7 +9,6 @@
 #include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Input/SComboButton.h"
 #include "Soda/Vehicles/SodaVehicle.h"
-#include "Soda/DBGateway.h"
 #include "GenericPlatform/GenericPlatformFile.h"
 #include "Soda/UI/SMessageBox.h"
 #include "Soda/SodaSubsystem.h"
@@ -25,6 +24,7 @@ void SVehcileManagerWindow::Construct( const FArguments& InArgs, ASodaVehicle* I
 {
 	Vehicle = InVehicle;
 
+	/*
 	if (Vehicle.IsValid())
 	{
 		if (FDBGateway::Instance().IsConnected() && Vehicle->GetSaveAddress().Source == EVehicleSaveSource::DB)
@@ -32,6 +32,7 @@ void SVehcileManagerWindow::Construct( const FArguments& InArgs, ASodaVehicle* I
 			SetSource(EVehicleManagerSource::Remote);
 		}
 	}
+	*/
 	
 	ChildSlot
 	[
@@ -95,7 +96,8 @@ void SVehcileManagerWindow::Construct( const FArguments& InArgs, ASodaVehicle* I
 				.OnGetMenuContent(this, &SVehcileManagerWindow::GetComboMenuContent)
 				.Visibility_Lambda([]()
 				{
-					return FDBGateway::Instance().IsConnected() ? EVisibility::Visible : EVisibility::Hidden;
+					//return FDBGateway::Instance().IsConnected() ? EVisibility::Visible : EVisibility::Hidden;
+					return EVisibility::Hidden;
 				})
 				.ButtonContent()
 				[

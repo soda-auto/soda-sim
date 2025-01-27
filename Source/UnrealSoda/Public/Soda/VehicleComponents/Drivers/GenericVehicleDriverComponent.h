@@ -73,7 +73,7 @@ namespace soda
  */
 
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UGenericVehicleDriverComponentComponent : public UVehicleDriverComponent
+class UNREALSODA_API UGenericVehicleDriverComponent : public UVehicleDriverComponent
 {
 	GENERATED_UCLASS_BODY()
 
@@ -144,12 +144,17 @@ protected:
 	virtual FString GetRemark() const override;
 	virtual void PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
 	//virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 public:
 	virtual EGearState GetGearState() const override { return GearState; }
+	int GetGearNum() const { return GearNum; }
 	virtual bool IsADPing() const override { return bVapiPing; }
+	bool IsADModeEnbaled() const { return bADModeEnbaled; }
 	virtual ESodaVehicleDriveMode GetDriveMode() const override;
+	bool IsSafeStopEnbaled() const { return bSafeStopEnbaled; }
+	float GetWheelRadius()  const { return WheelRadius; }
+	bool GetWheelRadiusValid() const { return bWheelRadiusValid; }
+	const soda::FGenericWheeledVehiclControl& GetControl() const { return Control; }
 
 	//virtual bool IsEnabledLeftTurningLights() const { return false; }
 	//virtual bool IsEnabledRightTurningLights() const { return false; }
@@ -160,6 +165,8 @@ public:
 	//virtual bool IsEnabledHorn() const { return false; }
 	//virtual FColor GetLED() const;
 
+
+
 protected:
 	virtual void Serialize(FArchive& Ar) override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -167,6 +174,7 @@ protected:
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	virtual void PostInitProperties() override;
 #endif
+
 
 protected:
 	bool bVapiPing = false;
@@ -180,6 +188,6 @@ protected:
 
 	soda::FGenericWheeledVehiclControl Control;
 
-	//FGenericPublisherHelper<UGenericVehicleDriverComponentComponent, UGenericWheeledVehiclePublisher> PublisherHelper { this, &UGenericVehicleDriverComponentComponent::PublisherClass, &UGenericVehicleDriverComponentComponent::Publisher };
-	FGenericListenerHelper<UGenericVehicleDriverComponentComponent, UGenericWheeledVehicleControlListener> ListenerHelper { this, &UGenericVehicleDriverComponentComponent::VehicleControlClass, &UGenericVehicleDriverComponentComponent::VehicleControl, "VehicleControlClass", "VehicleControl", "VehicleControlRecord" };
+	//FGenericPublisherHelper<UGenericVehicleDriverComponent, UGenericWheeledVehiclePublisher> PublisherHelper { this, &UGenericVehicleDriverComponent::PublisherClass, &UGenericVehicleDriverComponent::Publisher };
+	FGenericListenerHelper<UGenericVehicleDriverComponent, UGenericWheeledVehicleControlListener> ListenerHelper { this, &UGenericVehicleDriverComponent::VehicleControlClass, &UGenericVehicleDriverComponent::VehicleControl, "VehicleControlClass", "VehicleControl", "VehicleControlRecord" };
 };

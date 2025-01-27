@@ -8,13 +8,6 @@
 #include "Engine/Engine.h"
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Soda/DBGateway.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
 
 UVehicleEngineBaseComponent::UVehicleEngineBaseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -207,6 +200,8 @@ void UVehicleEngineSimpleComponent::PostPhysicSimulation(float DeltaTime, const 
 			UE_LOG(LogSoda, Log, TEXT("UVehicleEngineBaseComponent::PostPhysicSimulation(); AngularVelocity: %f; MaxTorq: %f Name: %s"), AngularVelocity, MaxTorq, *GetFName().ToString());
 		}
 	}
+
+	SyncDataset();
 }
 
 void UVehicleEngineSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
@@ -221,31 +216,5 @@ void UVehicleEngineSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, float&
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Load: %d"), int(GetEngineLoad() * 100 + 0.5)), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("AngVel: %.2f rpm"), AngularVelocity * ANG2RPM), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Pedal Pos: %.2f"), PedalPos), 16, YPos);
-	}
-}
-
-void UVehicleEngineSimpleComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	try
-	{
-		Dataset.GetRowDoc()
-			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
-			<< "AngVel" << AngularVelocity
-			<< "MaxTorq" << MaxTorq
-			<< "ReqTorq" << RequestedTorque
-			<< "ActTor" << ActualTorque
-			<< "PedalPos" << PedalPos
-			<< close_document;
-	}
-	catch (const std::system_error& e)
-	{
-		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
 	}
 }

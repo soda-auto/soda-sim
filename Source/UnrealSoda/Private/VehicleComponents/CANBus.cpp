@@ -8,6 +8,12 @@
 #include "Engine/Engine.h"
 #include "Soda/DBC/Serialization.h"
 
+static FString CANFrameToString(const dbc::FCanFrame& CanFrame)
+{
+	return FString::Printf(TEXT("#%08X [%i] "), CanFrame.ID, CanFrame.Length) + BytesToHex(CanFrame.Data, CanFrame.Length);
+}
+
+
 UCANBusComponent::UCANBusComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -20,9 +26,11 @@ UCANBusComponent::UCANBusComponent(const FObjectInitializer& ObjectInitializer)
 	Common.Activation = EVehicleComponentActivation::OnStartScenario;
 }
 
-FString CANFrameToString(const dbc::FCanFrame& CanFrame)
+void UCANBusComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	return FString::Printf(TEXT("#%08X [%i] "), CanFrame.ID, CanFrame.Length) + BytesToHex(CanFrame.Data, CanFrame.Length);
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	SyncDataset();
 }
 
 

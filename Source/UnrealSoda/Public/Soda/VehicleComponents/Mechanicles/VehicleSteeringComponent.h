@@ -60,6 +60,8 @@ public:
 	virtual float GetCurrentSteer() const override { return CurrentSteerAng; }
 	virtual float GetMaxSteer() const override { return MaxSteerAngle / 180 * M_PI; }
 
+	float GetTargetSteerAng() const { return TargetSteerAng; }
+
 public:
 	virtual void PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
@@ -67,7 +69,6 @@ public:
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 	virtual void UpdateSteer(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp);
 

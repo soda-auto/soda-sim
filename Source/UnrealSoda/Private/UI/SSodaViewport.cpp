@@ -36,7 +36,7 @@
 #include "Soda/SodaSpectator.h"
 #include "Soda/SodaSubsystem.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "Soda/Editor/SodaSelection.h"
 #include "Soda/SodaGameViewportClient.h"
 #include "GameFramework/GameUserSettings.h"
@@ -363,18 +363,18 @@ void SSodaViewport::BindCommands()
 			}
 		})
 	);
-
+	/*
 	CommandListRef.MapAction(
 		Commands.AutoConnectDB,
 		FExecuteAction::CreateLambda([]()
 		{
-			SodaApp.GetSodaUserSettings()->bAutoConnect = !SodaApp.GetSodaUserSettings()->bAutoConnect;
-			SodaApp.GetSodaUserSettings()->SaveSettings();
+			SodaApp.GetSodaCommonSettings()->bAutoConnect = !SodaApp.GetSodaCommonSettings()->bAutoConnect;
+			SodaApp.GetSodaCommonSettings()->SaveSettings();
 		}),
 		FCanExecuteAction(),
 		FIsActionChecked::CreateLambda([]()
 		{
-			return SodaApp.GetSodaUserSettings()->bAutoConnect;
+			return SodaApp.GetSodaCommonSettings()->bAutoConnect;
 		})
 	);
 
@@ -382,15 +382,16 @@ void SSodaViewport::BindCommands()
 		Commands.RecordDataset,
 		FExecuteAction::CreateLambda([]()
 		{
-			SodaApp.GetSodaUserSettings()->bRecordDataset = !SodaApp.GetSodaUserSettings()->bRecordDataset;
-			SodaApp.GetSodaUserSettings()->SaveSettings();
+			SodaApp.GetSodaCommonSettings()->bRecordDataset = !SodaApp.GetSodaCommonSettings()->bRecordDataset;
+			SodaApp.GetSodaCommonSettings()->SaveSettings();
 		}),
 		FCanExecuteAction(),
 		FIsActionChecked::CreateLambda([]()
 		{
-			return SodaApp.GetSodaUserSettings()->bRecordDataset;
+			return SodaApp.GetSodaCommonSettings()->bRecordDataset;
 		})
 	);
+	*/
 
 	CommandListRef.MapAction(
 		Commands.ToggleSpectatorMode,

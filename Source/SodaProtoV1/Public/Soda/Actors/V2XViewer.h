@@ -5,6 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "Soda/Misc/Time.h"
 #include "Soda/IToolActor.h"
+#include "Soda/ISodaDataset.h"
 #include "soda/sim/proto-v1/V2X.hpp"
 #include "Sockets.h"
 #include "SocketSubsystem.h"
@@ -18,9 +19,10 @@
 class UInstancedStaticMeshComponent;
 
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class SODAPROTOV1_API AV2XViewer :
-	public AActor,
-	public IToolActor
+class SODAPROTOV1_API AV2XViewer 
+	: public AActor 
+	, public IToolActor
+	, public IObjectDataset
 {
 	GENERATED_BODY()
 

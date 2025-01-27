@@ -110,8 +110,6 @@ public:
 	virtual float GetForwardSpeed() const override;
 	virtual void ScenarioBegin() override;
 	virtual void ScenarioEnd() override;
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
-	virtual void GenerateDatasetDescription(soda::FBsonDocument& Doc) const override;
 
 public:
 	virtual void TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;

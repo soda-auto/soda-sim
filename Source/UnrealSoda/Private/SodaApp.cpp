@@ -4,7 +4,7 @@
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaSubsystem.h"
 #include "Soda/Vehicles/SodaVehicle.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "Soda/DBC/Serialization.h"
 #include "HAL/RunnableThread.h"
 #include "PhysicsEngine/PhysicsSettings.h"
@@ -249,33 +249,6 @@ void FSodaApp::ResetSodaSubsystem()
 	SodaSubsystem = nullptr;
 }
 
-const USodaUserSettings* FSodaApp::GetSodaUserSettings() const
-{
-	if (SodaUserSettings == NULL)
-	{
-		FSodaApp* ConstThis = const_cast<FSodaApp*>(this);	// Hack because Header Generator doesn't yet support mutable keyword
-		ConstThis->CreateSodaUserSettings();
-	}
-	return SodaUserSettings.Get();
-}
-
-USodaUserSettings* FSodaApp::GetSodaUserSettings()
-{
-	if (SodaUserSettings == NULL)
-	{
-		CreateSodaUserSettings();
-	}
-	return SodaUserSettings.Get();
-}
-
-void FSodaApp::CreateSodaUserSettings()
-{
-	USodaUserSettings::LoadConfigIni();
-	SodaUserSettings = NewObject<USodaUserSettings>(GetTransientPackage());
-	SodaUserSettings->LoadSettings();
-	SodaUserSettings->AddToRoot();
-}
-
 TSharedPtr<dbc::FMessageSerializator> FSodaApp::FindDBCSerializator(const FString& MessageName, const FString& Namespace)
 {
 	if (Namespace.IsEmpty())
@@ -316,15 +289,24 @@ bool FSodaApp::RegisterDBC(const FString& Namespace, const FString& FileName)
 	return bRet;
 }
 
-void FSodaApp::RegisterVehicleExporter(TSharedPtr<ISodaVehicleExporter> Exporter)
+void FSodaApp::RegisterVehicleExporter(TSharedRef<ISodaVehicleExporter> Exporter)
 {
-	check(Exporter.IsValid());
 	VehicleExporters.FindOrAdd(Exporter->GetExporterName()) = Exporter;
 }
 
-void FSodaApp::UnregisterVehicleExporter(const FString& ExporteName)
+void FSodaApp::UnregisterVehicleExporter(const FName& ExporteName)
 {
 	VehicleExporters.Remove(ExporteName);
+}
+
+void FSodaApp::RegisterDatasetManager(FName DatasetName, TSharedRef<soda::IDatasetManager> DatasetManager)
+{
+	DatasetManagers.FindOrAdd(DatasetName) = DatasetManager;
+}
+
+void FSodaApp::UnregisterDatasetManager(FName DatasetName)
+{
+	DatasetManagers.Remove(DatasetName);
 }
 
 FSodaApp SodaApp;

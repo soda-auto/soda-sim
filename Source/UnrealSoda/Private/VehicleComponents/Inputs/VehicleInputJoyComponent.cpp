@@ -11,16 +11,8 @@
 #include "Soda/VehicleComponents/Mechanicles/VehicleSteeringComponent.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Soda/DBGateway.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
-
 UVehicleInputJoyComponent::UVehicleInputJoyComponent(const FObjectInitializer &ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -37,6 +29,15 @@ UVehicleInputJoyComponent::UVehicleInputJoyComponent(const FObjectInitializer &O
 	FeedbackAutocenterCurve.ExternalCurve = FeedbackAutocenterCurvePtr.Object;
 	FeedbackDiffCurve.ExternalCurve = FeedbackDiffCurvePtr.Object;
 	FeedbackResistionCurve.ExternalCurve = FeedbackResistionCurvePtr.Object;
+}
+
+void UVehicleInputJoyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (!IsTickOnCurrentFrame() || !HealthIsWorkable()) return;
+
+	SyncDataset();
 }
 
 bool UVehicleInputJoyComponent::OnActivateVehicleComponent()
@@ -122,7 +123,7 @@ void UVehicleInputJoyComponent::UpdateInputStates(float DeltaTime, float Forward
 		return;
 	}
 
-	USodaUserSettings* Settings = SodaApp.GetSodaUserSettings();
+	const USodaCommonSettings* Settings = GetDefault<USodaCommonSettings>();
 
 	const float PrevSteeringInput = InputState.Steering;
 
@@ -283,38 +284,5 @@ void UVehicleInputJoyComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPo
 			YPos += USodaStatics::DrawProgress(Canvas, 120, YPos + 4, 120, 16, FeedbackDriverSteerTension, -1.0, 1.0, true,
 				FString::Printf(TEXT("%i%%"), int(FeedbackDriverSteerTension * 100)));
 		}
-	}
-}
-
-void UVehicleInputJoyComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	try
-	{
-		Dataset.GetRowDoc()
-			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
-			<< "Throttle" << GetInputState().Throttle
-			<< "Brake" << GetInputState().Brake
-			<< "Steering" << GetInputState().Steering
-			<< "GearState" << int(GetInputState().GearState)
-			<< "GearNum" << GetInputState().GearNum
-			<< "bADModeEnbaled" << GetInputState().bADModeEnbaled
-			<< "bSafeStopEnbaled" << GetInputState().bSafeStopEnbaled
-			<< "FeedbackDiffFactor" << FeedbackDiffFactor
-			<< "FeedbackResistionFactor" << FeedbackResistionFactor
-			<< "FeedbackAutocenterFactor" << FeedbackAutocenterFactor
-			<< "FeedbackFullFactor" << FeedbackFullFactor
-			<< "FeedbackDriverSteerTension" << FeedbackDriverSteerTension
-			<< close_document;
-	}
-	catch (const std::system_error& e)
-	{
-		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
 	}
 }

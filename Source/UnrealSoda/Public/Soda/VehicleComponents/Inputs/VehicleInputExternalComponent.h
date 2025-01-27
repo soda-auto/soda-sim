@@ -16,7 +16,9 @@ public:
 	FWheeledVehicleInputState InputState{};
 
 public:
+
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	virtual const FWheeledVehicleInputState& GetInputState() const override { return InputState; }
 	virtual FWheeledVehicleInputState& GetInputState() override { return InputState; }
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 };

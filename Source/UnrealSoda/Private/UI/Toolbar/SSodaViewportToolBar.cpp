@@ -24,7 +24,6 @@
 #include "Soda/UI/SMessageBox.h"
 #include "Soda/UI/SToolBox.h"
 #include "Soda/UI/SodaViewportCommands.h"
-#include "Soda/DBGateway.h"
 #include "UI/Toolbar/STransformViewportToolbar.h"
 #include "UI/Toolbar/SCameraViewportToolbar.h"
 #include "UI/Toolbar/Common/SViewportToolBarMenu.h"
@@ -41,9 +40,8 @@
 #include "RuntimePropertyEditor/IDetailsView.h"
 #include "Soda/UnrealSoda.h"
 #include "Misc/Paths.h"
-#include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "JoystickGameSettings.h"
 #include "SodaJoystick.h"
 #include "RemoteControlSettings.h"
@@ -55,7 +53,6 @@
 
 namespace soda
 {
-
 
 static void FillShowMenuStatic(FMenuBuilder& MenuBuilder, TArray< FSodalViewportCommands::FShowMenuCommand > MenuCommands, int32 EntryOffset)
 {
@@ -140,6 +137,11 @@ static void FillShowStatsSubMenus(FMenuBuilder& MenuBuilder, TArray< FSodalViewp
 
 void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 {
+	static const FSlateIcon IconDB_Set = FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.DB.IdleBG", NAME_None, "SodaIcons.DB.Idle");
+	static const FSlateIcon IconDB_Unset = FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.DB.DisabledBG", NAME_None, "SodaIcons.DB.Disabled");
+	static const FSlateIcon IconDB_Recording = FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.DB.UploadBG", NAME_None, "SodaIcons.DB.Upload");
+	static const FSlateIcon IconDB_Warning = FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.DB.WarningBG", NAME_None, "SodaIcons.DB.Warning");
+
 	Viewport = InArgs._Viewport;
 	TSharedRef<SSodaViewport> ViewportRef = Viewport.Pin().ToSharedRef();
 
@@ -181,7 +183,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 			USodaSubsystem * SodaSubsystem = USodaSubsystem::GetChecked();
 			if (SodaSubsystem->IsScenarioRunning())
 			{
-				const USodaUserSettings* Settings = SodaApp.GetSodaUserSettings();
+				const USodaCommonSettings* Settings = GetDefault<USodaCommonSettings>();
 				SodaSubsystem->ScenarioStop(EScenarioStopReason::UserRequest, Settings->ScenarioStopMode);
 			}
 			else
@@ -215,58 +217,84 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 
 	ToolbarBuilder.AddSeparator();
 
-	static const FSlateIcon IconDB_Connected = FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.DB.ConnectedBG", NAME_None, "SodaIcons.DB.Connected");
-	static const FSlateIcon IconDB_Disabled = FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.DB.DisabledBG", NAME_None, "SodaIcons.DB.Disabled");
-	static const FSlateIcon IconDB_Connecting = FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.DB.ConnectingBG", NAME_None, "SodaIcons.DB.Connecting");
-	static const FSlateIcon IconDB_Warning = FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.DB.WarningBG", NAME_None, "SodaIcons.DB.Warning");
+	struct FDBStatusData
+	{
+		const FSlateIcon* Icon;
+		FText ToolTip;
 
-	ToolbarBuilder.AddSeparator();
+		void Update()
+		{
+			USodaSubsystem* Subsystem = SodaApp.GetSodaSubsystem();
+
+			auto CommonStatus = EDatasetManagerStatus::Standby;
+			for (auto& [Name, Manager] : SodaApp.GetDatasetManagers())
+			{
+				CommonStatus = FMath::Max(CommonStatus, Manager->GetStatus());
+			}
+
+			if (Subsystem->IsScenarioRunning())
+			{
+				switch (CommonStatus)
+				{
+				case EDatasetManagerStatus::Standby: 
+					ToolTip = LOCTEXT("DSStatus_Playing_NotUsed", "Dataset isn't used");
+					Icon = &IconDB_Unset;
+					break;
+				case EDatasetManagerStatus::Fluishing: 
+					ToolTip = LOCTEXT("DSStatus_Playing_Flushing", "Dataset is flushing");
+					Icon = &IconDB_Recording;
+					break;
+				case EDatasetManagerStatus::Recording: 
+					Icon = &IconDB_Recording;
+					ToolTip = LOCTEXT("DSStatus_Playing_Recording", "Dataset is recordering");
+					break;
+				case EDatasetManagerStatus::Faild:
+				default: 
+					Icon = &IconDB_Warning;
+					ToolTip = LOCTEXT("DSStatus_Playing_Faild", "Dataset is fail");
+					break;
+				}
+			}
+			else
+			{
+				if (CommonStatus == EDatasetManagerStatus::Fluishing)
+				{
+					ToolTip = LOCTEXT("DSStatus_NoPlaying_Flushing", "Dataset is flushing");
+					Icon = &IconDB_Recording;
+				}
+				else if (GetDefault<USodaCommonSettings>()->DatasetNamesToUse.IsEmpty())
+				{
+					ToolTip = LOCTEXT("DSStatus_NoPlaying_NotUsed", "Dataset isn't used");
+					Icon = &IconDB_Unset;
+				}
+				else
+				{
+					ToolTip = LOCTEXT("DSStatus_NoPlaying_Set", "Set at least one dataset recorder");
+					Icon = &IconDB_Set;
+				}
+			}
+		}
+	};
+
+	TSharedPtr<FDBStatusData> DBStatusData = MakeShared<FDBStatusData>();
+	DBStatusData->Update();
+
 	ToolbarBuilder.AddWidget
 	(
-
 		SNew(SViewportToolbarMenu)
 		.ParentToolBar(SharedThis(this))
-		.LabelIcon_Lambda([]() {
-			switch (FDBGateway::Instance().GetStatus())
-			{
-			case EDBGatewayStatus::Connected:
-				return IconDB_Connected.GetIcon();
-			case EDBGatewayStatus::Disabled:
-				return IconDB_Disabled.GetIcon();
-			case EDBGatewayStatus::Connecting:
-				return IconDB_Connecting.GetIcon();
-			case EDBGatewayStatus::Faild:
-			default:
-				return IconDB_Warning.GetIcon();
-			}
+		.LabelIcon_Lambda([DBStatusData]()
+		{
+			DBStatusData->Update();
+			return DBStatusData->Icon->GetIcon();
 		})
-		.OverlayLabelIcon_Lambda([]() {
-			switch (FDBGateway::Instance().GetStatus())
-			{
-			case EDBGatewayStatus::Connected:
-				return IconDB_Connected.GetOverlayIcon();
-			case EDBGatewayStatus::Disabled:
-				return IconDB_Disabled.GetOverlayIcon();
-			case EDBGatewayStatus::Connecting:
-				return IconDB_Connecting.GetOverlayIcon();
-			case EDBGatewayStatus::Faild:
-			default:
-				return IconDB_Warning.GetOverlayIcon();
-			}
+		.OverlayLabelIcon_Lambda([DBStatusData]()
+		{
+			return DBStatusData->Icon->GetOverlayIcon();
 		})
-		.ToolTipText_Lambda([]() {
-			switch (FDBGateway::Instance().GetStatus())
-			{
-			case EDBGatewayStatus::Connected:
-				return FText::FromString("Connected");
-			case EDBGatewayStatus::Disabled:
-				return FText::FromString("Disconnected");
-			case EDBGatewayStatus::Connecting:
-				return FText::FromString("Connecting....");
-			case EDBGatewayStatus::Faild:
-			default:
-				return FText::FromString("Faild");
-			}
+		.ToolTipText_Lambda([DBStatusData]()
+		{
+			return DBStatusData->ToolTip;
 		})
 		.OnGetMenuContent(this, &SSodaViewportToolBar::GenerateDBMenu)
 		.IsEnabled_Lambda([]() {return !USodaSubsystem::Get()->IsScenarioRunning(); })
@@ -462,65 +490,80 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 	FMenuBuilder MenuBuilder(true, Viewport.Pin()->GetCommandList(), TSharedPtr<FExtender>(), false, &FSodaStyle::Get());
 	MenuBuilder.BeginSection(NAME_None);
 
+	for (TObjectIterator<USodaUserSettings> SettingsIt(RF_NoFlags); SettingsIt; ++SettingsIt)
 	{
-		FUIAction Action;
-		Action.ExecuteAction.BindLambda([]() 
+		if (USodaUserSettings* Settings = *SettingsIt)
 		{
-			SodaApp.GetSodaUserSettings()->ReadGraphicSettings();
-			USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
-			FRuntimeEditorModule& RuntimeEditorModule = FModuleManager::LoadModuleChecked<FRuntimeEditorModule>("RuntimeEditor");
-			soda::FDetailsViewArgs Args;
-			Args.bHideSelectionTip = true;
-			Args.bLockable = false;
-			TSharedPtr<soda::IDetailsView> DetailView = RuntimeEditorModule.CreateDetailView(Args);
-			DetailView->SetObject(SodaApp.GetSodaUserSettings());
-			SodaSubsystem->PushToolBox(
-				SNew(SToolBox)
-				.Caption(FText::FromString("Common Settings"))
-				[
-					SNew(SVerticalBox)
-					+ SVerticalBox::Slot()
-					.FillHeight(1)
+			// Only Add the CDO of any UDeveloperSettings objects.
+			if (Settings->HasAnyFlags(RF_ClassDefaultObject) && !Settings->GetClass()->HasAnyClassFlags(CLASS_Deprecated | CLASS_Abstract))
+			{
+				//RegisterDeveloperSettings(SettingsModule, Settings);
+
+				FUIAction Action;
+				Action.ExecuteAction.BindLambda([Settings]()
+				{
+					Settings->OnPreOpen();
+					USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+					FRuntimeEditorModule& RuntimeEditorModule = FModuleManager::LoadModuleChecked<FRuntimeEditorModule>("RuntimeEditor");
+					soda::FDetailsViewArgs Args;
+					Args.bHideSelectionTip = true;
+					Args.bLockable = false;
+					//Args.bAllowMultipleTopLevelObjects = true;
+
+
+					TSharedPtr<soda::IDetailsView> DetailView = RuntimeEditorModule.CreateDetailView(Args);
+					DetailView->SetObject(Settings);
+
+					SodaSubsystem->PushToolBox(
+						SNew(SToolBox)
+						.Caption(Settings->GetClass()->GetDisplayNameText())
+						[
+							SNew(SVerticalBox)
+							+ SVerticalBox::Slot()
+							.FillHeight(1)
+							[
+								DetailView.ToSharedRef()
+							]
+							+ SVerticalBox::Slot()
+							.AutoHeight()
+							.VAlign(VAlign_Top)
+							.HAlign(HAlign_Center)
+							[
+								SNew(SHorizontalBox)
+								+ SHorizontalBox::Slot()
+								.Padding(5)
+								[
+									SNew(SButton)
+									.Text(FText::FromString(TEXT("Save")))
+									.OnClicked(FOnClicked::CreateLambda([Settings]()
+									{
 					
-					[
-						DetailView.ToSharedRef()
-					]
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					.VAlign(VAlign_Top)
-					.HAlign(HAlign_Center)
-					[
-						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot()
-						.Padding(5)
-						[
-							SNew(SButton)
-							.Text(FText::FromString(TEXT("Save")))
-							.OnClicked(FOnClicked::CreateLambda([]()
-							{
-								SodaApp.GetSodaUserSettings()->SaveSettings();
-								return FReply::Handled();
-							}))
-						]
-						+ SHorizontalBox::Slot()
-						.Padding(5)
-						[
-							SNew(SButton)
-							.Text(FText::FromString(TEXT("Reset")))
-							.OnClicked(FOnClicked::CreateLambda([]()
-							{
-								SodaApp.GetSodaUserSettings()->SetToDefaults();
-								return FReply::Handled();
-							}))
-						]
-					]
-				]);
-		});
-		MenuBuilder.AddMenuEntry(
-			FText::FromString("Common Settings"),
-			FText::FromString("Common Settings"),
-			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.Adjust"),
-			Action);
+										Settings->SaveConfig();
+										return FReply::Handled();
+									}))
+								]
+								+ SHorizontalBox::Slot()
+								.Padding(5)
+								[
+									SNew(SButton)
+									.Text(FText::FromString(TEXT("Reset")))
+									.OnClicked(FOnClicked::CreateLambda([Settings]()
+									{
+										Settings->ResetToDefault();
+										return FReply::Handled();
+									}))
+								]
+							]
+						]);
+				});
+				MenuBuilder.AddMenuEntry(
+					Settings->GetMenuItemText(),
+					Settings->GetMenuItemDescription(),
+					FSlateIcon(FSodaStyle::Get().GetStyleSetName(), Settings->GetMenuItemIconName()),
+					Action);
+			
+			}
+		}
 	}
 
 	{
@@ -563,6 +606,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 								return FReply::Handled();
 							}))
 						]
+						/*
 						+ SHorizontalBox::Slot()
 						.Padding(5)
 						[
@@ -575,6 +619,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 								return FReply::Handled();
 							}))
 						]
+						*/
 					]
 				]);
 		});
@@ -624,6 +669,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 								return FReply::Handled();
 							}))
 						]
+						/*
 						+ SHorizontalBox::Slot()
 						.Padding(5)
 						[
@@ -635,12 +681,13 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 								return FReply::Handled();
 							}))
 						]
+						*/
 					]
 				]);
 		});
 		MenuBuilder.AddMenuEntry(
 			FText::FromString("RC Settings"),
-			FText::FromString("RC Settings"),
+			FText::FromString("Remote Control Settings"),
 			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.World"),
 			Action);
 	}
@@ -689,46 +736,59 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 
 TSharedRef<SWidget> SSodaViewportToolBar::GenerateDBMenu()
 {
+	static const FSlateIcon IconDB_Unset = FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.DB.DisabledBG", NAME_None, "SodaIcons.DB.Disabled");
+
 	FMenuBuilder MenuBuilder(true, Viewport.Pin()->GetCommandList(), TSharedPtr<FExtender>(), false, &FSodaStyle::Get());
 	MenuBuilder.BeginSection(NAME_None);
 
-	{
-		FUIAction Action;
-		Action.CanExecuteAction.BindLambda([]() 
-		{
-			return FDBGateway::Instance().GetStatus() == EDBGatewayStatus::Disabled;
-		});
-		Action.ExecuteAction.BindLambda([]() 
-		{
-			USodaSubsystem::GetChecked()->UpdateDBGateway(false);
-		});
-		MenuBuilder.AddMenuEntry(
-			FText::FromString("Connect to DB"),
-			FText::FromString("Connect to DB"),
-			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.DB.ConnectingFull"),
-			Action);
-	}
+	auto & DatasteManagers = SodaApp.GetDatasetManagers();
+	//auto ActiveDatasteManager = SodaApp.GetActiveDatasetManager();
 
 	{
 		FUIAction Action;
 		Action.CanExecuteAction.BindLambda([]() 
 		{
-			return soda::FDBGateway::Instance().GetStatus() == soda::EDBGatewayStatus::Connected || soda::FDBGateway::Instance().GetStatus() == EDBGatewayStatus::Faild;
+			return !GetMutableDefault<USodaCommonSettings>()->DatasetNamesToUse.IsEmpty();
 		});
-		Action.ExecuteAction.BindLambda([]() 
+		Action.ExecuteAction.BindLambda([]()
 		{
-			soda::FDBGateway::Instance().Disable();
+			GetMutableDefault<USodaCommonSettings>()->DatasetNamesToUse.Empty();
 		});
 		MenuBuilder.AddMenuEntry(
-			FText::FromString("Disconnect from DB"),
-			FText::FromString("Disconnect from DB"),
+			FText::FromString(TEXT("Don't Record")),
+			FText::FromString(TEXT("Do not record the dataset when stratifying a scenario")),
 			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.DB.DisabledFull"),
 			Action);
 	}
 
-	
-	MenuBuilder.AddMenuEntry(FSodalViewportCommands::Get().AutoConnectDB);
-	MenuBuilder.AddMenuEntry(FSodalViewportCommands::Get().RecordDataset);
+	for (auto & [Name, DatasteManage] : DatasteManagers)
+	{
+		FUIAction Action;
+		Action.GetActionCheckState.BindLambda([DatasteManage, Name]()
+		{
+			return GetDefault<USodaCommonSettings>()->DatasetNamesToUse.Contains(Name) ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+		});
+		Action.ExecuteAction.BindLambda([DatasteManage, Name]()
+		{
+			auto* Settings = GetMutableDefault<USodaCommonSettings>();
+			if(Settings->DatasetNamesToUse.Contains(Name))
+			{
+				Settings->DatasetNamesToUse.Remove(Name);
+			}
+			else
+			{
+				Settings->DatasetNamesToUse.Add(Name);
+			}
+			Settings->SaveConfig();
+		});
+		MenuBuilder.AddMenuEntry(
+			DatasteManage->GetDisplayName(),
+			DatasteManage->GetToolTip(),
+			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), DatasteManage->GetIconName()),
+			Action, 
+			NAME_None, 
+			EUserInterfaceActionType::Check);
+	}
 
 	MenuBuilder.EndSection();
 	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
@@ -827,6 +887,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateAddMenu()
 	);
 	MenuBuilder.EndSection();
 
+	/*
 	if (FDBGateway::Instance().IsConnected())
 	{
 		// Build Remote Vehicles menu
@@ -865,6 +926,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateAddMenu()
 		);
 		MenuBuilder.EndSection();
 	}
+	*/
 	
 	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }

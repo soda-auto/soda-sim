@@ -168,6 +168,10 @@ class UNREALSODA_API UVehicleBrakeSystemSimpleComponent : public UVehicleBrakeSy
 	UPROPERTY(EditAnywhere, Category = BrakeSystem, SaveGame, meta = (EditInRuntime))
 	bool bAcceptPedalFromVehicleInput = true;
 
+	float GetPedalPos() const { return PedalPos; }
+
+	const TArray<UWheelBrakeSimple*> GetWheelBrakes() const { return WheelBrakes; }
+
 public:
 	virtual void RequestByAcceleration(float InAcceleration, double DeltaTime) override;
 	virtual void RequestByForce(float InForce, double DeltaTime) override;
@@ -188,7 +192,6 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 	UPROPERTY()

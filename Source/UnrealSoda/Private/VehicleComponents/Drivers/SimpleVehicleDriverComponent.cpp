@@ -13,13 +13,7 @@
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 //#include "Soda/LevelState.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
-//#include "Soda/DBGateway.h"
 
-//#include "bsoncxx/builder/stream/helpers.hpp"
-//#include "bsoncxx/exception/exception.hpp"
-//#include "bsoncxx/builder/stream/document.hpp"
-//#include "bsoncxx/builder/stream/array.hpp"
-//#include "bsoncxx/json.hpp"
 //#include <cmath>
 
 
@@ -103,6 +97,8 @@ void USimpleVehicleDriverComponent::PrePhysicSimulation(float DeltaTime, const F
 			}
 		}
 	}
+
+	SyncDataset();
 }
 
 void USimpleVehicleDriverComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)

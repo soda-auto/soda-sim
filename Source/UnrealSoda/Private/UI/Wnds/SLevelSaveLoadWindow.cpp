@@ -13,7 +13,6 @@
 #include "Soda/UI/SMessageBox.h"
 #include "Soda/LevelState.h"
 #include "Soda/SodaSubsystem.h"
-#include "Soda/DBGateway.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "RuntimeEditorUtils.h"
 
@@ -134,10 +133,12 @@ void SLevelSaveLoadWindow::Construct( const FArguments& InArgs )
 		return;
 	}
 
+	/*
 	if (FDBGateway::Instance().IsConnected() && SodaSubsystem->LevelState->Slot.SlotSource == ELeveSlotSource::Remote)
 	{
 		SetMode(ELevelSaveLoadWindowMode::Remote);
 	}
+	*/
 
 	ChildSlot
 	[
@@ -215,7 +216,8 @@ void SLevelSaveLoadWindow::Construct( const FArguments& InArgs )
 				.OnGetMenuContent(this, &SLevelSaveLoadWindow::GetComboMenuContent)
 				.Visibility_Lambda([]()
 				{
-					return FDBGateway::Instance().IsConnected() ? EVisibility::Visible : EVisibility::Hidden;
+					//return FDBGateway::Instance().IsConnected() ? EVisibility::Visible : EVisibility::Hidden;
+					return EVisibility::Hidden;
 				})
 				.ButtonContent()
 				[

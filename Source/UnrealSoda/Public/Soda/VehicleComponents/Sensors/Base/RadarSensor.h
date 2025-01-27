@@ -322,7 +322,7 @@ protected:
 	virtual void ProcessRadarBeams(const FRadarParams & Params);
 	virtual const TArray<FRadarParams>& GetRadarParams() const { static TArray<FRadarParams> Params; return Params; }
 	virtual void ProcessHit(const FHitResult* Hit, const FRadarParams * Params);
-	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FRadarClusters& InClusters, const FRadarObjects& InObjects) { return false; }
+	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FRadarClusters& InClusters, const FRadarObjects& InObjects) { SyncDataset(); return false; }
 	virtual void ShowDebudPoints();
 
 private:

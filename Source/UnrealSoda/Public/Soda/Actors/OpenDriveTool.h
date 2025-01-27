@@ -10,6 +10,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Soda/Actors/NavigationRoute.h"
 #include "Soda/IToolActor.h"
+#include "Soda/ISodaDataset.h"
 #include "Soda/SodaTypes.h"
 #include "OpenDriveTool.generated.h"
 
@@ -51,9 +52,10 @@ struct FOpenDriveRoadMarkProfile
  * TODO: Generate NavigationRoute with directions
  */
 UCLASS()
-class UNREALSODA_API AOpenDriveTool : 
-	public AActor,
-	public IToolActor
+class UNREALSODA_API AOpenDriveTool 
+	: public AActor
+	, public IToolActor
+	, public IObjectDataset
 {
 GENERATED_BODY()
 
@@ -94,12 +96,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Dataset, SaveGame, meta = (EditInRuntime))
 	bool bRecordDataset = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Dataset, SaveGame, meta = (EditInRuntime))
-	bool bStoreLanesMarks = true;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Dataset, SaveGame, meta = (EditInRuntime))
-	bool bStoreXDOR = false;
-
 public:
 	/** [cm] */
 	UPROPERTY(Category = "GenerateRoutes", BlueprintReadWrite, EditAnywhere)
@@ -134,6 +130,10 @@ public:
 	UFUNCTION(Category = "GenerateRoutes", BlueprintCallable, CallInEditor)
 	void ClearRoutes();
 
+	const TSharedPtr<opendrive::OpenDriveData> & GetOpenDriveData() const { return OpenDriveData; }
+
+	FString FindXDORFile();
+
 public:
 	AOpenDriveTool(const FObjectInitializer &ObjectInitializer);
 	bool FindAndLoadXDOR(bool bForceReload);
@@ -162,7 +162,6 @@ public:
 
 protected:
 	FOpenDriveRoadMarkProfile* FindMarkProfile(const FString& MarakType);
-	FString FindXDORFile();
 
 protected:
 	TArray<TArray<FVector>> DebugMarkLines;

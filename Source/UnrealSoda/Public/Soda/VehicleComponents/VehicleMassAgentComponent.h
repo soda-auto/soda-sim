@@ -5,6 +5,7 @@
 #include "MassAgentComponent.h"
 #include "MassEntityTypes.h"
 #include "Soda/ISodaVehicleComponent.h"
+#include "Soda/ISodaDataset.h"
 #include "VehicleMassAgentComponent.generated.h"
 
 class ASodaWheeledVehicle;
@@ -13,9 +14,10 @@ class ASodaWheeledVehicle;
  * UVehicleMassAgentComponent
  */
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UVehicleMassAgentComponent :
-	public UMassAgentComponent,
-	public ISodaVehicleComponent
+class UNREALSODA_API UVehicleMassAgentComponent 
+	: public UMassAgentComponent
+	, public ISodaVehicleComponent
+	, public IObjectDataset
 {
 	GENERATED_BODY()
 

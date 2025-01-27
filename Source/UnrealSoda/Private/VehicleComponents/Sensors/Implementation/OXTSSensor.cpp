@@ -6,7 +6,7 @@
 #include "Soda/UnrealSoda.h"
 #include "Soda/LevelState.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
 #include "Dom/JsonObject.h"
@@ -207,7 +207,7 @@ bool UOXTSSensorComponent::PublishSensorData(float DeltaTime, const FSensorDataH
 	WorldVel = GetLevelState()->GetLLConverter().ConvertDirForward(WorldVel);
 
 
-	int64 GPSTimeStemp = TimestampMs + int64(SodaApp.GetSodaUserSettings()->GetGPSTimestempOffset()) * 1000LL;
+	int64 GPSTimeStemp = TimestampMs + int64(GetDefault<USodaCommonSettings>()->GetGPSTimestempOffset()) * 1000LL;
 
 	soda::OxtsPacket Msg;
 	memset(&Msg, 0, sizeof(Msg));

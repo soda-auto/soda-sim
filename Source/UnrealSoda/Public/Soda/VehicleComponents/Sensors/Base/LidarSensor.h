@@ -84,7 +84,7 @@ public:
 	virtual float GetLidarMaxDistance() const { return 0; } // [cm]
 	virtual TOptional<FUintVector2> GetLidarSize() const { return TOptional<FUintVector2>{}; }
 	virtual const TArray<FVector>& GetLidarRays() const { static TArray<FVector> Rays; return Rays; }
-	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& Scan) { return false; }
+	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& Scan) { SyncDataset(); return false; }
 
 public:
 	virtual void DrawLidarPoints(const soda::FLidarSensorData& Scan, bool bDrawInGameThread);

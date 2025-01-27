@@ -126,7 +126,6 @@ protected:
 	virtual FString GetRemark() const override;
 	virtual void PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
 	//virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
-	//virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 public:
 	virtual EGearState GetGearState() const override { return EGearState::Neutral; }

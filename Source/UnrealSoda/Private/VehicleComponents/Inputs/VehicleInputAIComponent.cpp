@@ -17,13 +17,6 @@
 #include "VehicleUtility.h"
 #include "WheeledVehiclePawn.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
-#include "Soda/DBGateway.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
 
 #define _DEG2RAD(a) ((a) / (180.0 / M_PI))
 #define _RAD2DEG(a) ((a) * (180.0 / M_PI))
@@ -91,12 +84,15 @@ void UVehicleInputAIComponent::BeginPlay()
 void UVehicleInputAIComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
 	if (!IsTickOnCurrentFrame() || !HealthIsWorkable()) return;
 
 	if (bForceUpdateInputStates && GetWheeledVehicle()->GetActiveVehicleInput() != this)
 	{
 		UpdateInputStatesInner(DeltaTime);
 	}
+
+	SyncDataset();
 }
 
 void UVehicleInputAIComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -711,35 +707,4 @@ bool UVehicleInputAIComponent::AssignRoute(const ANavigationRoute* RoutePlanner)
 		SetFixedRouteBySpline(Route, RoutePlanner->bDriveBackvard, false);
 	}
 	return false;
-}
-
-void UVehicleInputAIComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	try
-	{
-		Dataset.GetRowDoc()
-			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
-			<< "Throttle" << GetInputState().Throttle
-			<< "Brake" << GetInputState().Brake
-			<< "Steering" << GetInputState().Steering
-			<< "GearState" << int(GetInputState().GearState)
-			<< "GearNum" << GetInputState().GearNum
-			<< "bADModeEnbaled" << GetInputState().bADModeEnbaled
-			<< "bSafeStopEnbaled" << GetInputState().bSafeStopEnbaled
-			<< "TargetLocationsNum" << TargetLocations.Num()
-			<< "SideError" << SideError
-			<< "ObstacleDistance" << CurrentObstacleDistance
-			<< close_document;
-	}
-	catch (const std::system_error& e)
-	{
-		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
-	}
 }

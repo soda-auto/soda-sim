@@ -25,9 +25,8 @@
 #include "VehicleUtility.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
-#include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include <algorithm>
 
 /******************************************************************************************
@@ -156,7 +155,7 @@ void ASodaWheeledVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, F
 
 	if (PlayerController)
 	{
-		USodaUserSettings* Settings = SodaApp.GetSodaUserSettings();
+		const USodaCommonSettings* Settings = GetDefault<USodaCommonSettings>();
 
 		bool bIsLeftCtrlDown = PlayerController->IsInputKeyDown(EKeys::LeftControl);
 
@@ -420,85 +419,6 @@ void ASodaWheeledVehicle::ScenarioEnd()
 const FSodaActorDescriptor* ASodaWheeledVehicle::GenerateActorDescriptor() const
 {
 	return nullptr;
-}
-
-void ASodaWheeledVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) const
-{
-	Super::OnPushDataset(InDataset);
-
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	auto Doc = InDataset.GetRowDoc() << "WheeledVehicleData" << open_document;
-
-	//Doc << "EngineLoad" << GetEnginesLoad();
-
-	if (UVehicleInputComponent* Input = GetActiveVehicleInput())
-	{
-		Doc << "Inputs" << open_document
-			<< "Break" << Input->GetInputState().Brake
-			<< "Steer" << Input->GetInputState().Steering
-			<< "Throttle" << Input->GetInputState().Throttle
-			<< "Gear" << int(Input->GetInputState().GearState)
-		<< close_document;
-	}
-
-	if (GetWheeledComponentInterface())
-	{
-		bsoncxx::builder::stream::array WheelsArray;
-		for (int i = 0; i < Wheels.Num(); ++i)
-		{
-			const auto& Wheel = Wheels[i];
-			WheelsArray << open_document
-				<< "Ind" << int(Wheel->GetWheelIndex())
-				<< "AngVel" << Wheel->ResolveAngularVelocity()
-				<< "ReqTorq" << Wheel->ReqTorq
-				<< "ReqBrakeTorq" << Wheel->ReqBrakeTorque
-				<< "Steer" << Wheel->Steer
-				<< "Sus" << Wheel->SuspensionOffset2.Z
-				<< "LongSlip" << Wheel->Slip.X
-				<< "LatSlip" << Wheel->Slip.Y
-			<< close_document;
-		}
-
-		Doc << "Wheels" << WheelsArray;
-	}
-
-	Doc << close_document;
-}
-
-void ASodaWheeledVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	if (GetWheeledComponentInterface())
-	{
-		(*Doc)
-			<< "TrackWidth" << GetWheeledComponentInterface()->GetTrackWidth()
-			<< "WheelBaseWidth" << GetWheeledComponentInterface()->GetWheelBaseWidth()
-			<< "Mass" << GetWheeledComponentInterface()->GetVehicleMass();
-
-		bsoncxx::builder::stream::array WheelsArray;
-		for (int i = 0; i < Wheels.Num(); ++i)
-		{
-			const auto& Wheel = Wheels[i];
-			WheelsArray << open_document
-				//<< "4wdInd" << int(Wheel->WheelIndex)
-				<< "Radius" << Wheel->Radius
-				<< "Location" << open_array << Wheel->RestingLocation.X << Wheel->RestingLocation.Y << Wheel->RestingLocation.Z << close_array
-			<< close_document;
-		}
-		(*Doc) << "Wheels" << WheelsArray;
-	}
 }
 
 FVector ASodaWheeledVehicle::GetVelocity() const

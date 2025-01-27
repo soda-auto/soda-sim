@@ -1,6 +1,6 @@
 // Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
-#include "Soda/Misc/DatasetBluprintTools.h"
+#include "Soda/MongoDB/MongoDBBluprintTools.h"
 #include "Soda/UnrealSoda.h"
 #include "bsoncxx/builder/stream/helpers.hpp"
 #include "bsoncxx/exception/exception.hpp"
@@ -9,8 +9,9 @@
 #include "bsoncxx/json.hpp"
 
 
-bool UDatasetRecorder::BeginRecord(const FString& ActorDatasetName, const FString& DatasetType, const FJsonObjectWrapper& Descriptor)
+bool UMongoDBBluprintTools::BeginRecord(const FString& ActorDatasetName, const FString& DatasetType, const FJsonObjectWrapper& Descriptor)
 {
+	/*
 	Dataset.Reset();
 
 	if (soda::FDBGateway::Instance().GetStatus() != soda::EDBGatewayStatus::Connected)
@@ -31,7 +32,7 @@ bool UDatasetRecorder::BeginRecord(const FString& ActorDatasetName, const FStrin
 	}
 	catch (const std::system_error& e)
 	{
-		UE_LOG(LogSoda, Error, TEXT("UDatasetRecorder::BeginRecord(); %s"), UTF8_TO_TCHAR(e.what()));
+		UE_LOG(LogSoda, Error, TEXT("MongoDBBluprintTools::BeginRecord(); %s"), UTF8_TO_TCHAR(e.what()));
 		return false;
 	}
 
@@ -42,19 +43,24 @@ bool UDatasetRecorder::BeginRecord(const FString& ActorDatasetName, const FStrin
 	}
 
 	return true;
+	*/
+	return false;
 }
 
-void UDatasetRecorder::EndRecord()
+void UMongoDBBluprintTools::EndRecord()
 {
+	/*
 	if (Dataset)
 	{
 		Dataset->PushAsync();
 		Dataset.Reset();
 	}
+	*/
 }
 
-bool UDatasetRecorder::TickDataset(const FJsonObjectWrapper& DatasetTickData)
+bool UMongoDBBluprintTools::TickDataset(const FJsonObjectWrapper& DatasetTickData)
 {
+	/*
 	if (!Dataset)
 	{
 		return false;
@@ -81,4 +87,6 @@ bool UDatasetRecorder::TickDataset(const FJsonObjectWrapper& DatasetTickData)
 	}
 	Dataset->EndRow();
 	return true;
+	*/
+	return false;
 }

@@ -27,10 +27,9 @@
 #include "RuntimeEditorModule.h"
 #include "RuntimeMetaData.h"
 #include "Soda/VehicleComponents/CANBus.h"
-#include "Soda/DBGateway.h"
 #include "Misc/Paths.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Widgets/Images/SImage.h"
 #include "Styling/StyleColors.h"
@@ -43,12 +42,6 @@
 #include "GlobalRenderResources.h"
 #include "GameFramework/PlayerController.h"
 #include "RuntimeEditorUtils.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
 
 #define PARCE_VEC(V, Mul) V.X * Mul, V.Y * Mul, V.Z * Mul
 
@@ -677,7 +670,7 @@ bool ASodaVehicle::DrawDebug(class UCanvas* Canvas, float& YL, float& YPos)
 {
 	YPos += 30;
 
-	FCanvasTileItem TileItem(FVector2D(0, 0), GWhiteTexture, FVector2D(SodaApp.GetSodaUserSettings()->VehicleDebugAreaWidth, Canvas->SizeY), FLinearColor(0.0f, 0.0f, 0.0f, 0.3f));
+	FCanvasTileItem TileItem(FVector2D(0, 0), GWhiteTexture, FVector2D(GetDefault<USodaCommonSettings>()->VehicleDebugAreaWidth, Canvas->SizeY), FLinearColor(0.0f, 0.0f, 0.0f, 0.3f));
 	TileItem.BlendMode = SE_BLEND_Translucent;
 	Canvas->DrawItem(TileItem);
 
@@ -840,16 +833,7 @@ void ASodaVehicle::PostPhysicSimulation(float DeltaTime, const FPhysBodyKinemati
 	}
 	PhysBodyKinematicCashed = VehicleKinematic;
 
-	if (Dataset)
-	{
-		Dataset->BeginRow();
-		for (auto& Component : VehicleComponensForDataset)
-		{
-			Component->OnPushDataset(*Dataset);
-		}
-		OnPushDataset(*Dataset);
-		Dataset->EndRow();
-	}
+	SyncDataset();
 }
 
 void ASodaVehicle::PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
@@ -900,6 +884,7 @@ bool ASodaVehicle::SaveToJson(const FString& FileName, bool bRebase)
 
 bool ASodaVehicle::SaveToDB(const FString& VehicleName, bool bRebase)
 {
+	/*
 	FJsonActorArchive Ar;
 	FString JsonString;
 	if (Ar.SerializeActor(this, true))
@@ -935,6 +920,8 @@ bool ASodaVehicle::SaveToDB(const FString& VehicleName, bool bRebase)
 	{
 		return false;
 	}
+	*/
+	return false;
 
 }
 
@@ -1072,7 +1059,8 @@ bool ASodaVehicle::DeleteVehicleSave(const FVechicleSaveAddress& Address)
 		return UGameplayStatics::DeleteGameInSlot(Address.Location, 0);
 
 	case EVehicleSaveSource::DB:
-		return soda::FDBGateway::Instance().DeleteVehicleData(Address.Location);
+		//return soda::FDBGateway::Instance().DeleteVehicleData(Address.Location);
+		return false;
 
 	case EVehicleSaveSource::NoSave:
 	case EVehicleSaveSource::BinLevel:
@@ -1097,7 +1085,8 @@ void ASodaVehicle::GetSavedVehiclesLocal(TArray<FVechicleSaveAddress>& Addresses
 
 bool ASodaVehicle::GetSavedVehiclesDB(TArray<FVechicleSaveAddress>& Addresses)
 {
-	return soda::FDBGateway::Instance().LoadVehiclesList(Addresses);
+	//return soda::FDBGateway::Instance().LoadVehiclesList(Addresses);
+	return false;
 }
 
 ASodaVehicle* ASodaVehicle::FindVehicleByAddress(const UWorld* World, const FVechicleSaveAddress& Address)
@@ -1195,6 +1184,7 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromJsonFile(const UObject* WorldContext
 
 ASodaVehicle* ASodaVehicle::SpawnVehicleFromDB(const UObject* WorldContextObject, const FString& VehicleName, const FVector& Location, const FRotator& Rotation, bool Posses, FName DesireName, bool bApplyOffset)
 {
+	/*
 	bsoncxx::document::view Data = soda::FDBGateway::Instance().LoadVehicleData(VehicleName);
 	if (Data.empty())
 	{
@@ -1221,6 +1211,8 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromDB(const UObject* WorldContextObject
 	}
 
 	return NewVehicle;
+	*/
+	return nullptr;
 }
 
 ASodaVehicle* ASodaVehicle::SpawnVehicleFromBin(const UObject* WorldContextObject, const FString& SlotOrFileName, bool IsSlot, const FVector& Location, const FRotator& Rotation, bool Posses, FName DesireName, bool bApplyOffset)
@@ -1371,7 +1363,7 @@ TArray<ISodaVehicleComponent*> ASodaVehicle::GetVehicleComponents() const
 	return Components;
 }
 
-FString ASodaVehicle::ExportTo(const FString& ExporterName)
+FString ASodaVehicle::ExportTo(FName ExporterName)
 {
 	if (auto Exporter = SodaApp.GetVehicleExporters().Find(ExporterName))
 	{
@@ -1382,13 +1374,13 @@ FString ASodaVehicle::ExportTo(const FString& ExporterName)
 		}
 		else
 		{
-			UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::ExportTo(); Faild to export to ExporterName: \"%s\""), *ExporterName);
+			UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::ExportTo(); Faild to export to ExporterName: \"%s\""), *ExporterName.ToString());
 			return "";
 		}
 	}
 	else
 	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::ExportTo(); Can't find ExporterName: \"%s\""), *ExporterName);
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::ExportTo(); Can't find ExporterName: \"%s\""), *ExporterName.ToString());
 		return "";
 	}
 }
@@ -1472,8 +1464,6 @@ void ASodaVehicle::ScenarioBegin()
 
 	FScopeLock ScopeLock(&PhysicMutex);
 
-	VehicleComponensForDataset.Empty();
-
 	/*
 	for (auto& Component : GetVehicleComponents())
 	{
@@ -1491,37 +1481,6 @@ void ASodaVehicle::ScenarioBegin()
 		}
 	}
 	ReActivateVehicleComponents(false);
-
-
-	if (bRecordDataset && soda::FDBGateway::Instance().GetStatus() == soda::EDBGatewayStatus::Connected && soda::FDBGateway::Instance().IsDatasetRecording())
-	{
-		soda::FBsonDocument Doc;
-		GenerateDatasetDescription(Doc);
-
-		for (auto& Component : GetVehicleComponents())
-		{
-			if ((Component->GetVehicleComponentCommon().Activation == EVehicleComponentActivation::OnStartScenario) && !Component->IsVehicleComponentActiveted())
-			{
-				Component->GenerateDatasetDescription(Doc);
-			}
-		}
-
-		Dataset = soda::FDBGateway::Instance().CreateActorDataset(GetName(), "ego", GetClass()->GetName(), *Doc);
-		if (Dataset)
-		{
-			for (auto& Component : GetVehicleComponents())
-			{
-				if (Component->GetVehicleComponentCommon().bWriteDataset)
-				{
-					VehicleComponensForDataset.Add(Component);
-				}
-			}
-		}
-		else
-		{
-			SodaApp.GetSodaSubsystemChecked()->ScenarioStop(EScenarioStopReason::InnerError, EScenarioStopMode::RestartLevel, "Can't create dataset for \"" + GetName() + "\"");
-		}
-	}
 
 	for (auto& Component : GetVehicleComponents())
 	{
@@ -1550,13 +1509,6 @@ void ASodaVehicle::ScenarioEnd()
 		Component->ScenarioEnd();
 	}
 	ReActivateVehicleComponents(false);
-
-	if (Dataset)
-	{
-		Dataset->PushAsync();
-		Dataset.Reset();
-	}
-	VehicleComponensForDataset.Empty();
 }
 
 #if WITH_EDITOR
@@ -1578,63 +1530,6 @@ void ASodaVehicle::PostEditChangeChainProperty(FPropertyChangedChainEvent& Prope
 #endif
 
 
-void ASodaVehicle::OnPushDataset(soda::FActorDatasetData& InDataset) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	const FVehicleSimData& SimData = GetSimData();
-
-	FVector Location = SimData.VehicleKinematic.Curr.GlobalPose.GetLocation();
-	FRotator Rotation = SimData.VehicleKinematic.Curr.GlobalPose.GetRotation().Rotator();
-	FVector Vel = SimData.VehicleKinematic.Curr.GetLocalVelocity();
-	FVector Acc = SimData.VehicleKinematic.Curr.GetLocalAcceleration();
-	FVector AngVel = SimData.VehicleKinematic.Curr.AngularVelocity;
-
-	try
-	{
-		InDataset.GetRowDoc()
-			<< "VehicleData" << open_document
-			<< "SimTsUs" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.SimulatedTimestamp))
-			<< "RenderTsUs" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SimData.RenderTimestamp))
-			<< "Step" << SimData.SimulatedStep
-			<< "Loc" << open_array << Location.X << Location.Y << Location.Z << close_array
-			<< "Rot" << open_array << Rotation.Roll << Rotation.Pitch << Rotation.Yaw << close_array
-			<< "Bel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array
-			<< "Acc" << open_array << Acc.X << Acc.Y << Acc.Z << close_array
-			<< "AngVel" << open_array << AngVel.X << AngVel.Y << AngVel.Z << close_array
-			<< close_document;
-	}
-	catch (const std::system_error& e)
-	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
-	}
-}
-
-void ASodaVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	const FExtent& Extent = GetVehicleExtent();
-	*Doc
-		<< "Extents" << open_document
-		<< "Forward" << Extent.Forward
-		<< "Backward" << Extent.Backward
-		<< "Left" << Extent.Left
-		<< "Right" << Extent.Right
-		<< "Up" << Extent.Up
-		<< "Down" << Extent.Down
-		<< close_document;
-}
 
 TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 {

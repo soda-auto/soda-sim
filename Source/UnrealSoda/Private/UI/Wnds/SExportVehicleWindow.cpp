@@ -84,7 +84,7 @@ TSharedRef<ITableRow> SExportVehicleWindow::OnGenerateRow(TSharedPtr<ISodaVehicl
 			//.AutoWidth()
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString(Exporter->GetExporterName()))
+				.Text(FText::FromName(Exporter->GetExporterName()))
 			]
 		];
 }
@@ -114,7 +114,7 @@ FReply SExportVehicleWindow::OnExportAs()
 	const FString FileTypes = Exporter->GetFileTypes(); 
 
 	TArray<FString> OutFilenames;
-	if (!DesktopPlatform->SaveFileDialog(nullptr, FString(TEXT("Export to ")) + Exporter->GetExporterName(), TEXT(""), TEXT(""), FileTypes, EFileDialogFlags::None, OutFilenames) || OutFilenames.Num() <= 0)
+	if (!DesktopPlatform->SaveFileDialog(nullptr, FString(TEXT("Export to ")) + Exporter->GetExporterName().ToString(), TEXT(""), TEXT(""), FileTypes, EFileDialogFlags::None, OutFilenames) || OutFilenames.Num() <= 0)
 	{
 		UE_LOG(LogSoda, Warning, TEXT("SExportVehicleWindow::OnExportAs(); File isn't change"));
 		FReply::Handled();
@@ -123,7 +123,7 @@ FReply SExportVehicleWindow::OnExportAs()
 	FString JsonString;
 	if (!Exporter->ExportToString(Vehicle.Get(), JsonString))
 	{
-		UE_LOG(LogSoda, Error, TEXT("SExportVehicleWindow::OnExportAs(); Can't export to '%s'"), *Exporter->GetExporterName());
+		UE_LOG(LogSoda, Error, TEXT("SExportVehicleWindow::OnExportAs(); Can't export to '%s'"), *Exporter->GetExporterName().ToString());
 		FReply::Handled();
 	}
 

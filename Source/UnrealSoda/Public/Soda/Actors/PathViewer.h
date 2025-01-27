@@ -21,9 +21,9 @@
  * UDP protocol format: |double(Lon0),double(Lat0)|double(Lon1),double(Lat1)|double(Lon2),double(Lat2)|...|
  */
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API APathViewer : 
-	public AActor,
-	public IToolActor
+class UNREALSODA_API APathViewer 
+	: public AActor
+	, public IToolActor
 {
 	GENERATED_BODY()
 

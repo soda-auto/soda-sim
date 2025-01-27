@@ -95,6 +95,7 @@ void USodaChaosWheeledVehicleSimulation::UpdateSimulation(float DeltaTime, const
 		PVehicle->Wheels[i].SetBrakeTorque(Chaos::TorqueMToCm(SodaChaosWheelSetup[i].SodaWheel->ReqBrakeTorque));
 	}
 	
+	WheeledVehicleComponent->SyncDataset();
 }
 
 /**********************************************************************************

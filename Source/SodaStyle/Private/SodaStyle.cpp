@@ -496,17 +496,24 @@ void FStarshipSodaStyle::FStyle::SetupGeneralStyles()
 		Set("SodaIcons.GearBox", new IMAGE_BRUSH_SVG("SodaIcons/gear-box", Icon16x16));
 		Set("SodaIcons.Hive", new IMAGE_BRUSH_SVG("SodaIcons/hive", Icon16x16));
 		Set("SodaIcons.Python", new IMAGE_BRUSH_SVG("SodaIcons/python", Icon16x16));
+		Set("SodaIcons.MongoDB", new IMAGE_BRUSH_SVG("SodaIcons/mongodb", Icon16x16));
+		
 
-		Set("SodaIcons.DB.ConnectingBG", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_UpDownBG", Icon16x16));
-		Set("SodaIcons.DB.Connecting", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_UpDown", Icon16x16, FLinearColor(0.3, 0.3, 0.3, 1.0)));
-		Set("SodaIcons.DB.ConnectingFull", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_UpDownFull", Icon16x16));
-		Set("SodaIcons.DB.ConnectedBG", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_IdleBG", Icon16x16));
-		Set("SodaIcons.DB.Connected", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_Idle", Icon16x16, EStyleColor::AccentGreen));
+		Set("SodaIcons.DB.DownloadBG", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_DownloadBG", Icon16x16));
+		Set("SodaIcons.DB.Download", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_Download", Icon16x16, FLinearColor(0.3, 0.3, 0.3, 1.0)));
+		Set("SodaIcons.DB.UploadBG", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_UploadBG", Icon16x16));
+		Set("SodaIcons.DB.Upload", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_Upload", Icon16x16, FLinearColor(0.3, 0.3, 0.3, 1.0)));
+		Set("SodaIcons.DB.UpDownBG", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_UpDownBG", Icon16x16));
+		Set("SodaIcons.DB.UpDown", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_UpDown", Icon16x16, FLinearColor(0.3, 0.3, 0.3, 1.0)));
+		Set("SodaIcons.DB.UpDownFull", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_UpDownFull", Icon16x16));
+		Set("SodaIcons.DB.IdleBG", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_IdleBG", Icon16x16));
+		Set("SodaIcons.DB.Idle", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_Idle", Icon16x16, EStyleColor::AccentGreen));
 		Set("SodaIcons.DB.WarningBG", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_WarningBG", Icon16x16));
 		Set("SodaIcons.DB.Warning", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_Warning", Icon16x16, EStyleColor::Warning));
 		Set("SodaIcons.DB.DisabledBG", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_DisabledBG", Icon16x16));
 		Set("SodaIcons.DB.Disabled", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_Disabled", Icon16x16, FLinearColor(0.3, 0.3, 0.3, 1.0)));
 		Set("SodaIcons.DB.DisabledFull", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_DisabledFull", Icon16x16));
+		Set("SodaIcons.DB.DD_Unavailable", new IMAGE_BRUSH_SVG("Starship/DerivedData/DD_RemoteCache_Unavailable", Icon16x16));
 	}
 
 	Set("UnrealDefaultThumbnail", new IMAGE_BRUSH("Starship/Common/Unreal_DefaultThumbnail", FVector2D(256, 256)));

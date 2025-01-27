@@ -13,6 +13,7 @@
 #include "VehicleBaseTypes.h"
 #include "Soda/ISodaActor.h"
 #include "Soda/ISodaVehicleComponent.h"
+#include "Soda/ISodaDataset.h"
 #include "SodaVehicle.generated.h"
 
 DECLARE_STATS_GROUP(TEXT("SodaVehicle"), STATGROUP_SodaVehicle, STATGROUP_Advanced);
@@ -116,9 +117,11 @@ public:
  * and ability to manage of vehicle's sensors.
  */
 UCLASS(abstract, config = Game, BlueprintType)
-class UNREALSODA_API ASodaVehicle : 
-	public APawn, 
-	public ISodaActor
+class UNREALSODA_API ASodaVehicle 
+	: public APawn
+	, public ISodaActor
+	, public IObjectDataset
+
 {
 	GENERATED_UCLASS_BODY()
 
@@ -185,7 +188,7 @@ public:
 
 	/** Export snesors to registread ISodaVehicleExporter format */
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	virtual FString ExportTo(const FString & ExporterName);
+	virtual FString ExportTo(FName ExporterName);
 
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
 	virtual bool SaveToJson(const FString& FileName, bool bRebase);
@@ -319,13 +322,6 @@ public:
 	 */
 	virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp);
 
-	/**
-	 * Called during scenario playing if the datset is recording for this vehicle.
-	 */
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const;
-
-	virtual void GenerateDatasetDescription(soda::FBsonDocument& Doc) const;
-
 	virtual void DrawVisualization(USodaGameViewportClient* ViewportClient, const FSceneView* View, FPrimitiveDrawInterface* PDI) override;
 
 public:
@@ -384,5 +380,4 @@ protected:
 	FExtent VehicelExtent;
 
 	FPhysBodyKinematic PhysBodyKinematicCashed;
-	TSharedPtr<soda::FActorDatasetData> Dataset;
 };

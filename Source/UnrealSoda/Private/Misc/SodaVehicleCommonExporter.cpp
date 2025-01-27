@@ -7,7 +7,7 @@
 #include "Soda/VehicleComponents/Sensors/Base/CameraFisheyeSensor.h"
 #include "Soda/UnrealSodaVersion.h"
 
-const FString FSodaVehicleCommonExporter::ExporterName = TEXT("Soda Sensors Common");
+const FName FSodaVehicleCommonExporter::ExporterName = TEXT("Soda Sensors Common");
 const FString FSodaVehicleCommonExporter::ExporterFileType = TEXT("Soda Sensors Common (*.json)|*.json");
 
 bool FSodaVehicleCommonExporter::ExportToString(const ASodaVehicle* Vehicle, FString& JsonString)

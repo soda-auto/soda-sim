@@ -9,7 +9,7 @@
  * To ensure the settings are saved to the specified config file make sure to add
  * props using the globalconfig or config meta.
  */
-UCLASS(config = Joystick, defaultconfig)
+UCLASS(config = SodaUserSettings)
 class SODAJOYSTICK_API UJoystickGameSettings : public UObject
 {
 	GENERATED_BODY()

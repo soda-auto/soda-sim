@@ -365,6 +365,8 @@ void UNCOMWheeledVehicleMovement::Recv(const FArrayReaderPtr& ArrayReaderPtr, co
 	PostPhysicSimulationDeferred(DeltaTime, VehicleSimData.VehicleKinematic, VehicleSimData.SimulatedTimestamp);
 
 	LastDeltatime = DeltaTime;
+
+	SyncDataset();
 }
 
 void UNCOMWheeledVehicleMovement::ResetPosition()

@@ -25,7 +25,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/StaticMesh.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 
 static bool IsSplineValid(const URouteSplineComponent* SplineComponent)
 {
@@ -73,8 +73,8 @@ ANavigationRoute::ANavigationRoute(const FObjectInitializer& ObjectInitializer)
 	//ProceduralMesh->SetGenerateOverlapEvents(true);
 	ProceduralMesh->SetMobility(EComponentMobility::Movable);
 	ProceduralMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	ProceduralMesh->SetCollisionResponseToChannel(SodaApp.GetSodaUserSettings()->SelectTraceChannel, ECollisionResponse::ECR_Block);
-	ProceduralMesh->SetCollisionObjectType(SodaApp.GetSodaUserSettings()->SelectTraceChannel);
+	ProceduralMesh->SetCollisionResponseToChannel(GetDefault<USodaCommonSettings>()->SelectTraceChannel, ECollisionResponse::ECR_Block);
+	ProceduralMesh->SetCollisionObjectType(GetDefault<USodaCommonSettings>()->SelectTraceChannel);
 	ProceduralMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	ProceduralMesh->SetupAttachment(RootComponent);
 
@@ -493,8 +493,8 @@ URoutePlannerEditableNode::URoutePlannerEditableNode(const FObjectInitializer& O
 	//SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
 	SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	SetCollisionResponseToChannel(SodaApp.GetSodaUserSettings()->SelectTraceChannel, ECollisionResponse::ECR_Block);
-	SetCollisionObjectType(SodaApp.GetSodaUserSettings()->SelectTraceChannel);
+	SetCollisionResponseToChannel(GetDefault<USodaCommonSettings>()->SelectTraceChannel, ECollisionResponse::ECR_Block);
+	SetCollisionObjectType(GetDefault<USodaCommonSettings>()->SelectTraceChannel);
 	SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
 	CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
@@ -604,7 +604,7 @@ void ANavigationRouteEditable::Tick(float DeltaTime)
 		bool bHidePreviewNode = true;
 
 		TArray<FHitResult> HitActors; 
-		TraceForMousePositionByObject(PlayerController, HitActors, SodaApp.GetSodaUserSettings()->SelectTraceChannel);
+		TraceForMousePositionByObject(PlayerController, HitActors, GetDefault<USodaCommonSettings>()->SelectTraceChannel);
 
 		HoverNode = nullptr;		
 

@@ -8,6 +8,7 @@
 #include "ChaosWheeledVehicleMovementComponent.h"
 #include "VehicleAnimationInstance.h"
 #include "Soda/ISodaVehicleComponent.h"
+#include "Soda/ISodaDataset.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "SodaChaosWheeledVehicleMovement.generated.h"
@@ -69,10 +70,11 @@ protected:
  *  USodaChaosWheeledVehicleMovementComponent
  */
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent), hidecategories = (MechanicalSetup, SteeringSetup))
-class UNREALSODA_API USodaChaosWheeledVehicleMovementComponent : 
-	public UChaosWheeledVehicleMovementComponent, 
-	public IWheeledVehicleMovementInterface,
-	public ISodaVehicleComponent
+class UNREALSODA_API USodaChaosWheeledVehicleMovementComponent 
+	: public UChaosWheeledVehicleMovementComponent
+	, public IWheeledVehicleMovementInterface
+	, public ISodaVehicleComponent
+	, public IObjectDataset
 {
 	GENERATED_UCLASS_BODY()
 

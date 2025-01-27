@@ -6,14 +6,7 @@
 #include "ProceduralMeshComponent.h"
 #include "Soda/Actors/NavigationRoute.h"
 #include "Soda/IToolActor.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
-
-
+#include "Soda/ISodaDataset.h"
 #include "TrackBuilder.generated.h"
 
 class FJsonObject;
@@ -25,9 +18,10 @@ class ALapCounter;
  * TODO: Need to check the functionality after switching to a new triangulation algorithm.
  */
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API ATrackBuilder : 
-	public AActor,
-	public IToolActor
+class UNREALSODA_API ATrackBuilder 
+	: public AActor
+	, public IToolActor
+	, public IObjectDataset
 {
 	GENERATED_BODY()
 

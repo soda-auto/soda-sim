@@ -14,13 +14,6 @@
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 #include "Soda/LevelState.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
-#include "Soda/DBGateway.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
 #include <cmath>
 
 
@@ -29,7 +22,7 @@ static inline float NormAng(float a)
 	return (a > M_PI) ? (a - 2.0 * M_PI) : ((a < -M_PI) ? (a + 2 * M_PI) : a);
 }
 
-UGenericVehicleDriverComponentComponent::UGenericVehicleDriverComponentComponent(const FObjectInitializer& ObjectInitializer)
+UGenericVehicleDriverComponent::UGenericVehicleDriverComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	GUI.ComponentNameOverride = TEXT("Generic Vehicle Driver");
@@ -41,7 +34,7 @@ UGenericVehicleDriverComponentComponent::UGenericVehicleDriverComponentComponent
 	Common.Activation = EVehicleComponentActivation::OnStartScenario;
 }
 
-bool UGenericVehicleDriverComponentComponent::OnActivateVehicleComponent()
+bool UGenericVehicleDriverComponent::OnActivateVehicleComponent()
 {
 	if (!Super::OnActivateVehicleComponent())
 	{
@@ -98,7 +91,7 @@ bool UGenericVehicleDriverComponentComponent::OnActivateVehicleComponent()
 	return true;
 }
 
-void UGenericVehicleDriverComponentComponent::OnPostActivateVehicleComponent()
+void UGenericVehicleDriverComponent::OnPostActivateVehicleComponent()
 {
 	bWheelRadiusValid = (Engine) && (Engine->FindWheelRadius(WheelRadius)) && (WheelRadius > 1.0);
 	if (!bWheelRadiusValid)
@@ -108,14 +101,14 @@ void UGenericVehicleDriverComponentComponent::OnPostActivateVehicleComponent()
 	}
 }
 
-void UGenericVehicleDriverComponentComponent::OnDeactivateVehicleComponent()
+void UGenericVehicleDriverComponent::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
 
 	ListenerHelper.StopListen();
 }
 
-void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
+void UGenericVehicleDriverComponent::PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
 {
 	Super::PrePhysicSimulation(DeltaTime, VehicleKinematic, Timestamp);
 
@@ -340,9 +333,11 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 			}
 		}
 	}
+
+	SyncDataset();
 }
 
-ESodaVehicleDriveMode UGenericVehicleDriverComponentComponent::GetDriveMode() const
+ESodaVehicleDriveMode UGenericVehicleDriverComponent::GetDriveMode() const
 {
 	if (bSafeStopEnbaled)
 	{
@@ -369,7 +364,7 @@ ESodaVehicleDriveMode UGenericVehicleDriverComponentComponent::GetDriveMode() co
 	}
 }
 
-void UGenericVehicleDriverComponentComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
+void UGenericVehicleDriverComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
 	Super::DrawDebug(Canvas, YL, YPos);
 
@@ -392,19 +387,19 @@ void UGenericVehicleDriverComponentComponent::DrawDebug(UCanvas* Canvas, float& 
 	}
 }
 
-FString UGenericVehicleDriverComponentComponent::GetRemark() const
+FString UGenericVehicleDriverComponent::GetRemark() const
 {
 	return VehicleControl ? VehicleControl->GetRemark() : "null";
 }
 
-void UGenericVehicleDriverComponentComponent::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+void UGenericVehicleDriverComponent::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
 	//PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
 	ListenerHelper.OnPropertyChanged(PropertyChangedEvent);
 	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
 }
 
-void UGenericVehicleDriverComponentComponent::Serialize(FArchive& Ar)
+void UGenericVehicleDriverComponent::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
 	//PublisherHelper.OnSerialize(Ar);
@@ -412,27 +407,27 @@ void UGenericVehicleDriverComponentComponent::Serialize(FArchive& Ar)
 }
 
 /*
-bool UGenericVehicleDriverComponentComponent::IsVehicleComponentInitializing() const
+bool UGenericVehicleDriverComponent::IsVehicleComponentInitializing() const
 {
 	return PublisherHelper.IsPublisherInitializing();
 }
 */
 
-void UGenericVehicleDriverComponentComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UGenericVehicleDriverComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	//PublisherHelper.Tick();
 }
 
 #if WITH_EDITOR
-void UGenericVehicleDriverComponentComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+void UGenericVehicleDriverComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 	//PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
 	ListenerHelper.OnPropertyChanged(PropertyChangedEvent);
 }
 
-void UGenericVehicleDriverComponentComponent::PostInitProperties()
+void UGenericVehicleDriverComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
 	//PublisherHelper.RefreshClass();
@@ -440,38 +435,3 @@ void UGenericVehicleDriverComponentComponent::PostInitProperties()
 }
 #endif
 
-void UGenericVehicleDriverComponentComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	try
-	{
-		Dataset.GetRowDoc()
-			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
-			<< "bVapiPing" << bVapiPing
-			<< "bADModeEnbaled" << bADModeEnbaled
-			<< "bSafeStopEnbaled" << bSafeStopEnbaled
-			<< "GearState" << int(GearState)
-			<< "GearNum" << int(GearNum)
-			<< "Control" << open_document
-			<< "SteerReq" << Control.SteerReq.ByRatio
-			<< "DriveEffortReq" << Control.DriveEffortReq.ByRatio
-			<< "TargetSpeedReq" << Control.TargetSpeedReq
-			<< "GearStateReq" << int(Control.GearStateReq)
-			<< "GearNumReq" << int(Control.GearNumReq)
-			<< "SteerReqMode" << int(Control.SteerReqMode)
-			<< "DriveEffortReqMode" << int(Control.DriveEffortReqMode)
-			<< "TimestampUs" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(Control.Timestamp))
-			<< close_document // Control
-			<< close_document;
-	}
-	catch (const std::system_error& e)
-	{
-		UE_LOG(LogSoda, Error, TEXT("UGenericVehicleDriverComponentComponent::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
-	}
-}

@@ -29,10 +29,9 @@
 #include "Soda/IToolActor.h"
 #include "Soda/SodaLibraryPrimaryAsset.h"
 #include "RuntimeMetaData.h"
-#include "Soda/DBGateway.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "UObject/UObjectIterator.h"
 #include "Async/Async.h"
 #include "Soda/SodaActorFactory.h"
@@ -154,7 +153,7 @@ void USodaSubsystem::InitGame(AGameModeBase* GameMode)
 
 	SodaApp.NotifyInitGame(this);
 
-	if (SodaApp.GetSodaUserSettings()->bTagActorsAtBeginPlay)
+	if (GetDefault<USodaCommonSettings>()->bTagActorsAtBeginPlay)
 	{
 		USodaStatics::TagActorsInLevel(this, true);
 		USodaStatics::AddV2XMarkerToAllVehiclesInLevel(this, ASodaVehicle::StaticClass()->GetClass());
@@ -209,7 +208,12 @@ void USodaSubsystem::PreEndGame(UWorld* World)
 		FWorldDelegates::OnWorldBeginTearDown.Remove(PreEndGameHandle);
 	}
 
-	soda::FDBGateway::Instance().ClearDatasetsQueue();
+	/*
+	for (auto& It : DatasetManagersForScenario)
+	{
+		It->ClearDatasetsQueue();
+	}
+	*/
 }
 
 bool USodaSubsystem::OnWindowCloseRequested()
@@ -238,15 +242,10 @@ void USodaSubsystem::OnWorldBeginPlay(UWorld& World)
 		ViewportClient->InitUI(SodaViewport);
 	}
 
-	if (SodaApp.GetSodaUserSettings()->bAutoConnect)
-	{
-		UpdateDBGateway(false);
-	}
-
 	AfterScenarioStop();
 
 	static bool bWasShown = false;
-	if (SodaApp.GetSodaUserSettings()->bShowQuickStartAtStartUp && !bWasShown)
+	if (GetDefault<USodaCommonSettings>()->bShowQuickStartAtStartUp && !bWasShown)
 	{
 		bWasShown = true;
 		OpenWindow("Quick Start", SNew(soda::SQuickStartWindow));
@@ -258,6 +257,7 @@ void USodaSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	/*
 	UWorld* World = GetWorld();
 	check(World);
 
@@ -267,6 +267,12 @@ void USodaSubsystem::Tick(float DeltaTime)
 		{
 			ScenarioStop(EScenarioStopReason::InnerError, EScenarioStopMode::RestartLevel, "Scenario Recording Failed. " + soda::FDBGateway::Instance().GetLastError());
 		}
+	}
+	*/
+
+	for (auto& [Name, Manager] : SodaApp.GetDatasetManagers())
+	{
+		Manager->Tick(DeltaTime);
 	}
 }
 
@@ -424,87 +430,91 @@ void USodaSubsystem::SetActiveVehicle(ASodaVehicle* Vehicle)
 
 bool USodaSubsystem::ScenarioPlay()
 {
-	if (!bIsScenarioRunning)
+	if (bIsScenarioRunning)
 	{
-		ScenarioLevelSavedData.bIsValid = LevelState->SaveLevelToTransientSlot();
-		if (!ScenarioLevelSavedData.bIsValid)
-		{
-			UE_LOG(LogSoda, Error, TEXT("USodaSubsystem::ScenarioPlay(); Can't SaveLevelToTransientSlot()"));
-			ShowMessageBox(soda::EMessageBoxType::OK, "Scenario Play Failed", soda::FDBGateway::Instance().GetLastError());
-			return false;
-		}
-		ScenarioLevelSavedData.ActorsDirty.Empty();
-		ScenarioLevelSavedData.SelectedActor.Reset();
-		ScenarioLevelSavedData.PossesdActor.Reset();
-		ScenarioLevelSavedData.UserMessage.Empty();
-		if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
-		{
-			if (APawn * Pawn = PlayerController->GetPawn())
-			{
-				ScenarioLevelSavedData.PossesdActor = Pawn->GetName();
-			}
-		}
-		if (ViewportClient)
-		{
-			ScenarioLevelSavedData.Mode = SodaViewport->GetUIMode();
-			if (const AActor* Actor = ViewportClient->Selection->GetSelectedActor())
-			{
-				ScenarioLevelSavedData.SelectedActor = Actor->GetName();
-			}
-		}
-		
-		for (auto& It : LevelState->ActorFactory->GetActors())
-		{
-			if (ISodaActor* SodaActor = Cast<ISodaActor>(It))
-			{
-				if (SodaActor->IsDirty())
-				{
-					ScenarioLevelSavedData.ActorsDirty.Add(It->GetName());
-				}
-			}
-		}
+		return false;
+	}
 
-		if (SodaApp.GetSodaUserSettings()->bRecordDataset)
+	ScenarioLevelSavedData.bIsValid = LevelState->SaveLevelToTransientSlot();
+	if (!ScenarioLevelSavedData.bIsValid)
+	{
+		UE_LOG(LogSoda, Error, TEXT("USodaSubsystem::ScenarioPlay(); Can't SaveLevelToTransientSlot()"));
+		ShowMessageBox(soda::EMessageBoxType::OK, "Scenario Play Failed", "Can't save transient level");
+		return false;
+	}
+	ScenarioLevelSavedData.ActorsDirty.Empty();
+	ScenarioLevelSavedData.SelectedActor.Reset();
+	ScenarioLevelSavedData.PossesdActor.Reset();
+	ScenarioLevelSavedData.UserMessage.Empty();
+	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+	{
+		if (APawn * Pawn = PlayerController->GetPawn())
 		{
-			if (soda::FDBGateway::Instance().BeginRecordDataset())
+			ScenarioLevelSavedData.PossesdActor = Pawn->GetName();
+		}
+	}
+	if (ViewportClient)
+	{
+		ScenarioLevelSavedData.Mode = SodaViewport->GetUIMode();
+		if (const AActor* Actor = ViewportClient->Selection->GetSelectedActor())
+		{
+			ScenarioLevelSavedData.SelectedActor = Actor->GetName();
+		}
+	}
+		
+	for (auto& It : LevelState->ActorFactory->GetActors())
+	{
+		if (ISodaActor* SodaActor = Cast<ISodaActor>(It))
+		{
+			if (SodaActor->IsDirty())
 			{
-				FNotificationInfo Info(FText::FromString(FString("Begin recording dataset; ID: ") + FString::FromInt(soda::FDBGateway::Instance().GetDatasetID())));
-				Info.ExpireDuration = 5.0f;
-				Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.SuccessWithColor"));
-				FSlateNotificationManager::Get().AddNotification(Info);
+				ScenarioLevelSavedData.ActorsDirty.Add(It->GetName());
+			}
+		}
+	}
+
+	bIsScenarioRunning = true;
+	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+	{
+		if (It->GetClass()->ImplementsInterface(USodaActor::StaticClass()))
+		{
+			if (ISodaActor* SodaActor = Cast<ISodaActor>(*It))
+			{
+				SodaActor->ScenarioBegin();
+				if (SodaActor->GetActorHiddenInScenario())
+				{
+					It->SetActorHiddenInGame(true);
+				}
 			}
 			else
 			{
-				ShowMessageBox(soda::EMessageBoxType::OK, "Scenario Play Failed", soda::FDBGateway::Instance().GetLastError());
-				return false;
+				ISodaActor::Execute_ReceiveScenarioBegin(*It);
 			}
 		}
-
-		bIsScenarioRunning = true;
-		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
-		{
-			if (It->GetClass()->ImplementsInterface(USodaActor::StaticClass()))
-			{
-				if (ISodaActor* SodaActor = Cast<ISodaActor>(*It))
-				{
-					SodaActor->ScenarioBegin();
-					if (SodaActor->GetActorHiddenInScenario())
-					{
-						It->SetActorHiddenInGame(true);
-					}
-				}
-				else
-				{
-					ISodaActor::Execute_ReceiveScenarioBegin(*It);
-				}
-			
-			}
-		}
-
-		OnScenarioPlay.Broadcast();
-		return true;
 	}
-	return false;
+
+	OnScenarioPlay.Broadcast();
+
+	for (auto It = GetMutableDefault<USodaCommonSettings>()->DatasetNamesToUse.CreateIterator(); It; ++It)
+	{
+		if (auto* Found = SodaApp.GetDatasetManagers().Find(*It))
+		{
+			if (!(*Found)->BeginRecording())
+			{
+				//ShowMessageBox(soda::EMessageBoxType::OK, "Scenario Play Failed", (*Found)->GetLastError());
+				//return false;
+			}
+		}
+		else
+		{
+			// If somehow a dataset name ended up here that is not registered, delete it
+			It.RemoveCurrent();
+			GetMutableDefault<USodaCommonSettings>()->SaveConfig();
+		}
+	}
+
+	return true;
+
 }
 
 void USodaSubsystem::ScenarioStop(EScenarioStopReason Reason, EScenarioStopMode Mode, const FString& UserMessage)
@@ -528,12 +538,24 @@ void USodaSubsystem::ScenarioStop(EScenarioStopReason Reason, EScenarioStopMode 
 				}
 			}
 		}
-		if (soda::FDBGateway::Instance().IsDatasetRecording())
-		{
-			soda::FDBGateway::Instance().EndRecordDataset(Reason);
-		}
 
 		OnScenarioStop.Broadcast(Reason);
+
+		for (auto& [Name, Manager] : SodaApp.GetDatasetManagers())
+		{
+			Manager->EndRecording(Reason, false); // TODO: bImmediately = (EScenarioStopMode==RestartLevel)
+		}
+
+		for (TObjectIterator<UObject> It; It; ++It)
+		{
+			if (It->GetWorld() == GetWorld() && !It->GetName().StartsWith(TEXT("SKEL_")) || !It->GetName().StartsWith(TEXT("REINST_")))
+			{
+				if (IObjectDataset* DatasetObject = Cast<IObjectDataset>(*It))
+				{
+					DatasetObject->ReleaseDatasetHandlers();
+				}
+			}
+		}
 
 		if (Mode == EScenarioStopMode::RestartLevel)
 		{
@@ -610,19 +632,6 @@ void USodaSubsystem::OnPostGarbageCollect(float Delay /*= 0.0f*/)
 	LevelState->FinishLoadLevel();
 	AfterScenarioStop();
 }
-
-int64 USodaSubsystem::GetScenarioID() const
-{
-	if (!bIsScenarioRunning)
-	{
-		return -1;
-	}
-	else 
-	{
-		return soda::FDBGateway::Instance().GetDatasetID();
-	}
-}
-
 
 void USodaSubsystem::RequestQuit(bool bForce)
 {
@@ -727,17 +736,6 @@ const FSodaActorDescriptor& USodaSubsystem::GetSodaActorDescriptor(TSoftClassPtr
 const TMap<TSoftClassPtr<AActor>, FSodaActorDescriptor>& USodaSubsystem::GetSodaActorDescriptors() const
 {
 	return SodaActorDescriptors;
-}
-
-void USodaSubsystem::UpdateDBGateway(bool bSync)
-{
-	if (soda::FDBGateway::Instance().GetStatus() == soda::EDBGatewayStatus::Connecting)
-	{
-		ShowMessageBox(soda::EMessageBoxType::OK, "Faild", "The connecting is already in progress");
-		return;
-	}
-
-	soda::FDBGateway::Instance().Configure(SodaApp.GetSodaUserSettings()->MongoURL, SodaApp.GetSodaUserSettings()->DatabaseName, bSync);
 }
 
 TSharedPtr<soda::SWaitingPanel> USodaSubsystem::ShowWaitingPanel(const FString& Caption, const FString& SubCaption)

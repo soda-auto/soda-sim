@@ -52,12 +52,14 @@ struct FSodaActorDescriptor
  * The "Pinned Actor" means the actor SaveGame serialization will be carried over between different levels
  */
 UINTERFACE(BlueprintType, Blueprintable, meta=(RuntimeMetaData))
-class UNREALSODA_API USodaActor: public UEditableObject
+class UNREALSODA_API USodaActor
+	: public UEditableObject
 {
 	GENERATED_BODY()
 };
 
-class UNREALSODA_API ISodaActor: public IEditableObject
+class UNREALSODA_API ISodaActor
+	: public IEditableObject
 {
 	GENERATED_BODY()
 

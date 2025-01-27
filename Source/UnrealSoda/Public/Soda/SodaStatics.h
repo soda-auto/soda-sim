@@ -10,7 +10,7 @@
 
 class UProceduralMeshComponent;
 class USodaSubsystem;
-class USodaUserSettings;
+class USodaCommonSettings;
 
 UENUM(BlueprintType)
 enum class ETriangulationPlane : uint8
@@ -43,7 +43,7 @@ public:
 	static USodaSubsystem* GetSodaSubsystem();
 
 	UFUNCTION(BlueprintPure, Category = "Soda")
-	static USodaUserSettings* GetSodaUserSettings();
+	static USodaCommonSettings* GetSodaCommonSettings();
 
 	/**Get current level name */
 	UFUNCTION(BlueprintCallable, Category = "Soda")

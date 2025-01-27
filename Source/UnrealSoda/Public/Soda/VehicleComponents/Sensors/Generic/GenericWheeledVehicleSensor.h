@@ -78,6 +78,10 @@ public:
 	FSubobjectReference LinkToVehicleDriver{ TEXT("VehicleDriver") };
 
 
+	UVehicleGearBoxBaseComponent* GetGearBox() const { return GearBox; }
+	UVehicleDriverComponent* GetVehicleDriver() const { return VehicleDriver; }
+	ASodaWheeledVehicle* GetWheeledVehicle() const { return WheeledVehicle; }
+
 protected:
 	//UPROPERTY(BlueprintReadOnly, Category = Link)
 	//UVehicleBrakeSystemBaseComponent* BrakeSystem = nullptr;
@@ -100,6 +104,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = Link)
 	UVehicleDriverComponent* VehicleDriver = nullptr;
 
+	const FWheeledVehicleSensorData& GetSensorData() const { return SensorData; }
+
 
 protected:
 	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header,const FWheeledVehicleSensorData& VehicleState);
@@ -112,7 +118,6 @@ protected:
 	virtual FString GetRemark() const override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 	virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 	virtual void Serialize(FArchive& Ar) override;

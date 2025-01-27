@@ -19,6 +19,7 @@ class UPinnedToolActorsSaveGame;
 namespace soda
 {
 	class SSodaViewport;
+	class IDatasetManager;
 	class SMenuWindowContent;
 	class SMessageBox;
 	class SMenuWindow;
@@ -71,13 +72,6 @@ public:
 	FScenarioStopSignature OnScenarioStop;
 
 public:
-	UFUNCTION(BlueprintCallable, Category = DB)
-	virtual void UpdateDBGateway(bool bSync);
-
-	UFUNCTION(BlueprintCallable, Category = DB, meta = (CallInRuntime))
-	virtual void ReconnectDBGateway() { UpdateDBGateway(false); }
-
-
 	void PushToolBox(TSharedRef<soda::SToolBox> Widget, bool InstedPrev = false);
 
 	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
@@ -103,10 +97,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = Scenario)
 	void ScenarioStop(EScenarioStopReason Reason, EScenarioStopMode Mode, const FString & UserMessage=TEXT(""));
-
-	/** Valid only during scenario playing. -1 means no dataset recording in this scenario */
-	UFUNCTION(BlueprintCallable, Category = Scenario)
-	int64 GetScenarioID() const;
 
 	UFUNCTION(BlueprintCallable, Category = Scenario)
 	bool IsScenarioRunning() { return bIsScenarioRunning; }

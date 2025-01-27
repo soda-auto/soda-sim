@@ -56,15 +56,16 @@ class UNREALSODA_API URacingSensor :
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RacingSensor, SaveGame, meta = (EditInRuntime))
 	TSoftObjectPtr<ATrackBuilder> CapturedTrackBuilder;
 
+	const soda::FRacingSensorData& GetSensorData() const { return SensorData; }
+
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 	virtual void OnLapCounterTriggerBeginOverlap(ALapCounter* LapCounter, const FHitResult& SweepResult) override;
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 	virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
 protected:
 	//virtual void OnTriggerLapCpounter();
-	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FRacingSensorData & OutSensorData) { return false; }
+	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FRacingSensorData & OutSensorData) { SyncDataset(); return false; }
 
 protected:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

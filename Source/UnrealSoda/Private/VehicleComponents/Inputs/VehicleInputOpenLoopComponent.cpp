@@ -7,10 +7,8 @@
 #include "Engine/Engine.h"
 #include "Soda/SodaStatics.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
-#include "Soda/DBGateway.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
@@ -20,12 +18,6 @@
 #include "Containers/UnrealString.h"
 #include "Misc/OutputDeviceDebug.h"
 #include "DesktopPlatformModule.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
 
 UVehicleInputOpenLoopComponent::UVehicleInputOpenLoopComponent(const FObjectInitializer &ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -110,6 +102,8 @@ void UVehicleInputOpenLoopComponent::PrePhysicSimulation(float DeltaTime, const 
 	Super::PrePhysicSimulation(DeltaTime, VehicleKinematic, Timestamp);
 
 	GetNewInput(DeltaTime);
+
+	SyncDataset();
 }
 
 

@@ -16,7 +16,6 @@
 #include "Soda/SodaActorFactory.h"
 #include "Soda/SodaStatics.h"
 #include "Soda/SodaSpectator.h"
-#include "Soda/DBGateway.h"
 #include "Soda/Actors/RefPoint.h"
 #include "Soda/SodaSubsystem.h"
 
@@ -208,6 +207,7 @@ bool ALevelState::SaveLevelLocallyAs(int SlotIndex, const FString& Description)
 
 bool ALevelState::SaveLevelRemotlyAs(int64 ScenarioID, const FString& Description)
 {
+	/*
 	ULevelSaveGame* SaveGame = CreateSaveGame(false);
 	if (!SaveGame)
 	{
@@ -243,6 +243,8 @@ bool ALevelState::SaveLevelRemotlyAs(int64 ScenarioID, const FString& Descriptio
 	{
 		return false;
 	}
+	*/ 
+	return false;
 }
 
 bool ALevelState::ReSaveLevel()
@@ -298,6 +300,7 @@ ULevelSaveGame* ALevelState::LoadSaveGameTransient(const UObject* WorldContextOb
 
 ULevelSaveGame* ALevelState::LoadSaveGameRemotly(const UObject* WorldContextObject, int64 & ScenarioID, const FString& InLevelName)
 {
+	/*
 	if (!WorldContextObject)
 	{
 		WorldContextObject = USodaStatics::GetGameWorld();
@@ -326,6 +329,8 @@ ULevelSaveGame* ALevelState::LoadSaveGameRemotly(const UObject* WorldContextObje
 	}
 
 	return Cast<ULevelSaveGame>(UGameplayStatics::LoadGameFromMemory(ObjectBytes));
+	*/
+	return nullptr;
 }
 
 FString ALevelState::GetLocalSaveSlotName(const UObject* WorldContextObject, int SlotIndex, const FString& InLevelName)
@@ -356,7 +361,8 @@ bool ALevelState::DeleteLevelLocally(const UObject* WorldContextObject, int Slot
 
 bool ALevelState::DeleteLevelRemotly(const UObject* /*WorldContextObject*/, int64 ScenarioID)
 {
-	return soda::FDBGateway::Instance().DeleteLevelData(ScenarioID);
+	//return soda::FDBGateway::Instance().DeleteLevelData(ScenarioID);
+	return false;
 }
 
 bool ALevelState::GetLevelSlotsLocally(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription>& Slots, bool bSortByDateTime, const FString& InLevelName)
@@ -398,12 +404,15 @@ bool ALevelState::GetLevelSlotsLocally(const UObject* WorldContextObject, TArray
 
 bool ALevelState::GetLevelSlotsRemotly(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription>& Slots, bool bSortByDateTime, const FString& InLevelName)
 {
+	/*
 	if (!WorldContextObject)
 	{
 		WorldContextObject = USodaStatics::GetGameWorld();
 	}
 	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
 	return soda::FDBGateway::Instance().LoadLevelList(LevelName, bSortByDateTime, Slots);
+	*/
+	return false;
 }
 
 bool ALevelState::ReloadLevelEmpty(const UObject* WorldContextObject, const FString& InLevelName)

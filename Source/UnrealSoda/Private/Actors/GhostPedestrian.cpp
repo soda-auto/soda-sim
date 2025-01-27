@@ -7,15 +7,8 @@
 #include "Components/BoxComponent.h"
 #include "Soda/SodaSubsystem.h"
 #include "Soda/SodaStatics.h"
-#include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
 #include "Soda/Misc/EditorUtils.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
 
 AGhostPedestrian::AGhostPedestrian()
 {
@@ -120,13 +113,6 @@ void AGhostPedestrian::TickActor(float DeltaTime, enum ELevelTick TickType, FAct
 				SetActorTransform(AdjustTransform(TrajectoryPlaner.GetRouteSpline()->GetTransformAtSplineInputKey(TrajectoryPlaner.GetCurrentSplineKey(), ESplineCoordinateSpace::World)));
 			}
 		}
-
-		if (Dataset)
-		{
-			Dataset->BeginRow();
-			OnPushDataset();
-			Dataset->EndRow();
-		}
 	}
 	else
 	{
@@ -162,6 +148,10 @@ void AGhostPedestrian::TickActor(float DeltaTime, enum ELevelTick TickType, FAct
 		TrajectoryPlaner.DrawRoute(this);
 	}
 
+	if (SodaSubsystem->IsScenarioRunning())
+	{
+		SyncDataset();
+	}
 }
 
 static AActor* FindActorByName(const FString& ActorNameStr, const UWorld* InWorld)
@@ -280,21 +270,6 @@ bool AGhostPedestrian::IsLinkedToRoute() const
 void AGhostPedestrian::ScenarioBegin()
 {
 	ISodaActor::ScenarioBegin();
-
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	if (bRecordDataset && soda::FDBGateway::Instance().GetStatus() == soda::EDBGatewayStatus::Connected && soda::FDBGateway::Instance().IsDatasetRecording())
-	{
-		soda::FBsonDocument Doc;
-		GenerateDatasetDescription(Doc);
-		Dataset = soda::FDBGateway::Instance().CreateActorDataset(GetName(), "pedestrian", GetClass()->GetName(), *Doc);
-	}
-
 	StartMoving();
 }
 
@@ -302,12 +277,6 @@ void AGhostPedestrian::ScenarioEnd()
 {
 	ISodaActor::ScenarioEnd();
 	StopMoving();
-
-	if (Dataset)
-	{
-		Dataset->PushAsync();
-		Dataset.Reset();
-	}
 }
 
 void AGhostPedestrian::RuntimePostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) 
@@ -375,77 +344,6 @@ bool AGhostPedestrian::CheckCollision(const FTransform & Transform)
 	GetWorld()->SweepSingleByChannel(OutHit, Transform.GetLocation(), Transform.GetLocation() + Transform.GetRotation().GetForwardVector() * TraceLookAhead + Transform.GetRotation().GetUpVector() * TraceUpOffes, FQuat::Identity, ECollisionChannel::ECC_WorldDynamic, FCollisionShape::MakeCapsule(TraceCapsuleRadius, TraceCapsuleHalfHeigh), Params);
 	
 	return IsValid(OutHit.GetActor());
-}
-
-void AGhostPedestrian::GenerateDatasetDescription(soda::FBsonDocument& Doc) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	FExtent Extent = USodaStatics::CalculateActorExtent(this);
-	*Doc
-		<< "Extents" << open_document
-		<< "Forward" << Extent.Forward
-		<< "Backward" << Extent.Backward
-		<< "Left" << Extent.Left
-		<< "Right" << Extent.Right
-		<< "Up" << Extent.Up
-		<< "Down" << Extent.Down
-		<< close_document;
-}
-
-void AGhostPedestrian::OnPushDataset() const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	if (Dataset.IsValid())
-	{
-		try
-		{
-			FVector Location = GetActorLocation();
-			FRotator Rotation = GetActorRotation();
-			FVector Vel = FVector(CurrentVelocity, 0, 0);
-			//FVector AngVel = FVector(0, 0, 0);
-
-			Dataset->GetRowDoc()
-				<< "Ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SodaApp.GetSimulationTimestamp()))
-				<< "Loc" << open_array << Location.X << Location.Y << Location.Z << close_array
-				<< "Rot" << open_array << Rotation.Pitch << Rotation.Yaw << Rotation.Roll << close_array
-				<< "Vel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array;
-
-			auto RouteDoc = Dataset->GetRowDoc() << "route" << open_document;
-			if (const FTrajectoryPlaner::FWayPoint* WayPoint = TrajectoryPlaner.GetCurrentWayPoint())
-			{
-				if (WayPoint->OwndedRoute.IsValid())
-				{
-					RouteDoc << "name" << TCHAR_TO_UTF8(*WayPoint->OwndedRoute->GetName());
-				}
-				else
-				{
-					RouteDoc << "name" << "";
-				}
-			}
-			else
-			{
-				RouteDoc << "name" << "";
-			}
-			RouteDoc << close_document;
-
-		}
-		catch (const std::system_error& e)
-		{
-			UE_LOG(LogSoda, Error, TEXT("AGhostPedestrian::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
-		}
-	}
 }
 
 const FSodaActorDescriptor* AGhostPedestrian::GenerateActorDescriptor() const

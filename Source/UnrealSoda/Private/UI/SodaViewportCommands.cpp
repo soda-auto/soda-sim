@@ -73,8 +73,8 @@ void FSodalViewportCommands::RegisterCommands()
 	UI_COMMAND(RestartLevel, "Restart Level", "Restart current level", EUserInterfaceActionType::Button, FInputChord(EModifierKey::Shift, EKeys::F));
 	UI_COMMAND(ClearLevel, "Clear Level", "Reload level without saved data", EUserInterfaceActionType::Button, FInputChord());
 
-	UI_COMMAND(RecordDataset, "Record Dataset", "Record dataset when a scenario is running", EUserInterfaceActionType::ToggleButton, FInputChord());
-	UI_COMMAND(AutoConnectDB, "Auto Connect", "Automatically connect to the database on application startup", EUserInterfaceActionType::ToggleButton, FInputChord());
+	//UI_COMMAND(RecordDataset, "Record Dataset", "Record dataset when a scenario is running", EUserInterfaceActionType::ToggleButton, FInputChord());
+	//UI_COMMAND(AutoConnectDB, "Auto Connect", "Automatically connect to the database on application startup", EUserInterfaceActionType::ToggleButton, FInputChord());
 
 	UI_COMMAND(ToggleSpectatorMode, "Toggle Spectator Mode", "Enbale/disable the spectator mode", EUserInterfaceActionType::Button, FInputChord(EKeys::Enter));
 	UI_COMMAND(PossesNextVehicle, "Posses Next Vehicle", "Posses next Soda Vehicle", EUserInterfaceActionType::Button, FInputChord(EKeys::X));

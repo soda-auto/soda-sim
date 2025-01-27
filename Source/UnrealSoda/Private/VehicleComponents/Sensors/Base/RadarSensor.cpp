@@ -13,7 +13,7 @@
 #include "Soda/SodaStatics.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/Misc/MeshGenerationUtils.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "DynamicMeshBuilder.h"
 
 #define _DEG2RAD(a) ((a) / (180.0 / M_PI))
@@ -336,7 +336,7 @@ void URadarSensor::ProcessRadarBeams(const FRadarParams & RadarParams)
 	UWorld* World = GetWorld();
 	TArray<TArray<struct FHitResult>> OutHits;
 	bool Res = FSodaPhysicsInterface::GeomSweepMultiScope(World, Collider, ZeroQaud, OutHits, BatchStart, BatchEnd,
-		SodaApp.GetSodaUserSettings()->RadarCollisionChannel,
+		GetDefault<USodaCommonSettings>()->RadarCollisionChannel,
 		FCollisionQueryParams(NAME_None, true, GetOwner()), 
 		FCollisionResponseParams::DefaultResponseParam,
 		FCollisionObjectQueryParams::DefaultObjectQueryParam);

@@ -254,7 +254,7 @@ public:
 	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FCameraFrame& Frame, UTextureRenderTarget2D& RenderTarget, FRHICommandListImmediate& RHICmdList) { return false; }
 
 	/** Will invoke if NeedPublishCPUData() is true */
-	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FCameraFrame& Frame, const TArray<FColor>& BGRA8, uint32 ImageStride) { return false; }
+	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FCameraFrame& Frame, const TArray<FColor>& BGRA8, uint32 ImageStride) { SyncDataset(); return false; }
 
 	virtual bool NeedPublishCPUData() const { return true; }
 

@@ -11,7 +11,7 @@
 #include "KismetProceduralMeshLibrary.h"
 #include "Soda/SodaGameViewportClient.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 
 #include "MeshUtils.hpp"
 
@@ -46,8 +46,8 @@ static UAxisCapsuleComponent* CreateCapsuleHelper(UObject* Parent, USceneCompone
 	Capsule->RegisterComponent();
 	Capsule->SetHiddenInGame(true);
 	Capsule->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	Capsule->SetCollisionResponseToChannel(SodaApp.GetSodaUserSettings()->SelectTraceChannel, ECollisionResponse::ECR_Block);
-	Capsule->SetCollisionObjectType(SodaApp.GetSodaUserSettings()->SelectTraceChannel);
+	Capsule->SetCollisionResponseToChannel(GetDefault<USodaCommonSettings>()->SelectTraceChannel, ECollisionResponse::ECR_Block);
+	Capsule->SetCollisionObjectType(GetDefault<USodaCommonSettings>()->SelectTraceChannel);
 	Capsule->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SetCapsuleSize(Capsule, Begin, End, Radius);
 	Capsule->AxisList = AxisList;
@@ -62,8 +62,8 @@ static UAxisBoxComponent* CreateBoxHelper(UObject* Parent, USceneComponent* Pare
 	Box->RegisterComponent();
 	Box->SetHiddenInGame(true);
 	Box->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	Box->SetCollisionResponseToChannel(SodaApp.GetSodaUserSettings()->SelectTraceChannel, ECollisionResponse::ECR_Block);
-	Box->SetCollisionObjectType(SodaApp.GetSodaUserSettings()->SelectTraceChannel);
+	Box->SetCollisionResponseToChannel(GetDefault<USodaCommonSettings>()->SelectTraceChannel, ECollisionResponse::ECR_Block);
+	Box->SetCollisionObjectType(GetDefault<USodaCommonSettings>()->SelectTraceChannel);
 	Box->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	Box->SetBoxExtent(FVector(Size));
 	Box->SetRelativeLocation(Orign);
@@ -79,8 +79,8 @@ static UAxisSphereComponent* CreateSphereHelper(UObject* Parent, USceneComponent
 	Sphere->RegisterComponent();
 	Sphere->SetHiddenInGame(true);
 	Sphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	Sphere->SetCollisionResponseToChannel(SodaApp.GetSodaUserSettings()->SelectTraceChannel, ECollisionResponse::ECR_Block);
-	Sphere->SetCollisionObjectType(SodaApp.GetSodaUserSettings()->SelectTraceChannel);
+	Sphere->SetCollisionResponseToChannel(GetDefault<USodaCommonSettings>()->SelectTraceChannel, ECollisionResponse::ECR_Block);
+	Sphere->SetCollisionObjectType(GetDefault<USodaCommonSettings>()->SelectTraceChannel);
 	Sphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	Sphere->SetSphereRadius(Radius);
 	Sphere->SetRelativeLocation(Orign);
@@ -95,8 +95,8 @@ static UAxisProceduralMeshComponent* CreateArcHelper(UObject* Parent, USceneComp
 	if (ParentAttachment) ProceduralMesh->SetupAttachment(ParentAttachment);
 	ProceduralMesh->RegisterComponent();
 	ProceduralMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	ProceduralMesh->SetCollisionResponseToChannel(SodaApp.GetSodaUserSettings()->SelectTraceChannel, ECollisionResponse::ECR_Block);
-	ProceduralMesh->SetCollisionObjectType(SodaApp.GetSodaUserSettings()->SelectTraceChannel);
+	ProceduralMesh->SetCollisionResponseToChannel(GetDefault<USodaCommonSettings>()->SelectTraceChannel, ECollisionResponse::ECR_Block);
+	ProceduralMesh->SetCollisionObjectType(GetDefault<USodaCommonSettings>()->SelectTraceChannel);
 	ProceduralMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	ProceduralMesh->SetHiddenInGame(true);
 	ProceduralMesh->CreateArc(Axis0, Axis1, CoordSystem, InDirectionToWidget, InEndAngle, InStartAngle, InnerRadius, OuterRadius);
@@ -261,7 +261,7 @@ EAxisList::Type ASodaWidget::GetAxisListAtScreenPos(UWorld* World, const FVector
 		TArray<FHitResult> Hits;
 		FCollisionQueryParams Param(SCENE_QUERY_STAT(WidgetTrace), true);
 		const FVector RayEnd = Origin + Direction * HALF_WORLD_MAX;
-		if (World->LineTraceMultiByObjectType(Hits, Origin, RayEnd, FCollisionObjectQueryParams(SodaApp.GetSodaUserSettings()->SelectTraceChannel), Param))
+		if (World->LineTraceMultiByObjectType(Hits, Origin, RayEnd, FCollisionObjectQueryParams(GetDefault<USodaCommonSettings>()->SelectTraceChannel), Param))
 		{
 			float ClosestHitDistanceSqr = TNumericLimits<float>::Max();
 			IAxisInterface* ClosestAxis = nullptr;
