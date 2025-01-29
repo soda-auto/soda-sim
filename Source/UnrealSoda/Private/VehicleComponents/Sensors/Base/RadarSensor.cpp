@@ -81,12 +81,18 @@ bool URadarSensor::OnActivateVehicleComponent()
 
 	PrevTickTime = SodaApp.GetSimulationTimestamp();
 
+	bComponentIsActive = true;
+	MarkRenderStateDirty();
+
 	return true;
 }
 
 void URadarSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
+
+	bComponentIsActive = false;
+	MarkRenderStateDirty();
 }
 
 void URadarSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
@@ -131,7 +137,7 @@ void URadarSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 
 	PublishSensorData(DeltaTime, GetHeaderGameThread(), Clusters, Objects);
 
-	if (bDrawDebugPoints)
+	if (bDrawDebugPrimitives)
 	{
 		ShowDebudPoints();
 	}
@@ -257,14 +263,23 @@ void URadarSensor::ShowDebudPoints()
 		SCOPE_CYCLE_COUNTER(STAT_RadarShowDebug);
 		for (auto It = Clusters.Clusters.CreateConstIterator(); It; ++It)
 		{
-			DrawDebugLine(GetWorld(), Loc, It->HitPosition, FColor(255, 255, 0), false, -1.f, 0, 2.f);
-			DrawDebugPoint(GetWorld(), It->HitPosition, 10, FColor::Yellow, false, -1.0f);
+			if (bDrawDebugLinesToObjects)
+			{
+				DrawDebugLine(GetWorld(), Loc, It->HitPosition, FColor(255, 255, 0), false, -1.f, 0, 2.f);
+			}
+			if (bDrawDebugTracedPoints)
+			{
+				DrawDebugPoint(GetWorld(), It->HitPosition, 10, FColor::Yellow, false, -1.0f);
+			}
 			if (bDrawDebugLabels)
+			{
 				DrawDebugString(GetWorld(), It->HitPosition, *FString::Printf(TEXT("RCS=%f, hits=%d, Dist=%f"), It->RCS, It->Hits.Num(), It->Distance), NULL, FColor::Yellow, 0.01f, false);
-		}
-	}
-	break;
 
+			}
+		}
+
+		break;
+	}
 	case ERadarMode::ObjectMode:
 	{
 		SCOPE_CYCLE_COUNTER(STAT_RadarShowDebug);
@@ -273,8 +288,17 @@ void URadarSensor::ShowDebudPoints()
 			auto& Object = It.Value();
 			FVector TracedPoint = GetComponentTransform().TransformPosition(It->Value.GetObjectPoint());
 			FColor Color = It->Value.bUpdated ? FColor::Green : FColor::Red;
-			DrawDebugLine(GetWorld(), Loc, TracedPoint, Color, false, -1, 0, 2.f);
-			DrawDebugPoint(GetWorld(), TracedPoint, 10, Color);
+
+			if (bDrawDebugLinesToObjects)
+			{
+				DrawDebugLine(GetWorld(), Loc, TracedPoint, Color, false, -1, 0, 2.f);
+			}
+
+			if (bDrawDebugTracedPoints)
+			{
+				DrawDebugPoint(GetWorld(), TracedPoint, 10, Color);
+			}
+
 			if (bDrawDebugLabels)
 			{
 				DrawDebugString(GetWorld(), TracedPoint, *FString::Printf(TEXT("Id=%d, RCS=%f, Dist=%f, RelLonVel=%f, RelLatVel=%f"),
@@ -284,11 +308,12 @@ void URadarSensor::ShowDebudPoints()
 			FVector Center, Extents;
 			Object.LocalBounds.GetCenterAndExtents(Center, Extents);
 			DrawDebugBox(GetWorld(), this->GetComponentTransform().TransformPosition(Center), Extents, GetComponentRotation().Quaternion(), Color);
-		}
 
+		}
+		break;
 	}
-	break;
 	}
+
 }
 
 void URadarSensor::ProcessRadarBeams(const FRadarParams & RadarParams)
@@ -350,13 +375,13 @@ void URadarSensor::ProcessRadarBeams(const FRadarParams & RadarParams)
 	}
 	
 
-	if (bDrawDebugPoints)
+	if (bDrawDebugPrimitives)
 	{
 		for (auto& Hits : OutHits)
 		{
 			for (auto& Hit : Hits)
 			{
-				//if (Hit.IsValidBlockingHit())
+				if (bDrawDebugTracedPoints)
 				{
 					DrawDebugPoint(World, Hit.ImpactPoint, 10, FColor::Red, false, -1.0f);
 				}
@@ -671,6 +696,11 @@ bool URadarSensor::NeedRenderSensorFOV() const
 		if ((It.FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::Ever) ||
 			(It.FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::OnSelect && bIsSelected))
 		{
+			if (bRenderFOVOnlyIfActive)
+			{
+				return bComponentIsActive;
+			}
+
 			return true;
 		}
 	}

@@ -212,6 +212,64 @@ inline FVector QLog(const FQuat& Q)
 	return V;
 }
 
+
+
+inline float LinInterp1(float x, float x0, float x1, float y0, float y1)
+{
+
+
+	if (x > x1)
+	{
+		x = x1;
+	}
+	else if (x < x0)
+	{
+		x = x0;
+	}
+	else if (FMath::Abs(x1 - x0) < 0.00001)
+	{
+		return y0;
+	}
+	return y0 + (x - x0) * (y1 - y0) / (x1 - x0);
+
+}
+
+inline float LookupTable1d(float X, const TArray<float>& BreakPoints, const TArray<float>& Values)
+{
+	if (BreakPoints.Num() != Values.Num() || (BreakPoints.Num() == 0))
+	{
+		return 0;
+	}
+
+	// Check for clipping
+
+	if (X <= BreakPoints[0])
+	{
+		return Values[0];
+	}
+	else if (X >= BreakPoints[BreakPoints.Num() - 1])
+	{
+		return Values[Values.Num() - 1];
+	}
+
+	for (int32 Idx = 0; Idx <= BreakPoints.Num() - 2; Idx++)
+	{
+
+		if (X >= BreakPoints[Idx] && X < BreakPoints[Idx + 1])
+		{
+			return LinInterp1(X, BreakPoints[Idx], BreakPoints[Idx + 1], Values[Idx], Values[Idx + 1]);
+		}
+
+	}
+
+	return 0.0;
+
+}
+
+
+
+
+
 namespace soda
 {
 

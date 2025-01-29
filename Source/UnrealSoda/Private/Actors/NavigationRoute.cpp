@@ -26,6 +26,14 @@
 #include "Engine/StaticMesh.h"
 #include "Soda/SodaApp.h"
 #include "Soda/SodaCommonSettings.h"
+#include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Notifications/SNotificationList.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "HAL/PlatformFileManager.h"
+#include "Containers/UnrealString.h"
+#include "Misc/OutputDeviceDebug.h"
+#include "DesktopPlatformModule.h"
 
 static bool IsSplineValid(const URouteSplineComponent* SplineComponent)
 {
@@ -88,6 +96,26 @@ ANavigationRoute::ANavigationRoute(const FObjectInitializer& ObjectInitializer)
 	if (Mat.Succeeded()) MatProcMesh = Mat.Object;
 }
 
+bool ANavigationRoute::SetRoutePointsAdv(const TArray<FSplinePointInfo>& RoutePoints, bool bUpdateMesh)
+{
+	if (RoutePoints.Num() < 2) return false;
+
+	Spline->ClearSplinePoints();
+
+	for (int32 i = 0; i < RoutePoints.Num(); i++) // Skip the header line
+	{
+		Spline->AddSplinePoint(RoutePoints[i].PosnLocalSpace, ESplineCoordinateSpace::Local, false);
+		const int32 PointIndex = Spline->GetNumberOfSplinePoints() - 1;
+		Spline->SetTangentAtSplinePoint(PointIndex, RoutePoints[i].TangetLocalSpace, ESplineCoordinateSpace::Local, false);
+		Spline->SetSplinePointType(PointIndex, RoutePoints[i].PointTyp, false);
+	}
+
+	Spline->UpdateSpline();
+
+	if (bUpdateMesh) UpdateViewMesh();
+	return true;
+}
+
 bool ANavigationRoute::SetRoutePoints(const TArray<FVector> & RoutePoints, bool bUpdateMesh)
 {
 	if (RoutePoints.Num() < 2) return false;
@@ -135,10 +163,16 @@ void ANavigationRoute::Serialize(FArchive& Ar)
 			{
 				int PointsNum = Spline->GetNumberOfSplinePoints();
 				Ar << PointsNum;
+
 				for (int i = 0; i < PointsNum; ++i)
 				{
-					FVector Point = Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World);
+					FVector Point = Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::Local);
+					FVector Tangent = Spline->GetTangentAtSplinePoint(i, ESplineCoordinateSpace::Local);
+					int32 PointType = static_cast<int32>(Spline->GetSplinePointType(i));
+
 					Ar << Point;
+					Ar << Tangent;
+					Ar << PointType;
 				}
 			}
 			else
@@ -155,18 +189,34 @@ void ANavigationRoute::Serialize(FArchive& Ar)
 
 			int PointsNum = 0;
 			Ar << PointsNum;
-			TArray<FVector> Ponints;
+
+
+
+
+			TArray<FSplinePointInfo> SplinePoints;
+			SplinePoints.Reserve(PointsNum);
+
 			if (PointsNum >= 0)
 			{
+				FSplinePointInfo NewPoint;
 				for (int j = 0; j < PointsNum; ++j)
 				{
 					FVector Point;
 					Ar << Point;
-					Ponints.Add(Point);
-				}
+					FVector Tangent;
+					Ar << Tangent;
+					int32 PointType;
+					Ar << PointType;
 
+					NewPoint.PosnLocalSpace = Point;
+					NewPoint.TangetLocalSpace = Tangent;
+					NewPoint.PointTyp = static_cast<ESplinePointType::Type>(PointType);
+
+					SplinePoints.Add(NewPoint);
+				}
 			}
-			SetRoutePoints(Ponints, false);
+
+			SetRoutePointsAdv(SplinePoints, true);
 
 
 			if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(LeftRoute.ToSoftObjectPath(), GetWorld())))
@@ -936,4 +986,200 @@ const FSodaActorDescriptor* ANavigationRouteEditable::GenerateActorDescriptor() 
 		FVector(0, 0, 50), /*SpawnOffset*/
 	};
 	return &Desc;
+}
+
+
+
+
+void ANavigationRouteEditable::SaveNavigationRouteToFile()
+{
+	// Open a dialog to let the user choose the directory
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+	if (DesktopPlatform)
+	{
+		FString SelectedFolder;
+		const void* ParentWindowHandle = nullptr; // Can set to a valid window handle if needed
+
+		// Open the directory picker
+		bool bFolderSelected = DesktopPlatform->OpenDirectoryDialog(
+			ParentWindowHandle,
+			TEXT("Select Folder to Save CSV"),
+			FPaths::ProjectDir(),
+			SelectedFolder
+		);
+
+		if (bFolderSelected)
+		{
+			// Define the CSV filename and full path
+			FString FilePath = SelectedFolder / TEXT("SplineInfo.csv");
+
+			// Define the header row and an example data row
+			FString CSVContent = TEXT("idx,loc1,loc2,loc3,tan1,tan2,tan3,typ,trans1,trans2,trans3,trans4,trans5,trans6\n");
+
+
+
+			const int32 NumPoints = Spline->GetNumberOfSplinePoints();
+			for (int32 i = 0; i < NumPoints; i++)
+			{
+				const FVector Location = Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::Local);
+				const FVector Tangent = Spline->GetTangentAtSplinePoint(i, ESplineCoordinateSpace::Local);
+				const ESplinePointType::Type Type = Spline->GetSplinePointType(i);
+
+				CSVContent += FString::Printf(TEXT("%d,%f,%f,%f,%f,%f,%f,%d,%f,%f,%f,%f,%f,%f\n"),
+					i, Location.X, Location.Y, Location.Z, Tangent.X, Tangent.Y, Tangent.Z, static_cast<int32>(Type),
+					GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z,
+					GetActorRotation().Pitch, GetActorRotation().Yaw, GetActorRotation().Roll);
+			}
+
+
+
+			// Save the CSV content to a file
+			if (FFileHelper::SaveStringToFile(CSVContent, *FilePath))
+			{
+				FNotificationInfo Info(FText::FromString(FString("CSV template was created at: ") + FilePath));
+				Info.ExpireDuration = 5.0f;
+				Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.SuccessWithColor"));
+				FSlateNotificationManager::Get().AddNotification(Info);
+			}
+			else
+			{
+				FNotificationInfo Info(FText::FromString(FString("CSV template creation FAILED")));
+				Info.ExpireDuration = 5.0f;
+				Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
+				FSlateNotificationManager::Get().AddNotification(Info);
+			}
+		}
+		else
+		{
+			FNotificationInfo Info(FText::FromString(FString("CSV template creation: no folder selected")));
+			Info.ExpireDuration = 5.0f;
+			Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.WarningWithColor"));
+			FSlateNotificationManager::Get().AddNotification(Info);
+
+		}
+	}
+}
+
+
+void ANavigationRouteEditable::RecreateNavigationRouteFromFile()
+{
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+	if (!DesktopPlatform)
+	{
+		UE_LOG(LogSoda, Error, TEXT("UVehicleInputOpenLoopComponent::LoadCustomInput() Can't get the IDesktopPlatform ref"));
+		return;
+	}
+
+	const FString FileTypes = TEXT("(*.csv)|*.csv");
+
+	TArray<FString> OpenFilenames;
+	int32 FilterIndex = -1;
+	if (!DesktopPlatform->OpenFileDialog(nullptr, TEXT("Import custom input from CSV"), TEXT(""), TEXT(""), FileTypes, EFileDialogFlags::None, OpenFilenames, FilterIndex) || OpenFilenames.Num() <= 0)
+	{
+		FNotificationInfo Info(FText::FromString(FString("Load input Error: can't open the file")));
+		Info.ExpireDuration = 5.0f;
+		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
+		FSlateNotificationManager::Get().AddNotification(Info);
+		return;
+	}
+
+	FString& FilePath = OpenFilenames[0];
+
+	if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*FilePath))
+	{
+		UE_LOG(LogTemp, Error, TEXT("File does not exist: %s"), *FilePath);
+		return;
+	}
+
+
+	TArray<FString> FileLines;
+	if (!FFileHelper::LoadFileToStringArray(FileLines, *FilePath))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load file: %s"), *FilePath);
+		return;
+	}
+
+
+	if (FileLines.Num() < 2)
+	{
+		FNotificationInfo Info(FText::FromString(FString("Load input Error: file has no data") + FilePath));
+		Info.ExpireDuration = 5.0f;
+		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
+		FSlateNotificationManager::Get().AddNotification(Info);
+		return;
+	}
+
+	Spline->ClearSplinePoints();
+
+
+	bool bErrorWasShown = false;
+
+
+
+	for (int32 i = 1; i < FileLines.Num(); i++) // Skip the header line
+	{
+		TArray<FString> Values;
+		FileLines[i].ParseIntoArray(Values, TEXT(","), true);
+
+		if (Values.Num() < 8)
+		{
+			if (!bErrorWasShown)
+			{
+				FNotificationInfo Info(FText::FromString(FString("Load input Error: some of the lines are invalid") + FilePath));
+				Info.ExpireDuration = 5.0f;
+				Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
+				FSlateNotificationManager::Get().AddNotification(Info);
+				bErrorWasShown = true;
+			}
+
+			UE_LOG(LogTemp, Error, TEXT("Invalid data at line %d"), i);
+			continue;
+		}
+
+		const FVector Location(FCString::Atof(*Values[1]), FCString::Atof(*Values[2]), FCString::Atof(*Values[3]));
+		const FVector Tangent(FCString::Atof(*Values[4]), FCString::Atof(*Values[5]), FCString::Atof(*Values[6]));
+		const ESplinePointType::Type Type = static_cast<ESplinePointType::Type>(FCString::Atoi(*Values[7]));
+
+		Spline->AddSplinePoint(Location, ESplineCoordinateSpace::Local, false);
+		const int32 PointIndex = Spline->GetNumberOfSplinePoints() - 1;
+		Spline->SetTangentAtSplinePoint(PointIndex, Tangent, ESplineCoordinateSpace::Local);
+		Spline->SetSplinePointType(PointIndex, Type, false);
+
+
+		const FVector ActorLocations(FCString::Atof(*Values[8]), FCString::Atof(*Values[9]), FCString::Atof(*Values[10]));
+		const FVector ActorRotations(FCString::Atof(*Values[11]), FCString::Atof(*Values[12]), FCString::Atof(*Values[13]));
+
+		FRotator Rotn;
+
+		Rotn.Pitch = ActorRotations.X;
+		Rotn.Yaw = ActorRotations.Y;
+		Rotn.Roll = ActorRotations.Z;
+
+		SetActorLocation(ActorLocations);
+		SetActorRotation(Rotn);
+
+	}
+
+	Spline->UpdateSpline();
+
+
+	UpdateViewMesh();
+
+	if (bErrorWasShown)
+	{
+		FNotificationInfo Info(FText::FromString(FString("Information about spline points was incomplete, check input file") + FilePath));
+		Info.ExpireDuration = 5.0f;
+		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
+		FSlateNotificationManager::Get().AddNotification(Info);
+	}
+	else
+	{
+		FNotificationInfo Info(FText::FromString(FString("Load input: success!")));
+		Info.ExpireDuration = 5.0f;
+		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.SuccessWithColor"));
+		FSlateNotificationManager::Get().AddNotification(Info);
+	}
+
+
+
 }

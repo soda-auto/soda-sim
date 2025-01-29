@@ -287,13 +287,25 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ObjectRCS, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float WallsRCS = 0.05;
 
+	/** Master switch on drawing debug primitives */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
+	bool bDrawDebugPrimitives = false;
+
 	/** Show debug points */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
-	bool bDrawDebugPoints = false;
+	bool bDrawDebugTracedPoints = false;
+
+	/** Show debug lines to detected objects */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
+	bool bDrawDebugLinesToObjects = false;
 
 	/** Show debug clusters RCS, hits num and distance */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
 	bool bDrawDebugLabels = false;
+
+	/** True to hide FOV rendering in case if sensor is not active */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
+	bool bRenderFOVOnlyIfActive = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
 	bool bDebugLog = false;
@@ -332,4 +344,7 @@ private:
 	TTimestamp PrevTickTime;
 	TArray<FVector> BatchStart;
 	TArray<FVector> BatchEnd;
+
+	/** Internal flag used to check FOV visualization during component being inactive */
+	bool bComponentIsActive = false;
 };
