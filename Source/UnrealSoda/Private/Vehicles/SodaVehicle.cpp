@@ -4,6 +4,7 @@
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaApp.h"
 #include "Soda/UI/SMessageBox.h"
+#include "Soda/FileDatabaseManager.h"
 #include "Serialization/BufferArchive.h"
 #include "Misc/FileHelper.h"
 #include "HAL/PlatformFileManager.h"
@@ -27,15 +28,11 @@
 #include "RuntimeEditorModule.h"
 #include "RuntimeMetaData.h"
 #include "Soda/VehicleComponents/CANBus.h"
-#include "Misc/Paths.h"
-#include "Soda/SodaApp.h"
 #include "Soda/SodaCommonSettings.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Widgets/Images/SImage.h"
 #include "Styling/StyleColors.h"
 #include "UI/Wnds/SVehcileManagerWindow.h"
-#include "UI/Wnds/SVehcileManagerWindow.h"
-#include "UI/Wnds/SSaveVehicleRequestWindow.h"
 #include "UI/Wnds/SExportVehicleWindow.h"
 #include "UI/ToolBoxes/SVehicleComponentsToolBox.h"
 #include "SodaStyleSet.h"
@@ -46,128 +43,6 @@
 #define PARCE_VEC(V, Mul) V.X * Mul, V.Y * Mul, V.Z * Mul
 
 FVehicleSimData FVehicleSimData::Zero{};
-
-FString FVechicleSaveAddress::ToVehicleName() const
-{
-	switch (Source)
-	{
-	case EVehicleSaveSource::NoSave:
-		return TEXT("(New Vehicle)");
-
-	case EVehicleSaveSource::BinExternal:
-		return FPaths::GetBaseFilename(Location);
-
-	case EVehicleSaveSource::BinLocal:
-		return Location;
-
-	case EVehicleSaveSource::Slot:
-		return Location;
-
-	case EVehicleSaveSource::BinLevel:
-		return TEXT("(Level Vehicle)");
-
-	case EVehicleSaveSource::JsonLocal:
-		return Location;
-
-	case EVehicleSaveSource::JsonExternal:
-		return FPaths::GetBaseFilename(Location);
-
-	case EVehicleSaveSource::DB:
-		return Location;
-
-	default:
-		return TEXT("wtf?");
-	}
-}
-
-FString FVechicleSaveAddress::ToUrl() const
-{
-	switch (Source)
-	{
-	case EVehicleSaveSource::NoSave:
-		return TEXT("");
-
-	case EVehicleSaveSource::BinExternal:
-		return FString(TEXT("binext://")) + Location;
-
-	case EVehicleSaveSource::BinLocal:
-		return FString(TEXT("binloc://")) + Location;
-
-	case EVehicleSaveSource::Slot:
-		return FString(TEXT("slot://")) + Location;
-
-	case EVehicleSaveSource::BinLevel:
-		return FString(TEXT("level://")) + Location;
-
-	case EVehicleSaveSource::JsonLocal:
-		return FString(TEXT("jsonloc://")) + Location;
-
-	case EVehicleSaveSource::JsonExternal:
-		return FString(TEXT("jsonext://")) + Location;
-
-	case EVehicleSaveSource::DB:
-		return FString(TEXT("mongodb://")) + Location;
-
-	default:
-		return TEXT("");
-	}
-}
-
-bool FVechicleSaveAddress::SetFromUrl(const FString& Url)
-{
-	FString SourceStr, TmpLocation;
-	if (!Url.Split(TEXT("://"), &SourceStr, &TmpLocation))
-	{
-		return false;
-	}
-
-	if (SourceStr == TEXT("binext"))
-	{
-		Source = EVehicleSaveSource::BinExternal;
-		Location = TmpLocation;
-		return true;
-	}
-	else if (SourceStr == TEXT("binloc"))
-	{
-		Source = EVehicleSaveSource::BinLocal;
-		Location = TmpLocation;
-		return true;
-	}
-	else if (SourceStr == TEXT("slot"))
-	{
-		Source = EVehicleSaveSource::Slot;
-		Location = TmpLocation;
-		return true;
-	}
-	else if (SourceStr == TEXT("level"))
-	{
-		Source = EVehicleSaveSource::BinLevel;
-		Location = TmpLocation;
-		return true;
-	}
-	else if (SourceStr == TEXT("jsonloc"))
-	{
-		Source = EVehicleSaveSource::JsonLocal;
-		Location = TmpLocation;
-		return true;
-	}
-	else if (SourceStr == TEXT("jsonext"))
-	{
-		Source = EVehicleSaveSource::JsonExternal;
-		Location = TmpLocation;
-		return true;
-	}
-	else if (SourceStr == TEXT("mongodb"))
-	{
-		Source = EVehicleSaveSource::DB;
-		Location = TmpLocation;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
 
 ASodaVehicle::ASodaVehicle(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -569,19 +444,17 @@ TArray<ISodaVehicleComponent*> ASodaVehicle::GetVehicleComponentsSorted(const FS
 	return Components;
 }
 
-ASodaVehicle * ASodaVehicle::RespawnVehcile(FVector Location, FRotator Rotation, bool IsOffset, const UClass* NewVehicleClass)
+ASodaVehicle * ASodaVehicle::RespawnVehcile(FVector Location, FRotator Rotation, bool IsLocalCoordinateSpace)
 {
 	UWorld * World = GetWorld();
 	check(World);
 
-	FTransform SpawnTransform = IsOffset ? 
+	FTransform SpawnTransform = IsLocalCoordinateSpace ?
 		FTransform(FRotator(0.f, GetActorRotation().Yaw, 0.f) + Rotation, GetActorLocation() + Location, FVector(1.0f, 1.0f, 1.0f)) :
 		FTransform(Rotation, Location, FVector(1.0f, 1.0f, 1.0f));
 
-	const UClass* Class = (NewVehicleClass != nullptr) ? NewVehicleClass : GetClass();
-
 	ASodaVehicle * NewVehicle = World->SpawnActorDeferred<ASodaVehicle>(
-		const_cast<UClass*>(Class),
+		GetClass(),
 		SpawnTransform, 
 		nullptr, nullptr, 
 		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
@@ -591,24 +464,11 @@ ASodaVehicle * ASodaVehicle::RespawnVehcile(FVector Location, FRotator Rotation,
 		return nullptr;
 	}
 
-	if (NewVehicleClass == nullptr)
-	{
-		FActorRecord SavedActorRecord;
-		SavedActorRecord.SerializeActor(this, false);
-		SavedActorRecord.DeserializeActor(NewVehicle, false);
-		NewVehicle->bIsDirty = IsDirty();
-	}
-
-	if (NewVehicleClass == nullptr || GetClass() == NewVehicleClass)
-	{
-		NewVehicle->SaveAddress = SaveAddress;
-	}
-
-	if (GetClass() == NewVehicleClass)
-	{
-		NewVehicle->MarkAsDirty();
-	}
-
+	FActorRecord SavedActorRecord;
+	SavedActorRecord.SerializeActor(this, false);
+	SavedActorRecord.DeserializeActor(NewVehicle, false);
+	NewVehicle->MarkAsDirty(); //NewVehicle->bIsDirty = IsDirty();
+	
 	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 	SodaSubsystem->NotifyLevelIsChanged();
 
@@ -626,6 +486,7 @@ ASodaVehicle * ASodaVehicle::RespawnVehcile(FVector Location, FRotator Rotation,
 
 	if (IsValid(VehicleWidget2))
 		VehicleWidget2->Vehcile = nullptr;
+
 	Destroy();
 
 	NewVehicle->FinishSpawning(SpawnTransform);
@@ -639,30 +500,40 @@ ASodaVehicle * ASodaVehicle::RespawnVehcile(FVector Location, FRotator Rotation,
 	return NewVehicle;
 }
 
-ASodaVehicle* ASodaVehicle::RespawnVehcileFromAddress(const FVechicleSaveAddress& Address, FVector Location, FRotator Rotation, bool IsOffset)
+ASodaVehicle* ASodaVehicle::SpawnVehicleFormSlot(const UObject* WorldContextObject, const FGuid& SlotGuid, const FVector& Location, const FRotator& Rotation, bool Posses, FName DesireName, bool bApplyOffset)
 {
-	UWorld* World = GetWorld();
+	UWorld* World = USodaStatics::GetGameWorld(WorldContextObject);
 	check(World);
 
-	FTransform SpawnTransform = IsOffset ?
-		FTransform(FRotator(0.f, GetActorRotation().Yaw, 0.f) + Rotation, GetActorLocation() + Location, FVector(1.0f, 1.0f, 1.0f)) :
-		FTransform(Rotation, Location, FVector(1.0f, 1.0f, 1.0f));
-
-	bool NeedPosses = IsPlayerControlled();
-
-	Destroy();
-
-	ASodaVehicle* NewVehicle = ASodaVehicle::SpawnVehicleFormAddress(World, Address, SpawnTransform.GetTranslation(), SpawnTransform.GetRotation().Rotator(), NeedPosses);
-
-	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
-	SodaSubsystem->NotifyLevelIsChanged();
-	if (SodaSubsystem->LevelState && SodaSubsystem->LevelState->ActorFactory)
+	soda::FFileDatabaseSlotInfo SlotInfo;
+	if (!SodaApp.GetFileDatabaseManager().GetSlot(SlotGuid, SlotInfo))
 	{
-		SodaSubsystem->LevelState->ActorFactory->ReplaceActor(NewVehicle, this, false);
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SpawnVehicleFormSlot(); Can't find slot "));
+		return nullptr;
 	}
-	if (SodaSubsystem->UnpossesVehicle == this) SodaSubsystem->UnpossesVehicle = NewVehicle;
+
+	TArray<uint8> SlotData;
+	if (!SodaApp.GetFileDatabaseManager().GetSlotData(SlotGuid, SlotData))
+	{
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SpawnVehicleFormSlot(); Can't GetSlotData() "));
+		return nullptr;
+	}
+
+	TSharedPtr<FJsonActorArchive> Ar = MakeShared<FJsonActorArchive>();
+	if (!Ar->LoadFromString(FString(SlotData.Num() / sizeof(FString::ElementType), (FString::ElementType*)(SlotData.GetData()))))
+	{
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SpawnVehicleFormSlot(); Can't FJsonActorArchive::LoadFromString() "));
+		return nullptr;
+	}
+
+	if (ASodaVehicle* Vehicle = SpawnVehicleFromJsonArchive(World, Ar, Location, Rotation, Posses, DesireName, bApplyOffset))
+	{
+		Vehicle->SlotGuid = SlotGuid;
+		Vehicle->SlotLable = SlotInfo.Lable;
+		return Vehicle;
+	}
 	
-	return NewVehicle;
+	return nullptr;
 }
 
 
@@ -678,8 +549,12 @@ bool ASodaVehicle::DrawDebug(class UCanvas* Canvas, float& YL, float& YPos)
 	static FColor SubCaption(170, 170, 170);
 
 	Canvas->SetDrawColor(FColor(51, 102, 204));
-	YPos += Canvas->DrawText(UEngine::GetMediumFont(), TEXT("Vehicle: ") + SaveAddress.ToVehicleName() + (IsDirty() ? TEXT("*") : TEXT("")), 4, YPos + 4);
-	YPos += Canvas->DrawText(UEngine::GetMediumFont(), TEXT("Source: ") + UEnum::GetValueAsString(SaveAddress.Source), 4, YPos + 4);
+	YPos += Canvas->DrawText(
+		UEngine::GetMediumFont(), 
+		FString::Printf(TEXT("Slot: %s %s"), 
+			SlotGuid.IsValid() ? *SlotLable : TEXT("-"), 
+			IsDirty() ? TEXT("*") : TEXT("")),
+		4, YPos + 4);
 
 	if (bShowPhysBodyKinematic)
 	{
@@ -732,7 +607,7 @@ void ASodaVehicle::ReActivateVehicleComponents(bool bOnlyTopologyComponents)
 {
 	if (!HasActorBegunPlay())
 	{
-		checkf(true, TEXT("ReActivateVehicleComponents() can be called only after BeginPlay()"));
+		checkf(true, TEXT("ASodaVehicle::ReActivateVehicleComponents() can be called only after BeginPlay()"));
 		return;
 	}
 
@@ -847,85 +722,32 @@ void ASodaVehicle::PostPhysicSimulationDeferred(float DeltaTime, const FPhysBody
 	}
 }
 
-bool ASodaVehicle::SaveToJson(const FString& FileName, bool bRebase)
+bool ASodaVehicle::SaveToJsonFile(const FString& FileName)
 {
 	FJsonActorArchive Ar;
 	if (Ar.SerializeActor(this, true))
 	{
 		if (Ar.SaveToFile(FileName))
 		{
-			if (bRebase)
-			{
-				if (FPaths::IsSamePath(FPaths::GetPath(FileName), GetDefaultVehiclesFolder()))
-				{
-					SaveAddress.Set(EVehicleSaveSource::JsonLocal, FPaths::GetBaseFilename(FileName));
-				}
-				else
-				{
-					SaveAddress.Set(EVehicleSaveSource::JsonExternal, FileName);
-				}
-			}
 			ClearDirty();
-			UE_LOG(LogSoda, Log, TEXT("ASodaVehicle::SaveToJson(). Save vehicle to: %s"), *FileName);
+			UE_LOG(LogSoda, Log, TEXT("ASodaVehicle::SaveToJsonFile(). Save vehicle to: %s"), *FileName);
 			return true;
 		}
 		else
 		{
-			UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToJson(). Can't save vehicle to: %s"), *FileName);
+			UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToJsonFile(). Can't save vehicle to: %s"), *FileName);
 			return false;
 		}
 	}
 	else
 	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToJson(). Serialize vehicle failed"));
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToJsonFile(). Serialize vehicle failed"));
 		return false;
 	}
 }
 
-bool ASodaVehicle::SaveToDB(const FString& VehicleName, bool bRebase)
-{
-	/*
-	FJsonActorArchive Ar;
-	FString JsonString;
-	if (Ar.SerializeActor(this, true))
-	{
-		if (Ar.SaveToString(JsonString))
-		{
-			UE_LOG(LogSoda, Log, TEXT("ASodaVehicle::SaveToDB(). Save vehicle"));
-			
-		}
-		else
-		{
-			UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToDB(). Can't save vehicle"));
-			return false;
-		}
-	}
-	else
-	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToDB(). Serialize vehicle failed"));
-		return false;
-	}
 
-	if (soda::FDBGateway::Instance().SaveVehicleData(VehicleName, bsoncxx::from_json(bsoncxx::stdx::string_view{ TCHAR_TO_UTF8(*JsonString) })))
-	{
-		ClearDirty();
-
-		if (bRebase)
-		{
-			SaveAddress.Set(EVehicleSaveSource::DB, VehicleName);
-		}
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-	*/
-	return false;
-
-}
-
-bool ASodaVehicle::SaveToBin(const FString& FileName, bool bRebase)
+bool ASodaVehicle::SaveToBinFile(const FString& FileName)
 {
 	USaveGameActor* SaveGameData = NewObject< USaveGameActor >();
 	if (!SaveGameData->SerializeActor(const_cast<ASodaVehicle*>(this), false))
@@ -939,167 +761,117 @@ bool ASodaVehicle::SaveToBin(const FString& FileName, bool bRebase)
 	{
 		if (FFileHelper::SaveArrayToFile(BytesData, *FileName))
 		{
-			if (bRebase)
-			{
-				if (FPaths::IsSamePath(FPaths::GetPath(FileName), GetDefaultVehiclesFolder()))
-				{
-					SaveAddress.Set(EVehicleSaveSource::BinLocal, FPaths::GetBaseFilename(FileName));
-				}
-				else
-				{
-					SaveAddress.Set(EVehicleSaveSource::BinExternal, FileName);
-				}
-			}
 			ClearDirty();
-			UE_LOG(LogSoda, Log, TEXT("ASodaVehicle::SaveToBin(). Save vehicle to: %s"), *FileName);
+			UE_LOG(LogSoda, Log, TEXT("ASodaVehicle::SaveToBinFile(). Save vehicle to: %s"), *FileName);
 			return true;
 		}
 		else
 		{
-			UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToBin(). Can't save vehicle to: %s"), *FileName);
+			UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToBinFile(). Can't save vehicle to: %s"), *FileName);
 			return false;
 		}
 	}
 	else
 	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToBin(). Faild to save vehicle to memory"), *FileName);
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToBinFile(). Faild to save vehicle to memory"), *FileName);
 		return false;
 	}
 	
 }
 
-bool ASodaVehicle::SaveToSlot(const FString& SlotName, bool bRebase)
+bool ASodaVehicle::SaveToSlot(const FString& Lable, const FString& Description, const FGuid& CustomGuid, bool bRebase)
 {
-	USaveGameActor* SaveGameData = NewObject< USaveGameActor >();
-	if (!SaveGameData->SerializeActor(const_cast<ASodaVehicle*>(this), false))
+	FJsonActorArchive Ar;
+	if (!Ar.SerializeActor(this, true))
 	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToSlot(). Serialize vehicle failed"));
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToSlot(); Can't SerializeActor() "));
 		return false;
 	}
 
-	if (UGameplayStatics::SaveGameToSlot(SaveGameData, SlotName, 0))
+	FString JsonString;
+	if (!Ar.SaveToString(JsonString))
 	{
-		if (bRebase)
-		{
-			SaveAddress.Set(EVehicleSaveSource::Slot, SlotName);
-		}
-		ClearDirty();
-		UE_LOG(LogSoda, Log, TEXT("ASodaVehicle::SaveToSlot(). Save vehicle to: %s"), *SlotName);
-		return true;
-	}
-	else
-	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToSlot(). Can't save vehicle to: %s"), *SlotName);
-		return false;
-	}
-}
-
-bool ASodaVehicle::SaveToAddress(const FVechicleSaveAddress& Address, bool bRebase)
-{
-	if (Address.Location.Len() == 0)
-	{
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToSlot(); Can't SaveToString() "));
 		return false;
 	}
 
-	switch (Address.Source)
+	TArray<uint8> SlotData;
+	SlotData.SetNum(JsonString.Len() * sizeof(FString::ElementType));
+	FMemory::Memcpy((void*)SlotData.GetData(), (void*)JsonString.GetCharArray().GetData(), SlotData.Num());
+
+	soda::FFileDatabaseSlotInfo SlotInfo{};
+	SlotInfo.GUID = CustomGuid.IsValid() ? CustomGuid : FGuid::NewGuid();
+	SlotInfo.Lable = Lable;
+	SlotInfo.Description = Description;
+	SlotInfo.DataClass = GetClass();
+
+	if (!SodaApp.GetFileDatabaseManager().AddOrUpdateSlotInfo(SlotInfo))
 	{
-	case EVehicleSaveSource::BinExternal:
-		return SaveToBin(Address.Location, bRebase);
-
-	case EVehicleSaveSource::BinLocal:
-		return SaveToBin(GetDefaultVehiclesFolder() / FPaths::GetBaseFilename(Address.Location) + TEXT(".bin"), bRebase);
-
-	case EVehicleSaveSource::Slot:
-		return SaveToSlot(Address.Location, bRebase);
-
-	case EVehicleSaveSource::JsonLocal:
-		return SaveToJson(GetDefaultVehiclesFolder() / FPaths::GetBaseFilename(Address.Location) + TEXT(".json"), bRebase);
-
-	case EVehicleSaveSource::JsonExternal:
-		return SaveToJson(Address.Location, bRebase);
-
-	case EVehicleSaveSource::DB:
-		return SaveToDB(Address.Location, bRebase);
-
-	case EVehicleSaveSource::NoSave:
-	case EVehicleSaveSource::BinLevel:
-	default:
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToSlot(); Can't CreateNewSlot() "));
 		return false;
 	}
+
+	if (!SodaApp.GetFileDatabaseManager().UpdateSlotData(SlotInfo.GUID, SlotData))
+	{
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToSlot(); Can't UpdateSlotData() "));
+		return false;
+	}
+
+	if (bRebase)
+	{
+		SlotGuid = SlotInfo.GUID;
+		SlotLable = Lable;
+		MarkAsDirty();
+	}
+
+	return true;
 }
 
 bool ASodaVehicle::Resave()
 {
-	return SaveToAddress(SaveAddress, false);
-}
-
-FString ASodaVehicle::GetDefaultVehiclesFolder()
-{
-	//return IPluginManager::Get().FindPlugin(TEXT("UnrealSoda"))->GetBaseDir() / TEXT("Vehicles");
-	return FPaths::ProjectSavedDir() / TEXT("SodaVehicles");
-}
-
-bool ASodaVehicle::DeleteVehicleSave(const FVechicleSaveAddress& Address)
-{
-	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
-
-	switch (Address.Source)
+	if (!SlotGuid.IsValid())
 	{
-	case EVehicleSaveSource::JsonExternal:
-	case EVehicleSaveSource::BinExternal:
-		return FileManager.DeleteFile(*Address.Location);
-
-	case EVehicleSaveSource::BinLocal:
-		return FileManager.DeleteFile(*(GetDefaultVehiclesFolder() / Address.Location + TEXT(".bin")));
-
-	case EVehicleSaveSource::JsonLocal:
-		return FileManager.DeleteFile(*(GetDefaultVehiclesFolder() / Address.Location + TEXT(".json")));
-
-	case EVehicleSaveSource::Slot:
-		return UGameplayStatics::DeleteGameInSlot(Address.Location, 0);
-
-	case EVehicleSaveSource::DB:
-		//return soda::FDBGateway::Instance().DeleteVehicleData(Address.Location);
-		return false;
-
-	case EVehicleSaveSource::NoSave:
-	case EVehicleSaveSource::BinLevel:
-	default:
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::Resave(); There is no slot for save"));
 		return false;
 	}
-}
 
-void ASodaVehicle::GetSavedVehiclesLocal(TArray<FVechicleSaveAddress>& Addresses)
-{
-	FString VehiclesDir = GetDefaultVehiclesFolder();
-
-	TArray<FString> Files;
-	IFileManager::Get().FindFiles(Files, *VehiclesDir);
-
-	for (auto& File : Files)
+	soda::FFileDatabaseSlotInfo Slot;
+	if (!SodaApp.GetFileDatabaseManager().GetSlot(SlotGuid, Slot))
 	{
-		FString Ext = FPaths::GetExtension(File, false).ToLower();
-		Addresses.Add(FVechicleSaveAddress(EVehicleSaveSource::JsonLocal, FPaths::GetBaseFilename(File)));
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::Resave(); Can't find slot "));
+		return false;
 	}
-}
 
-bool ASodaVehicle::GetSavedVehiclesDB(TArray<FVechicleSaveAddress>& Addresses)
-{
-	//return soda::FDBGateway::Instance().LoadVehiclesList(Addresses);
-	return false;
-}
-
-ASodaVehicle* ASodaVehicle::FindVehicleByAddress(const UWorld* World, const FVechicleSaveAddress& Address)
-{
-	check(World);
-	for (TActorIterator<ASodaVehicle> It(World); It; ++It)
+	FJsonActorArchive Ar;
+	if (!Ar.SerializeActor(this, true))
 	{
-		if (It->SaveAddress == Address) return *It;
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::Resave(); Can't SerializeActor() "));
+		return false;
 	}
-	return nullptr;
+
+	FString JsonString;
+	if (!Ar.SaveToString(JsonString))
+	{
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::Resave(); Can't SaveToString() "));
+		return false;
+	}
+
+	TArray<uint8> SlotData;
+	SlotData.SetNum(JsonString.Len() * sizeof(FString::ElementType));
+	FMemory::Memcpy((void*)SlotData.GetData(), (void*)JsonString.GetCharArray().GetData(), SlotData.Num());
+
+	if (!SodaApp.GetFileDatabaseManager().UpdateSlotData(SlotGuid, SlotData))
+	{
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::Resave(); Can't UpdateSlotData() "));
+		return false;
+	}
+
+	ClearDirty();
+
+	return true;
 }
 
-ASodaVehicle* ASodaVehicle::SpawnVehicleFromJsonArchive(UWorld* World, const TSharedPtr<FJsonActorArchive> & Ar, const FVechicleSaveAddress& Address, const FVector& Location, const FRotator& Rotation, bool Posses, FName DesireName, bool bApplyOffset)
+ASodaVehicle* ASodaVehicle::SpawnVehicleFromJsonArchive(UWorld* World, const TSharedPtr<FJsonActorArchive> & Ar, const FVector& Location, const FRotator& Rotation, bool Posses, FName DesireName, bool bApplyOffset)
 {
 	UClass* VahicleClass = Ar->GetActorClass();
 
@@ -1138,7 +910,6 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromJsonArchive(UWorld* World, const TSh
 		return nullptr;
 	}
 
-	NewVehicle->SetSaveAddress(Address);
 	NewVehicle->FinishSpawning(SpawnTransform);
 
 	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
@@ -1166,77 +937,33 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromJsonFile(const UObject* WorldContext
 		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SpawnVehicleFromJsonFile(); Can't read file "));
 		return nullptr;
 	}
-
-	FVechicleSaveAddress Address = 
-		FPaths::IsSamePath(FPaths::GetPath(FileName), GetDefaultVehiclesFolder()) ?
-		FVechicleSaveAddress(EVehicleSaveSource::JsonLocal, FPaths::GetBaseFilename(FileName)) :
-		FVechicleSaveAddress(EVehicleSaveSource::JsonExternal, FileName);
 	
-	ASodaVehicle* NewVehicle = SpawnVehicleFromJsonArchive(World, Ar, Address, Location, Rotation, Posses, DesireName, bApplyOffset);
+	ASodaVehicle* NewVehicle = SpawnVehicleFromJsonArchive(World, Ar, Location, Rotation, Posses, DesireName, bApplyOffset);
 
 	if (NewVehicle)
 	{
-		UE_LOG(LogSoda, Log, TEXT("Spawned vehicle from JSON: %s"), *FileName);
+		UE_LOG(LogSoda, Log, TEXT("ASodaVehicle::SpawnVehicleFromJsonFile(); Spawned vehicle from JSON: %s"), *FileName);
 	}
 
 	return NewVehicle;
 }
 
-ASodaVehicle* ASodaVehicle::SpawnVehicleFromDB(const UObject* WorldContextObject, const FString& VehicleName, const FVector& Location, const FRotator& Rotation, bool Posses, FName DesireName, bool bApplyOffset)
-{
-	/*
-	bsoncxx::document::view Data = soda::FDBGateway::Instance().LoadVehicleData(VehicleName);
-	if (Data.empty())
-	{
-		return nullptr;
-	}
-	
-	FString JsonString = FString(bsoncxx::to_json(Data).c_str());
-	
-	UWorld* World = USodaStatics::GetGameWorld(WorldContextObject);
-	check(World);
-
-	TSharedPtr<FJsonActorArchive> Ar = MakeShared<FJsonActorArchive>();
-	if (!Ar->LoadFromString(JsonString))
-	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SpawnVehicleFromDB(); Can't read file "));
-		return nullptr;
-	}
-
-	ASodaVehicle* NewVehicle = SpawnVehicleFromJsonArchive(World, Ar, FVechicleSaveAddress(EVehicleSaveSource::DB, VehicleName), Location, Rotation, Posses, DesireName, bApplyOffset);
-
-	if (NewVehicle)
-	{
-		UE_LOG(LogSoda, Log, TEXT("Spawned vehicle from DB: %s"), *VehicleName);
-	}
-
-	return NewVehicle;
-	*/
-	return nullptr;
-}
-
-ASodaVehicle* ASodaVehicle::SpawnVehicleFromBin(const UObject* WorldContextObject, const FString& SlotOrFileName, bool IsSlot, const FVector& Location, const FRotator& Rotation, bool Posses, FName DesireName, bool bApplyOffset)
+ASodaVehicle* ASodaVehicle::SpawnVehicleFromBinFile(const UObject* WorldContextObject, const FString& FileName, const FVector& Location, const FRotator& Rotation, bool Posses, FName DesireName, bool bApplyOffset)
 {
 	UWorld* World = USodaStatics::GetGameWorld(WorldContextObject);
 	check(World);
 
 	USaveGameActor* SaveGameData = nullptr;
-	if (IsSlot)
+	TArray<uint8> ObjectBytes;
+	if (FFileHelper::LoadFileToArray(ObjectBytes, *FileName))
 	{
-		SaveGameData = Cast<USaveGameActor>(UGameplayStatics::LoadGameFromSlot(SlotOrFileName, 0));
+		SaveGameData = Cast<USaveGameActor>(UGameplayStatics::LoadGameFromMemory(ObjectBytes));
 	}
-	else
-	{
-		TArray<uint8> ObjectBytes;
-		if (FFileHelper::LoadFileToArray(ObjectBytes, *SlotOrFileName))
-		{
-			SaveGameData = Cast<USaveGameActor>(UGameplayStatics::LoadGameFromMemory(ObjectBytes));
-		}
-	}
+	
 
 	if (!SaveGameData)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SpawnVehicleFromBin(): Can't open %s"), *SlotOrFileName);
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SpawnVehicleFromBinFile(): Can't open %s"), *FileName);
 		return nullptr;
 	}
 
@@ -1248,7 +975,7 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromBin(const UObject* WorldContextObjec
 
 	if (!Class)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SpawnVehicleFromBin(): Can't find class %s"), *SaveGameData->GetActorRecord().Class.ToString());
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SpawnVehicleFromBinFile(): Can't find class %s"), *SaveGameData->GetActorRecord().Class.ToString());
 		return nullptr;
 	}
 
@@ -1268,7 +995,7 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromBin(const UObject* WorldContextObjec
 
 	if (NewVehicle == nullptr)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SpawnVehicleFromBin(); Can't spawn new vehicle"));
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SpawnVehicleFromBinFile(); Can't spawn new vehicle"));
 		return nullptr;
 	}
 
@@ -1276,25 +1003,8 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromBin(const UObject* WorldContextObjec
 	if (!SaveGameData->DeserializeActor(NewVehicle, false))
 	{
 		NewVehicle->Destroy();
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SpawnVehicleFromBin(); Can't deserialize vehicle"));
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SpawnVehicleFromBinFile(); Can't deserialize vehicle"));
 		return nullptr;
-	}
-
-	if (IsSlot)
-	{
-		NewVehicle->SetSaveAddress(FVechicleSaveAddress(EVehicleSaveSource::Slot, SlotOrFileName));
-	}
-	else
-	{
-		if (FPaths::IsSamePath(FPaths::GetPath(SlotOrFileName), GetDefaultVehiclesFolder()))
-		{
-			NewVehicle->SetSaveAddress(FVechicleSaveAddress(EVehicleSaveSource::BinLocal, FPaths::GetBaseFilename(SlotOrFileName)));
-		}
-		else
-		{
-			NewVehicle->SetSaveAddress(FVechicleSaveAddress(EVehicleSaveSource::BinExternal, SlotOrFileName));
-		}
-		
 	}
 
 	NewVehicle->FinishSpawning(SpawnTransform);
@@ -1310,43 +1020,9 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromBin(const UObject* WorldContextObjec
 		PlayerController->Possess(NewVehicle);
 	}
 
-	UE_LOG(LogSoda, Log, TEXT("Spawned vehicle from bin: %s"), *SlotOrFileName);
+	UE_LOG(LogSoda, Log, TEXT("ASodaVehicle::SpawnVehicleFromBinFile(); Spawned vehicle from bin: %s"), *FileName);
 
 	return NewVehicle;
-}
-
-ASodaVehicle* ASodaVehicle::SpawnVehicleFormAddress(const UObject* WorldContextObject, const FVechicleSaveAddress& Address, const FVector& Location, const FRotator& Rotation, bool Posses, FName DesireName, bool bApplyOffset)
-{
-	if (Address.Location.Len() == 0)
-	{
-		return nullptr;
-	}
-
-	switch (Address.Source)
-	{
-	case EVehicleSaveSource::BinExternal:
-		return SpawnVehicleFromBin(WorldContextObject, Address.Location, false, Location, Rotation, Posses, DesireName, bApplyOffset);
-
-	case EVehicleSaveSource::BinLocal:
-		return SpawnVehicleFromBin(WorldContextObject, GetDefaultVehiclesFolder() / Address.Location + TEXT(".bin"), false, Location, Rotation, Posses, DesireName, bApplyOffset);
-
-	case EVehicleSaveSource::Slot:
-		return SpawnVehicleFromBin(WorldContextObject, Address.Location, true, Location, Rotation, Posses, DesireName, bApplyOffset);
-
-	case EVehicleSaveSource::JsonExternal:
-		return SpawnVehicleFromJsonFile(WorldContextObject, Address.Location, Location, Rotation, Posses, DesireName, bApplyOffset);
-
-	case EVehicleSaveSource::JsonLocal:
-		return SpawnVehicleFromJsonFile(WorldContextObject, GetDefaultVehiclesFolder() / Address.Location + TEXT(".json"), Location, Rotation, Posses, DesireName, bApplyOffset);
-
-	case EVehicleSaveSource::DB:
-		return SpawnVehicleFromDB(WorldContextObject, Address.Location, Location, Rotation, Posses, DesireName, bApplyOffset);
-
-	case EVehicleSaveSource::NoSave:
-	case EVehicleSaveSource::BinLevel:
-	default:
-		return nullptr;
-	}
 }
 
 TArray<ISodaVehicleComponent*> ASodaVehicle::GetVehicleComponents() const
@@ -1418,7 +1094,7 @@ bool ASodaVehicle::OnSetPinnedActor(bool bIsPinnedActor)
 		}
 		else
 		{
-			SaveAddress.Reset(); 
+			SlotGuid.Invalidate();
 		}
 	}
 	return true;
@@ -1426,17 +1102,17 @@ bool ASodaVehicle::OnSetPinnedActor(bool bIsPinnedActor)
 
 bool ASodaVehicle::IsPinnedActor() const
 {
-	return SaveAddress.Source == EVehicleSaveSource::JsonLocal || SaveAddress.Source == EVehicleSaveSource::DB;
+	return SlotGuid.IsValid();
 }
 
 FString ASodaVehicle::GetPinnedActorName() const
 {
-	return SaveAddress.ToVehicleName();
+	return SlotLable;
 }
 
 bool ASodaVehicle::SavePinnedActor()
 {
-	if (SaveAddress.Source == EVehicleSaveSource::JsonLocal || SaveAddress.Source == EVehicleSaveSource::DB)
+	if (SlotGuid.IsValid())
 	{
 		return Resave();
 	}
@@ -1445,17 +1121,19 @@ bool ASodaVehicle::SavePinnedActor()
 
 AActor* ASodaVehicle::LoadPinnedActor(UWorld* World, const FTransform& Transform, const FString& SlotName, bool bForceCreate, FName DesireName) const
 {
-	FVechicleSaveAddress Addr;
-	if (Addr.SetFromUrl(SlotName))
+	FGuid Guid;
+	if (!FGuid::Parse(SlotName, Guid))
 	{
-		return SpawnVehicleFormAddress(World, Addr, Transform.GetTranslation(), Transform.GetRotation().Rotator(), false, DesireName, false);
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::LoadPinnedActor(); Can't find FGuid::Parse()"));
+		return nullptr;
 	}
-	return nullptr;
+
+	return SpawnVehicleFormSlot(World, Guid, Transform.GetTranslation(), Transform.GetRotation().Rotator(), false, DesireName, false);
 }
 
 FString ASodaVehicle::GetPinnedActorSlotName() const
 {
-	return SaveAddress.ToUrl();
+	return SlotGuid.ToString();
 }
 
 void ASodaVehicle::ScenarioBegin()
@@ -1530,7 +1208,6 @@ void ASodaVehicle::PostEditChangeChainProperty(FPropertyChangedChainEvent& Prope
 #endif
 
 
-
 TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 {
 	FUniformToolBarBuilder ToolbarBuilder(TSharedPtr<const FUICommandList>(), FMultiBoxCustomization::None);
@@ -1543,20 +1220,12 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 			{
 				if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 				{
-					if (SaveAddress.Source != EVehicleSaveSource::NoSave &&
-						SaveAddress.Source == EVehicleSaveSource::BinLevel)
-					{
-						SodaSubsystem->OpenWindow("Save Vehicle As", SNew(soda::SSaveVehicleRequestWindow, this));
-					}
-					else
-					{
-						SodaSubsystem->OpenWindow("Save New Vehicle As", SNew(soda::SVehcileManagerWindow, this));
-					}
+					SodaSubsystem->OpenWindow("Vehcile Manager", SNew(soda::SVehcileManagerWindow, this));
 				}
 			})),
 		NAME_None, 
-		FText::FromString("Save"),
-		FText::FromString("Save vehicle to JSON format"), 
+		FText::FromString("Manager"),
+		FText::FromString("Open the Vehicled Manager"), 
 		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaVehicleBar.Save"),
 		EUserInterfaceActionType::Button
 	);
@@ -1577,6 +1246,7 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 		EUserInterfaceActionType::Button
 	);
 
+	/*
 	ToolbarBuilder.AddToolBarButton(
 		FUIAction(
 			FExecuteAction::CreateLambda([this] 
@@ -1592,12 +1262,12 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 
 				TArray<FString> OpenFilenames;
 				int32 FilterIndex = -1;
-				if (!DesktopPlatform->OpenFileDialog(nullptr, TEXT("Import Vehicle from JSON"), GetDefaultVehiclesFolder(), TEXT(""), FileTypes, EFileDialogFlags::None, OpenFilenames, FilterIndex) || OpenFilenames.Num() <= 0)
+				if (!DesktopPlatform->OpenFileDialog(nullptr, TEXT("Import Vehicle from JSON"), FPaths::ProjectLogDir(), TEXT(""), FileTypes, EFileDialogFlags::None, OpenFilenames, FilterIndex) || OpenFilenames.Num() <= 0)
 				{
 					return;
 				}
 
-				RespawnVehcileFromAddress(FVechicleSaveAddress(EVehicleSaveSource::JsonExternal, OpenFilenames[0]), GetActorLocation() + FVector(0, 0, 50), FRotator(0.f, GetActorRotation().Yaw, 0.f), true);
+				RespawnVehcile (FVechicleSaveAddress(EVehicleSaveSource::JsonExternal, OpenFilenames[0]), GetActorLocation() + FVector(0, 0, 50), FRotator(0.f, GetActorRotation().Yaw, 0.f), true);
 			})),
 		NAME_None, 
 		FText::FromString("Import"),
@@ -1605,6 +1275,7 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaVehicleBar.Import"),
 		EUserInterfaceActionType::Button
 	);
+	*/
 
 	ToolbarBuilder.AddToolBarButton(
 		FUIAction(
@@ -1626,7 +1297,7 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 		FUIAction(
 			FExecuteAction::CreateLambda([this] 
 			{
-				RespawnVehcile(FVector(0, 0, 20), FRotator::ZeroRotator, true, GetClass());
+				RespawnVehcile(FVector(0, 0, 20), FRotator::ZeroRotator, true);
 			})),
 		NAME_None, 
 		FText::FromString("Reset"),

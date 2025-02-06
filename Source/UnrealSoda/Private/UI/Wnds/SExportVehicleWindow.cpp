@@ -45,7 +45,7 @@ void SExportVehicleWindow::Construct( const FArguments& InArgs, TWeakObjectPtr<A
 				.BorderImage(FSodaStyle::GetBrush("MenuWindow.Content"))
 				.Padding(5.0f)
 				[
-					SAssignNew(ListView, SListView<TSharedPtr<ISodaVehicleExporter>>)
+					SAssignNew(ListView, SListView<TSharedPtr<soda::ISodaVehicleExporter>>)
 					.ListItemsSource(&Source)
 					.SelectionMode(ESelectionMode::Single)
 					.OnGenerateRow(this, &SExportVehicleWindow::OnGenerateRow)
@@ -73,10 +73,10 @@ void SExportVehicleWindow::UpdateSlots()
 	SodaApp.GetVehicleExporters().GenerateValueArray(Source);
 }
 
-TSharedRef<ITableRow> SExportVehicleWindow::OnGenerateRow(TSharedPtr<ISodaVehicleExporter> Exporter, const TSharedRef< STableViewBase >& OwnerTable)
+TSharedRef<ITableRow> SExportVehicleWindow::OnGenerateRow(TSharedPtr<soda::ISodaVehicleExporter> Exporter, const TSharedRef< STableViewBase >& OwnerTable)
 {
 	return 
-		SNew(STableRow<TSharedPtr<ISodaVehicleExporter>>, OwnerTable)
+		SNew(STableRow<TSharedPtr<soda::ISodaVehicleExporter>>, OwnerTable)
 		[
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()
@@ -89,7 +89,7 @@ TSharedRef<ITableRow> SExportVehicleWindow::OnGenerateRow(TSharedPtr<ISodaVehicl
 		];
 }
 
-void SExportVehicleWindow::OnSelectionChanged(TSharedPtr<ISodaVehicleExporter> Exporter, ESelectInfo::Type SelectInfo)
+void SExportVehicleWindow::OnSelectionChanged(TSharedPtr<soda::ISodaVehicleExporter> Exporter, ESelectInfo::Type SelectInfo)
 {
 	ExportButton->SetEnabled(Exporter.IsValid());
 }
@@ -115,6 +115,12 @@ FReply SExportVehicleWindow::OnExportAs()
 
 	TArray<FString> OutFilenames;
 	if (!DesktopPlatform->SaveFileDialog(nullptr, FString(TEXT("Export to ")) + Exporter->GetExporterName().ToString(), TEXT(""), TEXT(""), FileTypes, EFileDialogFlags::None, OutFilenames) || OutFilenames.Num() <= 0)
+	{
+		UE_LOG(LogSoda, Warning, TEXT("SExportVehicleWindow::OnExportAs(); File isn't change"));
+		FReply::Handled();
+	}
+
+	if (OutFilenames.Num() != 1)
 	{
 		UE_LOG(LogSoda, Warning, TEXT("SExportVehicleWindow::OnExportAs(); File isn't change"));
 		FReply::Handled();

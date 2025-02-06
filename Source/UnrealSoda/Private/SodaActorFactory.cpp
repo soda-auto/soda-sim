@@ -5,12 +5,11 @@
 #include "UObject/UObjectHash.h"
 #include "Blueprint/WidgetTree.h"
 #include "Soda/SodaSubsystem.h"
+#include "Soda/SodaApp.h"
 #include "Soda/ISodaActor.h"
 #include "EngineUtils.h"
 #include "Soda/UnrealSoda.h"
 #include "Soda/Misc/EditorUtils.h"
-#include "Framework/Notifications/NotificationManager.h"
-#include "Widgets/Notifications/SNotificationList.h"
 
 void ASodaActorFactory::Serialize(FArchive& Ar)
 {
@@ -123,21 +122,16 @@ void ASodaActorFactory::SpawnAllSavedActors(bool bSaved, bool bPinned)
 	UWorld* World = GetWorld();
 	check(World);
 
-	FSlateNotificationManager& NotificationManager = FSlateNotificationManager::Get();
-
 	int ErrorNum = 0;
 	const int MaxNotifyError = 10;
 
-	auto ShowError = [&ErrorNum, MaxNotifyError, &NotificationManager](const FString & Msg, const auto & Record)
+	auto ShowError = [&ErrorNum, MaxNotifyError](const FString & Msg, const auto & Record)
 	{
 		UE_LOG(LogSoda, Error, TEXT("ASodaActorFactory::SpawnAllSavedActors(). %s %s"), *Msg, *Record.ToString());
 
 		if (ErrorNum < MaxNotifyError)
 		{
-			FNotificationInfo Info(FText::FromString(TEXT("Faild spawn pinned actor.") + Msg + TEXT(" ") + Record.ToString()));
-			Info.ExpireDuration = 5.0f;
-			Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.WarningWithColor"));
-			NotificationManager.AddNotification(Info);
+			soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Faild spawn pinned actor \"%s\""), *Record.ToString());
 		}
 		++ErrorNum;
 	};
@@ -231,10 +225,7 @@ void ASodaActorFactory::SpawnAllSavedActors(bool bSaved, bool bPinned)
 
 	if (ErrorNum > MaxNotifyError)
 	{
-		FNotificationInfo Info(FText::FromString(TEXT("Too many errors. See the log to see all.")));
-		Info.ExpireDuration = 5.0f;
-		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.WarningWithColor"));
-		NotificationManager.AddNotification(Info);
+		soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Too many errors. See the log to see all"));
 	}
 
 	OnInvalidateDelegate.Broadcast();

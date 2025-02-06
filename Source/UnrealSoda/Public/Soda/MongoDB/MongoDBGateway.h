@@ -83,19 +83,6 @@ public:
 	FAsyncTaskManager& GetTaskManager() { return MongoTaskManager; }
 	const FAsyncTaskManager& GetTaskManager() const { return MongoTaskManager; }
 
-public:
-	bool SaveVehicleData(const FString& VehicleName, const bsoncxx::document::value& Data);
-	bsoncxx::document::view LoadVehicleData(const FString& VehicleName);
-	bool DeleteVehicleData(const FString& VehicleName);
-	bool LoadVehiclesList(TArray<FVechicleSaveAddress>& Addresses);
-
-public:
-	/** return ScenarioID or -1 if error */
-	int64 SaveLevelData(const FLevelStateSlotDescription& Slot, const TArray<uint8>& ObjectBytes);
-	bool LoadLevelData(int64 ScenarioID, TArray<uint8>& OutObjectBytes);
-	bool DeleteLevelData(int64 ScenarioID);
-	bool LoadLevelList(const FString& LevelName, bool bSortByDateTime, TArray<FLevelStateSlotDescription>& OutSlots);
-
 private: 
 	TUniquePtr<mongocxx::instance> Inst;
 	soda::FAsyncTaskManager MongoTaskManager;

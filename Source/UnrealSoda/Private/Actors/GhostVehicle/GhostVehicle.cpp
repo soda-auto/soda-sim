@@ -8,12 +8,14 @@
 #include "Soda/SodaSubsystem.h"
 #include "Soda/SodaStatics.h"
 #include "Soda/Misc/EditorUtils.h"
+#include "Soda/Misc/Utils.h"
 #include "Actors/GhostVehicle/SpeedProfile/UnifiedSpeedProfile.h"
 #include "Actors/GhostVehicle/SpeedProfile/Curvature.h"
 #include "Soda/SodaApp.h"
 #include "Math/UnrealMathUtility.h"
 #include "VehicleUtility.h"
 #include "Templates/Tuple.h"
+
 
 AGhostVehicle::AGhostVehicle()
 {
@@ -162,7 +164,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 
 			if (BaseLength > 0)
 			{
-				const double SteerAngle = (TrajectoryPlaner.GetCurvatureAtKey(TrajectoryPlaner.GetCurrentSplineKey()) * BaseLength / 100.0) / M_PI * 180;
+				const double SteerAngle = (TrajectoryPlaner.GetCurvatureAtKey(TrajectoryPlaner.GetCurrentSplineKey()) * BaseLength / 100.0) / PI * 180;
 				for (auto& Wheel : Wheels)
 				{
 					if (Wheel.bApplySteer)
@@ -196,7 +198,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 				}
 
 				Wheel.RotationAngularVelocit = -CurrentVelocity  / Wheel.Radius;
-				Wheel.RotationAngle = NormAngDeg( Wheel.RotationAngle + Wheel.RotationAngularVelocit * DeltaTime / M_PI * 180);
+				Wheel.RotationAngle = NormAngDeg( Wheel.RotationAngle + Wheel.RotationAngularVelocit * DeltaTime / PI * 180);
 			}
 
 			if (Points.Num() >= 3)

@@ -423,26 +423,16 @@ void UVehicleInputOpenLoopComponent::GenerateInputFileTemplate()
 			// Save the CSV content to a file
 			if (FFileHelper::SaveStringToFile(CSVContent, *FilePath))
 			{
-				FNotificationInfo Info(FText::FromString(FString("CSV template was created at: ")+ FilePath));
-				Info.ExpireDuration = 5.0f;
-				Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.SuccessWithColor"));
-				FSlateNotificationManager::Get().AddNotification(Info);
+				soda::ShowNotification(ENotificationLevel::Success, 5.0, TEXT("CSV template was created at: %s"), *FilePath);
 			}
 			else
 			{
-				FNotificationInfo Info(FText::FromString(FString("CSV template creation FAILED")));
-				Info.ExpireDuration = 5.0f;
-				Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
-				FSlateNotificationManager::Get().AddNotification(Info);
+				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("CSV template creation FAILED"));
 			}
 		}
 		else
 		{
-			FNotificationInfo Info(FText::FromString(FString("CSV template creation: no folder selected")));
-			Info.ExpireDuration = 5.0f;
-			Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.WarningWithColor"));
-			FSlateNotificationManager::Get().AddNotification(Info);
-
+			soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("CSV template creation: no folder selected"));
 		}
 	}
 }
@@ -463,10 +453,7 @@ void UVehicleInputOpenLoopComponent::LoadInputFromFile()
 	int32 FilterIndex = -1;
 	if (!DesktopPlatform->OpenFileDialog(nullptr, TEXT("Import custom input from CSV"), TEXT(""), TEXT(""), FileTypes, EFileDialogFlags::None, OpenFilenames, FilterIndex) || OpenFilenames.Num() <= 0)
 	{
-		FNotificationInfo Info(FText::FromString(FString("Load input Error: can't open the file")));
-		Info.ExpireDuration = 5.0f;
-		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
-		FSlateNotificationManager::Get().AddNotification(Info);
+		soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Load input Error: can't open the file"));
 		return;
 	}
 
@@ -477,94 +464,80 @@ void UVehicleInputOpenLoopComponent::LoadInputFromFile()
 
 bool UVehicleInputOpenLoopComponent::LoadCustomInput(const FString& FilePath)
 {
+	if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*FilePath))
+	{
+		UE_LOG(LogTemp, Error, TEXT("File does not exist: %s"), *FilePath);
+		return false;
+	}
 
 
-		if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*FilePath))
+	TArray<FString> FileLines;
+	if (!FFileHelper::LoadFileToStringArray(FileLines, *FilePath))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load file: %s"), *FilePath);
+		return false;
+	}
+
+	if (FileLines.Num() < 2)
+	{
+		soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Load input Error: file has no data %s"), *FilePath);
+		return false;
+	}
+
+	FileLines.RemoveAt(0);
+
+	OpenLoopInput.Time.Reserve(FileLines.Num() - 1);
+	OpenLoopInput.BrkTqFL.Reserve(FileLines.Num() - 1);
+	OpenLoopInput.BrkTqFR.Reserve(FileLines.Num() - 1);
+	OpenLoopInput.BrkTqRL.Reserve(FileLines.Num() - 1);
+	OpenLoopInput.BrkTqRR.Reserve(FileLines.Num() - 1);
+	OpenLoopInput.SteerFL.Reserve(FileLines.Num() - 1);
+	OpenLoopInput.SteerFR.Reserve(FileLines.Num() - 1);
+	OpenLoopInput.SteerRL.Reserve(FileLines.Num() - 1);
+	OpenLoopInput.SteerRR.Reserve(FileLines.Num() - 1);
+	OpenLoopInput.TracTqFL.Reserve(FileLines.Num() - 1);
+	OpenLoopInput.TracTqFR.Reserve(FileLines.Num() - 1);
+	OpenLoopInput.TracTqRL.Reserve(FileLines.Num() - 1);
+	OpenLoopInput.TracTqRR.Reserve(FileLines.Num() - 1);
+
+	bool bNoErrorPreviously = true;
+	// Parse each line
+	for (const FString& Line : FileLines)
+	{
+		TArray<FString> ParsedValues;
+		Line.ParseIntoArray(ParsedValues, TEXT(","), true);
+
+		if (ParsedValues.Num() != 13)
 		{
-			UE_LOG(LogTemp, Error, TEXT("File does not exist: %s"), *FilePath);
-			return false;
-		}
-
-
-		TArray<FString> FileLines;
-		if (!FFileHelper::LoadFileToStringArray(FileLines, *FilePath))
-		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to load file: %s"), *FilePath);
-			return false;
-		}
-
-
-		if (FileLines.Num() < 2)
-		{
-			FNotificationInfo Info(FText::FromString(FString("Load input Error: file has no data")+ FilePath));
-			Info.ExpireDuration = 5.0f;
-			Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
-			FSlateNotificationManager::Get().AddNotification(Info);
-			return false;
-		}
-
-
-		FileLines.RemoveAt(0);
-
-		OpenLoopInput.Time.Reserve(FileLines.Num() - 1);
-		OpenLoopInput.BrkTqFL.Reserve(FileLines.Num() - 1);
-		OpenLoopInput.BrkTqFR.Reserve(FileLines.Num() - 1);
-		OpenLoopInput.BrkTqRL.Reserve(FileLines.Num() - 1);
-		OpenLoopInput.BrkTqRR.Reserve(FileLines.Num() - 1);
-		OpenLoopInput.SteerFL.Reserve(FileLines.Num() - 1);
-		OpenLoopInput.SteerFR.Reserve(FileLines.Num() - 1);
-		OpenLoopInput.SteerRL.Reserve(FileLines.Num() - 1);
-		OpenLoopInput.SteerRR.Reserve(FileLines.Num() - 1);
-		OpenLoopInput.TracTqFL.Reserve(FileLines.Num() - 1);
-		OpenLoopInput.TracTqFR.Reserve(FileLines.Num() - 1);
-		OpenLoopInput.TracTqRL.Reserve(FileLines.Num() - 1);
-		OpenLoopInput.TracTqRR.Reserve(FileLines.Num() - 1);
-
-		bool bNoErrorPreviously = true;
-		// Parse each line
-		for (const FString& Line : FileLines)
-		{
-			TArray<FString> ParsedValues;
-			Line.ParseIntoArray(ParsedValues, TEXT(","), true);
-
-			if (ParsedValues.Num() != 13)
+			if (bNoErrorPreviously)
 			{
-				if (bNoErrorPreviously)
-				{
-					FNotificationInfo Info(FText::FromString(FString("Load input Error: incorrect number of columns") + FilePath));
-					Info.ExpireDuration = 5.0f;
-					Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
-					FSlateNotificationManager::Get().AddNotification(Info);
-					bNoErrorPreviously = false;
-				}
-				
-				continue;
+				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Load input Error: incorrect number of columns %s"), *FilePath);
+				bNoErrorPreviously = false;
 			}
-
-			int32 k = 0;
-
-
-			OpenLoopInput.Time.Add(FCString::Atof(*ParsedValues[k])); k++;
-			OpenLoopInput.SteerFL.Add(FCString::Atof(*ParsedValues[k]) * PI / 180); k++;
-			OpenLoopInput.SteerFR.Add(FCString::Atof(*ParsedValues[k]) * PI / 180); k++;
-			OpenLoopInput.SteerRL.Add(FCString::Atof(*ParsedValues[k]) * PI / 180); k++;
-			OpenLoopInput.SteerRR.Add(FCString::Atof(*ParsedValues[k]) * PI / 180); k++;
-			OpenLoopInput.TracTqFL.Add(FCString::Atof(*ParsedValues[k])); k++;
-			OpenLoopInput.TracTqFR.Add(FCString::Atof(*ParsedValues[k])); k++;
-			OpenLoopInput.TracTqRL.Add(FCString::Atof(*ParsedValues[k])); k++;
-			OpenLoopInput.TracTqRR.Add(FCString::Atof(*ParsedValues[k])); k++;
-			OpenLoopInput.BrkTqFL.Add(FCString::Atof(*ParsedValues[k])); k++;
-			OpenLoopInput.BrkTqFR.Add(FCString::Atof(*ParsedValues[k])); k++;
-			OpenLoopInput.BrkTqRL.Add(FCString::Atof(*ParsedValues[k])); k++;
-			OpenLoopInput.BrkTqRR.Add(FCString::Atof(*ParsedValues[k]));
-
+				
+			continue;
 		}
-	
 
-		FNotificationInfo Info(FText::FromString(FString("Load input: success!")));
-		Info.ExpireDuration = 5.0f;
-		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.SuccessWithColor"));
-		FSlateNotificationManager::Get().AddNotification(Info);
+		int32 k = 0;
+
+
+		OpenLoopInput.Time.Add(FCString::Atof(*ParsedValues[k])); k++;
+		OpenLoopInput.SteerFL.Add(FCString::Atof(*ParsedValues[k]) * PI / 180); k++;
+		OpenLoopInput.SteerFR.Add(FCString::Atof(*ParsedValues[k]) * PI / 180); k++;
+		OpenLoopInput.SteerRL.Add(FCString::Atof(*ParsedValues[k]) * PI / 180); k++;
+		OpenLoopInput.SteerRR.Add(FCString::Atof(*ParsedValues[k]) * PI / 180); k++;
+		OpenLoopInput.TracTqFL.Add(FCString::Atof(*ParsedValues[k])); k++;
+		OpenLoopInput.TracTqFR.Add(FCString::Atof(*ParsedValues[k])); k++;
+		OpenLoopInput.TracTqRL.Add(FCString::Atof(*ParsedValues[k])); k++;
+		OpenLoopInput.TracTqRR.Add(FCString::Atof(*ParsedValues[k])); k++;
+		OpenLoopInput.BrkTqFL.Add(FCString::Atof(*ParsedValues[k])); k++;
+		OpenLoopInput.BrkTqFR.Add(FCString::Atof(*ParsedValues[k])); k++;
+		OpenLoopInput.BrkTqRL.Add(FCString::Atof(*ParsedValues[k])); k++;
+		OpenLoopInput.BrkTqRR.Add(FCString::Atof(*ParsedValues[k]));
+
+	}
+	
+	soda::ShowNotification(ENotificationLevel::Success, 5.0, TEXT("Load input: success!"));
 
 	return true;
 }
@@ -593,12 +566,8 @@ void UVehicleInputOpenLoopComponent::ScenarioIsDone()
 
 	if (bGenerateNotificationWhenDone)
 	{
-		FNotificationInfo Info(FText::FromString(FString("Scenario is done, you can stop simulation now")));
-		Info.ExpireDuration = 5.0f;
-		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.SuccessWithColor"));
-		FSlateNotificationManager::Get().AddNotification(Info);
+		soda::ShowNotification(ENotificationLevel::Success, 5.0, TEXT("Scenario is done, you can stop simulation now"));
 	}
-
 }
 
 float UVehicleInputOpenLoopComponent::Lut1(float x, float x0, float x1, float y0, float y1)

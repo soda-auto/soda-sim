@@ -9,8 +9,6 @@
 #include "Engine/Engine.h"
 #include "Slate/SceneViewport.h"
 #include "Slate/SGameLayerManager.h"
-#include "Framework/Notifications/NotificationManager.h"
-#include "Widgets/Notifications/SNotificationList.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Input/SSpinBox.h"
 #include "Widgets/Input/SCheckBox.h"
@@ -172,7 +170,7 @@ void SSodaViewport::SetLogVisible(bool bVisible)
 					.BorderImage(FSodaStyle::GetBrush(TEXT("Brushes.Recessed")))
 					[
 						SAssignNew(OutputLog, SOutputLog, false)
-						.Messages(SodaApp.GetOutputLogHistory()->GetMessages())
+						.Messages(SodaApp.GetOutputLogHistory().GetMessages())
 					]
 				];
 			}

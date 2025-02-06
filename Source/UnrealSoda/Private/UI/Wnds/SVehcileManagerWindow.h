@@ -10,7 +10,6 @@
 
 class SEditableTextBox;
 class ASodaVehicle;
-struct FVechicleSaveAddress;
 class STableViewBase;
 
 class ITableRow;
@@ -18,11 +17,8 @@ class ITableRow;
 namespace soda
 {
 
-enum class EVehicleManagerSource
-{
-	Local,
-	Remote
-};
+class SFileDatabaseManager;
+
 
 class SVehcileManagerWindow : public SMenuWindowContent
 {
@@ -32,28 +28,21 @@ public:
 	SLATE_END_ARGS()
 	
 	virtual ~SVehcileManagerWindow() {}
-	void Construct( const FArguments& InArgs, ASodaVehicle* Vehicle);
+	void Construct( const FArguments& InArgs, ASodaVehicle* SelectedVehicle = nullptr);
 
-	EVehicleManagerSource GetSource() const { return Source; }
-	void SetSource(EVehicleManagerSource InSource) { Source = InSource; }
+	ASodaVehicle* GetSelectedvehicle() const { return SelectedVehicle.Get(); }
 
 protected:
-	void UpdateSlots();
-
-	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FVechicleSaveAddress> Address, const TSharedRef< STableViewBase >& OwnerTable);
-	void OnSelectionChanged(TSharedPtr<FVechicleSaveAddress> Address, ESelectInfo::Type SelectInfo);
-
 	FReply OnNewSave();
 	FReply OnSave();
-	FReply OnLoad();
-	FReply OnDeleteSlot(TSharedPtr<FVechicleSaveAddress> Address);
-	TSharedRef<SWidget> GetComboMenuContent();
+	FReply OnReplaceSelectedVehicle();
 
-	TSharedPtr<SListView<TSharedPtr<FVechicleSaveAddress>>> ListView;
-	TSharedPtr<SEditableTextBox> EditableTextBox;
-	TArray<TSharedPtr<FVechicleSaveAddress>> SavedVehicles;
-	TWeakObjectPtr<ASodaVehicle> Vehicle;
-	EVehicleManagerSource Source = EVehicleManagerSource::Local;
+	bool CanRespwn() const;
+	bool CanSave() const;
+	bool CanNewSlot() const;
+
+	TSharedPtr<SFileDatabaseManager> FileDatabaseManager;
+	TWeakObjectPtr<ASodaVehicle> SelectedVehicle;
 };
 
 } // namespace

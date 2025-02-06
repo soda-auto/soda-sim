@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="700pt"
+   height="700pt"
+   version="1.1"
+   viewBox="0 0 700 700"
+   id="svg16"
+   sodipodi:docname="cloud.svg"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <metadata
+     id="metadata22">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs20" />
+  <sodipodi:namedview
+     pagecolor="#3e3532"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="3840"
+     inkscape:window-height="2054"
+     id="namedview18"
+     showgrid="false"
+     inkscape:zoom="1.2758227"
+     inkscape:cx="481.65001"
+     inkscape:cy="524.36755"
+     inkscape:window-x="2549"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg16"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#3e3532"
+     inkscape:document-units="pt" />
+  <path
+     d="m 363.14066,101.46476 c -84.48554,0 -155.08287,56.16546 -178.85765,132.89777 -88.559124,4.86499 -159.679887,76.81132 -159.679887,166.47411 0,92.75204 74.991823,168.10433 161.735367,168.29672 h 0.0405 0.0405 360.56059 c 71.86802,-0.19847 130.76131,-58.89424 130.76131,-131.11571 0,-70.9578 -56.79824,-124.90874 -127.67302,-130.32592 0.59268,-6.05156 1.50304,-11.98459 1.50304,-18.19452 0,-103.74646 -84.5251,-188.07188 -188.42631,-188.07188 z"
+     id="path136"
+     style="stroke-width:10.1255;fill:#ffffff" />
+</svg>

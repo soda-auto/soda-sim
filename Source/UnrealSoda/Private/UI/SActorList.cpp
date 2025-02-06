@@ -20,10 +20,9 @@
 #include "Soda/LevelState.h"
 #include "Soda/Editor/SodaSelection.h"
 #include "Soda/SodaGameViewportClient.h"
+#include "Soda/SodaApp.h"
 //#include "Framework/SlateDelegates.h"
 #include "UI/Common/SPinWidget.h"
-#include "Framework/Notifications/NotificationManager.h"
-#include "Widgets/Notifications/SNotificationList.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
@@ -331,11 +330,7 @@ FReply SActorList::OnPinClicked(TWeakObjectPtr<AActor> Actor)
 		bool IsPinnedActor = !SodaActor->IsPinnedActor();
 		if (!SodaActor->OnSetPinnedActor(IsPinnedActor))
 		{
-			FSlateNotificationManager& NotificationManager = FSlateNotificationManager::Get();
-			FNotificationInfo Info(FText::FromString(TEXT("The \"") + Actor->GetClass()->GetName() + TEXT("\" actor can't be pinned")));
-			Info.ExpireDuration = 5.0f;
-			Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.WarningWithColor"));
-			NotificationManager.AddNotification(Info);
+			soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("The \"%s\" actor can't be pinned"), *Actor->GetClass()->GetName());
 		}
 		SodaActor->MarkAsDirty();
 		USodaSubsystem::GetChecked()->LevelState->MarkAsDirty();

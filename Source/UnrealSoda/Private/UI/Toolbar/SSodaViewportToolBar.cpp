@@ -47,6 +47,7 @@
 #include "RemoteControlSettings.h"
 #include "GameFramework/GameUserSettings.h"
 #include "RuntimeEditorUtils.h"
+#include "Soda/FileDatabaseManager.h"
 
 #define LOCTEXT_NAMESPACE "SodaViewportToolBar"
 
@@ -853,28 +854,28 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateAddMenu()
 	}
 	MenuBuilder.EndSection();
 
-	// Build Local Vehicles menu
 	MenuBuilder.BeginSection(NAME_None);
 	MenuBuilder.AddSeparator();
 	MenuBuilder.AddSubMenu(
-		FText::FromString("Local Vehicles"),
+		FText::FromString("SODA Vehicles"),
 		FText::GetEmpty(),
 		FNewMenuDelegate::CreateLambda([World=GetWorld()](FMenuBuilder& MenuBuilder)
 		{
 			MenuBuilder.BeginSection(NAME_None);
-			TArray<FVechicleSaveAddress> VehicleAddresses;
-			ASodaVehicle::GetSavedVehiclesLocal(VehicleAddresses);
-			for (auto& It : VehicleAddresses)
+			auto Slots = SodaApp.GetFileDatabaseManager().GetSlots(EFileSlotType::Vehicle);
+			
+			for (auto& [Key, Info] : Slots)
 			{
 				TSharedPtr<FPlaceableItem> Item = MakeShared<FPlaceableItem>(
-					FSpawnCastomActorDelegate::CreateLambda([World, It](const FTransform& Transform) {
-						ASodaVehicle * Vehicle = ASodaVehicle::SpawnVehicleFormAddress(World.Get(), It, Transform.GetTranslation(), Transform.GetRotation().Rotator(), false, NAME_None, true);
+					FSpawnCastomActorDelegate::CreateLambda([World, Info](const FTransform& Transform)
+					{
+						ASodaVehicle * Vehicle = ASodaVehicle::SpawnVehicleFormSlot(World.Get(), Info->GUID, Transform.GetTranslation(), Transform.GetRotation().Rotator(), false, NAME_None, true);
 						return Vehicle;
 					}),
 					TEXT("Icons.Save"),
 					TEXT("Icons.Save"),
 					TOptional<FLinearColor>(),
-					FName(*It.ToVehicleName())
+					FName(*Info->Lable)
 				);
 				MenuBuilder.AddWidget(
 					SNew(SPlacementAssetMenuEntry, Item), FText()
@@ -886,47 +887,6 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateAddMenu()
 		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.Save")
 	);
 	MenuBuilder.EndSection();
-
-	/*
-	if (FDBGateway::Instance().IsConnected())
-	{
-		// Build Remote Vehicles menu
-		MenuBuilder.BeginSection(NAME_None);
-		MenuBuilder.AddSubMenu(
-			FText::FromString("Remote Vehicles"),
-			FText::GetEmpty(),
-			FNewMenuDelegate::CreateLambda([World = GetWorld()](FMenuBuilder& MenuBuilder)
-				{
-					MenuBuilder.BeginSection(NAME_None);
-					TArray<FVechicleSaveAddress> VehicleAddresses;
-					if (!ASodaVehicle::GetSavedVehiclesDB(VehicleAddresses))
-					{
-						MenuBuilder.AddMenuEntry(FText::FromString(TEXT("Error load from DB")), FText::FromString(TEXT("Error load from DB")), FSlateIcon(), FUIAction());
-					}
-					for (auto& It : VehicleAddresses)
-					{
-						TSharedPtr<FPlaceableItem> Item = MakeShared<FPlaceableItem>(
-							FSpawnCastomActorDelegate::CreateLambda([World, It](const FTransform& Transform) {
-								ASodaVehicle* Vehicle = ASodaVehicle::SpawnVehicleFormAddress(World.Get(), It, Transform.GetTranslation(), Transform.GetRotation().Rotator(), false, NAME_None, true);
-								return Vehicle;
-								}),
-							TEXT("Icons.Save"),
-							TEXT("Icons.Save"),
-							TOptional<FLinearColor>(),
-							FName(*It.ToVehicleName())
-						);
-						MenuBuilder.AddWidget(
-							SNew(SPlacementAssetMenuEntry, Item), FText()
-						);
-					}
-					MenuBuilder.EndSection();
-				}),
-			false,
-			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.Save")
-		);
-		MenuBuilder.EndSection();
-	}
-	*/
 	
 	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }

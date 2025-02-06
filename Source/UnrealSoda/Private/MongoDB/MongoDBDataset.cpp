@@ -383,15 +383,8 @@ void FMongoDBDatasetManager::OnFaild(const FString& What, const FString& Functio
 
 	if (bShowMessageBox)
 	{
-		::AsyncTask(ENamedThreads::GameThread, [What=What]()
-		{
-			FNotificationInfo Msg(FText::FromString(What));
-			Msg.ExpireDuration = 5.0f;
-			Msg.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
-			FSlateNotificationManager::Get().AddNotification(Msg);
-		});
+		soda::ShowNotification(ENotificationLevel::Error, 5.0, *What);
 	}
-
 }
 
 //---------------------------------------------------------------------------------------

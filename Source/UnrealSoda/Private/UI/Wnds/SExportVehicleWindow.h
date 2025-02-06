@@ -27,13 +27,13 @@ public:
 protected:
 	void UpdateSlots();
 
-	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<ISodaVehicleExporter> Exporter, const TSharedRef< STableViewBase >& OwnerTable);
-	void OnSelectionChanged(TSharedPtr<ISodaVehicleExporter> Exporter, ESelectInfo::Type SelectInfo);
+	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<soda::ISodaVehicleExporter> Exporter, const TSharedRef< STableViewBase >& OwnerTable);
+	void OnSelectionChanged(TSharedPtr<soda::ISodaVehicleExporter> Exporter, ESelectInfo::Type SelectInfo);
 
 	FReply OnExportAs();
 
-	TArray<TSharedPtr<ISodaVehicleExporter>> Source;
-	TSharedPtr<SListView<TSharedPtr<ISodaVehicleExporter>>> ListView;
+	TArray<TSharedPtr<soda::ISodaVehicleExporter>> Source;
+	TSharedPtr<SListView<TSharedPtr<soda::ISodaVehicleExporter>>> ListView;
 	TSharedPtr<SButton> ExportButton;
 	TWeakObjectPtr<ASodaVehicle> Vehicle;
 };
