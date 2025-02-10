@@ -781,6 +781,7 @@ bool ASodaVehicle::SaveToBinFile(const FString& FileName)
 
 bool ASodaVehicle::SaveToSlot(const FString& Lable, const FString& Description, const FGuid& CustomGuid, bool bRebase)
 {
+
 	FJsonActorArchive Ar;
 	if (!Ar.SerializeActor(this, true))
 	{
@@ -801,13 +802,14 @@ bool ASodaVehicle::SaveToSlot(const FString& Lable, const FString& Description, 
 
 	soda::FFileDatabaseSlotInfo SlotInfo{};
 	SlotInfo.GUID = CustomGuid.IsValid() ? CustomGuid : FGuid::NewGuid();
+	SlotInfo.Type = soda::EFileSlotType::Vehicle;
 	SlotInfo.Lable = Lable;
 	SlotInfo.Description = Description;
 	SlotInfo.DataClass = GetClass();
 
 	if (!SodaApp.GetFileDatabaseManager().AddOrUpdateSlotInfo(SlotInfo))
 	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToSlot(); Can't CreateNewSlot() "));
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::SaveToSlot(); Can't AddOrUpdateSlotInfo() "));
 		return false;
 	}
 
@@ -842,27 +844,9 @@ bool ASodaVehicle::Resave()
 		return false;
 	}
 
-	FJsonActorArchive Ar;
-	if (!Ar.SerializeActor(this, true))
+	if (!SaveToSlot(Slot.Lable, Slot.Description, Slot.GUID, false))
 	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::Resave(); Can't SerializeActor() "));
-		return false;
-	}
-
-	FString JsonString;
-	if (!Ar.SaveToString(JsonString))
-	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::Resave(); Can't SaveToString() "));
-		return false;
-	}
-
-	TArray<uint8> SlotData;
-	SlotData.SetNum(JsonString.Len() * sizeof(FString::ElementType));
-	FMemory::Memcpy((void*)SlotData.GetData(), (void*)JsonString.GetCharArray().GetData(), SlotData.Num());
-
-	if (!SodaApp.GetFileDatabaseManager().UpdateSlotData(SlotGuid, SlotData))
-	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::Resave(); Can't UpdateSlotData() "));
+		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::Resave(); SaveToSlot() faild "));
 		return false;
 	}
 
@@ -1245,37 +1229,6 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaVehicleBar.Export"),
 		EUserInterfaceActionType::Button
 	);
-
-	/*
-	ToolbarBuilder.AddToolBarButton(
-		FUIAction(
-			FExecuteAction::CreateLambda([this] 
-			{
-				IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
-				if (!DesktopPlatform)
-				{
-					UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::ImportFromJSONAs() Can't get the IDesktopPlatform ref"));
-					return;
-				}
-
-				const FString FileTypes = TEXT("Soda Vehicles (*.json)|*.json");
-
-				TArray<FString> OpenFilenames;
-				int32 FilterIndex = -1;
-				if (!DesktopPlatform->OpenFileDialog(nullptr, TEXT("Import Vehicle from JSON"), FPaths::ProjectLogDir(), TEXT(""), FileTypes, EFileDialogFlags::None, OpenFilenames, FilterIndex) || OpenFilenames.Num() <= 0)
-				{
-					return;
-				}
-
-				RespawnVehcile (FVechicleSaveAddress(EVehicleSaveSource::JsonExternal, OpenFilenames[0]), GetActorLocation() + FVector(0, 0, 50), FRotator(0.f, GetActorRotation().Yaw, 0.f), true);
-			})),
-		NAME_None, 
-		FText::FromString("Import"),
-		FText::FromString("Import Vehicle from JSON"), 
-		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaVehicleBar.Import"),
-		EUserInterfaceActionType::Button
-	);
-	*/
 
 	ToolbarBuilder.AddToolBarButton(
 		FUIAction(

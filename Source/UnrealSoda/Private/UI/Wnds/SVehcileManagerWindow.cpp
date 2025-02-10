@@ -39,7 +39,7 @@ void SVehcileManagerWindow::Construct( const FArguments& InArgs, ASodaVehicle* I
 		[
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
-			.AutoHeight()
+			.FillHeight(1.0)
 			.Padding(0, 0, 0, 5)
 			[
 				SAssignNew(FileDatabaseManager, SFileDatabaseManager, EFileSlotType::Vehicle, SelectedVehicle.IsValid() ? SelectedVehicle->GetSlotGuid() : FGuid())
@@ -118,11 +118,11 @@ FReply SVehcileManagerWindow::OnSave()
 		{
 			USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 
-			auto ProccSave = [this, Slot]()
+			auto ProccSave = [Slot, SelectedVehicle = SelectedVehicle, Lable = FileDatabaseManager->GetLableText(), Description = FileDatabaseManager->GetDescriptionText()]()
 			{
-				if (!SelectedVehicle->SaveToSlot(FileDatabaseManager->GetLableText(), FileDatabaseManager->GetDescriptionText(), Slot->GUID, true))
+				if (!SelectedVehicle->SaveToSlot(Lable, Description, Slot->GUID, true))
 				{
-					soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Can't save vehilce to the selected slot"));
+					soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Can't save to the selected slot"));
 				}
 			};
 
@@ -131,7 +131,7 @@ FReply SVehcileManagerWindow::OnSave()
 				TSharedPtr<soda::SMessageBox> MsgBox = SodaSubsystem->ShowMessageBox(
 					soda::EMessageBoxType::YES_NO_CANCEL,
 					"Replace Slot",
-					"Are you sure you want to replace the \"" + Slot->Lable + "\" with new vehicle data ?");
+					"Are you sure you want to replace the \"" + Slot->Lable + "\" with new slot data ?");
 				MsgBox->SetOnMessageBox(soda::FOnMessageBox::CreateLambda([this, ProccSave](soda::EMessageBoxButton Button)
 				{
 					if (Button == soda::EMessageBoxButton::YES)

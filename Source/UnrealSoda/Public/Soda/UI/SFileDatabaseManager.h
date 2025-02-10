@@ -31,13 +31,15 @@ public:
 	FString GetLableText() const;
 	FString GetDescriptionText() const;
 
+	TSharedPtr<SListView<TSharedPtr<FFileDatabaseSlotInfo>>> ListView;
+
 protected:
 
 	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FFileDatabaseSlotInfo> Address, const TSharedRef< STableViewBase >& OwnerTable);
 	void OnSelectionChanged(TSharedPtr<FFileDatabaseSlotInfo> Address, ESelectInfo::Type SelectInfo);
 	TSharedRef<SWidget> GetComboMenuContent();
 
-	TSharedPtr<SListView<TSharedPtr<FFileDatabaseSlotInfo>>> ListView;
+
 	TSharedPtr<SEditableTextBox> LableTextBox;
 	TSharedPtr<SEditableTextBox> DescriptionTextBox;
 	TArray<TSharedPtr<FFileDatabaseSlotInfo>> Slots;

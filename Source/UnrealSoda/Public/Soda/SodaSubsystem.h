@@ -128,6 +128,13 @@ public:
 	bool CloseWaitingPanel(bool bCloseAll = false);
 
 	soda::SSodaViewport* GetSodaViewport() const { return SodaViewport.Get(); }
+
+	/** if  LevelName is empty will reload current level*/
+	UFUNCTION(BlueprintCallable, Category = LevelState)
+	bool LoadEmptyLevel(const FString& LevelName = TEXT(""));
+
+	UFUNCTION(BlueprintCallable, Category = LevelState)
+	bool LoadLevelFromSlot(const FGuid& Guid);
 	
 public:
 	static USodaSubsystem* Get();
@@ -179,6 +186,7 @@ protected:
 		//inline const bool IsValid() { return Memory.Num(); }
 	};
 	static FScenarioLevelSavedData ScenarioLevelSavedData;
+	static FGuid SlotToLoad;
 
 	UPROPERTY()
 	TSet<AActor*> SodaActors;

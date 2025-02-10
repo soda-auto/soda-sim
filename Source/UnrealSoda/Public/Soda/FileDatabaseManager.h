@@ -58,7 +58,8 @@ namespace soda
 		FString Lable;
 		FString Description; // Optional 
 		TObjectPtr<UClass> DataClass; // Optional
-		//TSharedPtr<FJsonObject> JsonDescription; // Optional
+		FString DataClassName;
+		FString JsonDescription; // Optional
 		FDateTime DateTime;
 		FGuid DataMD5Hash;
 

@@ -344,10 +344,7 @@ void SSodaViewport::BindCommands()
 		Commands.RestartLevel,
 		FExecuteAction::CreateLambda([]()
 		{
-			if (USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked())
-			{
-				SodaSubsystem->RequestRestartLevel(false);
-			}
+			USodaSubsystem::GetChecked()->RequestRestartLevel(false);
 		})
 	);
 
@@ -355,66 +352,34 @@ void SSodaViewport::BindCommands()
 		Commands.ClearLevel,
 		FExecuteAction::CreateLambda([&]()
 		{
-			if (ALevelState* LevelState = ALevelState::Get())
-			{
-				LevelState->ReloadLevelEmpty(GetWorld());
-			}
+			USodaSubsystem::GetChecked()->LoadEmptyLevel();
 		})
 	);
-	/*
-	CommandListRef.MapAction(
-		Commands.AutoConnectDB,
-		FExecuteAction::CreateLambda([]()
-		{
-			SodaApp.GetSodaCommonSettings()->bAutoConnect = !SodaApp.GetSodaCommonSettings()->bAutoConnect;
-			SodaApp.GetSodaCommonSettings()->SaveSettings();
-		}),
-		FCanExecuteAction(),
-		FIsActionChecked::CreateLambda([]()
-		{
-			return SodaApp.GetSodaCommonSettings()->bAutoConnect;
-		})
-	);
-
-	CommandListRef.MapAction(
-		Commands.RecordDataset,
-		FExecuteAction::CreateLambda([]()
-		{
-			SodaApp.GetSodaCommonSettings()->bRecordDataset = !SodaApp.GetSodaCommonSettings()->bRecordDataset;
-			SodaApp.GetSodaCommonSettings()->SaveSettings();
-		}),
-		FCanExecuteAction(),
-		FIsActionChecked::CreateLambda([]()
-		{
-			return SodaApp.GetSodaCommonSettings()->bRecordDataset;
-		})
-	);
-	*/
 
 	CommandListRef.MapAction(
 		Commands.ToggleSpectatorMode,
 		FExecuteAction::CreateLambda([]()
 		{
-			if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
+			USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+			
+			APlayerController* PlayerController = SodaSubsystem->GetWorld()->GetFirstPlayerController();
+			check(PlayerController);
+
+			APawn* Pawn = PlayerController->GetPawn();
+
+			if (Cast<ASodaVehicle>(Pawn))
 			{
-				APlayerController* PlayerController = SodaSubsystem->GetWorld()->GetFirstPlayerController();
-				check(PlayerController);
-
-				APawn* Pawn = PlayerController->GetPawn();
-
-				if (Cast<ASodaVehicle>(Pawn))
-				{
-					SodaSubsystem->SetSpectatorMode(true);
-				}
-				else if (Cast<ASodalSpectator>(Pawn))
-				{
-					SodaSubsystem->SetSpectatorMode(false);
-				}
-				else
-				{
-					SodaSubsystem->SetSpectatorMode(true);
-				}
+				SodaSubsystem->SetSpectatorMode(true);
 			}
+			else if (Cast<ASodalSpectator>(Pawn))
+			{
+				SodaSubsystem->SetSpectatorMode(false);
+			}
+			else
+			{
+				SodaSubsystem->SetSpectatorMode(true);
+			}
+			
 		})
 	);
 
@@ -422,40 +387,40 @@ void SSodaViewport::BindCommands()
 		Commands.PossesNextVehicle,
 		FExecuteAction::CreateLambda([]()
 		{
-			if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-			{
-				APlayerController* PlayerController = SodaSubsystem->GetWorld()->GetFirstPlayerController();
-				check(PlayerController);
+			USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+			
+			APlayerController* PlayerController = SodaSubsystem->GetWorld()->GetFirstPlayerController();
+			check(PlayerController);
 
-				ASodaVehicle* Vehicle = SodaSubsystem->GetActiveVehicle();
-				if (Vehicle)
+			ASodaVehicle* Vehicle = SodaSubsystem->GetActiveVehicle();
+			if (Vehicle)
+			{
+				for (TActorIterator<ASodaVehicle> It(SodaSubsystem->GetWorld()); It; ++It)
 				{
-					for (TActorIterator<ASodaVehicle> It(SodaSubsystem->GetWorld()); It; ++It)
+					if (*It == Vehicle)
 					{
-						if (*It == Vehicle)
+						++It;
+						if (It)
 						{
-							++It;
-							if (It)
-							{
-								SodaSubsystem->SetActiveVehicle(*It);
-							}
-							else
-							{
-								SodaSubsystem->SetActiveVehicle(*TActorIterator<ASodaVehicle>(SodaSubsystem->GetWorld()));
-							}
-							break;
+							SodaSubsystem->SetActiveVehicle(*It);
 						}
-					}
-				}
-				else
-				{
-					TActorIterator<ASodaVehicle> It(SodaSubsystem->GetWorld());
-					if (It)
-					{
-						SodaSubsystem->SetActiveVehicle(*It);
+						else
+						{
+							SodaSubsystem->SetActiveVehicle(*TActorIterator<ASodaVehicle>(SodaSubsystem->GetWorld()));
+						}
+						break;
 					}
 				}
 			}
+			else
+			{
+				TActorIterator<ASodaVehicle> It(SodaSubsystem->GetWorld());
+				if (It)
+				{
+					SodaSubsystem->SetActiveVehicle(*It);
+				}
+			}
+			
 		})
 	);
 
@@ -484,10 +449,7 @@ void SSodaViewport::BindCommands()
 		Commands.Exit,
 		FExecuteAction::CreateLambda([]()
 		{
-			if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-			{
-				SodaSubsystem->RequestQuit();
-			}
+			USodaSubsystem::GetChecked()->RequestQuit();
 		})
 	);
 
@@ -522,12 +484,10 @@ void SSodaViewport::BindStatCommand(const TSharedPtr<FUICommandInfo> InMenuItem,
 
 void SSodaViewport::BackMenu()
 {
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+	if (!SodaSubsystem->CloseWindow())
 	{
-		if (!SodaSubsystem->CloseWindow())
-		{
-			SodaSubsystem->PopToolBox();
-		}
+		SodaSubsystem->PopToolBox();
 	}
 }
 
@@ -822,10 +782,7 @@ void SSodaViewport::SetToolBoxWidget(TSharedRef<SToolBox> InWidget)
 						.ButtonStyle(FSodaStyle::Get(), "MenuWindow.CloseButton")
 						.OnClicked(FOnClicked::CreateLambda([this]() 
 						{
-							if(USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-							{
-								SodaSubsystem->PopToolBox();
-							}
+							USodaSubsystem::GetChecked()->PopToolBox();
 							return FReply::Handled();
 						}))
 					]
@@ -851,8 +808,8 @@ void SSodaViewport::RemoveToolBoxWidget()
 
 void SSodaViewport::SetViewportType(ESodaSpectatorMode InMode)
 {
-	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
-	if (SodaSubsystem && SodaSubsystem->SpectatorActor)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+	if (SodaSubsystem->SpectatorActor)
 	{
 		SodaSubsystem->SpectatorActor->SetMode(InMode);
 	}
@@ -860,8 +817,8 @@ void SSodaViewport::SetViewportType(ESodaSpectatorMode InMode)
 
 bool SSodaViewport::IsActiveViewportType(ESodaSpectatorMode InMode)
 {
-	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
-	if (SodaSubsystem && SodaSubsystem->SpectatorActor)
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+	if (SodaSubsystem->SpectatorActor)
 	{
 		return SodaSubsystem->SpectatorActor->GetMode() == InMode;
 	}

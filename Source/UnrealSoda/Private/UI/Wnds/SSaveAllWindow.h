@@ -15,6 +15,7 @@ namespace soda
 
 enum class ESaveAllWindowMode
 {
+	Normal,
 	Quit,
 	Restart
 };
@@ -25,6 +26,7 @@ struct FSaveAllWindowItem
 	FUIAction Action;
 	FName IconName;
 	FName ClassName;
+	TAttribute<bool> bIsDirty;
 };
 
 class  SSaveAllWindow : public SMenuWindowContent
@@ -35,7 +37,7 @@ public:
 	SLATE_END_ARGS()
 	
 	virtual ~SSaveAllWindow() {}
-	void Construct( const FArguments& InArgs, ESaveAllWindowMode Mode, bool bExecuteModeIfNothingToSave);
+	void Construct( const FArguments& InArgs, ESaveAllWindowMode Mode);
 
 private:
 	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FSaveAllWindowItem> Item, const TSharedRef< STableViewBase >& OwnerTable);

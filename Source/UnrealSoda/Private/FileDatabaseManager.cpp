@@ -77,9 +77,8 @@ public:
 		return Statement_GetSlotsInfo.BindAndExecute(Type, [&InCallback](const FGetSlotsInfo& InStatement) //-V562
 		{
 			FFileDatabaseSlotInfo Slot;
-			FString JsonDescription_Dummy;
 			FString DataClassName;
-			if (InStatement.GetColumnValues(Slot.GUID, Slot.Type, Slot.Lable,  Slot.Description, DataClassName, JsonDescription_Dummy, Slot.DateTime, Slot.DataMD5Hash))
+			if (InStatement.GetColumnValues(Slot.GUID, Slot.Type, Slot.Lable,  Slot.Description, DataClassName, Slot.JsonDescription, Slot.DateTime, Slot.DataMD5Hash))
 			{
 				Slot.DataClass = GetClassFromString(DataClassName);
 				return InCallback(MoveTemp(Slot));
@@ -99,7 +98,7 @@ public:
 	{
 		FString JsonDescription_Dummy;
 		FString DataClassName;
-		if (Statement_GetSlotInfo.BindAndExecuteSingle(Guid, Slot.Type, Slot.Lable, Slot.Description, DataClassName, JsonDescription_Dummy, Slot.DateTime, Slot.DataMD5Hash))
+		if (Statement_GetSlotInfo.BindAndExecuteSingle(Guid, Slot.Type, Slot.Lable, Slot.Description, DataClassName, Slot.JsonDescription, Slot.DateTime, Slot.DataMD5Hash))
 		{
 			Slot.GUID = Guid;
 			Slot.DataClass = GetClassFromString(DataClassName);
@@ -155,15 +154,14 @@ public:
 		FFileDatabaseSlotInfo FoundSlot;
 		if (GetSlotInfo(Slot.GUID, FoundSlot))
 		{
-			FString JsonDescription_Dummy{};
-			if (!Statement_UpdateSlotInfo.BindAndExecute(Slot.GUID, Slot.Type, Slot.Lable, Slot.Description, Slot.DataClass ? *Slot.DataClass->GetClassPathName().ToString() : TEXT(""), TEXT(""), Slot.DateTime))
+			if (!Statement_UpdateSlotInfo.BindAndExecute(Slot.GUID, Slot.Type, Slot.Lable, Slot.Description, Slot.DataClass ? *Slot.DataClass->GetClassPathName().ToString() : TEXT(""), Slot.JsonDescription, Slot.DateTime))
 			{
 				return false;
 			}
 		}
 		else
 		{
-			if (!Statement_AddSlot.BindAndExecute(Slot.GUID, Slot.Type, Slot.Lable, Slot.Description, Slot.DataClass ? *Slot.DataClass->GetClassPathName().ToString() : TEXT(""), TEXT(""), Slot.DateTime, FGuid{}))
+			if (!Statement_AddSlot.BindAndExecute(Slot.GUID, Slot.Type, Slot.Lable, Slot.Description, Slot.DataClass ? *Slot.DataClass->GetClassPathName().ToString() : TEXT(""), Slot.JsonDescription, Slot.DateTime, FGuid{}))
 			{
 				return false;
 			}
@@ -379,7 +377,7 @@ TUniquePtr<FSQLiteDatabase> FFileDatabaseManager::OpenDatabase(const FString& Fi
 		return {};
 	}
 
-	if (!ensure(Database->Execute(TEXT("CREATE UNIQUE INDEX IF NOT EXISTS type_index ON table_files(type);"))))
+	if (!ensure(Database->Execute(TEXT("CREATE INDEX IF NOT EXISTS type_index ON table_files(type);"))))
 	{
 		soda::ShowNotificationAndLog(ENotificationLevel::Error, 5.0, ANSI_TO_TCHAR(__FUNCTION__), *Database->GetLastError());
 		return {};
@@ -396,7 +394,7 @@ bool FFileDatabaseManager::AddOrUpdateSlotInfo(const FFileDatabaseSlotInfo& InSl
 	}
 
 	FFileDatabaseSlotInfo Slot = InSlot;
-	Slot.GUID = Slot.GUID .IsValid() ? Slot.GUID : FGuid::NewGuid();
+	Slot.GUID = Slot.GUID.IsValid() ? Slot.GUID : FGuid::NewGuid();
 	Slot.DateTime = FDateTime::Now();
 
 	if (!DefaultDatabasesImpl->Statements->AddOrUpdateSlotInfo(Slot))

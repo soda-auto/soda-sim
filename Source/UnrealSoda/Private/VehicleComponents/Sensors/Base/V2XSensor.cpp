@@ -9,7 +9,6 @@
 #include "Soda/SodaStatics.h"
 #include "Sockets.h"
 #include "SocketSubsystem.h"
-#include "Soda/LevelState.h"
 #include "UObject/UObjectIterator.h"
 
 int UV2XMarkerSensor::IDsCounter = 10000;

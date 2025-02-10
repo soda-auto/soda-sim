@@ -34,6 +34,7 @@
 #include "UI/Wnds/SAboutWindow.h"
 #include "UI/Wnds/PakWindow/SPakWindow.h"
 #include "UI/Wnds/SQuickStartWindow.h"
+#include "UI/Wnds/SSaveAllWindow.h"
 #include "SPlacementModeTools.h"
 #include "Soda/ISodaActor.h"
 #include "RuntimeEditorModule.h"
@@ -197,7 +198,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 			SNew(SImage)
 			.Image_Lambda([]()
 			{
-				return FSodaStyle::GetBrush(USodaSubsystem::Get()->IsScenarioRunning() ? "Icons.Toolbar.Stop" : "Icons.Toolbar.Play");
+				return FSodaStyle::GetBrush(USodaSubsystem::GetChecked()->IsScenarioRunning() ? "Icons.Toolbar.Stop" : "Icons.Toolbar.Play");
 			})
 		]
 	);
@@ -206,7 +207,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 	ToolbarBuilder.AddWidget
 	(
 		SNew(SViewportToolBarButton)
-		.IsEnabled_Lambda([]() {return !USodaSubsystem::Get()->IsScenarioRunning(); })
+		.IsEnabled_Lambda([]() {return !USodaSubsystem::GetChecked()->IsScenarioRunning(); })
 		.Image("Icons.Save")
 		.ToolTipText(FText::FromString(TEXT("Save/Load scenario")))
 		.OnClicked(FOnClicked::CreateLambda([this]()
@@ -298,7 +299,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 			return DBStatusData->ToolTip;
 		})
 		.OnGetMenuContent(this, &SSodaViewportToolBar::GenerateDBMenu)
-		.IsEnabled_Lambda([]() {return !USodaSubsystem::Get()->IsScenarioRunning(); })
+		.IsEnabled_Lambda([]() {return !USodaSubsystem::GetChecked()->IsScenarioRunning(); })
 	);
 
 	ToolbarBuilder.AddSeparator();
@@ -308,7 +309,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 		.ParentToolBar(SharedThis(this))
 		.Label(this, &SSodaViewportToolBar::GetModeMenuLabel)
 		.LabelIcon(this, &SSodaViewportToolBar::GetModeMenuLabelIcon)
-		//.IsEnabled_Lambda([]() {return !USodaSubsystem::Get()->IsScenarioRunning(); })
+		//.IsEnabled_Lambda([]() {return !UUSodaSubsystem::GetChecked()->IsScenarioRunning(); })
 		.OnGetMenuContent(this, &SSodaViewportToolBar::GenerateModeMenu)
 		.ToolTipText(FText::FromString(TEXT("Change UI mode")))
 	);
@@ -441,10 +442,20 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateMainMenu()
 
 	{
 		FUIAction Action;
+		Action.ExecuteAction.BindSP(this, &SSodaViewportToolBar::OnOpenScenariosManagerWindow);
+		MenuBuilder.AddMenuEntry(
+			FText::FromString(TEXT("Scenarios Manager")),
+			FText::FromString(TEXT("Scenarios Manager")),
+			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.Level"),
+			Action);
+	}
+
+	{
+		FUIAction Action;
 		Action.ExecuteAction.BindSP(this, &SSodaViewportToolBar::OnOpenVehicleManagerWindow);
 		MenuBuilder.AddMenuEntry(
-			FText::FromString(TEXT("Vehicle Manager")),
-			FText::FromString(TEXT("Vehicle Manager")),
+			FText::FromString(TEXT("Vehicles Manager")),
+			FText::FromString(TEXT("Vehicles Manager")),
 			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.Car"),
 			Action);
 	}
@@ -973,50 +984,37 @@ FLevelEditorViewportClient* ULevelViewportToolBarContext::GetLevelViewportClient
 
 void SSodaViewportToolBar::OnOpenLevelWindow()
 {
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		SodaSubsystem->OpenWindow("Choose Map", SNew(SChooseMapWindow));
-	}	
+	USodaSubsystem::GetChecked()->OpenWindow("Choose Map", SNew(SChooseMapWindow));
 }
 
 void SSodaViewportToolBar::OnOpenPakWindow()
 {
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		SodaSubsystem->OpenWindow("Paks", SNew(SPakWindow));
-	}
+	USodaSubsystem::GetChecked()->OpenWindow("Paks", SNew(SPakWindow));
 }
 
 void SSodaViewportToolBar::OnOpenAboutWindow()
 {
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		SodaSubsystem->OpenWindow("About SODA.Sim", SNew(SAboutWindow));
-	}
+	USodaSubsystem::GetChecked()->OpenWindow("About SODA.Sim", SNew(SAboutWindow));
 }
 
 void SSodaViewportToolBar::OnOpenQuickStartWindow()
 {
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		SodaSubsystem->OpenWindow("Quick Start", SNew(SQuickStartWindow));
-	}
+	USodaSubsystem::GetChecked()->OpenWindow("Quick Start", SNew(SQuickStartWindow));
 }
 
 void SSodaViewportToolBar::OnOpenVehicleManagerWindow()
 {
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		SodaSubsystem->OpenWindow("Vehicle Manager", SNew(SVehcileManagerWindow, nullptr));
-	}
+	USodaSubsystem::GetChecked()->OpenWindow("Vehicles Manager", SNew(SVehcileManagerWindow, nullptr));
+}
+
+void SSodaViewportToolBar::OnOpenScenariosManagerWindow()
+{
+	USodaSubsystem::GetChecked()->OpenWindow("Scenarios Manager", SNew(SLevelSaveLoadWindow));
 }
 
 void SSodaViewportToolBar::OnOpenSaveLoadWindow()
 {
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		SodaSubsystem->OpenWindow("Save & Load", SNew(SLevelSaveLoadWindow));
-	}
+	USodaSubsystem::GetChecked()->OpenWindow("Save All", SNew(SSaveAllWindow, ESaveAllWindowMode::Normal));
 }
 
 EVisibility SSodaViewportToolBar::IsEditorMode() const
@@ -1028,7 +1026,7 @@ EVisibility SSodaViewportToolBar::IsEditorMode() const
 
 EVisibility SSodaViewportToolBar::IsSpectatorMode() const
 {
-	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 	if (SodaSubsystem && SodaSubsystem->SpectatorActor)
 	{
 		return EVisibility::Visible;

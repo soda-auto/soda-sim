@@ -5,7 +5,6 @@
 #include "Soda/UnrealSodaVersion.h"
 #include "Soda/SodaSubsystem.h"
 #include "Soda/Vehicles/SodaVehicle.h"
-#include "Soda/LevelState.h"
 #include "Soda/Misc/Time.h"
 #include "Soda/UI/SMessageBox.h"
 #include "Framework/Notifications/NotificationManager.h"

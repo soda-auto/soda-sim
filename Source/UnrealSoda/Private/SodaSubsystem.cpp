@@ -4,6 +4,7 @@
 #include "Soda/UnrealSoda.h"
 #include "Soda/SodaApp.h"
 #include "Soda/LevelState.h"
+#include "Soda/FileDatabaseManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/GameModeBase.h"
@@ -40,6 +41,7 @@
 #include "Engine/Engine.h"
 
 USodaSubsystem::FScenarioLevelSavedData USodaSubsystem::ScenarioLevelSavedData {};
+FGuid USodaSubsystem::SlotToLoad{};
 
 USodaSubsystem* USodaSubsystem::Get()
 {
@@ -160,9 +162,11 @@ void USodaSubsystem::InitGame(AGameModeBase* GameMode)
 	}
 
 	/* Initialize LevelState */
-	LevelState = ALevelState::CreateOrLoad(this, DefaultLevelStateClass, ScenarioLevelSavedData.bIsValid);
+	LevelState = ALevelState::CreateOrLoad(this, DefaultLevelStateClass, ScenarioLevelSavedData.bIsValid, SlotToLoad);
+	SlotToLoad = FGuid{};
 	check(LevelState);
 	LevelState->FinishLoadLevel(); //Spawn all saved actors
+
 
 	/* Initialize level default pinned tool actors */
 	/*
@@ -435,10 +439,10 @@ bool USodaSubsystem::ScenarioPlay()
 		return false;
 	}
 
-	ScenarioLevelSavedData.bIsValid = LevelState->SaveLevelToTransientSlot();
+	ScenarioLevelSavedData.bIsValid = LevelState->SaveToTransientSlot();
 	if (!ScenarioLevelSavedData.bIsValid)
 	{
-		UE_LOG(LogSoda, Error, TEXT("USodaSubsystem::ScenarioPlay(); Can't SaveLevelToTransientSlot()"));
+		UE_LOG(LogSoda, Error, TEXT("USodaSubsystem::ScenarioPlay(); Can't SaveToTransientSlot()"));
 		ShowMessageBox(soda::EMessageBoxType::OK, "Scenario Play Failed", "Can't save transient level");
 		return false;
 	}
@@ -641,7 +645,7 @@ void USodaSubsystem::RequestQuit(bool bForce)
 
 	if (!bForce && SodaViewport.IsValid())
 	{
-		OpenWindow("Quit", SNew(soda::SSaveAllWindow, soda::ESaveAllWindowMode::Quit, true));
+		OpenWindow("Quit", SNew(soda::SSaveAllWindow, soda::ESaveAllWindowMode::Quit));
 	}
 	else
 	{
@@ -662,13 +666,15 @@ void USodaSubsystem::RequestRestartLevel(bool bForce)
 
 	if (!bForce && SodaViewport.IsValid())
 	{
-		OpenWindow("Restart Level", SNew(soda::SSaveAllWindow, soda::ESaveAllWindowMode::Restart, true));
+		OpenWindow("Restart Level", SNew(soda::SSaveAllWindow, soda::ESaveAllWindowMode::Restart));
 	}
 	else
 	{
 		//Delay before exiting to end the current scenario if it was running
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
 		{
+			SlotToLoad = LevelState->GetSlotGuid();
+			ScenarioLevelSavedData.bIsValid = false;
 			UGameplayStatics::OpenLevel(this, *UGameplayStatics::GetCurrentLevelName(this, true), false);
 		}, 0.2, false);
 	}
@@ -788,4 +794,42 @@ void USodaSubsystem::OnActorDestroyed(AActor* InActor)
 	{
 		SodaActors.Remove(InActor);
 	}
+}
+
+bool USodaSubsystem::LoadEmptyLevel(const FString& InLevelName)
+{
+	SlotToLoad = FGuid{};
+	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(this, true) : InLevelName;
+	UGameplayStatics::OpenLevel(this, *LevelName, false);
+	return true;
+}
+
+bool USodaSubsystem::LoadLevelFromSlot(const FGuid& Guid)
+{
+	if (!Guid.IsValid())
+	{
+		UE_LOG(LogSoda, Error, TEXT("USodaSubsystem::LoadLevelFromSlot(); Slot isn't valid "));
+		return false;
+	}
+
+	auto& Database = SodaApp.GetFileDatabaseManager();
+	soda::FFileDatabaseSlotInfo SlotInfo;
+	if (!Database.GetSlot(Guid, SlotInfo))
+	{
+		UE_LOG(LogSoda, Error, TEXT("USodaSubsystem::LoadLevelFromSlot(); Can't find slot "));
+		return false;
+	}
+
+	FString LevelName;
+	if (!ALevelState::DeserializeSlotDescriptor(SlotInfo.JsonDescription, LevelName))
+	{
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::LoadLevelFromSlot(); DeserializeSlotDescriptor() faild"));
+		return false;
+	}
+
+	SlotToLoad = Guid;
+	ScenarioLevelSavedData.bIsValid = false;
+
+	UGameplayStatics::OpenLevel(this, *LevelName, false);
+	return true;
 }

@@ -46,6 +46,7 @@ private:
 	void OnOpenAboutWindow();
 	void OnOpenQuickStartWindow();
 	void OnOpenVehicleManagerWindow();
+	void OnOpenScenariosManagerWindow();
 	void OnOpenSaveLoadWindow();
 
 	EVisibility IsEditorMode() const;

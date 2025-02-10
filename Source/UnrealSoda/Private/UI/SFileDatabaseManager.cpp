@@ -461,7 +461,7 @@ void SFileDatabaseManager::Construct( const FArguments& InArgs, EFileSlotType In
 				.Padding(0, 0, 5, 0)
 				[
 					SAssignNew(LableTextBox, SEditableTextBox)
-					.IsEnabled(TargetGuid.IsValid())
+					//.IsEnabled(TargetGuid.IsValid())
 				]
 			]
 			+ SVerticalBox::Slot()
@@ -483,7 +483,7 @@ void SFileDatabaseManager::Construct( const FArguments& InArgs, EFileSlotType In
 				.Padding(0, 0, 5, 0)
 				[
 					SAssignNew(DescriptionTextBox, SEditableTextBox)
-					.IsEnabled(TargetGuid.IsValid())
+					//.IsEnabled(TargetGuid.IsValid())
 				]
 			]
 		]
@@ -600,3 +600,5 @@ FString SFileDatabaseManager::GetDescriptionText() const
 
 } // namespace soda
 
+
+#undef LOCTEXT_NAMESPACE

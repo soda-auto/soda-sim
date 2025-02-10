@@ -14,13 +14,16 @@
 #include "Soda/ISodaActor.h"
 #include "SodaStyleSet.h"
 
+#define LOCTEXT_NAMESPACE "SSaveAllWindow"
+
 namespace soda
 {
 class SSaveAllWindowRow;
 
-static const FName Column_SG_ItemName("ItemName");
-static const FName Column_SG_ClassName("ClassName");
-static const FName Column_SG_SaveButton("SaveButton");
+static const FName Column_ItemName("ItemName");
+static const FName Column_ClassName("ClassName");
+static const FName Column_Status("Status");
+static const FName Column_SaveButton("SaveButton");
 
 
 class SSaveAllWindowRow : public SMultiColumnTableRow<TSharedPtr<FSaveAllWindowItem>>
@@ -40,7 +43,7 @@ public:
 
 	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& InColumnName) override
 	{
-		if (InColumnName == Column_SG_ItemName)
+		if (InColumnName == Column_ItemName)
 		{
 			return
 				SNew(SHorizontalBox)
@@ -62,14 +65,37 @@ public:
 				];
 		}
 
-		if (InColumnName == Column_SG_ClassName)
+		if (InColumnName == Column_ClassName)
 		{
 			return
 				SNew(STextBlock)
 				.Text(FText::FromName(Item.Pin()->ClassName));
 		}
 
-		if (InColumnName == Column_SG_SaveButton)
+		if (InColumnName == Column_Status)
+		{
+			return SNew(SBox)
+				.VAlign(VAlign_Center)
+				.HAlign(HAlign_Center)
+				[
+					SNew(SImage)
+					.Image_Lambda([this]()
+					{
+						return Item.Pin()->bIsDirty.Get() 
+							? FSodaStyle::GetBrush("Icons.WarningWithColor")
+							: FSodaStyle::GetBrush("Icons.SuccessWithColor");
+					})
+					.ToolTipText_Lambda([this]()
+					{
+						return Item.Pin()->bIsDirty.Get() 
+							? LOCTEXT("ItmemStatus_Dirty", "The item has been modified")
+							: LOCTEXT("ItmemStatus_NotDirty", "The item has not been modified");
+							
+					})
+				];
+		}
+
+		if (InColumnName == Column_SaveButton)
 		{
 			TSharedRef<SButton> Button = SNew(SButton)
 			.ButtonStyle(FSodaStyle::Get(), "MenuWindow.SaveButton")
@@ -85,8 +111,7 @@ public:
 					return Item.Pin()->Action.CanExecute();
 				}
 			));
-			return
-				SNew(SBox)
+			return SNew(SBox)
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
 				[
@@ -102,46 +127,56 @@ public:
 
 /***********************************************************************************/
 
-void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode, bool bExecuteModeIfNothingToSave)
+void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode)
 {
-	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 	check(SodaSubsystem);
 	UWorld * World = SodaSubsystem->GetWorld();
 	check(World);
 
+	bool bFoundDirtySlot = false;
+
 	// Add Level State
-	TWeakObjectPtr<ALevelState> LevelState = SodaSubsystem->LevelState;
-	if(LevelState.IsValid() && LevelState->IsDirty())
+	ALevelState * LevelState = ALevelState::GetChecked();
+	TSharedPtr<FSaveAllWindowItem> LevelItem = MakeShared<FSaveAllWindowItem>();
+	LevelItem->Caption = World->GetMapName() + " [" + (LevelState->GetSlotGuid().IsValid() ? LevelState->GetSlotLable() : FString(TEXT("New"))) + "]";
+	LevelItem->Caption.RemoveFromStart(World->StreamingLevelsPrefix);
+	LevelItem->IconName = "Icons.Level";
+	LevelItem->ClassName = "Level";
+	LevelItem->bIsDirty = TAttribute<bool>::CreateLambda([]() 
+	{ 
+		ALevelState * LevelState = ALevelState::GetChecked();
+		return LevelState->IsDirty() || !LevelState->GetSlotGuid().IsValid();
+	});
+	LevelItem->Action.CanExecuteAction.BindLambda([LevelState]()
 	{
-		TSharedPtr<FSaveAllWindowItem> LevelItem = MakeShared<FSaveAllWindowItem>();
-		Source.Add(LevelItem);
-		LevelItem->Caption = World->GetMapName() + " [" + ((LevelState->Slot.SlotSource == ELeveSlotSource::NoSlot) ? LevelState->Slot.Description : FString("New")) + "]";
-		LevelItem->Caption.RemoveFromStart(World->StreamingLevelsPrefix);
-		LevelItem->IconName = "Icons.Level";
-		LevelItem->ClassName = "Level";
-		LevelItem->Action.CanExecuteAction.BindLambda([LevelState]()
+		/*
+		if (LevelState.IsValid())
 		{
-			if (LevelState.IsValid())
-			{
-				return LevelState->IsDirty();
-			}
-			return false;
-		});
-		LevelItem->Action.ExecuteAction.BindLambda([LevelState, SodaSubsystem]()
+			return LevelState->IsDirty();
+		}
+		return false;
+		*/
+		return true;
+	});
+	LevelItem->Action.ExecuteAction.BindLambda([]()
+	{
+		/*
+		ALevelState * LevelState = ALevelState::GetChecked();
+		if (LevelState->GetSlotGuid().IsValid())
 		{
-			if (LevelState.IsValid())
-			{
-				if (LevelState->Slot.SlotSource == ELeveSlotSource::Local)
-				{
-					LevelState->SaveLevelLocallyAs(-1, LevelState->Slot.Description);
-				}
-				else
-				{
-					SodaSubsystem->OpenWindow("Level Save & Load", SNew(SLevelSaveLoadWindow));
-				}
-			}
-		});
-	}
+			LevelState->Resave();
+		}
+		else
+		*/
+		{
+			USodaSubsystem::GetChecked()->OpenWindow("Level Save & Load", SNew(SLevelSaveLoadWindow));
+		}
+		
+	});
+	bFoundDirtySlot = LevelItem->bIsDirty.Get();
+	Source.Add(LevelItem);
+	
 
 	// Add Pinned Actors
 	for (FActorIterator It(World); It; ++It)
@@ -150,21 +185,32 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 		TWeakInterfacePtr<ISodaActor> SodaActor = Cast<ISodaActor>(Actor);
 		if (SodaActor.IsValid())
 		{
-			if (SodaActor->IsPinnedActor() && SodaActor->IsDirty())
+			if (SodaActor->IsPinnedActor())
 			{
+				if(SodaActor->IsDirty())
+				{
+					bFoundDirtySlot = true;
+				}
 				TSharedPtr<FSaveAllWindowItem> PinnedItem = MakeShared<FSaveAllWindowItem>();
 				Source.Add(PinnedItem);
 				const FSodaActorDescriptor & Desc = SodaSubsystem->GetSodaActorDescriptor(Actor->GetClass());
 				PinnedItem->Caption = SodaActor->GetPinnedActorName();
 				PinnedItem->IconName = Desc.Icon;
 				PinnedItem->ClassName = Actor->GetClass()->GetFName();
+				PinnedItem->bIsDirty = TAttribute<bool>::CreateLambda([SodaActor]()
+				{ 
+					return SodaActor.IsValid() && SodaActor->IsDirty();
+				});
 				PinnedItem->Action.CanExecuteAction.BindLambda([SodaActor]()
 				{
+					/*
 					if (SodaActor.IsValid())
 					{
 						return SodaActor->IsDirty();
 					}
 					return false;
+					*/
+					return true;
 				});
 				PinnedItem->Action.ExecuteAction.BindLambda([SodaActor, SodaSubsystem]()
 				{
@@ -177,7 +223,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 		}
 	}
 
-	if (bExecuteModeIfNothingToSave && Source.Num() == 0)
+	if(bFoundDirtySlot)
 	{
 		switch (Mode)
 		{
@@ -211,7 +257,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 			return;
 		}
 	}
-
+	
 	ChildSlot
 	[
 		SNew(SBox)
@@ -234,11 +280,14 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 					.OnGenerateRow(this, &SSaveAllWindow::OnGenerateRow)
 					.HeaderRow(
 						SNew(SHeaderRow)
-						+ SHeaderRow::Column(Column_SG_ItemName)
+						+ SHeaderRow::Column(Column_ItemName)
 						.DefaultLabel(FText::FromString("Item Name"))
-						+ SHeaderRow::Column(Column_SG_ClassName)
+						+ SHeaderRow::Column(Column_ClassName)
 						.DefaultLabel(FText::FromString("Item Class"))
-						+ SHeaderRow::Column(Column_SG_SaveButton)
+						+ SHeaderRow::Column(Column_Status)
+						.FixedWidth(24)
+						.DefaultLabel(FText::FromString(""))
+						+ SHeaderRow::Column(Column_SaveButton)
 						.FixedWidth(24)
 						.DefaultLabel(FText::FromString(""))
 					)
@@ -273,7 +322,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 				.AutoWidth()
 				[
 					SNew(SButton)
-					.Text(FText::FromString("Cancel"))
+					.Text(FText::FromString("Close"))
 					.OnClicked(this, &SSaveAllWindow::OnCancel)
 				]
 			]
@@ -312,3 +361,5 @@ FReply SSaveAllWindow::OnCancel()
 
 } // namespace soda
 
+
+#undef LOCTEXT_NAMESPACE

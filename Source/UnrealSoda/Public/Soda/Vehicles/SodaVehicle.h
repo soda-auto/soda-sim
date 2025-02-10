@@ -20,78 +20,6 @@ DECLARE_STATS_GROUP(TEXT("SodaVehicle"), STATGROUP_SodaVehicle, STATGROUP_Advanc
 
 class UCANBusComponent;
 
-UENUM(BlueprintType)
-enum class EVehicleSaveSource : uint8
-{
-	NoSave,
-
-	/** The vehicles is saved to an binary file format in external location. */
-	BinExternal,  
-
-	/** The vehicles is saved to an binary file format in the local storage. */
-	BinLocal,
-
-	/** The vehicles is saved to an separate save game slot. */
-	Slot, 
-
-	/** The vehicle is saved as part of the binary level save game. */
-	BinLevel, 
-
-	/** The vehicles is saved to an JSON file format in external location. */
-	JsonExternal,
-
-	/** The vehicles is saved to an JSON file format in local storage. */
-	JsonLocal, 
-
-	/** The vehicle is saved to the MongoDB. */
-	DB,
-};
-
-/*
-USTRUCT(BlueprintType)
-struct FVechicleSaveAddress
-{
-	GENERATED_BODY()
-
-	FVechicleSaveAddress() {}
-	FVechicleSaveAddress(EVehicleSaveSource InSource, const FString& InLocation)
-		: Source(InSource)
-		, Location(InLocation)
-	{}
-
-	UPROPERTY(BlueprintReadOnly, SaveGame, Category = VechicleSaveAddress)
-	EVehicleSaveSource Source = EVehicleSaveSource::NoSave;
-
-	//  Location of the save data provided by the Source 
-	UPROPERTY(BlueprintReadOnly, SaveGame, Category = VechicleSaveAddress)
-	FString Location;
-
-	FORCEINLINE bool operator ==(const FVechicleSaveAddress& Other) const
-	{
-		return Source != EVehicleSaveSource::NoSave && Source != EVehicleSaveSource::BinLevel && Source == Other.Source && Location == Other.Location;
-	}
-
-	FString ToVehicleName() const ;
-
-	FORCEINLINE void Set(EVehicleSaveSource InSource, const FString& InLocation)
-	{
-		Source = InSource;
-		Location = InLocation;
-	}
-	
-	bool SetFromUrl(const FString & Url);
-
-	FORCEINLINE void Reset()
-	{
-		Source = EVehicleSaveSource::NoSave;
-		Location.Reset();
-	}
-
-	FString ToUrl() const;
-
-};
-*/
-
 /**
  * UVehicleWidget is the abstract user widget for ASodaVehicle.
  * Usually using as gauge widget for vehicle.
@@ -199,7 +127,7 @@ public:
 	virtual bool SaveToBinFile(const FString& FileName);
 
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	virtual bool SaveToSlot(const FString& Lable, const FString & Description, const FGuid & CustomGuid = FGuid(), bool bRebase = true);
+	virtual bool SaveToSlot(const FString& Lable, const FString & Description, const FGuid & Guid = FGuid(), bool bRebase = true);
 
 	/** If vehicle is already saved then will be resaved  */
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
@@ -218,27 +146,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
 	virtual ASodaVehicle* RespawnVehcile(FVector Location = FVector(0, 0, 20), FRotator Rotation = FRotator(0, 0, 0), bool IsLocalCoordinateSpace = true);
-
-	//UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	//static void ReplaceWithNewVehcile(FVector Location = FVector(0, 0, 20), FRotator Rotation = FRotator(0, 0, 0), bool IsLocalCoordinateSpace = true);
-
-	//UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	//virtual ASodaVehicle* RespawnVehcileFromAddress(const FVechicleSaveAddress& Address, FVector Location = FVector(0, 0, 20), FRotator Rotation = FRotator(0, 0, 0), bool IsOffset = true);
-
-	//UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	//static void GetSavedVehiclesLocal(TArray<FVechicleSaveAddress>& Addresses);
-
-	//UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	//static bool GetSavedVehiclesDB(TArray<FVechicleSaveAddress>& Addresses);
-
-	//UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	//static FString GetDefaultVehiclesFolder();
-
-	//UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	//static ASodaVehicle* FindVehicleByAddress(const UWorld* World, const FVechicleSaveAddress & Address);
-
-	//UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	//static bool DeleteVehicleSave(const FVechicleSaveAddress & Address);
 
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
 	const FGuid& GetSlotGuid() const { return SlotGuid; }
@@ -364,6 +271,7 @@ protected:
 	UPROPERTY(SaveGame)
 	FGuid SlotGuid;
 
+	UPROPERTY(SaveGame)
 	FString SlotLable;
 
 	TArray<IVehicleTickablObject*> PreTickedVehicleComponens;
