@@ -22,8 +22,9 @@ enum class ESaveAllWindowMode
 
 struct FSaveAllWindowItem
 {
-	FString Caption;
-	FUIAction Action;
+	TAttribute<FString> Lable;
+	FUIAction SaveAction;
+	FUIAction ResaveAction;
 	FName IconName;
 	FName ClassName;
 	TAttribute<bool> bIsDirty;
@@ -44,6 +45,7 @@ private:
 	FReply OnQuit();
 	FReply OnRestart();
 	FReply OnCancel();
+	FReply OnSaveAll();
 
 	TArray<TSharedPtr<FSaveAllWindowItem>> Source;
 	//SListView<TSharedPtr<FSaveAllWindowItem>> ListView;

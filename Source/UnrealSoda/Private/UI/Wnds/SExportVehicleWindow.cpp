@@ -6,7 +6,6 @@
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SButton.h"
-#include "UI/Wnds/SVehcileManagerWindow.h"
 #include "Soda/UI/SMessageBox.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/SodaSubsystem.h"

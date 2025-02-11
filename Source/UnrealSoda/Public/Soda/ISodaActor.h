@@ -93,26 +93,20 @@ public:
 	/** Get actor descriptor for viewport. Called from the CDO object */
 	virtual const FSodaActorDescriptor* GenerateActorDescriptor() const { return nullptr; }
 
-	/** Try to pin/unpin actor. Typically this method invokes UI elements. Retrun true if alloes pin/unpin actor */
-	virtual bool OnSetPinnedActor(bool bIsPinnedActor) { return false; }
+	virtual bool CanBePinned() const { return false; }
 
-	/** Is actor pinned? */
-	virtual bool IsPinnedActor() const { return false; }
+	virtual bool Unpin() { return false; }
 
-	/** Try save pinned actor */
-	virtual bool SavePinnedActor() { return false; }
+	virtual bool SaveToSlot(const FString& Lable, const FString& Description, const FGuid& Guid = FGuid(), bool bRebase = true) { return false; }
 
-	/** Spawn new pinned actor from SlotName. Can be called from the CDO object */
-	virtual AActor* LoadPinnedActor(UWorld* World, const FTransform & Transform, const FString& SlotName, bool bForceCreate, FName DesireName = NAME_None) const { return nullptr; }
+	/** Spawn actor from Slot. Called from the CDO object */
+	virtual AActor* SpawnActorFromSlot(UWorld* World, const FGuid& Slot, const FTransform& Transform, FName DesireName = NAME_None) const { return nullptr; }
 
-	/** Evry pinned actor have its own unique name for save */
-	virtual FString GetPinnedActorSlotName() const { return ""; }
+	virtual const FGuid& GetSlotGuid() const { static FGuid Dummy{}; return Dummy; }
 
-	/** Evry pinned actor have its own unique name for UI. This is usually a shorter name of GetPinnedActorSlotName() */
-	virtual FString GetPinnedActorName() const { return ""; }
+	virtual FString GetSlotLable() const { return ""; }
 
-	/** Rename pinned actor slot name */
-	virtual bool RenamePinnedActor(const FString& NewSlotName) { return false; }
+	virtual bool Resave() { return false; }
 
 	/** Actor has been modified and needs to be saved */
 	virtual bool IsDirty() { return bIsDirty; }

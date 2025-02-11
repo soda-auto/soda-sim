@@ -32,7 +32,7 @@
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Widgets/Images/SImage.h"
 #include "Styling/StyleColors.h"
-#include "UI/Wnds/SVehcileManagerWindow.h"
+#include "UI/Wnds/SSlotActorManagerWindow.h"
 #include "UI/Wnds/SExportVehicleWindow.h"
 #include "UI/ToolBoxes/SVehicleComponentsToolBox.h"
 #include "SodaStyleSet.h"
@@ -470,11 +470,9 @@ ASodaVehicle * ASodaVehicle::RespawnVehcile(FVector Location, FRotator Rotation,
 	NewVehicle->MarkAsDirty(); //NewVehicle->bIsDirty = IsDirty();
 	
 	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
-	SodaSubsystem->NotifyLevelIsChanged();
-
-	if (SodaSubsystem->LevelState && SodaSubsystem->LevelState->ActorFactory)
+	if (ASodaActorFactory* ActorFactory = SodaSubsystem->GetActorFactory())
 	{
-		SodaSubsystem->LevelState->ActorFactory->ReplaceActor(NewVehicle, this, false);
+		ActorFactory->ReplaceActor(NewVehicle, this, false);
 	}
 	if(SodaSubsystem->UnpossesVehicle == this) SodaSubsystem->UnpossesVehicle = NewVehicle;
 	
@@ -781,7 +779,6 @@ bool ASodaVehicle::SaveToBinFile(const FString& FileName)
 
 bool ASodaVehicle::SaveToSlot(const FString& Lable, const FString& Description, const FGuid& CustomGuid, bool bRebase)
 {
-
 	FJsonActorArchive Ar;
 	if (!Ar.SerializeActor(this, true))
 	{
@@ -821,10 +818,15 @@ bool ASodaVehicle::SaveToSlot(const FString& Lable, const FString& Description, 
 
 	if (bRebase)
 	{
+		if (SlotGuid != SlotInfo.GUID)
+		{
+			ALevelState::GetChecked()->MarkAsDirty();
+		}
 		SlotGuid = SlotInfo.GUID;
 		SlotLable = Lable;
-		MarkAsDirty();
 	}
+
+	ClearDirty();
 
 	return true;
 }
@@ -895,11 +897,6 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromJsonArchive(UWorld* World, const TSh
 	}
 
 	NewVehicle->FinishSpawning(SpawnTransform);
-
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		SodaSubsystem->NotifyLevelIsChanged();
-	}
 
 	APlayerController* PlayerController = World->GetFirstPlayerController();
 	if (PlayerController != nullptr && Posses)
@@ -993,11 +990,6 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFromBinFile(const UObject* WorldContextO
 
 	NewVehicle->FinishSpawning(SpawnTransform);
 
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		SodaSubsystem->NotifyLevelIsChanged();
-	}
-
 	APlayerController* PlayerController = World->GetFirstPlayerController();
 	if (PlayerController != nullptr && Posses)
 	{
@@ -1067,57 +1059,24 @@ void ASodaVehicle::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent
 	}
 }
 
-bool ASodaVehicle::OnSetPinnedActor(bool bIsPinnedActor)
+bool ASodaVehicle::Unpin()
 {
-	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
-	if (SodaSubsystem->LevelState && SodaSubsystem->LevelState->ActorFactory && SodaSubsystem->LevelState->ActorFactory->CheckActorIsExist(this))
-	{
-		if (bIsPinnedActor)
-		{
-			SodaSubsystem->OpenWindow(FString::Printf(TEXT("Pin \"%s\" Vehicle"), *GetName()), SNew(soda::SVehcileManagerWindow, this));
-		}
-		else
-		{
-			SlotGuid.Invalidate();
-		}
-	}
+	SlotGuid.Invalidate();
+
+	MarkAsDirty();
+	USodaSubsystem::GetChecked()->LevelState->MarkAsDirty();
+
 	return true;
 }
 
-bool ASodaVehicle::IsPinnedActor() const
-{
-	return SlotGuid.IsValid();
-}
-
-FString ASodaVehicle::GetPinnedActorName() const
+FString ASodaVehicle::GetSlotLable() const
 {
 	return SlotLable;
 }
 
-bool ASodaVehicle::SavePinnedActor()
+AActor* ASodaVehicle::SpawnActorFromSlot(UWorld* World, const FGuid& Slot, const FTransform& Transform, FName DesireName) const
 {
-	if (SlotGuid.IsValid())
-	{
-		return Resave();
-	}
-	return false;
-}
-
-AActor* ASodaVehicle::LoadPinnedActor(UWorld* World, const FTransform& Transform, const FString& SlotName, bool bForceCreate, FName DesireName) const
-{
-	FGuid Guid;
-	if (!FGuid::Parse(SlotName, Guid))
-	{
-		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::LoadPinnedActor(); Can't find FGuid::Parse()"));
-		return nullptr;
-	}
-
-	return SpawnVehicleFormSlot(World, Guid, Transform.GetTranslation(), Transform.GetRotation().Rotator(), false, DesireName, false);
-}
-
-FString ASodaVehicle::GetPinnedActorSlotName() const
-{
-	return SlotGuid.ToString();
+	return SpawnVehicleFormSlot(World, Slot, Transform.GetTranslation(), Transform.GetRotation().Rotator(), false, DesireName, false);
 }
 
 void ASodaVehicle::ScenarioBegin()
@@ -1204,7 +1163,7 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 			{
 				if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 				{
-					SodaSubsystem->OpenWindow("Vehcile Manager", SNew(soda::SVehcileManagerWindow, this));
+					SodaSubsystem->OpenWindow("Vehcile Manager", SNew(soda::SSlotActorManagerWindow, soda::EFileSlotType::Vehicle, this));
 				}
 			})),
 		NAME_None, 

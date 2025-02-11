@@ -30,7 +30,7 @@
 #include "UI/Toolbar/Common/SViewportToolBarButton.h"
 #include "UI/Wnds/SChooseMapWindow.h"
 #include "UI/Wnds/SLevelSaveLoadWindow.h"
-#include "UI/Wnds/SVehcileManagerWindow.h"
+#include "UI/Wnds/SSlotActorManagerWindow.h"
 #include "UI/Wnds/SAboutWindow.h"
 #include "UI/Wnds/PakWindow/SPakWindow.h"
 #include "UI/Wnds/SQuickStartWindow.h"
@@ -49,6 +49,9 @@
 #include "GameFramework/GameUserSettings.h"
 #include "RuntimeEditorUtils.h"
 #include "Soda/FileDatabaseManager.h"
+#include "Soda/SodaGameViewportClient.h"
+#include "Soda/Editor/SodaSelection.h"
+#include "GameFramework/PlayerController.h"
 
 #define LOCTEXT_NAMESPACE "SodaViewportToolBar"
 
@@ -1004,7 +1007,24 @@ void SSodaViewportToolBar::OnOpenQuickStartWindow()
 
 void SSodaViewportToolBar::OnOpenVehicleManagerWindow()
 {
-	USodaSubsystem::GetChecked()->OpenWindow("Vehicles Manager", SNew(SVehcileManagerWindow, nullptr));
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+	USodaGameViewportClient* GameViewportClient = Cast<USodaGameViewportClient>(GetWorld()->GetGameViewport());
+	ASodaVehicle* SelectedVehicle = nullptr;
+	
+	if (IsValid(GameViewportClient->Selection))
+	{
+		SelectedVehicle = Cast<ASodaVehicle>(GameViewportClient->Selection->GetSelectedActor());
+	}
+
+	if (!SelectedVehicle)
+	{
+		if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+		{
+			SelectedVehicle = PlayerController->GetPawn<ASodaVehicle>();
+		}
+	}
+
+	SodaSubsystem->OpenWindow("Vehicles Manager", SNew(SSlotActorManagerWindow, soda::EFileSlotType::Vehicle, SelectedVehicle));
 }
 
 void SSodaViewportToolBar::OnOpenScenariosManagerWindow()

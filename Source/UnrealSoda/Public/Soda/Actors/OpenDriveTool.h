@@ -9,7 +9,7 @@
 #include "ProceduralMeshComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Soda/Actors/NavigationRoute.h"
-#include "Soda/IToolActor.h"
+#include "Soda/ISodaActor.h"
 #include "Soda/ISodaDataset.h"
 #include "Soda/SodaTypes.h"
 #include "OpenDriveTool.generated.h"
@@ -54,7 +54,7 @@ struct FOpenDriveRoadMarkProfile
 UCLASS()
 class UNREALSODA_API AOpenDriveTool 
 	: public AActor
-	, public IToolActor
+	, public ISodaActor
 	, public IObjectDataset
 {
 GENERATED_BODY()
@@ -153,7 +153,6 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
-	virtual void Serialize(FArchive& Ar) override { Super::Serialize(Ar); ToolActorSerialize(Ar); }
 
 #if WITH_EDITOR
 	void PostEditChangeProperty(struct FPropertyChangedEvent &PropertyChangedEvent);

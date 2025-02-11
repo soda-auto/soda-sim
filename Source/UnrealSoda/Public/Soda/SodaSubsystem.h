@@ -14,7 +14,6 @@
 class ASodaVehicle;
 class ALevelState;
 class ASodaActorFactory;
-class UPinnedToolActorsSaveGame;
 
 namespace soda
 {
@@ -58,9 +57,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Transient, DuplicateTransient, Category = SodaSubsystem)
 	ASodalSpectator* SpectatorActor = nullptr;
-
-	UPROPERTY(BlueprintReadWrite, Category = SodaSubsystem)
-	TMap<UClass*, UPinnedToolActorsSaveGame*> PinnedToolActorsSaveGame;
 
 	UPROPERTY(BlueprintReadOnly, Category = SodaSubsystem)
 	USodaGameViewportClient* ViewportClient = nullptr;
@@ -106,9 +102,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	void RequestRestartLevel(bool bForce = false);
-
-	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
-	void NotifyLevelIsChanged();
 
 	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	ASodaActorFactory * GetActorFactory();

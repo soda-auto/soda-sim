@@ -27,7 +27,7 @@
 #include "Soda/UI/SToolBox.h"
 #include "Soda/UI/SWaitingPanel.h"
 #include "Soda/SodaGameViewportClient.h"
-#include "Soda/IToolActor.h"
+#include "Soda/ISodaActor.h"
 #include "Soda/SodaLibraryPrimaryAsset.h"
 #include "RuntimeMetaData.h"
 #include "Framework/Notifications/NotificationManager.h"
@@ -714,12 +714,6 @@ bool USodaSubsystem::CloseWindow(soda::SMenuWindow * Wnd)
 	{
 		return false;
 	}
-}
-
-
-void USodaSubsystem::NotifyLevelIsChanged()
-{
-
 }
 
 ASodaActorFactory* USodaSubsystem::GetActorFactory()

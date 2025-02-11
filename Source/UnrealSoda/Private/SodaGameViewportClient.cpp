@@ -860,7 +860,6 @@ bool USodaGameViewportClient::DropActorAtCoordinates(int32 MouseX, int32 MouseY,
 		USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
 		ASodaActorFactory* ActorFactory = SodaSubsystem->GetActorFactory();
 		ActorFactory->AddActor(NewActor);
-		SodaSubsystem->LevelState->MarkAsDirty();
 	}
 
 	if (OutNewActor)

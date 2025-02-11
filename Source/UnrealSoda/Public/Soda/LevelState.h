@@ -127,4 +127,6 @@ protected:
 
 	UPROPERTY(SaveGame)
 	FString SlotLable;
+
+	FDelegateHandle ActorsMapChenagedHandle;
 };

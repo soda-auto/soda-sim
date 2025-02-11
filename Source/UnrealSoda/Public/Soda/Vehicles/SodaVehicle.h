@@ -127,11 +127,7 @@ public:
 	virtual bool SaveToBinFile(const FString& FileName);
 
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	virtual bool SaveToSlot(const FString& Lable, const FString & Description, const FGuid & Guid = FGuid(), bool bRebase = true);
-
-	/** If vehicle is already saved then will be resaved  */
-	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	virtual bool Resave();
+	virtual bool SaveToSlot(const FString& Lable, const FString & Description, const FGuid & Guid = FGuid(), bool bRebase = true) override;
 
 	static ASodaVehicle* SpawnVehicleFromJsonArchive(UWorld* World, const TSharedPtr<FJsonActorArchive> & Ar, const FVector& Location, const FRotator& Rotation, bool Posses = true, FName DesireName = NAME_None, bool bApplyOffset = false);
 
@@ -147,9 +143,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
 	virtual ASodaVehicle* RespawnVehcile(FVector Location = FVector(0, 0, 20), FRotator Rotation = FRotator(0, 0, 0), bool IsLocalCoordinateSpace = true);
 
-	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	const FGuid& GetSlotGuid() const { return SlotGuid; }
-
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
 	virtual UActorComponent* FindVehicleComponentByName(const FString & ComponentName) const;
 
@@ -162,7 +155,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
 	virtual bool RemoveVehicleComponentByName(FName Name);
-
 
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
 	virtual void ReActivateVehicleComponents(bool bOnlyTopologyComponents);
@@ -231,13 +223,23 @@ public:
 	virtual TSharedPtr<SWidget> GenerateToolBar();
 
 public:
-	/* Override from ISodaActor */
-	virtual bool OnSetPinnedActor(bool bIsPinnedActor) override;
-	virtual bool IsPinnedActor() const override;
-	virtual bool SavePinnedActor() override;
-	virtual AActor* LoadPinnedActor(UWorld* World, const FTransform& Transform, const FString& SlotName, bool bForceCreate, FName DesireName = NAME_None) const override;
-	virtual FString GetPinnedActorName() const override;
-	virtual FString GetPinnedActorSlotName() const override;
+	UFUNCTION(BlueprintCallable, Category = "Save & Load")
+	bool CanBePinned() const { return true; }
+
+	UFUNCTION(BlueprintCallable, Category = "Save & Load")
+	virtual bool Unpin() override;
+
+	UFUNCTION(BlueprintCallable, Category = "Save & Load")
+	virtual bool Resave() override;
+
+	UFUNCTION(BlueprintCallable, Category = "Save & Load")
+	virtual const FGuid& GetSlotGuid() const override { return SlotGuid; }
+
+	UFUNCTION(BlueprintCallable, Category = "Save & Load")
+	virtual FString GetSlotLable() const override;
+
+	virtual AActor* SpawnActorFromSlot(UWorld* World, const FGuid& Slot, const FTransform& Transform, FName DesireName = NAME_None) const override;
+
 	virtual void ScenarioBegin() override;
 	virtual void ScenarioEnd() override;
 

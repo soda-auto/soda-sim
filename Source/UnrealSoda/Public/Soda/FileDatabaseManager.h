@@ -43,9 +43,9 @@ namespace soda
 		Synchronized,
 	};
 
-	enum class EFileSlotType
+	enum class EFileSlotType: uint8
 	{
-		Vehicle,
+		Vehicle = 0,
 		VehicleComponent,
 		Level,
 		Actor,

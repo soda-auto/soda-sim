@@ -2,6 +2,7 @@
 
 #include "UI/Wnds/SSaveAllWindow.h"
 #include "UI/Wnds/SLevelSaveLoadWindow.h"
+#include "UI/Wnds/SSlotActorManagerWindow.h"
 #include "SodaStyleSet.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SBorder.h"
@@ -12,7 +13,8 @@
 #include "UObject/WeakInterfacePtr.h"
 #include "EngineUtils.h"
 #include "Soda/ISodaActor.h"
-#include "SodaStyleSet.h"
+#include "Soda/Vehicles/SodaVehicle.h"
+
 
 #define LOCTEXT_NAMESPACE "SSaveAllWindow"
 
@@ -61,7 +63,7 @@ public:
 				.Padding(5, 1, 1, 1)
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString(Item.Pin()->Caption))
+					.Text_Lambda([this]() { return FText::FromString(Item.Pin()->Lable.Get()); })
 				];
 		}
 
@@ -101,14 +103,14 @@ public:
 			.ButtonStyle(FSodaStyle::Get(), "MenuWindow.SaveButton")
 			.OnClicked_Lambda([this]()
 				{
-					Item.Pin()->Action.Execute();
+					Item.Pin()->SaveAction.Execute();
 					return FReply::Handled();
 				}
 			);
 
 			Button->SetEnabled(TAttribute<bool>::CreateLambda([this]()
 				{
-					return Item.Pin()->Action.CanExecute();
+					return Item.Pin()->SaveAction.CanExecute();
 				}
 			));
 			return SNew(SBox)
@@ -134,13 +136,18 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 	UWorld * World = SodaSubsystem->GetWorld();
 	check(World);
 
+	FString LevelName = World->GetMapName();
+	LevelName.RemoveFromStart(World->StreamingLevelsPrefix);
+
 	bool bFoundDirtySlot = false;
 
 	// Add Level State
 	ALevelState * LevelState = ALevelState::GetChecked();
 	TSharedPtr<FSaveAllWindowItem> LevelItem = MakeShared<FSaveAllWindowItem>();
-	LevelItem->Caption = World->GetMapName() + " [" + (LevelState->GetSlotGuid().IsValid() ? LevelState->GetSlotLable() : FString(TEXT("New"))) + "]";
-	LevelItem->Caption.RemoveFromStart(World->StreamingLevelsPrefix);
+	LevelItem->Lable = TAttribute<FString>::CreateLambda([LevelName=LevelName, LevelState=TWeakObjectPtr<ALevelState>(LevelState)]()
+	{
+		return LevelName + " [" + (LevelState->GetSlotGuid().IsValid() ? LevelState->GetSlotLable() : FString(TEXT("New"))) + "]";
+	});
 	LevelItem->IconName = "Icons.Level";
 	LevelItem->ClassName = "Level";
 	LevelItem->bIsDirty = TAttribute<bool>::CreateLambda([]() 
@@ -148,31 +155,21 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 		ALevelState * LevelState = ALevelState::GetChecked();
 		return LevelState->IsDirty() || !LevelState->GetSlotGuid().IsValid();
 	});
-	LevelItem->Action.CanExecuteAction.BindLambda([LevelState]()
+	LevelItem->SaveAction.CanExecuteAction.BindLambda([LevelState]()
 	{
-		/*
-		if (LevelState.IsValid())
-		{
-			return LevelState->IsDirty();
-		}
-		return false;
-		*/
 		return true;
 	});
-	LevelItem->Action.ExecuteAction.BindLambda([]()
+	LevelItem->SaveAction.ExecuteAction.BindLambda([]()
 	{
-		/*
-		ALevelState * LevelState = ALevelState::GetChecked();
-		if (LevelState->GetSlotGuid().IsValid())
-		{
-			LevelState->Resave();
-		}
-		else
-		*/
-		{
-			USodaSubsystem::GetChecked()->OpenWindow("Level Save & Load", SNew(SLevelSaveLoadWindow));
-		}
-		
+		USodaSubsystem::GetChecked()->OpenWindow("Level Save & Load", SNew(SLevelSaveLoadWindow));	
+	});
+	LevelItem->ResaveAction.CanExecuteAction.BindLambda([LevelState]()
+	{
+		return true;
+	});
+	LevelItem->ResaveAction.ExecuteAction.BindLambda([]()
+	{
+		ALevelState::GetChecked()->Resave();
 	});
 	bFoundDirtySlot = LevelItem->bIsDirty.Get();
 	Source.Add(LevelItem);
@@ -185,7 +182,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 		TWeakInterfacePtr<ISodaActor> SodaActor = Cast<ISodaActor>(Actor);
 		if (SodaActor.IsValid())
 		{
-			if (SodaActor->IsPinnedActor())
+			if (SodaActor->GetSlotGuid().IsValid())
 			{
 				if(SodaActor->IsDirty())
 				{
@@ -194,36 +191,47 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 				TSharedPtr<FSaveAllWindowItem> PinnedItem = MakeShared<FSaveAllWindowItem>();
 				Source.Add(PinnedItem);
 				const FSodaActorDescriptor & Desc = SodaSubsystem->GetSodaActorDescriptor(Actor->GetClass());
-				PinnedItem->Caption = SodaActor->GetPinnedActorName();
+				PinnedItem->Lable = TAttribute<FString>::CreateLambda([SodaActor=SodaActor]()
+				{
+					return SodaActor.IsValid() ? SodaActor->GetSlotLable() : TEXT("");
+				});
 				PinnedItem->IconName = Desc.Icon;
 				PinnedItem->ClassName = Actor->GetClass()->GetFName();
 				PinnedItem->bIsDirty = TAttribute<bool>::CreateLambda([SodaActor]()
 				{ 
 					return SodaActor.IsValid() && SodaActor->IsDirty();
 				});
-				PinnedItem->Action.CanExecuteAction.BindLambda([SodaActor]()
+				PinnedItem->SaveAction.CanExecuteAction.BindLambda([SodaActor]()
 				{
-					/*
-					if (SodaActor.IsValid())
-					{
-						return SodaActor->IsDirty();
-					}
-					return false;
-					*/
 					return true;
 				});
-				PinnedItem->Action.ExecuteAction.BindLambda([SodaActor, SodaSubsystem]()
+				PinnedItem->SaveAction.ExecuteAction.BindLambda([SodaActor, Actor]()
 				{
 					if (SodaActor.IsValid())
 					{
-						SodaActor->SavePinnedActor();
+						USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+						bool bIsVehicle = Cast<ASodaVehicle>(Actor) ? true : false;
+						SodaSubsystem->OpenWindow(
+							FString::Printf(TEXT("Save Actor \"%s\""), *Actor->GetName()), 
+							SNew(soda::SSlotActorManagerWindow, bIsVehicle ? soda::EFileSlotType::Vehicle : soda::EFileSlotType::Actor, Actor));
+					}
+				});
+				PinnedItem->ResaveAction.CanExecuteAction.BindLambda([SodaActor]()
+				{
+					return true;
+				});
+				PinnedItem->ResaveAction.ExecuteAction.BindLambda([SodaActor, SodaSubsystem]()
+				{
+					if (SodaActor.IsValid())
+					{
+						SodaActor->Resave();
 					}
 				});
 			}
 		}
 	}
 
-	if(bFoundDirtySlot)
+	if(!bFoundDirtySlot)
 	{
 		switch (Mode)
 		{
@@ -304,6 +312,14 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 				.AutoWidth()
 				[
 					SNew(SButton)
+					.Text(FText::FromString("SaveAll"))
+					.OnClicked(this, &SSaveAllWindow::OnSaveAll)
+				]
+				+ SHorizontalBox::Slot()
+				.Padding(3)
+				.AutoWidth()
+				[
+					SNew(SButton)
 					.Text(FText::FromString("Restart"))
 					.Visibility(Mode == ESaveAllWindowMode::Restart ? EVisibility::Visible : EVisibility::Collapsed)
 					.OnClicked(this, &SSaveAllWindow::OnRestart)
@@ -356,6 +372,16 @@ FReply SSaveAllWindow::OnRestart()
 FReply SSaveAllWindow::OnCancel()
 {
 	CloseWindow();
+	return FReply::Handled();
+}
+
+FReply SSaveAllWindow::OnSaveAll()
+{
+	for (auto& It : Source)
+	{
+		It->ResaveAction.Execute();
+	}
+
 	return FReply::Handled();
 }
 

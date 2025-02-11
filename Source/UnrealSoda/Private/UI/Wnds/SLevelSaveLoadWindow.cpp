@@ -30,9 +30,8 @@ void SLevelSaveLoadWindow::Construct( const FArguments& InArgs )
 	ChildSlot
 	[
 		SNew(SBox)
-		.Padding(5)
 		.MinDesiredWidth(600)
-		.MinDesiredHeight(400)
+		.MinDesiredHeight(600)
 		[
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
@@ -43,6 +42,7 @@ void SLevelSaveLoadWindow::Construct( const FArguments& InArgs )
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
+			.Padding(0, 0, 0, 5)
 			.VAlign(VAlign_Center)
 			.HAlign(HAlign_Center)
 			[

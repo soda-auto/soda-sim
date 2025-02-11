@@ -19,6 +19,7 @@
 #include "Soda/Actors/RefPoint.h"
 #include "Soda/SodaSubsystem.h"
 #include "Soda/FileDatabaseManager.h"
+#include "Soda/SodaDelegates.h"
 
 #define TRANSIENT_SLOT TEXT("LevelState_Transient")
 
@@ -370,11 +371,21 @@ void ALevelState::FinishLoadLevel()
 void ALevelState::BeginPlay()
 {
 	Super::BeginPlay();
+
+	ActorsMapChenagedHandle = FSodaDelegates::ActorsMapChenaged.AddLambda([this]()
+	{
+		MarkAsDirty();
+	});
 }
 
 void ALevelState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
+
+	if (ActorsMapChenagedHandle.IsValid())
+	{
+		FSodaDelegates::ActorsMapChenaged.Remove(ActorsMapChenagedHandle);
+	}
 }
 
 void ALevelState::SetGeoReference(double Lat, double Lon, double Alt, const FVector& OrignShift, float OrignDYaw)

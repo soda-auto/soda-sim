@@ -5,6 +5,7 @@
 #include "Soda/SodaApp.h"
 #include "Soda/UI/SMessageBox.h"
 #include "Soda/SodaSubsystem.h"
+#include "Soda/LevelState.h"
 #include "SodaStyleSet.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SBorder.h"
@@ -21,12 +22,54 @@
 namespace soda
 {
 static const FName Column_DateTime("DateTime");
-static const FName Column_Lable("Description");
+static const FName Column_Lable("Lable");
+static const FName Column_Type("Type");
 static const FName Column_Version("Version");
 static const FName Column_OptButton("OptButton");
 
 static const FName Name_LocalSource("Local");
 
+static FString GetSlotTypeColumnName(EFileSlotType Type)
+{
+	switch (Type)
+	{
+	case EFileSlotType::Vehicle:
+	case EFileSlotType::Actor:
+	case EFileSlotType::VehicleComponent:
+		return TEXT("Class");
+	case EFileSlotType::Level:
+	{
+		return TEXT("Level");
+	}
+	default:
+		return TEXT("");
+	}
+}
+
+static FString GetSlotTypeColumnData(const TSharedPtr<FFileDatabaseSlotInfo> & Slot)
+{
+	switch (Slot->Type)
+	{
+	case EFileSlotType::Vehicle:
+	case EFileSlotType::Actor:
+	case EFileSlotType::VehicleComponent:
+		return IsValid(Slot->DataClass) ? Slot->DataClass->GetName() : TEXT("");
+	case EFileSlotType::Level:
+	{
+		FString LevelName;
+		if (ALevelState::DeserializeSlotDescriptor(Slot->JsonDescription, LevelName))
+		{
+			return LevelName;
+		}
+		else
+		{
+			return TEXT("");
+		}
+	}
+	default:
+		return TEXT("");
+	}
+}
 
 class SDeleteSlotWindow  : public SMenuWindowContent
 {
@@ -184,6 +227,13 @@ public:
 		{
 			return SNew(STextBlock)
 				.Text(FText::FromString(Slot->Lable))
+				.ColorAndOpacity(bIsActiveSlot ? FLinearColor::Yellow : FLinearColor::White);
+		}
+
+		if (InColumnName == Column_Type)
+		{
+			return SNew(STextBlock)
+				.Text(FText::FromString(GetSlotTypeColumnData(Slot)))
 				.ColorAndOpacity(bIsActiveSlot ? FLinearColor::Yellow : FLinearColor::White);
 		}
 
@@ -433,12 +483,15 @@ void SFileDatabaseManager::Construct( const FArguments& InArgs, EFileSlotType In
 						+ SHeaderRow::Column(Column_Lable)
 						.DefaultLabel(FText::FromString("Lable"))
 						.FillWidth(1)
+						+ SHeaderRow::Column(Column_Type)
+						.DefaultLabel(FText::FromString(GetSlotTypeColumnName(SlotType)))
+						.FillWidth(1)
 						+ SHeaderRow::Column(Column_Version)
 						.FixedWidth(24)
-						.DefaultLabel(FText::FromString(""))
+						.DefaultLabel(FText())
 						+ SHeaderRow::Column(Column_OptButton)
 						.FixedWidth(24)
-						.DefaultLabel(FText::FromString(""))
+						.DefaultLabel(FText())
 					)
 				]
 			]
