@@ -13,6 +13,7 @@
 class USodaRandomEngine;
 class UProceduralMeshComponent;
 
+
 UCLASS(meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API URouteSplineComponent 
 	: public USplineComponent
@@ -88,6 +89,9 @@ public:
 	TSoftObjectPtr<ANavigationRoute> SuccessorRoute;
 
 public:
+
+
+
 	UFUNCTION(Category = NavigationRoute, BlueprintCallable)
 	bool SetRoutePoints(const TArray< FVector >& RoutePoints, bool bUpdateMesh=true);
 
@@ -225,6 +229,12 @@ public:
 	virtual bool ShowSelectBox() const override { return false; }
 	virtual void RuntimePostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+
+
+	UFUNCTION(CallInEditor, Category = LoadCustomFile, meta = (DisplayName = "Save the data of this route into the file", CallInRuntime))
+	void SaveNavigationRouteToFile();
+	UFUNCTION(CallInEditor, Category = LoadCustomFile, meta = (DisplayName = "Recreate the data of this route from the file", CallInRuntime))
+	void RecreateNavigationRouteFromFile();
 
 public:
 	ANavigationRouteEditable(const FObjectInitializer& ObjectInitializer);

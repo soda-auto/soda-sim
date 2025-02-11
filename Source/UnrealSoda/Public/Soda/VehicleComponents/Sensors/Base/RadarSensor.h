@@ -287,9 +287,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ObjectRCS, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float WallsRCS = 0.05;
 
+	/** Master switch on drawing debug primitives */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
+	bool bDrawDebugPrimitives = false;
+
 	/** Show debug points */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
-	bool bDrawDebugPoints = false;
+	bool bDrawDebugTracedPoints = false;
+
+	/** Show debug lines to detected objects */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
+	bool bDrawDebugLinesToObjects = false;
 
 	/** Show debug clusters RCS, hits num and distance */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
@@ -332,4 +340,6 @@ private:
 	TTimestamp PrevTickTime;
 	TArray<FVector> BatchStart;
 	TArray<FVector> BatchEnd;
+
+
 };

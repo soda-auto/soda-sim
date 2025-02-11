@@ -56,6 +56,26 @@ struct UNREALSODA_API FVehicleLightItemSetupHelper
 	TArray<ULightComponent*> Lights;
 };
 
+namespace VehicleLightNames
+{
+	static FName TurnFL("TurnFL");
+	static FName TurnFR("TurnFR");
+	static FName TurnRL("TurnRL");
+	static FName TurnRR("TurnRR");
+	static FName BrakeL("BrakeL");
+	static FName BrakeR("BrakeR");
+	static FName HighBeamL("HighBeamL");
+	static FName HighBeamR("HighBeamR");
+	static FName LowBeamL("LowBeamL");
+	static FName LowBeamR("LowBeamR");
+	static FName TailFL("TailFL");
+	static FName TailFR("TailFR");
+	static FName TailRL("TailRL");
+	static FName TailRR("TailRR");
+	static FName ReverseL("ReverseL");
+	static FName ReverseR("ReverseR");
+}
+
 UCLASS(ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API UVehicleLightItem : public UObject
 {
