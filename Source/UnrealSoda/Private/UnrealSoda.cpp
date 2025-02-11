@@ -21,10 +21,11 @@
 #include "Soda/MongoDB/MongoDBGateway.h"
 #include "Soda/MongoDB/MongoDBDataset.h"
 #include "MongoDB/MongoDBDatasetRegisterObjects.h"
+#include "Soda/MongoDB/MongoDBSource.h"
 
 #define LOCTEXT_NAMESPACE "FUnrealSodaModule"
 
-class FSodaVehicleJSONExporter : public ISodaVehicleExporter
+class FSodaVehicleJSONExporter : public soda::ISodaVehicleExporter
 {
 public:
 	virtual bool ExportToString(const ASodaVehicle* Vehicle, FString& String) override
@@ -165,6 +166,8 @@ void FUnrealSodaModule::StartupModule()
 	auto MongoDBDatasetManager = MakeShared<soda::mongodb::FMongoDBDatasetManager>();
 	SodaApp.RegisterDatasetManager("MongoDB", MongoDBDatasetManager);
 	soda::mongodb::RegisteDefaultObjects(*MongoDBDatasetManager);
+
+	SodaApp.GetFileDatabaseManager().RegisterSource(MakeShared<soda::FMongoDBSource>());
 
 	UE_LOG(LogSoda, Log, TEXT("FUnrealSodaModule::StartupModule(); CustomConfig: \"%s\""), *FConfigCacheIni::GetCustomConfigString());
 }

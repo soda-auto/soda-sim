@@ -612,26 +612,17 @@ void UVehicleInputOpenLoopComponent::GenerateInputFileTemplate()
 			// Save the CSV content to a file
 			if (FFileHelper::SaveStringToFile(CSVContent, *FilePath))
 			{
-				FNotificationInfo Info(FText::FromString(FString("CSV template was created at: ") + FilePath));
-				Info.ExpireDuration = 5.0f;
-				Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.SuccessWithColor"));
-				FSlateNotificationManager::Get().AddNotification(Info);
+				soda::ShowNotification(ENotificationLevel::Success, 5.0, TEXT("CSV template was created at: %s"), *FilePath);
+
 			}
 			else
 			{
-				FNotificationInfo Info(FText::FromString(FString("CSV template creation FAILED")));
-				Info.ExpireDuration = 5.0f;
-				Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
-				FSlateNotificationManager::Get().AddNotification(Info);
+				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("CSV template creation FAILED"));
 			}
 		}
 		else
 		{
-			FNotificationInfo Info(FText::FromString(FString("CSV template creation: no folder selected")));
-			Info.ExpireDuration = 5.0f;
-			Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.WarningWithColor"));
-			FSlateNotificationManager::Get().AddNotification(Info);
-
+			soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("CSV template creation: no folder selected"));
 		}
 	}
 }
@@ -713,10 +704,7 @@ void UVehicleInputOpenLoopComponent::LoadInputFromFile()
 	int32 FilterIndex = -1;
 	if (!DesktopPlatform->OpenFileDialog(nullptr, TEXT("Import custom input from CSV"), TEXT(""), TEXT(""), FileTypes, EFileDialogFlags::None, OpenFilenames, FilterIndex) || OpenFilenames.Num() <= 0)
 	{
-		FNotificationInfo Info(FText::FromString(FString("Load input Error: can't open the file")));
-		Info.ExpireDuration = 5.0f;
-		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
-		FSlateNotificationManager::Get().AddNotification(Info);
+		soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Load input Error: can't open the file"));
 		return;
 	}
 
@@ -754,14 +742,11 @@ void UVehicleInputOpenLoopComponent::LoadLutInputFromFile()
 
 bool UVehicleInputOpenLoopComponent::LoadCustomInput(const FString& FilePath)
 {
-
-
 	if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*FilePath))
 	{
 		UE_LOG(LogTemp, Error, TEXT("File does not exist: %s"), *FilePath);
 		return false;
 	}
-
 
 	TArray<FString> FileLines;
 	if (!FFileHelper::LoadFileToStringArray(FileLines, *FilePath))
@@ -773,13 +758,9 @@ bool UVehicleInputOpenLoopComponent::LoadCustomInput(const FString& FilePath)
 
 	if (FileLines.Num() < 2)
 	{
-		FNotificationInfo Info(FText::FromString(FString("Load input Error: file has no data") + FilePath));
-		Info.ExpireDuration = 5.0f;
-		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
-		FSlateNotificationManager::Get().AddNotification(Info);
+		soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Load input Error: file has no data %s"), *FilePath);
 		return false;
 	}
-
 
 	FileLines.RemoveAt(0);
 
@@ -797,6 +778,7 @@ bool UVehicleInputOpenLoopComponent::LoadCustomInput(const FString& FilePath)
 	OpenLoopExternalInput.TracTqRL.Reserve(FileLines.Num() - 1);
 	OpenLoopExternalInput.TracTqRR.Reserve(FileLines.Num() - 1);
 
+
 	bool bNoErrorPreviously = true;
 	// Parse each line
 	for (const FString& Line : FileLines)
@@ -808,18 +790,15 @@ bool UVehicleInputOpenLoopComponent::LoadCustomInput(const FString& FilePath)
 		{
 			if (bNoErrorPreviously)
 			{
-				FNotificationInfo Info(FText::FromString(FString("Load input Error: incorrect number of columns") + FilePath));
-				Info.ExpireDuration = 5.0f;
-				Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
-				FSlateNotificationManager::Get().AddNotification(Info);
+				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Load input Error: incorrect number of columns %s"), *FilePath);
 				bNoErrorPreviously = false;
 			}
+				
 
 			continue;
 		}
 
 		int32 k = 0;
-
 
 		OpenLoopExternalInput.Time.Add(FCString::Atof(*ParsedValues[k])); k++;
 		OpenLoopExternalInput.SteerFL.Add(FCString::Atof(*ParsedValues[k]) * PI / 180); k++;
@@ -837,11 +816,7 @@ bool UVehicleInputOpenLoopComponent::LoadCustomInput(const FString& FilePath)
 
 	}
 
-
-	FNotificationInfo Info(FText::FromString(FString("Load input: success!")));
-	Info.ExpireDuration = 5.0f;
-	Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.SuccessWithColor"));
-	FSlateNotificationManager::Get().AddNotification(Info);
+	soda::ShowNotification(ENotificationLevel::Success, 5.0, TEXT("Load input: success! %s"), *FilePath);
 
 	return true;
 }
@@ -869,10 +844,7 @@ bool UVehicleInputOpenLoopComponent::LoadLutCustomInput(const FString& FilePath)
 
 	if (FileLines.Num() < 2)
 	{
-		FNotificationInfo Info(FText::FromString(FString("Load input Error: file has no data") + FilePath));
-		Info.ExpireDuration = 5.0f;
-		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
-		FSlateNotificationManager::Get().AddNotification(Info);
+		soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Load input Error: file has no data %s"), *FilePath);
 		return false;
 	}
 
@@ -902,10 +874,7 @@ bool UVehicleInputOpenLoopComponent::LoadLutCustomInput(const FString& FilePath)
 		{
 			if (bNoErrorPreviously)
 			{
-				FNotificationInfo Info(FText::FromString(FString("Load input Error: incorrect number of columns") + FilePath));
-				Info.ExpireDuration = 5.0f;
-				Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
-				FSlateNotificationManager::Get().AddNotification(Info);
+				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Load input Error: incorrect number of columns %s"), *FilePath);
 				bNoErrorPreviously = false;
 			}
 
@@ -976,10 +945,7 @@ bool UVehicleInputOpenLoopComponent::LoadLutCustomInput(const FString& FilePath)
 				TimeVsGear.GearState = EGearState::Park;
 				break;
 			default:
-				FNotificationInfo Info(FText::FromString(FString("Load input Error: Input Gear outside of the 0,1,2,3 values. Simulation will ignore Gear Lut") + FilePath));
-				Info.ExpireDuration = 5.0f;
-				Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
-				FSlateNotificationManager::Get().AddNotification(Info);
+				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Load input Error: Input Gear outside of the 0,1,2,3 values. Simulation will ignore Gear Lut %s"), *FilePath);
 				LookupTable.bUseGearPosnLut = false;
 				break;
 			}
@@ -998,14 +964,8 @@ bool UVehicleInputOpenLoopComponent::LoadLutCustomInput(const FString& FilePath)
 	}
 	else
 	{
-		FNotificationInfo Info(FText::FromString(FString("Load input: success!")));
-		Info.ExpireDuration = 5.0f;
-		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.SuccessWithColor"));
-		FSlateNotificationManager::Get().AddNotification(Info);
+		soda::ShowNotification(ENotificationLevel::Success, 5.0, TEXT("Load input: success! %s"), *FilePath);
 	}
-
-
-
 
 	return true;
 }
@@ -1034,15 +994,8 @@ void UVehicleInputOpenLoopComponent::ScenarioIsDone()
 
 	if (bGenerateNotificationWhenDone)
 	{
-		AsyncTask(ENamedThreads::GameThread, []()
-			{
-				FNotificationInfo Info(FText::FromString(FString("Scenario is done, you can stop simulation now")));
-				Info.ExpireDuration = 5.0f;
-				Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.SuccessWithColor"));
-				FSlateNotificationManager::Get().AddNotification(Info);
-			});
+		soda::ShowNotification(ENotificationLevel::Success, 5.0, TEXT("Scenario is done, you can stop simulation now"));
 	}
-
 }
 
 

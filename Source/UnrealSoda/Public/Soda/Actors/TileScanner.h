@@ -6,14 +6,14 @@
 #include "GameFramework/Actor.h"
 #include "Components/BillboardComponent.h"
 #include "Components/ArrowComponent.h"
-#include "Soda/IToolActor.h"
+#include "Soda/ISodaActor.h"
 #include "TileScanner.generated.h"
 
 
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API ATileScanner : 
 	public AActor,
-	public IToolActor
+	public ISodaActor
 {
 GENERATED_BODY()
 
@@ -47,7 +47,6 @@ public:
 
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	virtual void Serialize(FArchive& Ar) override { Super::Serialize(Ar); ToolActorSerialize(Ar); }
 
 	UFUNCTION(BlueprintCallable, Category = Screenshot)
 	void Scan();

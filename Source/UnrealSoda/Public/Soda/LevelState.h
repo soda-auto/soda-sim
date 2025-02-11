@@ -11,43 +11,11 @@
 class ASodaActorFactory;
 class ASodaVehicle;
 
-UENUM(BlueprintType)
-enum class ELeveSlotSource : uint8
+namespace soda
 {
-	NoSlot,
-	Local,
-	Remote,
-	NewSlot,
-};
+	struct FFileDatabaseSlotInfo;
+}
 
-/*
- * FLevelStateSlotDescription
- */
-USTRUCT(BlueprintType)
-struct FLevelStateSlotDescription
-{
-	GENERATED_BODY()
-
-	/** Valid only if SlotSource ==  Local */
-	UPROPERTY(BlueprintReadOnly, Category = LevelStateSlotDescription)
-	int SlotIndex = -1;
-
-	/** Valid only if SlotSource ==  Remote */
-	UPROPERTY(BlueprintReadOnly, Category = LevelStateSlotDescription)
-	int64 ScenarioID = -1;
-
-	UPROPERTY(BlueprintReadOnly, Category = LevelStateSlotDescription)
-	FString Description;
-
-	UPROPERTY(BlueprintReadOnly, Category = LevelStateSlotDescription)
-	FDateTime DateTime;
-
-	UPROPERTY(BlueprintReadOnly, Category = LevelStateSlotDescription)
-	FString LevelName;
-
-	UPROPERTY(BlueprintReadOnly, Category = LevelStateSlotDescription)
-	ELeveSlotSource SlotSource = ELeveSlotSource::NoSlot;
-};
 
 /*
  * ULevelSaveGame
@@ -58,11 +26,6 @@ class UNREALSODA_API ULevelSaveGame : public USaveGame
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintReadOnly, Category = LevelSaveGame, SaveGame)
-	FString Description;
-
-	UPROPERTY(BlueprintReadOnly, Category = LevelSaveGame, SaveGame)
-	FDateTime DateTime;
 
 	UPROPERTY(BlueprintReadOnly, Category = LevelSaveGame, SaveGame)
 	FString LevelName;
@@ -92,9 +55,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LevelState)
 	TSubclassOf<ASodaActorFactory> DefaultActorFactoryClass;
 
-	UPROPERTY(BlueprintReadOnly, Category = LevelSaveGame)
-	FLevelStateSlotDescription Slot;
+	UFUNCTION(BlueprintCallable, Category = LevelState)
+	const FGuid& GetSlotGuid() const { return SlotGuid; }
 
+	UFUNCTION(BlueprintCallable, Category = LevelState)
+	const FString& GetSlotLable() const { return SlotLable; }
+	
 	UPROPERTY(BlueprintReadOnly, Category = LevelState)
 	ASodaActorFactory * ActorFactory = nullptr;
 
@@ -103,48 +69,18 @@ protected:
 	FLLConverter LLConverter;
 
 public:
+	/**  if Guid is empty - create new slot */
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	bool SaveLevelRemotlyAs(int64 ScenarioID, const FString& Description);
-
-	/** if SlotIndex < 0, SlotIndex will detect automaticly */
-	UFUNCTION(BlueprintCallable, Category = LevelState)
-	bool SaveLevelLocallyAs(int SlotIndex, const FString& Description);
+	bool SaveToSlot(const FString& Lable, const FString& Description, const FGuid& Guid = FGuid());
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	bool SaveLevelToTransientSlot();
+	bool SaveToTransientSlot();
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	bool ReSaveLevel();
+	bool Resave();
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static bool ReloadLevelEmpty(const UObject* WorldContextObject, const FString& LevelName = TEXT(""));
-
-	/**
-	 * SlotIndex == -1 -  Find & open last saved slot
-	 */
-	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static bool ReloadLevelFromSlotLocally(const UObject* WorldContextObject, int SlotIndex = -1, const FString& LevelName = TEXT(""));
-
-	/**
-	 * SlotIndex == -1 -  Find & open last saved slot
-	 */
-	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static bool ReloadLevelFromSlotRemotly(const UObject* WorldContextObject, int64 ScenarioID = -1, const FString& LevelName = TEXT(""));
-
-	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static ALevelState* CreateOrLoad(const UObject* WorldContextObject, UClass * DefaultClass, bool bFromTransientSlot = false);
-
-	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static bool DeleteLevelLocally(const UObject* WorldContextObject, int SlotIndex, const FString& LevelName = TEXT(""));
-
-	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static bool DeleteLevelRemotly(const UObject* WorldContextObject, int64 ScenarioID);
-
-	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static bool GetLevelSlotsLocally(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription> & Slots, bool bSortByDateTime = false, const FString & LevelName = TEXT(""));
-
-	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static bool GetLevelSlotsRemotly(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription> & Slots, bool bSortByDateTime = false, const FString& LevelName = TEXT(""));
+	static ALevelState* CreateOrLoad(const UObject* WorldContextObject, UClass * DefaultClass, bool bFromTransientSlot = false, const FGuid & FromSlotGuid = FGuid());
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	void FinishLoadLevel();
@@ -166,6 +102,9 @@ public:
 
 	virtual ULevelSaveGame* CreateSaveGame(bool bSerializePinnedActorsAsUnpinned);
 
+	static bool SerializeSlotDescriptor(const FString& LevelName, FString& OutJsonString);
+	static bool DeserializeSlotDescriptor(const FString& InJsonString, FString& OutLevelName);
+
 public:
 	virtual void Serialize(FArchive& Ar) override;
 	virtual void BeginPlay() override;
@@ -178,16 +117,16 @@ public:
 	TArray<FActorRecord> AdditionalActorRecords;
 
 protected:
-	static FString GetLocalSaveSlotName(const UObject* WorldContextObject, int SlotIndex, const FString& LevelName = TEXT(""));
-	/* SlotIndex == -1 - load last saved slot */
-	static ULevelSaveGame* LoadSaveGameLocally(const UObject* WorldContextObject, int & SlotIndex, const FString& LevelName = TEXT(""));
-	/* SlotIndex == -1 - load last saved slot */
-	static ULevelSaveGame* LoadSaveGameRemotly(const UObject* WorldContextObject, int64 & ScenarioID, const FString& LevelName = TEXT(""));
-
-	static ULevelSaveGame* LoadSaveGameTransient(const UObject* WorldContextObject);
-
-	static FLevelStateSlotDescription StaticSlot;
+	static ULevelSaveGame* LoadSaveGameFromSlot(const FGuid& Guid, soda::FFileDatabaseSlotInfo & OutSlotInfo);
 
 protected:
 	bool bIsDirty = false;
+
+	UPROPERTY(SaveGame)
+	FGuid SlotGuid;
+
+	UPROPERTY(SaveGame)
+	FString SlotLable;
+
+	FDelegateHandle ActorsMapChenagedHandle;
 };

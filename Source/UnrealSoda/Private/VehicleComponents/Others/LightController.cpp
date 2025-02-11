@@ -137,7 +137,7 @@ void ULightController::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		{	
 			for (auto& [Key, Value] : LightTestingPrms)
 			{
-				EnableLight(Value);
+				ChangeLightSt(Value);
 			}
 		}
 		else
@@ -147,13 +147,13 @@ void ULightController::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 			if (VehicleInput->GetInputState().Brake > BrakeLightPdlPosnThd)
 			{
-				EnableLight(LightItem_BrakeL,true);
-				EnableLight(LightItem_BrakeR, true);
+				ChangeLightSt(LightItem_BrakeL,true);
+				ChangeLightSt(LightItem_BrakeR, true);
 			}
 			else
 			{
-				EnableLight(LightItem_BrakeL, false);
-				EnableLight(LightItem_BrakeR, false);
+				ChangeLightSt(LightItem_BrakeL, false);
+				ChangeLightSt(LightItem_BrakeR, false);
 			}
 
 
@@ -166,23 +166,23 @@ void ULightController::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 			bBlinkAllwd = bBlinkAllwd && bAllowTurnLights;
 		
 
-			EnableLight(LightItem_TurnFL, VehicleInput->GetInputState().bLeftTurnLightsEnabled && bBlinkAllwd);
-			EnableLight(LightItem_TurnFR, VehicleInput->GetInputState().bLeftTurnLightsEnabled && bBlinkAllwd);
-			EnableLight(LightItem_TurnRL, VehicleInput->GetInputState().bRightTurnLightsEnabled && bBlinkAllwd);
-			EnableLight(LightItem_TurnRR, VehicleInput->GetInputState().bRightTurnLightsEnabled && bBlinkAllwd);
+			ChangeLightSt(LightItem_TurnFL, VehicleInput->GetInputState().bLeftTurnLightsEnabled && bBlinkAllwd);
+			ChangeLightSt(LightItem_TurnFR, VehicleInput->GetInputState().bLeftTurnLightsEnabled && bBlinkAllwd);
+			ChangeLightSt(LightItem_TurnRL, VehicleInput->GetInputState().bRightTurnLightsEnabled && bBlinkAllwd);
+			ChangeLightSt(LightItem_TurnRR, VehicleInput->GetInputState().bRightTurnLightsEnabled && bBlinkAllwd);
 
-			EnableLight(LightItem_TailFL, bAllowSideLights);
-			EnableLight(LightItem_TailFR, bAllowSideLights);
-			EnableLight(LightItem_TailRL, bAllowSideLights);
-			EnableLight(LightItem_TailRR, bAllowSideLights);
+			ChangeLightSt(LightItem_TailFL, bAllowSideLights);
+			ChangeLightSt(LightItem_TailFR, bAllowSideLights);
+			ChangeLightSt(LightItem_TailRL, bAllowSideLights);
+			ChangeLightSt(LightItem_TailRR, bAllowSideLights);
 
-			EnableLight(LightItem_ReverseL, VehicleInput->GetInputState().IsReversGear());
-			EnableLight(LightItem_ReverseR, VehicleInput->GetInputState().IsReversGear());
+			ChangeLightSt(LightItem_ReverseL, VehicleInput->GetInputState().IsReversGear());
+			ChangeLightSt(LightItem_ReverseR, VehicleInput->GetInputState().IsReversGear());
 
-			EnableLight(LightItem_HighBeamL, bEnableHighBeam);
-			EnableLight(LightItem_HighBeamR, bEnableHighBeam);
-			EnableLight(LightItem_LowBeamL, bEnableLowBeam);
-			EnableLight(LightItem_LowBeamR, bEnableLowBeam);
+			ChangeLightSt(LightItem_HighBeamL, bEnableHighBeam);
+			ChangeLightSt(LightItem_HighBeamR, bEnableHighBeam);
+			ChangeLightSt(LightItem_LowBeamL, bEnableLowBeam);
+			ChangeLightSt(LightItem_LowBeamR, bEnableLowBeam);
 
 
 		}
@@ -193,7 +193,7 @@ void ULightController::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 
 
-void ULightController::EnableLight(const FLinkToLight& LightItem)
+void ULightController::ChangeLightSt(const FLinkToLight& LightItem)
 {
 	if (LightItem.LinkToLightComponent)
 	{
@@ -202,7 +202,7 @@ void ULightController::EnableLight(const FLinkToLight& LightItem)
 
 }
 
-void ULightController::EnableLight(TObjectPtr<UVehicleLightItem> LightItem, bool bNewActive)
+void ULightController::ChangeLightSt(TObjectPtr<UVehicleLightItem> LightItem, bool bNewActive)
 {
 	if (LightItem)
 	{

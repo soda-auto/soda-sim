@@ -6,6 +6,9 @@
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/SodaCommonSettings.h"
 #include "Soda/DBC/Serialization.h"
+#include "Soda/FileDatabaseManager.h"
+#include "Soda/Vehicles/ISodaVehicleExporter.h"
+
 #include "HAL/RunnableThread.h"
 #include "PhysicsEngine/PhysicsSettings.h"
 #include "EngineUtils.h"
@@ -13,6 +16,11 @@
 #include "UI/SOutputLog.h"
 #include "Misc/App.h"
 #include "UObject/Package.h"
+#include "Containers/UnrealString.h"
+#include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Notifications/SNotificationList.h"
+#include "Templates/Function.h"
+#include "Async/Async.h"
 
 // Http server
 #include "HttpServerModule.h"
@@ -95,6 +103,8 @@ void FSodaApp::Initialize()
 	OnHttpServerStoppedHandle = WebRemoteControlModule.OnHttpServerStopped().AddRaw(this, &FSodaApp::OnHttpServerStopped);
 
 	OutputLogHistory = MakeShareable(new soda::FOutputLogHistory);
+
+	FileDatabaseManager = MakeShared<soda::FFileDatabaseManager>();
 
 	bInitialized = true;
 }
@@ -289,7 +299,7 @@ bool FSodaApp::RegisterDBC(const FString& Namespace, const FString& FileName)
 	return bRet;
 }
 
-void FSodaApp::RegisterVehicleExporter(TSharedRef<ISodaVehicleExporter> Exporter)
+void FSodaApp::RegisterVehicleExporter(TSharedRef<soda::ISodaVehicleExporter> Exporter)
 {
 	VehicleExporters.FindOrAdd(Exporter->GetExporterName()) = Exporter;
 }
@@ -307,6 +317,89 @@ void FSodaApp::RegisterDatasetManager(FName DatasetName, TSharedRef<soda::IDatas
 void FSodaApp::UnregisterDatasetManager(FName DatasetName)
 {
 	DatasetManagers.Remove(DatasetName);
+}
+
+namespace soda
+{
+	void ShowNotificationImpl(ENotificationLevel Level, double Duration, bool bLog, const TCHAR* FunctionName, const TCHAR* Fmt, ...)
+	{
+		#define STARTING_BUFFER_SIZE		512
+
+		int32		BufferSize = STARTING_BUFFER_SIZE;
+		FString::ElementType	StartingBuffer[STARTING_BUFFER_SIZE];
+		FString::ElementType* Buffer = StartingBuffer;
+		int32		Result = -1;
+
+		// First try to print to a stack allocated location 
+		GET_TYPED_VARARGS_RESULT(FString::ElementType, Buffer, BufferSize, BufferSize - 1, Fmt, Fmt, Result);
+
+		// If that fails, start allocating regular memory
+		if (Result == -1)
+		{
+			Buffer = nullptr;
+			while (Result == -1)
+			{
+				BufferSize *= 2;
+				Buffer = (FString::ElementType*)FMemory::Realloc(Buffer, BufferSize * sizeof(FString::ElementType));
+				GET_TYPED_VARARGS_RESULT(FString::ElementType, Buffer, BufferSize, BufferSize - 1, Fmt, Fmt, Result);
+			};
+		}
+
+		Buffer[Result] = CHARTEXT(FString::ElementType, '\0');
+
+		FString ResultString(Buffer);
+
+		if (BufferSize != STARTING_BUFFER_SIZE)
+		{
+			FMemory::Free(Buffer);
+		}
+
+
+		TFunction<void()> Keeper = [ResultString = ResultString, Duration, Level]()
+		{
+			FName IconName = NAME_None;
+
+			switch (Level)
+			{
+			case ENotificationLevel::Error: IconName = "Icons.ErrorWithColor"; break;
+			case ENotificationLevel::Warning: IconName = "Icons.WarningWithColor"; break;
+			case ENotificationLevel::Success: IconName = "Icons.SuccessWithColor"; break;
+			}
+	
+			FSlateNotificationManager& NotificationManager = FSlateNotificationManager::Get();
+			FNotificationInfo Info(FText::FromString(ResultString));
+			Info.ExpireDuration = Duration;
+			Info.Image = FCoreStyle::Get().GetBrush(IconName);
+			NotificationManager.AddNotification(Info);
+		};
+
+		if (!IsInGameThread())
+		{
+			::AsyncTask(ENamedThreads::GameThread, [Keeper = Keeper]()
+			{
+				Keeper();
+			});
+		}
+		else
+		{
+			Keeper();
+		}
+
+		if (bLog)
+		{
+			if (!FunctionName)
+			{
+				FunctionName = TEXT("");
+			}
+
+			switch (Level)
+			{
+			case ENotificationLevel::Error: UE_LOG(LogSoda, Error, TEXT("%s; %s"), FunctionName, *ResultString); break;
+			case ENotificationLevel::Warning: UE_LOG(LogSoda, Warning, TEXT("%s; %s"), FunctionName, *ResultString); break;
+			case ENotificationLevel::Success: UE_LOG(LogSoda, Log, TEXT("%s; %s"), FunctionName, *ResultString); break;
+			}
+		}
+	}
 }
 
 FSodaApp SodaApp;

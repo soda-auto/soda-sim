@@ -242,6 +242,14 @@ void FStarshipSodaStyle::FStyle::SetupGeneralStyles()
 	//.SetPressedPadding(FMargin(0, 1, 0, 0));
 	Set("MenuWindow.SaveButton", SaveButton);
 
+	FButtonStyle UpdateButton = FButtonStyle()
+		.SetNormal(CORE_IMAGE_BRUSH_SVG("Starship/Common/Update", Icon16x16, FLinearColor(1, 1, 1, 0.4)))
+		.SetHovered(CORE_IMAGE_BRUSH_SVG("Starship/Common/Update", Icon16x16, FLinearColor(1, 1, 1, 1.0)))
+		.SetPressed(CORE_IMAGE_BRUSH_SVG("Starship/Common/Update", Icon16x16, FLinearColor(1, 1, 1, 0.8)));
+	//.SetNormalPadding(FMargin(0, 0, 0, 1))
+	//.SetPressedPadding(FMargin(0, 1, 0, 0));
+	Set("MenuWindow.UpdateButton", UpdateButton);
+
 	Set("RowButton", FButtonStyle(Button)
 		.SetNormal(FSlateNoResource())
 		.SetHovered(BOX_BRUSH("Common/RoundedSelection_16x", 4.0f / 16.0f, SelectionColor))
@@ -252,7 +260,31 @@ void FStarshipSodaStyle::FStyle::SetupGeneralStyles()
 		.SetNormal(BOX_BRUSH("Common/RoundedSelection_16x", 4.0f / 16.0f, SelectionColor_Pressed))
 		.SetHovered(FSlateNoResource())
 		.SetPressed(FSlateNoResource())
+
 	);
+
+	Set("RowButtonSelected", FButtonStyle(Button)
+		.SetNormal(BOX_BRUSH("Common/RoundedSelection_16x", 4.0f / 16.0f, SelectionColor_Pressed))
+		.SetHovered(FSlateNoResource())
+		.SetPressed(FSlateNoResource())
+
+	);
+
+	Set("SodaSource.NotChecked", new CORE_IMAGE_BRUSH_SVG("Starship/Common/minus", Icon16x16, FLinearColor(1, 1, 1, 0.6)));
+	Set("SodaSource.LocalOnly", new CORE_IMAGE_BRUSH_SVG("Starship/Common/file", Icon16x16, FLinearColor(1, 1, 1, 0.6)));
+	Set("SodaSource.RemoteOnly", new IMAGE_BRUSH_SVG("SodaIcons/cloud", Icon16x16, FLinearColor(1, 1, 1, 0.6)));
+	Set("SodaSource.LocalIsNewer", new CORE_IMAGE_BRUSH_SVG("Starship/Common/alert-triangle", Icon16x16, FStyleColors::Warning));
+	Set("SodaSource.RemoteIsNewer", new CORE_IMAGE_BRUSH_SVG("Starship/Common/alert-triangle", Icon16x16, FStyleColors::Warning));
+	Set("SodaSource.Synchronized", new CORE_IMAGE_BRUSH_SVG("Starship/Common/Update", Icon16x16, FStyleColors::Success));
+
+	const FComboButtonStyle OptComboButton = FComboButtonStyle(FStarshipCoreStyle::GetCoreStyle().GetWidgetStyle<FComboButtonStyle>("ComboButton"))
+		.SetDownArrowImage(FSlateNoResource())
+		.SetButtonStyle(FButtonStyle()
+			.SetNormal(IMAGE_BRUSH_SVG("SodaIcons/ellipsis-vertical-narrow", FVector2D(16, 16), FLinearColor(1, 1, 1, 0.4)))
+			.SetHovered(IMAGE_BRUSH_SVG("SodaIcons/ellipsis-vertical-narrow", FVector2D(16, 16), FLinearColor(1, 1, 1, 1.0)))
+			.SetPressed(IMAGE_BRUSH_SVG("SodaIcons/ellipsis-vertical-narrow", FVector2D(16, 16), FLinearColor(1, 1, 1, 0.8)))
+		);
+	Set("OptComboButton", OptComboButton);
 
 	// Normal Text
 	{
@@ -437,6 +469,9 @@ void FStarshipSodaStyle::FStyle::SetupGeneralStyles()
 		Set("Icons.Toolbar.Details", new IMAGE_BRUSH_SVG("Starship/Common/Details", Icon16x16));
 		Set("Icons.Toolbar.EditorMode", new IMAGE_BRUSH_SVG("Starship/Common/EditorModes", Icon16x16));
 		Set("Icons.Toolbar.FreeMode", new IMAGE_BRUSH_SVG("SodaIcons/car", Icon16x16));
+
+		Set("Icons.Export", new CORE_IMAGE_BRUSH_SVG("Starship/Common/export_20", Icon16x16));
+		Set("Icons.Import", new CORE_IMAGE_BRUSH_SVG("Starship/Common/import_20", Icon16x16));
 	}
 
 	// Soda Icons

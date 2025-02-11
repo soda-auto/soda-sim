@@ -7,6 +7,7 @@
 #include "VehicleSensorComponent.generated.h"
 
 struct FDynamicMeshVertex;
+class USensorComponent;
 
 /**
  * An auxiliary structure that describes the settings for rendering the FOV for a sensor.
@@ -25,6 +26,11 @@ struct FSensorFOVRenderer
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FOVRenderer, SaveGame, meta = (EditInRuntime, UpdateFOVRendering))
 	float MaxViewDistance = 200;
+
+	bool NeedRenderSensorFOV(const USensorComponent* Component) const;
+	
+
+
 };
 
 struct FSensorFOVMesh

@@ -197,33 +197,35 @@ void USodaGameViewportClient::Draw(const FSceneView* View, FPrimitiveDrawInterfa
 
 void USodaGameViewportClient::Tick(float DeltaTime)
 {
-
-	if (GetGameMode() == soda::EUIMode::Editing)
+	if (Viewport)
 	{
-		if (Widget)
+		if (GetGameMode() == soda::EUIMode::Editing)
 		{
-			Widget->TickWidget(this);
+			if (Widget)
+			{
+				Widget->TickWidget(this);
 
-			if (!bIsWidgetDragging)
-			{
-				CheckAxisUnderCursor();
+				if (!bIsWidgetDragging)
+				{
+					CheckAxisUnderCursor();
+				}
+				else
+				{
+					UpdateMouseDelta();
+				}
 			}
-			else
+
+			if (EditorMouseCaptureMode == EEditorMouseCaptureMode::Default)
 			{
-				UpdateMouseDelta();
+				Selection->Tick(Viewport);
 			}
 		}
 
-		if (EditorMouseCaptureMode == EEditorMouseCaptureMode::Default)
+		if (WidgetTargetComponent && !IsValid(WidgetTargetComponent))
 		{
-			Selection->Tick(Viewport);
+			SetWidgetTarget(nullptr);
+			StopTracking();
 		}
-	}
-
-	if (WidgetTargetComponent && !IsValid(WidgetTargetComponent))
-	{
-		SetWidgetTarget(nullptr);
-		StopTracking();
 	}
 }
 
@@ -858,7 +860,6 @@ bool USodaGameViewportClient::DropActorAtCoordinates(int32 MouseX, int32 MouseY,
 		USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
 		ASodaActorFactory* ActorFactory = SodaSubsystem->GetActorFactory();
 		ActorFactory->AddActor(NewActor);
-		SodaSubsystem->LevelState->MarkAsDirty();
 	}
 
 	if (OutNewActor)

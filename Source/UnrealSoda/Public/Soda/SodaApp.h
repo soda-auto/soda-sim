@@ -4,15 +4,9 @@
 
 #include "CoreGlobals.h"
 #include "Engine/EngineBaseTypes.h"
-#include "GameFramework/WorldSettings.h"
-#include "Soda/Misc/LLConverter.h"
 #include "Soda/Misc/AsyncTaskManager.h"
-#include "Soda/Misc/Utils.h"
 #include "Soda/Misc/Time.h"
-#include "Soda/Vehicles/ISodaVehicleExporter.h"
-#include "Soda/ISodaDataset.h"
-#include "JsonObjectWrapper.h"
-#include <cmath>
+#include "Templates/IsValidVariadicFunctionArg.h"
 
 class IHttpRouter;
 class USodaSubsystem;
@@ -25,6 +19,9 @@ namespace dbc
 namespace soda
 {
 	class FOutputLogHistory;
+	class FFileDatabaseManager;
+	class IDatasetManager;
+	class ISodaVehicleExporter;
 }
 
 namespace zmq
@@ -64,21 +61,16 @@ public:
 	TSharedPtr<dbc::FMessageSerializator> FindDBCSerializator(const FString& MessageName, const FString& Namespace = FString());
 	bool RegisterDBC(const FString& Namespace, const FString& FileName);
 
-	void RegisterVehicleExporter(TSharedRef<ISodaVehicleExporter> Exporter);
+	void RegisterVehicleExporter(TSharedRef<soda::ISodaVehicleExporter> Exporter);
 	void UnregisterVehicleExporter(const FName& ExporteName);
-	const TMap<FName, TSharedPtr<ISodaVehicleExporter>>& GetVehicleExporters() const { return VehicleExporters; }
+	const TMap<FName, TSharedPtr<soda::ISodaVehicleExporter>>& GetVehicleExporters() const { return VehicleExporters; }
 
 	void RegisterDatasetManager(FName DatasetName, TSharedRef<soda::IDatasetManager> DatasetManager);
 	void UnregisterDatasetManager(FName DatasetName);
 	const TMap<FName, TSharedPtr<soda::IDatasetManager>>& GetDatasetManagers() const { return DatasetManagers; }
 
-	//void SetActiveDatasetManager(const FName& Name);
-	//void SetActiveDatasetManager(TSharedPtr<soda::IDatasetManager> DatasetManager);
-	//TSharedPtr<soda::IDatasetManager> GetActiveDatasetManager();
-	//soda::IDatasetManager * GetActiveDatasetManagerPtr();
-
-
-	TSharedPtr<soda::FOutputLogHistory> GetOutputLogHistory() { return OutputLogHistory; }
+	soda::FOutputLogHistory & GetOutputLogHistory() { return *OutputLogHistory.Get(); }
+	soda::FFileDatabaseManager & GetFileDatabaseManager() { return *FileDatabaseManager.Get(); }
 
 public:
 	soda::FAsyncTaskManager CamTaskManager;
@@ -130,10 +122,37 @@ protected:
 
 	TMap<FString, TMap<FString, TSharedPtr<dbc::FMessageSerializator>>> DBCPool;
 
-	TMap<FName, TSharedPtr<ISodaVehicleExporter>> VehicleExporters;
+	TMap<FName, TSharedPtr<soda::ISodaVehicleExporter>> VehicleExporters;
 	TMap<FName, TSharedPtr<soda::IDatasetManager>> DatasetManagers;
 
 	TSharedPtr<soda::FOutputLogHistory> OutputLogHistory;
+	TSharedPtr<soda::FFileDatabaseManager> FileDatabaseManager;
 };
+
+enum class ENotificationLevel
+{
+	Success,
+	Warning,
+	Error
+};
+
+namespace soda
+{
+	UNREALSODA_API void ShowNotificationImpl(ENotificationLevel Level, double Duration, bool bLog, const TCHAR* FunctionName, const TCHAR* Fmt, ...);
+
+	template <typename... Types>
+	void ShowNotification(ENotificationLevel Level, double Duration, const TCHAR * Fmt, Types... Args)
+	{
+		static_assert((TIsValidVariadicFunctionArg<Types>::Value && ...), "Invalid argument(s) passed to Printf");
+		ShowNotificationImpl(Level, Duration, false, TEXT(""), Fmt, Args...);
+	}
+
+	template <typename... Types>
+	void ShowNotificationAndLog(ENotificationLevel Level, double Duration, const TCHAR* FunctionName, const TCHAR* Fmt, Types... Args)
+	{
+		static_assert((TIsValidVariadicFunctionArg<Types>::Value && ...), "Invalid argument(s) passed to Printf");
+		ShowNotificationImpl(Level, Duration, true, FunctionName, Fmt, Args...);
+	}
+}
 
 extern UNREALSODA_API class FSodaApp SodaApp;

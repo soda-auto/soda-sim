@@ -14,7 +14,6 @@
 class ASodaVehicle;
 class ALevelState;
 class ASodaActorFactory;
-class UPinnedToolActorsSaveGame;
 
 namespace soda
 {
@@ -58,9 +57,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Transient, DuplicateTransient, Category = SodaSubsystem)
 	ASodalSpectator* SpectatorActor = nullptr;
-
-	UPROPERTY(BlueprintReadWrite, Category = SodaSubsystem)
-	TMap<UClass*, UPinnedToolActorsSaveGame*> PinnedToolActorsSaveGame;
 
 	UPROPERTY(BlueprintReadOnly, Category = SodaSubsystem)
 	USodaGameViewportClient* ViewportClient = nullptr;
@@ -108,9 +104,6 @@ public:
 	void RequestRestartLevel(bool bForce = false);
 
 	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
-	void NotifyLevelIsChanged();
-
-	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
 	ASodaActorFactory * GetActorFactory();
 
 	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
@@ -128,6 +121,13 @@ public:
 	bool CloseWaitingPanel(bool bCloseAll = false);
 
 	soda::SSodaViewport* GetSodaViewport() const { return SodaViewport.Get(); }
+
+	/** if  LevelName is empty will reload current level*/
+	UFUNCTION(BlueprintCallable, Category = LevelState)
+	bool LoadEmptyLevel(const FString& LevelName = TEXT(""));
+
+	UFUNCTION(BlueprintCallable, Category = LevelState)
+	bool LoadLevelFromSlot(const FGuid& Guid);
 	
 public:
 	static USodaSubsystem* Get();
@@ -179,6 +179,7 @@ protected:
 		//inline const bool IsValid() { return Memory.Num(); }
 	};
 	static FScenarioLevelSavedData ScenarioLevelSavedData;
+	static FGuid SlotToLoad;
 
 	UPROPERTY()
 	TSet<AActor*> SodaActors;

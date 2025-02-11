@@ -179,6 +179,8 @@ TSharedRef<FJsonValue> FJsonArchive::ClassToJsonValue(const UClass* Class)
 	check(ClassProperty);
 	const void* Value = ClassProperty->ContainerPtrToValuePtr<uint8>(this);
 	return FJsonObjectConverter::UPropertyToJsonValue(ClassProperty, Value, 0, 0).ToSharedRef();
+
+	// TODO: just convert Class to string, without using of UPropertyToJsonValue
 }
 
 TSharedRef<FJsonValue> FJsonArchive::VectorToJsonValue(const FVector& Vector)
@@ -188,6 +190,9 @@ TSharedRef<FJsonValue> FJsonArchive::VectorToJsonValue(const FVector& Vector)
 	check(ClassProperty);
 	const void* Value = ClassProperty->ContainerPtrToValuePtr<uint8>(this);
 	return FJsonObjectConverter::UPropertyToJsonValue(ClassProperty, Value, 0, 0).ToSharedRef();
+
+	// TODO: Use UStructToJsonObject insted of UPropertyToJsonValue
+	// return MakeShared<FJsonValueObject>(FJsonObjectConverter::UStructToJsonObject(Vector));
 }
 
 TSharedRef<FJsonValue> FJsonArchive::RotatorToJsonValue(const FRotator& Rotator)
@@ -197,6 +202,9 @@ TSharedRef<FJsonValue> FJsonArchive::RotatorToJsonValue(const FRotator& Rotator)
 	check(ClassProperty);
 	const void* Value = ClassProperty->ContainerPtrToValuePtr<uint8>(this);
 	return FJsonObjectConverter::UPropertyToJsonValue(ClassProperty, Value, 0, 0).ToSharedRef();
+
+	// TODO: Use UStructToJsonObject insted of UPropertyToJsonValue
+	// return MakeShared<FJsonValueObject>(FJsonObjectConverter::UStructToJsonObject(Rotator));
 }
 
 UClass* FJsonArchive::JsonValueToClass(const TSharedPtr<FJsonValue>& ClassJsonValue)

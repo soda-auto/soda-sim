@@ -20,76 +20,6 @@ DECLARE_STATS_GROUP(TEXT("SodaVehicle"), STATGROUP_SodaVehicle, STATGROUP_Advanc
 
 class UCANBusComponent;
 
-UENUM(BlueprintType)
-enum class EVehicleSaveSource : uint8
-{
-	NoSave,
-
-	/** The vehicles is saved to an binary file format in external location. */
-	BinExternal,  
-
-	/** The vehicles is saved to an binary file format in the local storage. */
-	BinLocal,
-
-	/** The vehicles is saved to an separate save game slot. */
-	Slot, 
-
-	/** The vehicle is saved as part of the binary level save game. */
-	BinLevel, 
-
-	/** The vehicles is saved to an JSON file format in external location. */
-	JsonExternal,
-
-	/** The vehicles is saved to an JSON file format in local storage. */
-	JsonLocal, 
-
-	/** The vehicle is saved to the MongoDB. */
-	DB,
-};
-
-USTRUCT(BlueprintType)
-struct FVechicleSaveAddress
-{
-	GENERATED_BODY()
-
-	FVechicleSaveAddress() {}
-	FVechicleSaveAddress(EVehicleSaveSource InSource, const FString& InLocation)
-		: Source(InSource)
-		, Location(InLocation)
-	{}
-
-	UPROPERTY(BlueprintReadOnly, SaveGame, Category = VechicleSaveAddress)
-	EVehicleSaveSource Source = EVehicleSaveSource::NoSave;
-
-	/** Location of the save data provided by the Source */
-	UPROPERTY(BlueprintReadOnly, SaveGame, Category = VechicleSaveAddress)
-	FString Location;
-
-	FORCEINLINE bool operator ==(const FVechicleSaveAddress& Other) const
-	{
-		return Source != EVehicleSaveSource::NoSave && Source != EVehicleSaveSource::BinLevel && Source == Other.Source && Location == Other.Location;
-	}
-
-	FString ToVehicleName() const ;
-
-	FORCEINLINE void Set(EVehicleSaveSource InSource, const FString& InLocation)
-	{
-		Source = InSource;
-		Location = InLocation;
-	}
-	
-	bool SetFromUrl(const FString & Url);
-
-	FORCEINLINE void Reset()
-	{
-		Source = EVehicleSaveSource::NoSave;
-		Location.Reset();
-	}
-
-	FString ToUrl() const;
-
-};
-
 /**
  * UVehicleWidget is the abstract user widget for ASodaVehicle.
  * Usually using as gauge widget for vehicle.
@@ -180,63 +110,38 @@ public:
 	FCriticalSection PhysicMutex;
 
 public:
-	UFUNCTION(Category = "Save & Load")
-	const FVechicleSaveAddress& GetSaveAddress() const { return SaveAddress; }
+	//UFUNCTION(Category = "Save & Load")
+	//const FVechicleSaveAddress& GetSaveAddress() const { return SaveAddress; }
 
-	UFUNCTION(Category = "Save & Load")
-	void SetSaveAddress(const FVechicleSaveAddress& Address) { SaveAddress = Address; }
+	//UFUNCTION(Category = "Save & Load")
+	//void SetSaveAddress(const FVechicleSaveAddress& Address) { SaveAddress = Address; }
 
 	/** Export snesors to registread ISodaVehicleExporter format */
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
 	virtual FString ExportTo(FName ExporterName);
 
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	virtual bool SaveToJson(const FString& FileName, bool bRebase);
+	virtual bool SaveToJsonFile(const FString& FileName);
 	
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	virtual bool SaveToBin(const FString& FileName, bool bRebase);
+	virtual bool SaveToBinFile(const FString& FileName);
 
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	virtual bool SaveToSlot(const FString& SlotName, bool bRebase);
+	virtual bool SaveToSlot(const FString& Lable, const FString & Description, const FGuid & Guid = FGuid(), bool bRebase = true) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	virtual bool SaveToDB(const FString& VehicleName, bool bRebase);
-
-	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	virtual bool SaveToAddress(const FVechicleSaveAddress& SaveAddress, bool bRebase);
-
-	/** If vehicle is already saved then will be resaved  */
-	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	virtual bool Resave();
-
-	static ASodaVehicle* SpawnVehicleFromJsonArchive(UWorld* World, const TSharedPtr<FJsonActorArchive> & Ar, const FVechicleSaveAddress & Address, const FVector& Location, const FRotator& Rotation, bool Posses = true, FName DesireName = NAME_None, bool bApplyOffset = false);
+	static ASodaVehicle* SpawnVehicleFromJsonArchive(UWorld* World, const TSharedPtr<FJsonActorArchive> & Ar, const FVector& Location, const FRotator& Rotation, bool Posses = true, FName DesireName = NAME_None, bool bApplyOffset = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
 	static ASodaVehicle * SpawnVehicleFromJsonFile(const UObject* WorldContextObject, const FString& FileName, const FVector& Location, const FRotator & Rotation, bool Posses = true, FName DesireName = NAME_None, bool bApplyOffset = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	static ASodaVehicle * SpawnVehicleFromDB(const UObject* WorldContextObject, const FString& VehicleName, const FVector& Location, const FRotator & Rotation, bool Posses = true, FName DesireName = NAME_None, bool bApplyOffset = false);
+	static ASodaVehicle * SpawnVehicleFromBinFile(const UObject* WorldContextObject, const FString& FileName, const FVector& Location, const FRotator & Rotation, bool Posses = true, FName DesireName = NAME_None, bool bApplyOffset = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	static ASodaVehicle * SpawnVehicleFromBin(const UObject* WorldContextObject, const FString& SlotOrFileName, bool IsSlot, const FVector& Location, const FRotator & Rotation, bool Posses = true, FName DesireName = NAME_None, bool bApplyOffset = false);
+	static ASodaVehicle * SpawnVehicleFormSlot(const UObject* WorldContextObject, const FGuid& Slot, const FVector& Location, const FRotator & Rotation, bool Posses = true, FName DesireName = NAME_None, bool bApplyOffset = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	static ASodaVehicle * SpawnVehicleFormAddress(const UObject* WorldContextObject, const FVechicleSaveAddress& Address, const FVector& Location, const FRotator & Rotation, bool Posses = true, FName DesireName = NAME_None, bool bApplyOffset = false);
-
-	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	static void GetSavedVehiclesLocal(TArray<FVechicleSaveAddress>& Addresses);
-
-	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	static bool GetSavedVehiclesDB(TArray<FVechicleSaveAddress>& Addresses);
-
-	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	static FString GetDefaultVehiclesFolder();
-
-	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	static ASodaVehicle* FindVehicleByAddress(const UWorld* World, const FVechicleSaveAddress & Address);
-
-	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	static bool DeleteVehicleSave(const FVechicleSaveAddress & Address);
+	virtual ASodaVehicle* RespawnVehcile(FVector Location = FVector(0, 0, 20), FRotator Rotation = FRotator(0, 0, 0), bool IsLocalCoordinateSpace = true);
 
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
 	virtual UActorComponent* FindVehicleComponentByName(const FString & ComponentName) const;
@@ -250,19 +155,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
 	virtual bool RemoveVehicleComponentByName(FName Name);
-
-	/** 
-	 * Resapwn this vehicle.
-	 * @param[in] IsOffset - Is Location & Rotation world or local space?
-	 * @param[in] NewVehicleClass - change vehicle class. The NewVehicleClass must be inherited from ASodaVehicle. 
-	 *							    If nullptr then the vehicle class will not be changed and all vehicles params will be moved to the returned vehicle.
-	 */
-	UFUNCTION(BlueprintCallable, Category = Vehicle)
-	virtual ASodaVehicle * RespawnVehcile(FVector Location = FVector(0, 0, 20), FRotator Rotation = FRotator(0, 0, 0), bool IsOffset = true, const UClass* NewVehicleClass = nullptr);
-
-	UFUNCTION(BlueprintCallable, Category = Vehicle)
-	virtual ASodaVehicle* RespawnVehcileFromAddress(const FVechicleSaveAddress & Address, FVector Location = FVector(0, 0, 20), FRotator Rotation = FRotator(0, 0, 0), bool IsOffset = true);
-
 
 	UFUNCTION(BlueprintCallable, Category = Vehicle)
 	virtual void ReActivateVehicleComponents(bool bOnlyTopologyComponents);
@@ -331,13 +223,23 @@ public:
 	virtual TSharedPtr<SWidget> GenerateToolBar();
 
 public:
-	/* Override from ISodaActor */
-	virtual bool OnSetPinnedActor(bool bIsPinnedActor) override;
-	virtual bool IsPinnedActor() const override;
-	virtual bool SavePinnedActor() override;
-	virtual AActor* LoadPinnedActor(UWorld* World, const FTransform& Transform, const FString& SlotName, bool bForceCreate, FName DesireName = NAME_None) const override;
-	virtual FString GetPinnedActorName() const override;
-	virtual FString GetPinnedActorSlotName() const override;
+	UFUNCTION(BlueprintCallable, Category = "Save & Load")
+	bool CanBePinned() const { return true; }
+
+	UFUNCTION(BlueprintCallable, Category = "Save & Load")
+	virtual bool Unpin() override;
+
+	UFUNCTION(BlueprintCallable, Category = "Save & Load")
+	virtual bool Resave() override;
+
+	UFUNCTION(BlueprintCallable, Category = "Save & Load")
+	virtual const FGuid& GetSlotGuid() const override { return SlotGuid; }
+
+	UFUNCTION(BlueprintCallable, Category = "Save & Load")
+	virtual FString GetSlotLable() const override;
+
+	virtual AActor* SpawnActorFromSlot(UWorld* World, const FGuid& Slot, const FTransform& Transform, FName DesireName = NAME_None) const override;
+
 	virtual void ScenarioBegin() override;
 	virtual void ScenarioEnd() override;
 
@@ -365,8 +267,14 @@ protected:
 	UPROPERTY(SaveGame)
 	TArray<FString> VehicleComponentsSortedNames;
 
+	//UPROPERTY(SaveGame)
+	//FVechicleSaveAddress SaveAddress;
+
 	UPROPERTY(SaveGame)
-	FVechicleSaveAddress SaveAddress;
+	FGuid SlotGuid;
+
+	UPROPERTY(SaveGame)
+	FString SlotLable;
 
 	TArray<IVehicleTickablObject*> PreTickedVehicleComponens;
 	TArray<IVehicleTickablObject*> PostTickedVehicleComponens;

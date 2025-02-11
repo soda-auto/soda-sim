@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "SPakItem.h"
+#include "Soda/SodaApp.h"
 #include "Brushes/SlateDynamicImageBrush.h"
 #include "HAL/PlatformFileManager.h"
 #include "Misc/MessageDialog.h"
@@ -20,8 +21,6 @@
 #include "Widgets/SBoxPanel.h"
 #include "SodaStyleSet.h"
 #include "Interfaces/IPluginManager.h"
-#include "Framework/Notifications/NotificationManager.h"
-#include "Widgets/Notifications/SNotificationList.h"
 
 #define LOCTEXT_NAMESPACE "PakListItem"
 
@@ -330,10 +329,7 @@ void SPakItem::OnEnablePluginCheckboxChanged(ECheckBoxState NewCheckedState)
 		(SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Installed && !SodaPak->IsMounted()) ||
 		(SodaPak->GetInstallStatus() == ESodaPakInstallStatus::Uninstalled && SodaPak->IsMounted())))
 	{
-		FNotificationInfo Info(FText::FromString(TEXT("You must restart SODA.Sim for your changes to take effect")));
-		Info.ExpireDuration = 5.0f;
-		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.WarningWithColor"));
-		FSlateNotificationManager::Get().AddNotification(Info);
+		soda::ShowNotification(ENotificationLevel::Success, 5.0, TEXT("You must restart SODA.Sim for your changes to take effect"));
 	}
 }
 

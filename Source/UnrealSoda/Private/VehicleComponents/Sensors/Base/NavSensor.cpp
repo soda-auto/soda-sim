@@ -2,7 +2,6 @@
 
 #include "Soda/VehicleComponents/Sensors/Base/NavSensor.h"
 #include "Soda/UnrealSoda.h"
-#include "Soda/LevelState.h"
 
 UNavSensor::UNavSensor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

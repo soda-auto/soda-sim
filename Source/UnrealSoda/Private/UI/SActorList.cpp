@@ -2,6 +2,7 @@
 
 #include "Soda/UI/SActorList.h"
 #include "Soda/UnrealSoda.h"
+#include "Wnds/SSlotActorManagerWindow.h"
 #include "EngineUtils.h"
 #include "SodaStyleSet.h"
 #include "Widgets/Layout/SBox.h"
@@ -20,14 +21,15 @@
 #include "Soda/LevelState.h"
 #include "Soda/Editor/SodaSelection.h"
 #include "Soda/SodaGameViewportClient.h"
+#include "Soda/SodaApp.h"
 //#include "Framework/SlateDelegates.h"
 #include "UI/Common/SPinWidget.h"
-#include "Framework/Notifications/NotificationManager.h"
-#include "Widgets/Notifications/SNotificationList.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "RuntimeEditorUtils.h"
+#include "Soda/Vehicles/SodaVehicle.h"
+#include "Soda/SodaDelegates.h"
 
 #define LOCTEXT_NAMESPACE "ActorBar"
 
@@ -84,7 +86,7 @@ public:
 					.IsChecked(TAttribute<bool>::CreateLambda([this]() 
 					{
 						ISodaActor* SodaActor = Cast<ISodaActor>(Actor.Get());
-						return SodaActor ? SodaActor->IsPinnedActor() : false;
+						return SodaActor ? SodaActor->GetSlotGuid().IsValid() : false;
 					}))
 					.OnClicked(ActorListView.Pin().Get(), &SActorList::OnPinClicked, Actor)
 					.Row(SharedThis(this))
@@ -145,9 +147,9 @@ public:
 						{
 							FString Ret = "";
 							ISodaActor* SodaActor = Cast<ISodaActor>(Actor);
-							if (SodaActor && SodaActor->IsPinnedActor())
+							if (SodaActor && SodaActor->GetSlotGuid().IsValid())
 							{
-								Ret = " [" + SodaActor->GetPinnedActorName() + "]";
+								Ret = " [" + SodaActor->GetSlotLable() + "]";
 							}
 							return FText::FromString(*Ret);
 						})
@@ -171,11 +173,7 @@ public:
 		}
 		else
 		{
-			if (!ActorFactory->RenameActor(Actor.Get(), NewName.ToString()))
-			{
-				ActorListView.Pin()->RebuilActorList();
-				SodaSubsystem->LevelState->MarkAsDirty();
-			}
+			ActorFactory->RenameActor(Actor.Get(), NewName.ToString());
 		}
 	}
 
@@ -198,7 +196,8 @@ void SActorList::Construct(const FArguments& InArgs, USodaGameViewportClient * I
 	bIsInteractiveMode = InArgs._bInteractiveMode.Get();
 	ActorFilter = InArgs._ActorFilter;
 
-	InvalidateDelegateHandle = ActorFactory->OnInvalidateDelegate.AddLambda([this]() 
+	
+	ActorsMapChenagedHandle = FSodaDelegates::ActorsMapChenaged.AddLambda([this]()
 	{ 
 		RebuilActorList(); 
 	});
@@ -267,9 +266,9 @@ void SActorList::Construct(const FArguments& InArgs, USodaGameViewportClient * I
 
 SActorList::~SActorList()
 {
-	if (ActorFactory.IsValid() && InvalidateDelegateHandle.IsValid())
+	if ( ActorsMapChenagedHandle.IsValid())
 	{
-		ActorFactory->OnInvalidateDelegate.Remove(InvalidateDelegateHandle);
+		FSodaDelegates::ActorsMapChenaged.Remove(ActorsMapChenagedHandle);
 	}
 }
 
@@ -328,17 +327,22 @@ FReply SActorList::OnPinClicked(TWeakObjectPtr<AActor> Actor)
 {
 	if (ISodaActor* SodaActor = Cast<ISodaActor>(Actor))
 	{
-		bool IsPinnedActor = !SodaActor->IsPinnedActor();
-		if (!SodaActor->OnSetPinnedActor(IsPinnedActor))
+		if (SodaActor->CanBePinned())
 		{
-			FSlateNotificationManager& NotificationManager = FSlateNotificationManager::Get();
-			FNotificationInfo Info(FText::FromString(TEXT("The \"") + Actor->GetClass()->GetName() + TEXT("\" actor can't be pinned")));
-			Info.ExpireDuration = 5.0f;
-			Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.WarningWithColor"));
-			NotificationManager.AddNotification(Info);
+			bool IsPinnedActor = SodaActor->GetSlotGuid().IsValid();
+			if (IsPinnedActor)
+			{
+				SodaActor->Unpin();
+			}
+			else
+			{
+				bool bIsVehicle = Cast<ASodaVehicle>(Actor.Get()) ? true : false;
+				USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+				SodaSubsystem->OpenWindow(
+					FString::Printf(TEXT("Pin Actor \"%s\""), *Actor->GetName()),
+					SNew(soda::SSlotActorManagerWindow, bIsVehicle ? soda::EFileSlotType::Vehicle : soda::EFileSlotType::Actor, Actor.Get()));
+			}
 		}
-		SodaActor->MarkAsDirty();
-		USodaSubsystem::GetChecked()->LevelState->MarkAsDirty();
 	}
 	return FReply::Handled();
 }
@@ -421,7 +425,6 @@ void SActorList::OnDeleteActor(AActor* SelectedActor)
 	if (IsValid(SelectedActor))
 	{
 		ActorFactory->RemoveActor(SelectedActor);
-		USodaSubsystem::GetChecked()->LevelState->MarkAsDirty();
 	}
 	else
 	{

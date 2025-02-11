@@ -30,10 +30,11 @@
 #include "UI/Toolbar/Common/SViewportToolBarButton.h"
 #include "UI/Wnds/SChooseMapWindow.h"
 #include "UI/Wnds/SLevelSaveLoadWindow.h"
-#include "UI/Wnds/SVehcileManagerWindow.h"
+#include "UI/Wnds/SSlotActorManagerWindow.h"
 #include "UI/Wnds/SAboutWindow.h"
 #include "UI/Wnds/PakWindow/SPakWindow.h"
 #include "UI/Wnds/SQuickStartWindow.h"
+#include "UI/Wnds/SSaveAllWindow.h"
 #include "SPlacementModeTools.h"
 #include "Soda/ISodaActor.h"
 #include "RuntimeEditorModule.h"
@@ -47,6 +48,10 @@
 #include "RemoteControlSettings.h"
 #include "GameFramework/GameUserSettings.h"
 #include "RuntimeEditorUtils.h"
+#include "Soda/FileDatabaseManager.h"
+#include "Soda/SodaGameViewportClient.h"
+#include "Soda/Editor/SodaSelection.h"
+#include "GameFramework/PlayerController.h"
 
 #define LOCTEXT_NAMESPACE "SodaViewportToolBar"
 
@@ -196,7 +201,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 			SNew(SImage)
 			.Image_Lambda([]()
 			{
-				return FSodaStyle::GetBrush(USodaSubsystem::Get()->IsScenarioRunning() ? "Icons.Toolbar.Stop" : "Icons.Toolbar.Play");
+				return FSodaStyle::GetBrush(USodaSubsystem::GetChecked()->IsScenarioRunning() ? "Icons.Toolbar.Stop" : "Icons.Toolbar.Play");
 			})
 		]
 	);
@@ -205,7 +210,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 	ToolbarBuilder.AddWidget
 	(
 		SNew(SViewportToolBarButton)
-		.IsEnabled_Lambda([]() {return !USodaSubsystem::Get()->IsScenarioRunning(); })
+		.IsEnabled_Lambda([]() {return !USodaSubsystem::GetChecked()->IsScenarioRunning(); })
 		.Image("Icons.Save")
 		.ToolTipText(FText::FromString(TEXT("Save/Load scenario")))
 		.OnClicked(FOnClicked::CreateLambda([this]()
@@ -297,7 +302,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 			return DBStatusData->ToolTip;
 		})
 		.OnGetMenuContent(this, &SSodaViewportToolBar::GenerateDBMenu)
-		.IsEnabled_Lambda([]() {return !USodaSubsystem::Get()->IsScenarioRunning(); })
+		.IsEnabled_Lambda([]() {return !USodaSubsystem::GetChecked()->IsScenarioRunning(); })
 	);
 
 	ToolbarBuilder.AddSeparator();
@@ -307,7 +312,7 @@ void SSodaViewportToolBar::Construct( const FArguments& InArgs )
 		.ParentToolBar(SharedThis(this))
 		.Label(this, &SSodaViewportToolBar::GetModeMenuLabel)
 		.LabelIcon(this, &SSodaViewportToolBar::GetModeMenuLabelIcon)
-		//.IsEnabled_Lambda([]() {return !USodaSubsystem::Get()->IsScenarioRunning(); })
+		//.IsEnabled_Lambda([]() {return !UUSodaSubsystem::GetChecked()->IsScenarioRunning(); })
 		.OnGetMenuContent(this, &SSodaViewportToolBar::GenerateModeMenu)
 		.ToolTipText(FText::FromString(TEXT("Change UI mode")))
 	);
@@ -440,10 +445,20 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateMainMenu()
 
 	{
 		FUIAction Action;
+		Action.ExecuteAction.BindSP(this, &SSodaViewportToolBar::OnOpenScenariosManagerWindow);
+		MenuBuilder.AddMenuEntry(
+			FText::FromString(TEXT("Scenarios Manager")),
+			FText::FromString(TEXT("Scenarios Manager")),
+			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.Level"),
+			Action);
+	}
+
+	{
+		FUIAction Action;
 		Action.ExecuteAction.BindSP(this, &SSodaViewportToolBar::OnOpenVehicleManagerWindow);
 		MenuBuilder.AddMenuEntry(
-			FText::FromString(TEXT("Vehicle Manager")),
-			FText::FromString(TEXT("Vehicle Manager")),
+			FText::FromString(TEXT("Vehicles Manager")),
+			FText::FromString(TEXT("Vehicles Manager")),
 			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaIcons.Car"),
 			Action);
 	}
@@ -853,28 +868,28 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateAddMenu()
 	}
 	MenuBuilder.EndSection();
 
-	// Build Local Vehicles menu
 	MenuBuilder.BeginSection(NAME_None);
 	MenuBuilder.AddSeparator();
 	MenuBuilder.AddSubMenu(
-		FText::FromString("Local Vehicles"),
+		FText::FromString("SODA Vehicles"),
 		FText::GetEmpty(),
 		FNewMenuDelegate::CreateLambda([World=GetWorld()](FMenuBuilder& MenuBuilder)
 		{
 			MenuBuilder.BeginSection(NAME_None);
-			TArray<FVechicleSaveAddress> VehicleAddresses;
-			ASodaVehicle::GetSavedVehiclesLocal(VehicleAddresses);
-			for (auto& It : VehicleAddresses)
+			auto Slots = SodaApp.GetFileDatabaseManager().GetSlots(EFileSlotType::Vehicle);
+			
+			for (auto& [Key, Info] : Slots)
 			{
 				TSharedPtr<FPlaceableItem> Item = MakeShared<FPlaceableItem>(
-					FSpawnCastomActorDelegate::CreateLambda([World, It](const FTransform& Transform) {
-						ASodaVehicle * Vehicle = ASodaVehicle::SpawnVehicleFormAddress(World.Get(), It, Transform.GetTranslation(), Transform.GetRotation().Rotator(), false, NAME_None, true);
+					FSpawnCastomActorDelegate::CreateLambda([World, Info](const FTransform& Transform)
+					{
+						ASodaVehicle * Vehicle = ASodaVehicle::SpawnVehicleFormSlot(World.Get(), Info->GUID, Transform.GetTranslation(), Transform.GetRotation().Rotator(), false, NAME_None, true);
 						return Vehicle;
 					}),
 					TEXT("Icons.Save"),
 					TEXT("Icons.Save"),
 					TOptional<FLinearColor>(),
-					FName(*It.ToVehicleName())
+					FName(*Info->Lable)
 				);
 				MenuBuilder.AddWidget(
 					SNew(SPlacementAssetMenuEntry, Item), FText()
@@ -886,47 +901,6 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateAddMenu()
 		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.Save")
 	);
 	MenuBuilder.EndSection();
-
-	/*
-	if (FDBGateway::Instance().IsConnected())
-	{
-		// Build Remote Vehicles menu
-		MenuBuilder.BeginSection(NAME_None);
-		MenuBuilder.AddSubMenu(
-			FText::FromString("Remote Vehicles"),
-			FText::GetEmpty(),
-			FNewMenuDelegate::CreateLambda([World = GetWorld()](FMenuBuilder& MenuBuilder)
-				{
-					MenuBuilder.BeginSection(NAME_None);
-					TArray<FVechicleSaveAddress> VehicleAddresses;
-					if (!ASodaVehicle::GetSavedVehiclesDB(VehicleAddresses))
-					{
-						MenuBuilder.AddMenuEntry(FText::FromString(TEXT("Error load from DB")), FText::FromString(TEXT("Error load from DB")), FSlateIcon(), FUIAction());
-					}
-					for (auto& It : VehicleAddresses)
-					{
-						TSharedPtr<FPlaceableItem> Item = MakeShared<FPlaceableItem>(
-							FSpawnCastomActorDelegate::CreateLambda([World, It](const FTransform& Transform) {
-								ASodaVehicle* Vehicle = ASodaVehicle::SpawnVehicleFormAddress(World.Get(), It, Transform.GetTranslation(), Transform.GetRotation().Rotator(), false, NAME_None, true);
-								return Vehicle;
-								}),
-							TEXT("Icons.Save"),
-							TEXT("Icons.Save"),
-							TOptional<FLinearColor>(),
-							FName(*It.ToVehicleName())
-						);
-						MenuBuilder.AddWidget(
-							SNew(SPlacementAssetMenuEntry, Item), FText()
-						);
-					}
-					MenuBuilder.EndSection();
-				}),
-			false,
-			FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "Icons.Save")
-		);
-		MenuBuilder.EndSection();
-	}
-	*/
 	
 	return FRuntimeEditorUtils::MakeWidget_HackTooltip(MenuBuilder, nullptr, 1000);
 }
@@ -1013,50 +987,54 @@ FLevelEditorViewportClient* ULevelViewportToolBarContext::GetLevelViewportClient
 
 void SSodaViewportToolBar::OnOpenLevelWindow()
 {
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		SodaSubsystem->OpenWindow("Choose Map", SNew(SChooseMapWindow));
-	}	
+	USodaSubsystem::GetChecked()->OpenWindow("Choose Map", SNew(SChooseMapWindow));
 }
 
 void SSodaViewportToolBar::OnOpenPakWindow()
 {
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		SodaSubsystem->OpenWindow("Paks", SNew(SPakWindow));
-	}
+	USodaSubsystem::GetChecked()->OpenWindow("Paks", SNew(SPakWindow));
 }
 
 void SSodaViewportToolBar::OnOpenAboutWindow()
 {
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		SodaSubsystem->OpenWindow("About SODA.Sim", SNew(SAboutWindow));
-	}
+	USodaSubsystem::GetChecked()->OpenWindow("About SODA.Sim", SNew(SAboutWindow));
 }
 
 void SSodaViewportToolBar::OnOpenQuickStartWindow()
 {
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		SodaSubsystem->OpenWindow("Quick Start", SNew(SQuickStartWindow));
-	}
+	USodaSubsystem::GetChecked()->OpenWindow("Quick Start", SNew(SQuickStartWindow));
 }
 
 void SSodaViewportToolBar::OnOpenVehicleManagerWindow()
 {
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
+	USodaGameViewportClient* GameViewportClient = Cast<USodaGameViewportClient>(GetWorld()->GetGameViewport());
+	ASodaVehicle* SelectedVehicle = nullptr;
+	
+	if (IsValid(GameViewportClient->Selection))
 	{
-		SodaSubsystem->OpenWindow("Vehicle Manager", SNew(SVehcileManagerWindow, nullptr));
+		SelectedVehicle = Cast<ASodaVehicle>(GameViewportClient->Selection->GetSelectedActor());
 	}
+
+	if (!SelectedVehicle)
+	{
+		if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+		{
+			SelectedVehicle = PlayerController->GetPawn<ASodaVehicle>();
+		}
+	}
+
+	SodaSubsystem->OpenWindow("Vehicles Manager", SNew(SSlotActorManagerWindow, soda::EFileSlotType::Vehicle, SelectedVehicle));
+}
+
+void SSodaViewportToolBar::OnOpenScenariosManagerWindow()
+{
+	USodaSubsystem::GetChecked()->OpenWindow("Scenarios Manager", SNew(SLevelSaveLoadWindow));
 }
 
 void SSodaViewportToolBar::OnOpenSaveLoadWindow()
 {
-	if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
-	{
-		SodaSubsystem->OpenWindow("Save & Load", SNew(SLevelSaveLoadWindow));
-	}
+	USodaSubsystem::GetChecked()->OpenWindow("Save All", SNew(SSaveAllWindow, ESaveAllWindowMode::Normal));
 }
 
 EVisibility SSodaViewportToolBar::IsEditorMode() const
@@ -1068,7 +1046,7 @@ EVisibility SSodaViewportToolBar::IsEditorMode() const
 
 EVisibility SSodaViewportToolBar::IsSpectatorMode() const
 {
-	USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
+	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 	if (SodaSubsystem && SodaSubsystem->SpectatorActor)
 	{
 		return EVisibility::Visible;

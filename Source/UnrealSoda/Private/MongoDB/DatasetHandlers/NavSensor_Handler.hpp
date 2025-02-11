@@ -4,7 +4,7 @@
 
 #include "Soda/MongoDB/MongoDBDataset.h"
 #include "Soda/VehicleComponents/Sensors/Base/NavSensor.h"
-
+#include "Soda/LevelState.h"
 #include "bsoncxx/builder/stream/helpers.hpp"
 #include "bsoncxx/exception/exception.hpp"
 #include "bsoncxx/builder/stream/document.hpp"

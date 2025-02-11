@@ -692,13 +692,7 @@ bool URadarSensor::NeedRenderSensorFOV() const
 	const bool bIsSelected = IsVehicleComponentSelected();
 	for (auto& It : RadarParams)
 	{
-		if ((It.FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::Ever) ||
-			(It.FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::OnSelect && bIsSelected) ||
-			(It.FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::OnSelectWhenActive && bIsSelected && IsVehicleComponentActiveted()) ||
-			(It.FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::EverWhenActive && IsVehicleComponentActiveted()))
-		{
-			return true;
-		}
+		return It.FOVSetup.NeedRenderSensorFOV(this);
 	}
 	return false;
 }

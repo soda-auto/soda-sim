@@ -5,7 +5,6 @@
 #include "Soda/VehicleComponents/Mechanicles/VehicleGearBoxComponent.h"
 #include "Soda/UnrealSoda.h"
 #include "DrawDebugHelpers.h"
-#include "Soda/LevelState.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 
 UGenericWheeledVehicleSensor::UGenericWheeledVehicleSensor(const FObjectInitializer& ObjectInitializer)

@@ -18,8 +18,25 @@
 #include "Soda/SodaSpectator.h"
 #include "Soda/Actors/RefPoint.h"
 #include "Soda/SodaSubsystem.h"
+#include "Soda/FileDatabaseManager.h"
+#include "Soda/SodaDelegates.h"
 
 #define TRANSIENT_SLOT TEXT("LevelState_Transient")
+
+
+void ULevelSaveGame::Serialize(FArchive& Ar)
+{
+	Super::Serialize(Ar);
+
+	if (Ar.GetError())
+	{
+		UE_LOG(LogSoda, Error, TEXT("ULevelSaveGame::Serialize(); FArchive is in error state: %i"), Ar.IsCriticalError());
+	}
+
+	Ar << LevelDataRecord;
+}
+
+// ----------------------------------------------------------------------------------------------------------------
 
 ALevelState* ALevelState::Get()
 {
@@ -37,20 +54,6 @@ ALevelState* ALevelState::GetChecked()
 	check(SodaSubsystem->LevelState);
 	return SodaSubsystem->LevelState;
 }
-
-void ULevelSaveGame::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-
-	if (Ar.GetError())
-	{
-		UE_LOG(LogSoda, Error, TEXT("ULevelSaveGame::Serialize(); FArchive is in error state: %i"), Ar.IsCriticalError());
-	}
-
-	Ar << LevelDataRecord;
-}
-
-FLevelStateSlotDescription ALevelState::StaticSlot{};
 
 ALevelState::ALevelState()
 {
@@ -127,344 +130,137 @@ ULevelSaveGame * ALevelState::CreateSaveGame(bool bSerializePinnedActorsAsUnpinn
 
 	ULevelSaveGame* SaveGame = NewObject<ULevelSaveGame>(this);
 	check(SaveGame);
-	SaveGame->Description = Slot.Description;
-	SaveGame->DateTime = Slot.DateTime;
-	SaveGame->LevelName = Slot.LevelName;
+	//SaveGame->Description = Slot.Description;
+	//SaveGame->DateTime = Slot.DateTime;
+	SaveGame->LevelName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
 	SaveGame->LevelDataRecord.SerializeActor(this, false);
 
 	return SaveGame;
 }
 
-bool ALevelState::SaveLevelToTransientSlot()
+bool ALevelState::SaveToTransientSlot()
 {
-	Slot.LevelName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
+	//Slot.LevelName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
 
 	ULevelSaveGame* SaveGame = CreateSaveGame(false);
 	if (!SaveGame)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveLevelToTransientSlot(); Can't CreateSaveGame()"));
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveToTransientSlot(); Can't CreateSaveGame()"));
 		return false;
 	}
 
 	if (!UGameplayStatics::SaveGameToSlot(SaveGame, TRANSIENT_SLOT, 0))
 	{
-		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveLevelToTransientSlot(); Can't SaveGameToSlot()"));
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveToTransientSlot(); Can't SaveGameToSlot()"));
 		return false;
 	}
 
 	return true;
 }
 
-bool ALevelState::SaveLevelLocallyAs(int SlotIndex, const FString& Description)
+bool ALevelState::SaveToSlot(const FString& Lable, const FString& Description, const FGuid& Guid)
 {
-	if (SlotIndex > 255)
+	soda::FFileDatabaseSlotInfo SlotInfo{};
+	SlotInfo.GUID = Guid.IsValid() ? Guid : FGuid::NewGuid();
+	SlotInfo.Type = soda::EFileSlotType::Level;
+	SlotInfo.Lable = Lable;
+	SlotInfo.Description = Description;
+	SlotInfo.DataClass = GetClass();
+	if (!SerializeSlotDescriptor(UGameplayStatics::GetCurrentLevelName(GetWorld(), true), SlotInfo.JsonDescription))
 	{
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveToSlot(); Can't SerializeSlotDescriptor()"));
 		return false;
 	}
 
-	if (SlotIndex < 0)
-	{
-		for (int i = 0; i <= 255; ++i)
-		{
-			if (!UGameplayStatics::DoesSaveGameExist(GetLocalSaveSlotName(this, i), 0))
-			{
-				SlotIndex = i;
-				break;
-			}
-		}
-
-		if (SlotIndex < 0)
-		{
-			UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveLevelLocallyAs(); Run out of free slots"));
-			return false;
-		}
-	}
-
-	Slot.Description = Description;
-	Slot.SlotIndex = SlotIndex;
-	Slot.ScenarioID = -1;
-	Slot.DateTime = FDateTime::Now();
-	Slot.LevelName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
-	Slot.SlotSource = ELeveSlotSource::Local;
+	SlotGuid = SlotInfo.GUID;
+	SlotLable = SlotInfo.Lable;
 
 	ULevelSaveGame* SaveGame = CreateSaveGame(false);
 	if (!SaveGame)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveLevelLocallyAs(); Can't CreateSaveGame()"));
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveToSlot(); Can't CreateSaveGame()"));
 		return false;
 	}
 
-	if (!UGameplayStatics::SaveGameToSlot(SaveGame, GetLocalSaveSlotName(this, SlotIndex), 0))
+	TArray<uint8> SaveData;
+	if (!UGameplayStatics::SaveGameToMemory(SaveGame, SaveData))
 	{
-		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveLevelLocallyAs(); Can't SaveGameToSlot()"));
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveToSlot(); Can't UGameplayStatics::SaveGameToMemory()"));
+		return false;
+	}
+
+	auto& Database = SodaApp.GetFileDatabaseManager();
+
+	if (!Database.AddOrUpdateSlotInfo(SlotInfo))
+	{
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveToSlot(); Can't AddOrUpdateSlotInfo() "));
+		return false;
+	}
+
+	if (!Database.UpdateSlotData(SlotInfo.GUID, SaveData))
+	{
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveToSlot(); Can't UpdateSlotData() "));
 		return false;
 	}
 
 	bIsDirty = false;
-	StaticSlot = Slot;
+
 	return true;
 }
 
-bool ALevelState::SaveLevelRemotlyAs(int64 ScenarioID, const FString& Description)
+bool ALevelState::Resave()
 {
-	/*
-	ULevelSaveGame* SaveGame = CreateSaveGame(false);
+	if (!SlotGuid.IsValid())
+	{
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::Resave(); There is no slot for save"));
+		return false;
+	}
+
+	soda::FFileDatabaseSlotInfo Slot;
+	if (!SodaApp.GetFileDatabaseManager().GetSlot(SlotGuid, Slot))
+	{
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::Resave(); Can't find slot "));
+		return false;
+	}
+
+	return SaveToSlot(Slot.Lable, Slot.Description, Slot.GUID);
+}
+
+ULevelSaveGame* ALevelState::LoadSaveGameFromSlot(const FGuid& Guid, soda::FFileDatabaseSlotInfo& SlotInfo)
+{
+	auto& Database = SodaApp.GetFileDatabaseManager();
+
+	if (!Database.GetSlot(Guid, SlotInfo))
+	{
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::LoadSaveGameFromSlot(); Can't find slot "));
+		return nullptr;
+	}
+
+	FString LevelName;
+	if (!DeserializeSlotDescriptor(SlotInfo.JsonDescription, LevelName))
+	{
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::LoadSaveGameFromSlot(); DeserializeSlotDescriptor() faild"));
+		return nullptr;
+	}
+
+	TArray<uint8> SavedData;
+	if (!Database.GetSlotData(Guid, SavedData))
+	{
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::LoadSaveGameFromSlot(); GetSlotData() faild"));
+		return nullptr;
+	}
+
+	ULevelSaveGame* SaveGame = Cast<ULevelSaveGame>(UGameplayStatics::LoadGameFromMemory(SavedData));
 	if (!SaveGame)
 	{
-		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveLevelRemotlyAs(); Can't CreateSaveGame()"));
-		return false;
-	}
-
-	TArray<uint8> ObjectBytes;
-	if (!UGameplayStatics::SaveGameToMemory(SaveGame, ObjectBytes))
-	{
-		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveLevelRemotlyAs(); Can't SaveGameToMemory()"));
-		return false;
-	}
-
-	FLevelStateSlotDescription NewSlot;
-	NewSlot.Description = Description;
-	NewSlot.ScenarioID = ScenarioID;
-	NewSlot.SlotIndex = -1;
-	NewSlot.DateTime = FDateTime::Now();
-	NewSlot.LevelName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);;
-	NewSlot.SlotSource = ELeveSlotSource::Remote;
-
-	ScenarioID = soda::FDBGateway::Instance().SaveLevelData(NewSlot, ObjectBytes);
-
-	if (ScenarioID >=0)
-	{
-		NewSlot.ScenarioID = ScenarioID;
-		StaticSlot = Slot = NewSlot;
-		bIsDirty = false;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-	*/ 
-	return false;
-}
-
-bool ALevelState::ReSaveLevel()
-{
-	switch (Slot.SlotSource)
-	{
-	case ELeveSlotSource::Local:
-		return Slot.SlotIndex >= 0 ? SaveLevelLocallyAs(Slot.SlotIndex, Slot.Description) : false;
-	case ELeveSlotSource::Remote:
-		return Slot.ScenarioID >= 0 ? SaveLevelRemotlyAs(Slot.ScenarioID, Slot.Description) : false;
-	default:
-		return false;
-	}
-}
-
-ULevelSaveGame* ALevelState::LoadSaveGameLocally(const UObject* WorldContextObject, int & SlotIndex, const FString& InLevelName)
-{
-	if (!WorldContextObject)
-	{
-		WorldContextObject = USodaStatics::GetGameWorld();
-	}
-
-	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
-
-	if (SlotIndex < 0)
-	{
-		TArray<FLevelStateSlotDescription> Slots;
-		GetLevelSlotsLocally(WorldContextObject, Slots, true, LevelName);
-		if (Slots.Num())
-		{
-			SlotIndex = Slots[0].SlotIndex;
-		}
-	}
-	if (SlotIndex >= 0)
-	{
-		return Cast<ULevelSaveGame>(UGameplayStatics::LoadGameFromSlot(GetLocalSaveSlotName(WorldContextObject, SlotIndex, LevelName), 0));
-	}
-	else
-	{
-		return nullptr;
-	}
-}
-
-ULevelSaveGame* ALevelState::LoadSaveGameTransient(const UObject* WorldContextObject)
-{
-	if (!WorldContextObject)
-	{
-		WorldContextObject = USodaStatics::GetGameWorld();
-	}
-
-	return Cast<ULevelSaveGame>(UGameplayStatics::LoadGameFromSlot(TRANSIENT_SLOT, 0));
-}
-
-ULevelSaveGame* ALevelState::LoadSaveGameRemotly(const UObject* WorldContextObject, int64 & ScenarioID, const FString& InLevelName)
-{
-	/*
-	if (!WorldContextObject)
-	{
-		WorldContextObject = USodaStatics::GetGameWorld();
-	}
-
-	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
-
-	if (ScenarioID < 0)
-	{
-		TArray<FLevelStateSlotDescription> Slots;
-		GetLevelSlotsRemotly(WorldContextObject, Slots, true, LevelName);
-		if (Slots.Num())
-		{
-			ScenarioID = Slots[0].SlotIndex;
-		}
-		else
-		{
-			return nullptr;
-		}
-	}
-
-	TArray<uint8> ObjectBytes;
-	if (!soda::FDBGateway::Instance().LoadLevelData(ScenarioID, ObjectBytes))
-	{
+		UE_LOG(LogSoda, Error, TEXT("ALevelState::LoadSaveGameFromSlot(); UGameplayStatics::LoadGameFromMemory() faild"));
 		return nullptr;
 	}
 
-	return Cast<ULevelSaveGame>(UGameplayStatics::LoadGameFromMemory(ObjectBytes));
-	*/
-	return nullptr;
+	return SaveGame;
 }
 
-FString ALevelState::GetLocalSaveSlotName(const UObject* WorldContextObject, int SlotIndex, const FString& InLevelName)
-{
-	if (!WorldContextObject)
-	{
-		WorldContextObject = USodaStatics::GetGameWorld();
-	}
-
-	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
-	//LevelName.ReplaceCharInline('/', '_');
-	//LevelName.ReplaceCharInline('\\', '_');
-	return FString(TEXT("LevelState")) + TEXT("_") + LevelName + TEXT("_") + FString::FromInt(SlotIndex);
-}
-
-
-bool ALevelState::DeleteLevelLocally(const UObject* WorldContextObject, int SlotIndex, const FString& InLevelName)
-{
-	if (!WorldContextObject)
-	{
-		WorldContextObject = USodaStatics::GetGameWorld();
-	}
-
-	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
-
-	return UGameplayStatics::DeleteGameInSlot(GetLocalSaveSlotName(WorldContextObject, SlotIndex, LevelName), 0);
-}
-
-bool ALevelState::DeleteLevelRemotly(const UObject* /*WorldContextObject*/, int64 ScenarioID)
-{
-	//return soda::FDBGateway::Instance().DeleteLevelData(ScenarioID);
-	return false;
-}
-
-bool ALevelState::GetLevelSlotsLocally(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription>& Slots, bool bSortByDateTime, const FString& InLevelName)
-{
-	if (!WorldContextObject)
-	{
-		WorldContextObject = USodaStatics::GetGameWorld();
-	}
-
-	Slots.Empty();
-
-	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
-
-	for (int i = 0; i < 255; ++i)
-	{
-		if (UGameplayStatics::DoesSaveGameExist(GetLocalSaveSlotName(WorldContextObject, i, LevelName), 0))
-		{
-			if (ULevelSaveGame* SaveGameSlot = LoadSaveGameLocally(WorldContextObject, i, LevelName))
-			{
-				FLevelStateSlotDescription Slot;
-				Slot.SlotIndex = i;
-				Slot.ScenarioID = -1;
-				Slot.Description = SaveGameSlot->Description;
-				Slot.DateTime = SaveGameSlot->DateTime;
-				Slot.LevelName = LevelName;
-				Slot.SlotSource = ELeveSlotSource::Local;
-				Slots.Add(Slot);
-			}
-		}
-	}
-
-	if (bSortByDateTime)
-	{
-		Slots.Sort([](const FLevelStateSlotDescription& LHS, const FLevelStateSlotDescription& RHS) { return LHS.DateTime > RHS.DateTime; });
-	}
-
-	return true;
-}
-
-bool ALevelState::GetLevelSlotsRemotly(const UObject* WorldContextObject, TArray<FLevelStateSlotDescription>& Slots, bool bSortByDateTime, const FString& InLevelName)
-{
-	/*
-	if (!WorldContextObject)
-	{
-		WorldContextObject = USodaStatics::GetGameWorld();
-	}
-	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
-	return soda::FDBGateway::Instance().LoadLevelList(LevelName, bSortByDateTime, Slots);
-	*/
-	return false;
-}
-
-bool ALevelState::ReloadLevelEmpty(const UObject* WorldContextObject, const FString& InLevelName)
-{
-	if (!WorldContextObject)
-	{
-		WorldContextObject = USodaStatics::GetGameWorld();
-	}
-
-	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
-	StaticSlot.LevelName = LevelName;
-	StaticSlot.SlotIndex = -1;
-	StaticSlot.ScenarioID = -1;
-	StaticSlot.SlotSource = ELeveSlotSource::NewSlot;
-	UGameplayStatics::OpenLevel(WorldContextObject, *LevelName, false);
-	return true;
-}
-
-
-bool ALevelState::ReloadLevelFromSlotLocally(const UObject* WorldContextObject, int SlotIndex, const FString& InLevelName)
-{
-	if (!WorldContextObject)
-	{
-		WorldContextObject = USodaStatics::GetGameWorld();
-	}
-
-	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
-	StaticSlot.LevelName = LevelName;
-	StaticSlot.SlotIndex = SlotIndex;
-	StaticSlot.ScenarioID = -1;
-	StaticSlot.SlotSource = ELeveSlotSource::Local;
-	UGameplayStatics::OpenLevel(WorldContextObject, *LevelName, false);
-	return true;
-}
-
-bool ALevelState::ReloadLevelFromSlotRemotly(const UObject* WorldContextObject, int64 ScenarioID, const FString& InLevelName)
-{
-	if (!WorldContextObject)
-	{
-		WorldContextObject = USodaStatics::GetGameWorld();
-	}
-
-	FString LevelName = InLevelName.IsEmpty() ? UGameplayStatics::GetCurrentLevelName(WorldContextObject, true) : InLevelName;
-	StaticSlot.LevelName = LevelName;
-	StaticSlot.SlotIndex = -1;
-	StaticSlot.ScenarioID = ScenarioID;
-	StaticSlot.SlotSource = ELeveSlotSource::Remote;
-	UGameplayStatics::OpenLevel(WorldContextObject, *LevelName, false);
-	return true;
-}
-
-ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass* DefaultClass, bool bFromTransientSlot)
+ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass* DefaultClass, bool bFromTransientSlot, const FGuid& FromSlotGuid)
 {
 	if (!WorldContextObject)
 	{
@@ -474,52 +270,38 @@ ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass
 	UWorld* World = WorldContextObject->GetWorld();
 	check(World);
 
+	const FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(WorldContextObject, true);
 	ULevelSaveGame* LevelSaveGame = nullptr;
-
-	FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(WorldContextObject, true);
-
-	if (StaticSlot.LevelName != CurrentLevelName)
-	{
-		StaticSlot.SlotIndex = -1;
-	}
+	soda::FFileDatabaseSlotInfo SlotInfo;
+	bool bSlotInfoIsValid = false;
 
 	if (bFromTransientSlot)
 	{
-		LevelSaveGame = LoadSaveGameTransient(WorldContextObject);
-		if (IsValid(LevelSaveGame))
+		LevelSaveGame = Cast<ULevelSaveGame>(UGameplayStatics::LoadGameFromSlot(TRANSIENT_SLOT, 0));
+		if (!LevelSaveGame)
 		{
-			if (LevelSaveGame->LevelName != CurrentLevelName)
-			{
-				UE_LOG(LogSoda, Error, TEXT("ALevelState::CreateOrLoad(); Transient slot LevelName mismatch, loaded name \"%s\", current name \"%s\""), *LevelSaveGame->LevelName, *CurrentLevelName);
-				LevelSaveGame = nullptr;
-			}
+			UE_LOG(LogSoda, Error, TEXT("ALevelState::CreateOrLoad(); Can't load SavaGame from TransientSlot"));
+		}
+	}
+	else if(FromSlotGuid.IsValid())
+	{
+		LevelSaveGame = LoadSaveGameFromSlot(FromSlotGuid, SlotInfo);
+		if (LevelSaveGame)
+		{
+			bSlotInfoIsValid = true;
 		}
 		else
 		{
-			UE_LOG(LogSoda, Error, TEXT("ALevelState::CreateOrLoad(); Can't load SavaGame for TransientSlot"));
+			UE_LOG(LogSoda, Error, TEXT("ALevelState::CreateOrLoad(); Can't load SavaGame from Slot"));
 		}
 	}
-	else
+
+	if (LevelSaveGame)
 	{
-		switch (StaticSlot.SlotSource)
+		if (LevelSaveGame->LevelName != CurrentLevelName)
 		{
-		case ELeveSlotSource::NoSlot:
-			StaticSlot.SlotIndex = -1;
-			LevelSaveGame = LoadSaveGameLocally(WorldContextObject, StaticSlot.SlotIndex);
-			StaticSlot.SlotSource = ELeveSlotSource::Local;
-			break;
-		case ELeveSlotSource::NewSlot:
-			StaticSlot.SlotIndex = -1;
-			StaticSlot.SlotSource = ELeveSlotSource::NoSlot;
-			break;
-		case ELeveSlotSource::Local:
-			LevelSaveGame = LoadSaveGameLocally(WorldContextObject, StaticSlot.SlotIndex);
-			StaticSlot.SlotSource = ELeveSlotSource::Local;
-			break;
-		case ELeveSlotSource::Remote:
-			LevelSaveGame = LoadSaveGameRemotly(WorldContextObject, StaticSlot.ScenarioID);
-			StaticSlot.SlotSource = ELeveSlotSource::Remote;
-			break;
+			UE_LOG(LogSoda, Error, TEXT("ALevelState::CreateOrLoad(); Transient slot LevelName mismatch, loaded name \"%s\", current name \"%s\""), *LevelSaveGame->LevelName, *CurrentLevelName);
+			LevelSaveGame = nullptr;
 		}
 	}
 
@@ -535,6 +317,12 @@ ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass
 		else
 		{
 			LevelState = LevelSaveGame->LevelDataRecord.SpawnActor<ALevelState>(World, false);
+		}
+
+		if (bSlotInfoIsValid)
+		{
+			LevelState->SlotGuid = SlotInfo.GUID;
+			LevelState->SlotLable = SlotInfo.Lable;
 		}
 	}
 
@@ -552,21 +340,6 @@ ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass
 
 	check(LevelState)
 
-	if (LevelSaveGame)
-	{
-		LevelState->Slot.Description = LevelSaveGame->Description;
-		LevelState->Slot.DateTime = LevelSaveGame->DateTime;
-		LevelState->Slot.LevelName = LevelSaveGame->LevelName;
-		LevelState->Slot.SlotIndex = StaticSlot.SlotIndex;
-		LevelState->Slot.ScenarioID = StaticSlot.ScenarioID;
-		LevelState->Slot.SlotSource = StaticSlot.SlotSource;
-	}
-	else
-	{
-		StaticSlot = LevelState->Slot = FLevelStateSlotDescription();
-	}
-
-	StaticSlot = LevelState->Slot;
 	return LevelState;
 }
 
@@ -598,11 +371,21 @@ void ALevelState::FinishLoadLevel()
 void ALevelState::BeginPlay()
 {
 	Super::BeginPlay();
+
+	ActorsMapChenagedHandle = FSodaDelegates::ActorsMapChenaged.AddLambda([this]()
+	{
+		MarkAsDirty();
+	});
 }
 
 void ALevelState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
+
+	if (ActorsMapChenagedHandle.IsValid())
+	{
+		FSodaDelegates::ActorsMapChenaged.Remove(ActorsMapChenagedHandle);
+	}
 }
 
 void ALevelState::SetGeoReference(double Lat, double Lon, double Alt, const FVector& OrignShift, float OrignDYaw)
@@ -630,4 +413,29 @@ void ALevelState::ClearLevel()
 	{
 		ActorFactory->RemoveAllActors();
 	}
+}
+
+bool ALevelState::SerializeSlotDescriptor(const FString& LevelName, FString& OutJsonString)
+{
+	TSharedPtr<FJsonObject> JsonObject = MakeShared<FJsonObject>();
+	JsonObject->SetStringField(TEXT("level_name"), LevelName);
+	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutJsonString);
+	return FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
+}
+
+bool ALevelState::DeserializeSlotDescriptor(const FString& InJsonString, FString& OutLevelName)
+{
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(InJsonString);
+	if (!FJsonSerializer::Deserialize(JsonReader, JsonObject))
+	{
+		return false;
+	}
+
+	if (!JsonObject->TryGetStringField(TEXT("level_name"), OutLevelName))
+	{
+		return false;
+	}
+
+	return true;
 }

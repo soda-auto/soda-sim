@@ -79,6 +79,10 @@
 		{
 			"Name": "MassGameplay",
 			"Enabled": true		
+		},
+		{
+			"Name": "SQLiteCore",
+			"Enabled": true		
 		}
 	]
 

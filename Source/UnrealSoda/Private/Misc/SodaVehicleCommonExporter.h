@@ -8,7 +8,7 @@ class UCameraFisheyeSensor;
 class UCameraSensor;
 class USensorComponent;
 
-class FSodaVehicleCommonExporter : public ISodaVehicleExporter
+class FSodaVehicleCommonExporter : public soda::ISodaVehicleExporter
 {
 public:
 	virtual bool ExportToString(const ASodaVehicle* Vehicle, FString& String) override;

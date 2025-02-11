@@ -139,6 +139,6 @@ protected:
 	float bBlinkAllwd = true;
 
 
-	void EnableLight(const FLinkToLight& LightItem);
-	void EnableLight(TObjectPtr<UVehicleLightItem> LightItem, bool bNewActive);
+	void ChangeLightSt(const FLinkToLight& LightItem);
+	void ChangeLightSt(TObjectPtr<UVehicleLightItem> LightItem, bool bNewActive);
 };

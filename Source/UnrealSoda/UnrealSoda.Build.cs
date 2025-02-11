@@ -76,7 +76,8 @@ public class UnrealSoda : ModuleRules
                 "GeometryAlgorithms",
                 "MassEntity",
 				"SodaPak",
-                "StructUtils"
+                "StructUtils",
+                "SQLiteCore"
             } 
 		);
 
