@@ -303,10 +303,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
 	bool bDrawDebugLabels = false;
 
-	/** True to hide FOV rendering in case if sensor is not active */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
-	bool bRenderFOVOnlyIfActive = false;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
 	bool bDebugLog = false;
 
@@ -345,6 +341,5 @@ private:
 	TArray<FVector> BatchStart;
 	TArray<FVector> BatchEnd;
 
-	/** Internal flag used to check FOV visualization during component being inactive */
-	bool bComponentIsActive = false;
+
 };

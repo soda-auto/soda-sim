@@ -13,16 +13,6 @@
 class USodaRandomEngine;
 class UProceduralMeshComponent;
 
-USTRUCT(BlueprintType)
-struct FSplinePointInfo
-{
-	GENERATED_BODY()
-
-public:
-	FVector PosnLocalSpace;
-	FVector TangetLocalSpace;
-	ESplinePointType::Type PointTyp;
-};
 
 UCLASS(meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API URouteSplineComponent 
@@ -100,8 +90,7 @@ public:
 
 public:
 
-	UFUNCTION(Category = NavigationRoute, BlueprintCallable)
-	bool SetRoutePointsAdv(const TArray<FSplinePointInfo>& RoutePoints, bool bUpdateMesh = true);
+
 
 	UFUNCTION(Category = NavigationRoute, BlueprintCallable)
 	bool SetRoutePoints(const TArray< FVector >& RoutePoints, bool bUpdateMesh=true);

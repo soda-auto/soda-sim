@@ -18,6 +18,24 @@ ULightController::ULightController(const FObjectInitializer& ObjectInitializer)
 	
 
 	Common.Activation = EVehicleComponentActivation::OnStartScenario;
+
+	LightTestingPrms.Add(VehicleLightNames::TurnFL, {});
+	LightTestingPrms.Add(VehicleLightNames::TurnFR, {});
+	LightTestingPrms.Add(VehicleLightNames::TurnRL, {});
+	LightTestingPrms.Add(VehicleLightNames::TurnRR, {});
+	LightTestingPrms.Add(VehicleLightNames::BrakeL, {});
+	LightTestingPrms.Add(VehicleLightNames::BrakeR, {});
+	LightTestingPrms.Add(VehicleLightNames::HighBeamL, {});
+	LightTestingPrms.Add(VehicleLightNames::HighBeamR, {});
+	LightTestingPrms.Add(VehicleLightNames::LowBeamL, {});
+	LightTestingPrms.Add(VehicleLightNames::LowBeamR, {});
+	LightTestingPrms.Add(VehicleLightNames::TailFL, {});
+	LightTestingPrms.Add(VehicleLightNames::TailFR, {});
+	LightTestingPrms.Add(VehicleLightNames::TailRL, {});
+	LightTestingPrms.Add(VehicleLightNames::TailRR, {});
+	LightTestingPrms.Add(VehicleLightNames::ReverseL, {});
+	LightTestingPrms.Add(VehicleLightNames::ReverseR, {});
+
 }
 
 
@@ -46,14 +64,61 @@ bool ULightController::OnActivateVehicleComponent()
 		LightSet = LinkToLightSet.GetObject< ULightSetComponent>(GetOwner());
 	}
 
+	if (!LightSet)
+	{
+		SetHealth(EVehicleComponentHealth::Error, TEXT("Invalid LightSet"));
+		return false;
+	}
+
+	const TMap<FName, UVehicleLightItem*>& AllLights = LightSet->GetLightItems();
 
 
-	return true;
+	auto InitLight = [&](FName LightName)->UVehicleLightItem*
+	{
+		if (auto* Found = AllLights.Find(LightName))
+		{
+			return *Found;
+		}
+		else
+		{
+			SetHealth(EVehicleComponentHealth::Error, FString::Printf(TEXT("Invalid light %s"), *LightName.ToString()));
+			return nullptr;
+		}
+	
+	};
+
+	LightItem_TurnFL = InitLight(VehicleLightNames::TurnFL);
+	LightItem_TurnFR = InitLight(VehicleLightNames::TurnFR);
+	LightItem_TurnRL = InitLight(VehicleLightNames::TurnRL);
+	LightItem_TurnRR = InitLight(VehicleLightNames::TurnRR);
+	LightItem_BrakeL = InitLight(VehicleLightNames::BrakeL);
+	LightItem_BrakeR = InitLight(VehicleLightNames::BrakeR);
+	LightItem_HighBeamL = InitLight(VehicleLightNames::HighBeamL);
+	LightItem_HighBeamR = InitLight(VehicleLightNames::HighBeamR);
+	LightItem_LowBeamL = InitLight(VehicleLightNames::LowBeamL);
+	LightItem_LowBeamR = InitLight(VehicleLightNames::LowBeamR);
+	LightItem_TailFL = InitLight(VehicleLightNames::TailFL);
+	LightItem_TailFR = InitLight(VehicleLightNames::TailFR);
+	LightItem_TailRL = InitLight(VehicleLightNames::TailRL);
+	LightItem_TailRR = InitLight(VehicleLightNames::TailRR);
+	LightItem_ReverseL = InitLight(VehicleLightNames::ReverseL);
+	LightItem_ReverseR = InitLight(VehicleLightNames::ReverseR);
+
+
+	for (auto& [Key, Value] : LightTestingPrms)
+	{
+		Value.LinkToLightComponent = InitLight(Key);
+	}
+	
+	return (GetHealth() == EVehicleComponentHealth::Error) ? false : true;
+
 }
 
 void ULightController::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
+
+	// Delete old pointers
 }
 
 
@@ -67,28 +132,13 @@ void ULightController::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 	if (LightSet && VehicleInput)
 	{
-
-		const TMap<FName, UVehicleLightItem*>& AllLights = LightSet->GetLightItems();
-
 		// Perform testing configuration
 		if (bDoTesting)
 		{	
-				EnableLightByName(AllLights, FName("Turn_FL"), LigthTestingPrms.TestTurnL);
-				EnableLightByName(AllLights, FName("Turn_RL"), LigthTestingPrms.TestTurnL);
-				EnableLightByName(AllLights, FName("Turn_FR"), LigthTestingPrms.TestTurnR);
-				EnableLightByName(AllLights, FName("Turn_RR"), LigthTestingPrms.TestTurnR);
-				EnableLightByName(AllLights, FName("Brake_L"), LigthTestingPrms.TestBrakeL);
-				EnableLightByName(AllLights, FName("Brake_R"), LigthTestingPrms.TestBrakeR);
-				EnableLightByName(AllLights, FName("HighBeam_L"), LigthTestingPrms.TestHighBeamL);
-				EnableLightByName(AllLights, FName("HighBeam_R"), LigthTestingPrms.TestHighBeamR);
-				EnableLightByName(AllLights, FName("LowBeam_L"), LigthTestingPrms.TestLowBeamL);
-				EnableLightByName(AllLights, FName("LowBeam_R"), LigthTestingPrms.TestLowBeamR);
-				EnableLightByName(AllLights, FName("Tail_FL"), LigthTestingPrms.TestTailFL);
-				EnableLightByName(AllLights, FName("Tail_FR"), LigthTestingPrms.TestTailFR);
-				EnableLightByName(AllLights, FName("Tail_RL"), LigthTestingPrms.TestTailRL);
-				EnableLightByName(AllLights, FName("Tail_RR"), LigthTestingPrms.TestTailRR);
-				EnableLightByName(AllLights, FName("Reverse_L"), LigthTestingPrms.TestReverseL);
-				EnableLightByName(AllLights, FName("Reverse_R"), LigthTestingPrms.TestReverseR);
+			for (auto& [Key, Value] : LightTestingPrms)
+			{
+				EnableLight(Value);
+			}
 		}
 		else
 		{
@@ -97,13 +147,13 @@ void ULightController::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 			if (VehicleInput->GetInputState().Brake > BrakeLightPdlPosnThd)
 			{
-				EnableLightByName(AllLights, FName("Brake_L"), true);
-				EnableLightByName(AllLights, FName("Brake_R"), true);
+				EnableLight(LightItem_BrakeL,true);
+				EnableLight(LightItem_BrakeR, true);
 			}
 			else
 			{
-				EnableLightByName(AllLights, FName("Brake_L"), false);
-				EnableLightByName(AllLights, FName("Brake_R"), false);
+				EnableLight(LightItem_BrakeL, false);
+				EnableLight(LightItem_BrakeR, false);
 			}
 
 
@@ -115,25 +165,24 @@ void ULightController::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 			bBlinkAllwd = bBlinkAllwd && bAllowTurnLights;
 		
-			EnableLightByName(AllLights, FName("Turn_FL"), VehicleInput->GetInputState().bLeftTurnLightsEnabled && bBlinkAllwd);
-			EnableLightByName(AllLights, FName("Turn_RL"), VehicleInput->GetInputState().bLeftTurnLightsEnabled && bBlinkAllwd);
-		
-			EnableLightByName(AllLights, FName("Turn_FR"), VehicleInput->GetInputState().bRightTurnLightsEnabled && bBlinkAllwd);
-			EnableLightByName(AllLights, FName("Turn_RR"), VehicleInput->GetInputState().bRightTurnLightsEnabled && bBlinkAllwd);
-	
 
-			EnableLightByName(AllLights, FName("Tail_FL"), bAllowSideLights);
-			EnableLightByName(AllLights, FName("Tail_FR"), bAllowSideLights);
-			EnableLightByName(AllLights, FName("Tail_RL"), bAllowSideLights);
-			EnableLightByName(AllLights, FName("Tail_RR"), bAllowSideLights);
+			EnableLight(LightItem_TurnFL, VehicleInput->GetInputState().bLeftTurnLightsEnabled && bBlinkAllwd);
+			EnableLight(LightItem_TurnFR, VehicleInput->GetInputState().bLeftTurnLightsEnabled && bBlinkAllwd);
+			EnableLight(LightItem_TurnRL, VehicleInput->GetInputState().bRightTurnLightsEnabled && bBlinkAllwd);
+			EnableLight(LightItem_TurnRR, VehicleInput->GetInputState().bRightTurnLightsEnabled && bBlinkAllwd);
 
-			EnableLightByName(AllLights, FName("Reverse_L"), VehicleInput->GetInputState().IsReversGear());
-			EnableLightByName(AllLights, FName("Reverse_R"), VehicleInput->GetInputState().IsReversGear());
-			
-			EnableLightByName(AllLights, FName("HighBeam_L"), bEnableHighBeam);
-			EnableLightByName(AllLights, FName("HighBeam_R"), bEnableHighBeam);
-			EnableLightByName(AllLights, FName("LowBeam_L"), bEnableLowBeam);
-			EnableLightByName(AllLights, FName("LowBeam_R"), bEnableLowBeam);
+			EnableLight(LightItem_TailFL, bAllowSideLights);
+			EnableLight(LightItem_TailFR, bAllowSideLights);
+			EnableLight(LightItem_TailRL, bAllowSideLights);
+			EnableLight(LightItem_TailRR, bAllowSideLights);
+
+			EnableLight(LightItem_ReverseL, VehicleInput->GetInputState().IsReversGear());
+			EnableLight(LightItem_ReverseR, VehicleInput->GetInputState().IsReversGear());
+
+			EnableLight(LightItem_HighBeamL, bEnableHighBeam);
+			EnableLight(LightItem_HighBeamR, bEnableHighBeam);
+			EnableLight(LightItem_LowBeamL, bEnableLowBeam);
+			EnableLight(LightItem_LowBeamR, bEnableLowBeam);
 
 
 		}
@@ -143,10 +192,21 @@ void ULightController::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 }
 
 
-void ULightController::EnableLightByName(const TMap<FName, UVehicleLightItem*>& AllLights, FName LightName, bool bNewActivation)
+
+void ULightController::EnableLight(const FLinkToLight& LightItem)
 {
-	if (AllLights.Contains(LightName))
+	if (LightItem.LinkToLightComponent)
 	{
-		AllLights[LightName]->SetEnabled(bNewActivation, bNewActivation ? 1.0 : 0.0);
+		LightItem.LinkToLightComponent->SetEnabled(LightItem.bIsActive, LightItem.bIsActive ? 1.0 : 0.0);
 	}
+
+}
+
+void ULightController::EnableLight(TObjectPtr<UVehicleLightItem> LightItem, bool bNewActive)
+{
+	if (LightItem)
+	{
+		LightItem->SetEnabled(bNewActive, bNewActive ? 1.0 : 0.0);
+	}
+
 }

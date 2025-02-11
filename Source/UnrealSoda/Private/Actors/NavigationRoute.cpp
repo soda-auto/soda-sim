@@ -96,25 +96,6 @@ ANavigationRoute::ANavigationRoute(const FObjectInitializer& ObjectInitializer)
 	if (Mat.Succeeded()) MatProcMesh = Mat.Object;
 }
 
-bool ANavigationRoute::SetRoutePointsAdv(const TArray<FSplinePointInfo>& RoutePoints, bool bUpdateMesh)
-{
-	if (RoutePoints.Num() < 2) return false;
-
-	Spline->ClearSplinePoints();
-
-	for (int32 i = 0; i < RoutePoints.Num(); i++) // Skip the header line
-	{
-		Spline->AddSplinePoint(RoutePoints[i].PosnLocalSpace, ESplineCoordinateSpace::Local, false);
-		const int32 PointIndex = Spline->GetNumberOfSplinePoints() - 1;
-		Spline->SetTangentAtSplinePoint(PointIndex, RoutePoints[i].TangetLocalSpace, ESplineCoordinateSpace::Local, false);
-		Spline->SetSplinePointType(PointIndex, RoutePoints[i].PointTyp, false);
-	}
-
-	Spline->UpdateSpline();
-
-	if (bUpdateMesh) UpdateViewMesh();
-	return true;
-}
 
 bool ANavigationRoute::SetRoutePoints(const TArray<FVector> & RoutePoints, bool bUpdateMesh)
 {
@@ -154,89 +135,36 @@ void ANavigationRoute::Serialize(FArchive& Ar)
 
 	if (Ar.IsSaveGame())
 	{
-		if (Ar.IsSaving())
+
+		Ar << Spline->SplineCurves.Position;
+		Ar << Spline->SplineCurves.Rotation;
+		Ar << Spline->SplineCurves.Scale;
+
+		if (Ar.IsLoading())
 		{
-			int RoutesNum = 1;
-			Ar << RoutesNum;
-
-			if (IsSplineValid(Spline))
-			{
-				int PointsNum = Spline->GetNumberOfSplinePoints();
-				Ar << PointsNum;
-
-				for (int i = 0; i < PointsNum; ++i)
-				{
-					FVector Point = Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::Local);
-					FVector Tangent = Spline->GetTangentAtSplinePoint(i, ESplineCoordinateSpace::Local);
-					int32 PointType = static_cast<int32>(Spline->GetSplinePointType(i));
-
-					Ar << Point;
-					Ar << Tangent;
-					Ar << PointType;
-				}
-			}
-			else
-			{
-				int PointsNum = 0;
-				Ar << PointsNum;
-			}
-
-		}
-		else if (Ar.IsLoading())
-		{
-			int RoutesNum;
-			Ar << RoutesNum;
-
-			int PointsNum = 0;
-			Ar << PointsNum;
-
-
-
-
-			TArray<FSplinePointInfo> SplinePoints;
-			SplinePoints.Reserve(PointsNum);
-
-			if (PointsNum >= 0)
-			{
-				FSplinePointInfo NewPoint;
-				for (int j = 0; j < PointsNum; ++j)
-				{
-					FVector Point;
-					Ar << Point;
-					FVector Tangent;
-					Ar << Tangent;
-					int32 PointType;
-					Ar << PointType;
-
-					NewPoint.PosnLocalSpace = Point;
-					NewPoint.TangetLocalSpace = Tangent;
-					NewPoint.PointTyp = static_cast<ESplinePointType::Type>(PointType);
-
-					SplinePoints.Add(NewPoint);
-				}
-			}
-
-			SetRoutePointsAdv(SplinePoints, true);
-
-
-			if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(LeftRoute.ToSoftObjectPath(), GetWorld())))
-			{
-				LeftRoute = FoundActor;
-			}
-			if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(RightRoute.ToSoftObjectPath(), GetWorld())))
-			{
-				RightRoute = FoundActor;
-			}
-			if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(PredecessorRoute.ToSoftObjectPath(), GetWorld())))
-			{
-				PredecessorRoute = FoundActor;
-			}
-			if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(SuccessorRoute.ToSoftObjectPath(), GetWorld())))
-			{
-				SuccessorRoute = FoundActor;
-			}
+			Spline->UpdateSpline();
+			UpdateViewMesh();
 		}
 	}
+
+
+	//		//if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(LeftRoute.ToSoftObjectPath(), GetWorld())))
+	//		//{
+	//		//	LeftRoute = FoundActor;
+	//		//}
+	//		//if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(RightRoute.ToSoftObjectPath(), GetWorld())))
+	//		//{
+	//		//	RightRoute = FoundActor;
+	//		//}
+	//		//if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(PredecessorRoute.ToSoftObjectPath(), GetWorld())))
+	//		//{
+	//		//	PredecessorRoute = FoundActor;
+	//		//}
+	//		//if (ANavigationRoute* FoundActor = Cast<ANavigationRoute>(FEditorUtils::FindActorByName(SuccessorRoute.ToSoftObjectPath(), GetWorld())))
+	//		//{
+	//		//	SuccessorRoute = FoundActor;
+	//		//}
+
 }
 
 /*

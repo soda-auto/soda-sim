@@ -165,5 +165,7 @@ enum class EFOVRenderingStrategy: uint8
 {
 	Never,
 	OnSelect,
-	Ever
+	Ever,
+	OnSelectWhenActive,
+	EverWhenActive
 };

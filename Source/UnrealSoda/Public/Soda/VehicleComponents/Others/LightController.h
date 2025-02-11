@@ -10,41 +10,26 @@
 class ULightSetComponent;
 class UVehicleLightItem;
 
+
+
 USTRUCT(BlueprintType)
-struct FLightTesting
+struct FLinkToLight
 {
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestTurnL = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestTurnR = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestBrakeL = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestBrakeR = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestHighBeamL = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestHighBeamR = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestLowBeamL = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestLowBeamR = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestTailFL = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestTailFR = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestTailRL = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestTailRR = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestReverseL = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-		bool TestReverseR = false;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LinkToLightComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime))
+	bool bIsActive = false;
+
 };
+
+
+
+
+
 
 
 
@@ -92,9 +77,49 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
 	bool bDoTesting = false;
 	
-	/** Testing configuration parameters */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime))
-	FLightTesting LigthTestingPrms;
+	/** Testing all light set */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Test", meta = (EditInRuntime, ReactivateComponent))
+	TMap<FName, FLinkToLight> LightTestingPrms;
+
+
+
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_TurnFL;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_TurnFR;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_TurnRL;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_TurnRR;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_BrakeL;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_BrakeR;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_HighBeamL;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_HighBeamR;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_LowBeamL;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_LowBeamR;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_TailFL;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_TailFR;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_TailRL;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_TailRR;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_ReverseL;
+	UPROPERTY(Transient)
+	TObjectPtr<UVehicleLightItem> LightItem_ReverseR;
+
+
+
+
+
 	
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -105,6 +130,7 @@ protected:
 	virtual void OnDeactivateVehicleComponent() override;
 //	virtual void PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
 
+	void GetLinksToLights();
 
 	UPROPERTY()
 	ULightSetComponent* LightSet;
@@ -113,6 +139,6 @@ protected:
 	float bBlinkAllwd = true;
 
 
-	void EnableLightByName(const TMap<FName, UVehicleLightItem*>& AllLights, FName LightName, bool bNewActivation);
-
+	void EnableLight(const FLinkToLight& LightItem);
+	void EnableLight(TObjectPtr<UVehicleLightItem> LightItem, bool bNewActive);
 };

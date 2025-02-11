@@ -133,27 +133,27 @@ struct FInitToDrivePrms
 public:
 	/** True to perform init to drive sequence  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "InitSequence")
-		bool bDoInitToDriveSequence = false;
+	bool bDoInitToDriveSequence = false;
 
 	/** Time to keep vehicle stationary in Park, sec  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "InitSequence")
-		float TimeToStayInPark = 5.0;
+	float TimeToStayInPark = 5.0;
 
 	/** Time to press brake pedal from 0 to 100%, sec */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "InitSequence", meta = (ClampMin = "1"))
-		float TimeToPressBrakePedal = 0.5;
+	float TimeToPressBrakePedal = 0.5;
 
 	/** Time to wait after full press to request Drive, sec  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "InitSequence")
-		float TimeToWaitBeforeSwitchToDrive = 4;
+	float TimeToWaitBeforeSwitchToDrive = 4;
 
 	/** Time to keep pedal pressed after switch to Drive, sec  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "InitSequence")
-		float TimeToStayInDriveWithPedalPressed = 1;
+	float TimeToStayInDriveWithPedalPressed = 1;
 
 	/** Time to release brake pedal from 100% to 0%, sec  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "InitSequence")
-		float TimeToReleaseBrakePedal = 0.25;
+	float TimeToReleaseBrakePedal = 0.25;
 
 	// Local states of the initialization process
 	float InitSequenceLocalTime = 0;

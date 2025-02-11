@@ -81,7 +81,7 @@ bool URadarSensor::OnActivateVehicleComponent()
 
 	PrevTickTime = SodaApp.GetSimulationTimestamp();
 
-	bComponentIsActive = true;
+
 	MarkRenderStateDirty();
 
 	return true;
@@ -91,7 +91,6 @@ void URadarSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
 
-	bComponentIsActive = false;
 	MarkRenderStateDirty();
 }
 
@@ -694,13 +693,10 @@ bool URadarSensor::NeedRenderSensorFOV() const
 	for (auto& It : RadarParams)
 	{
 		if ((It.FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::Ever) ||
-			(It.FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::OnSelect && bIsSelected))
+			(It.FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::OnSelect && bIsSelected) ||
+			(It.FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::OnSelectWhenActive && bIsSelected && IsVehicleComponentActiveted()) ||
+			(It.FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::EverWhenActive && IsVehicleComponentActiveted()))
 		{
-			if (bRenderFOVOnlyIfActive)
-			{
-				return bComponentIsActive;
-			}
-
 			return true;
 		}
 	}
