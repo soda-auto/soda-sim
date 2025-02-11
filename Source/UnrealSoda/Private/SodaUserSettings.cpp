@@ -1,14 +1,15 @@
 #include "Soda/SodaUserSettings.h"
 #include "Misc/ConfigContext.h"
+#include "RuntimeMetaData.h"
 
 FText USodaUserSettings::GetMenuItemText() const
 {
-	return GetClass()->GetDisplayNameText();
+	return FRuntimeMetaData::GetDisplayNameText(GetClass());
 }
 
 FText USodaUserSettings::GetMenuItemDescription() const
 {
-	return GetClass()->GetToolTipText();
+	return FRuntimeMetaData::GetToolTipText(GetClass(), true);
 }
 
 FName USodaUserSettings::GetMenuItemIconName() const
