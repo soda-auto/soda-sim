@@ -33,6 +33,7 @@
 #include "SodaOutputLogSettings.h"
 //#include "OutputLogStyle.h"
 #include "RuntimeEditorUtils.h"
+#include "RuntimeMetaData.h"
 
 #define LOCTEXT_NAMESPACE "SOutputLog"
 
@@ -1534,12 +1535,8 @@ void SOutputLog::AddTimestampMenuSection(FMenuBuilder& Menu)
 		{
 			
 			ELogTimes::Type TimeStampType = static_cast<ELogTimes::Type>(CurrentTimeStampType);
-			FText Tooltip;
+			FText Tooltip = FRuntimeMetaData::GetToolTipTextByIndex(Enum, CurrentTimeStampType);
 
-			#if WITH_EDITOR
-				Tooltip = Enum->GetToolTipTextByIndex(CurrentTimeStampType);
-			#endif // WITH_EDITOR
-			
 			Menu.AddMenuEntry(Enum->GetDisplayNameTextByIndex(CurrentTimeStampType),
 				Tooltip,
 				FSlateIcon(),

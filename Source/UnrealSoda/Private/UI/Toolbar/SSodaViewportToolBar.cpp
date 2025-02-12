@@ -52,6 +52,7 @@
 #include "Soda/SodaGameViewportClient.h"
 #include "Soda/Editor/SodaSelection.h"
 #include "GameFramework/PlayerController.h"
+#include "RuntimeMetaData.h"
 
 #define LOCTEXT_NAMESPACE "SodaViewportToolBar"
 
@@ -531,7 +532,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateOptionsMenu()
 
 					SodaSubsystem->PushToolBox(
 						SNew(SToolBox)
-						.Caption(Settings->GetClass()->GetDisplayNameText())
+						.Caption(FRuntimeMetaData::GetDisplayNameText(Settings->GetClass()))
 						[
 							SNew(SVerticalBox)
 							+ SVerticalBox::Slot()
