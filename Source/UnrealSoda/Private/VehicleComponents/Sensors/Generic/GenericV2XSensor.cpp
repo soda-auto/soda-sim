@@ -9,23 +9,14 @@ UGenericV2XReceiverSensor::UGenericV2XReceiverSensor(const FObjectInitializer& O
 	GUI.bIsPresentInAddMenu = true;
 }
 
-void UGenericV2XReceiverSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
-}
-
-void UGenericV2XReceiverSensor::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-	PublisherHelper.OnSerialize(Ar);
-}
-
 bool UGenericV2XReceiverSensor::OnActivateVehicleComponent()
 {
 	if (Super::OnActivateVehicleComponent())
 	{
-		return PublisherHelper.Advertise();
+		if (IsValid(Publisher))
+		{
+			return Publisher->AdvertiseAndSetHealth(this);
+		}
 	}
 	return true;
 }
@@ -33,33 +24,26 @@ bool UGenericV2XReceiverSensor::OnActivateVehicleComponent()
 void UGenericV2XReceiverSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
-	PublisherHelper.Shutdown();
+	if (IsValid(Publisher))
+	{
+		Publisher->Shutdown();
+	}
 }
 
 bool UGenericV2XReceiverSensor::IsVehicleComponentInitializing() const
 {
-	return PublisherHelper.IsPublisherInitializing();
+	return IsValid(Publisher) && Publisher->IsInitializing();
 }
 
 void UGenericV2XReceiverSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	PublisherHelper.Tick();
-}
 
-#if WITH_EDITOR
-void UGenericV2XReceiverSensor::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
+	if (IsValid(Publisher))
+	{
+		Publisher->CheckStatus(this);
+	}
 }
-
-void UGenericV2XReceiverSensor::PostInitProperties()
-{
-	Super::PostInitProperties();
-	PublisherHelper.RefreshClass();
-}
-#endif
 
 bool UGenericV2XReceiverSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const TArray<UV2XMarkerSensor*>& InTransmitters)
 {

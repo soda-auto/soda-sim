@@ -16,7 +16,7 @@ namespace soda
 /**
  * UGenericRacingPublisher
  */
-UCLASS(abstract, ClassGroup = Soda)
+UCLASS(abstract, ClassGroup = Soda, EditInlineNew)
 class UNREALSODA_API UGenericRacingPublisher : public UGenericPublisher
 {
 	GENERATED_BODY()

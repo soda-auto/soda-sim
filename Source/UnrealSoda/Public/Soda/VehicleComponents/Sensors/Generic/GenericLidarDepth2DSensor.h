@@ -13,17 +13,11 @@ class UNREALSODA_API UGenericLidarDepth2DSensor : public ULidarDepth2DSensor
 {
 	GENERATED_UCLASS_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	TSubclassOf<UGenericLidarPublisher> PublisherClass;
-
 	UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
 	TObjectPtr<UGenericLidarPublisher> Publisher;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	TSubclassOf<UGenericCameraPublisher> CameraPublisherClass;
-
-	UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
-	TObjectPtr<UGenericCameraPublisher> CameraPublisher;
+	//UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
+	//TObjectPtr<UGenericCameraPublisher> CameraPublisher;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sensor, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	bool bPublishDepthMap = false;
@@ -53,7 +47,6 @@ class UNREALSODA_API UGenericLidarDepth2DSensor : public ULidarDepth2DSensor
 	float DistanseMax = 20000; // cm
 
 protected:
-	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual bool IsVehicleComponentInitializing() const override;
@@ -73,17 +66,9 @@ protected:
 	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& Scan) override;
 
 protected:
-	virtual void Serialize(FArchive& Ar) override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-#if WITH_EDITOR
-	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
-	virtual void PostInitProperties() override;
-#endif
 
 protected:
 	TArray<FVector> LidarRays;
 	TArray<FVector2D> UVs;
-
-	FGenericPublisherHelper<UGenericLidarDepth2DSensor, UGenericLidarPublisher> PublisherHelper{ this, &UGenericLidarDepth2DSensor::PublisherClass, &UGenericLidarDepth2DSensor::Publisher };
-	FGenericPublisherHelper<UGenericLidarDepth2DSensor, UGenericCameraPublisher> CameraPublisherHelper{ this, &UGenericLidarDepth2DSensor::CameraPublisherClass, &UGenericLidarDepth2DSensor::CameraPublisher, "PublisherClass", "CameraPublisher", "CameraPublisherRecord"};
 };

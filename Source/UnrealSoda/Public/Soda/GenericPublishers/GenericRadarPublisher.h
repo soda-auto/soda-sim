@@ -13,7 +13,7 @@ struct FRadarObjects;
 /**
  * UGenericRadarPublisher
  */
-UCLASS(abstract, ClassGroup = Soda)
+UCLASS(abstract, ClassGroup = Soda, EditInlineNew)
 class UNREALSODA_API UGenericRadarPublisher: public UGenericPublisher
 {
 	GENERATED_BODY()

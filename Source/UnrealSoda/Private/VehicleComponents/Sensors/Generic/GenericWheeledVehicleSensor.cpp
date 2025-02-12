@@ -21,18 +21,6 @@ UGenericWheeledVehicleSensor::UGenericWheeledVehicleSensor(const FObjectInitiali
 	TickData.bAllowVehiclePostDeferredPhysTick = true;
 }
 
-void UGenericWheeledVehicleSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
-}
-
-void UGenericWheeledVehicleSensor::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-	PublisherHelper.OnSerialize(Ar);
-}
-
 bool UGenericWheeledVehicleSensor::OnActivateVehicleComponent()
 {
 	if (!Super::OnActivateVehicleComponent())
@@ -88,13 +76,21 @@ bool UGenericWheeledVehicleSensor::OnActivateVehicleComponent()
 	}
 	*/
 
-	return PublisherHelper.Advertise();
+	if (IsValid(Publisher))
+	{
+		return Publisher->Advertise(this);
+	}
+	
+	return true;
 }
 
 void UGenericWheeledVehicleSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
-	PublisherHelper.Shutdown();
+	if (IsValid(Publisher))
+	{
+		Publisher->Shutdown();
+	}
 
 	//Engine = nullptr;
 	//SteeringRack = nullptr;
@@ -106,28 +102,18 @@ void UGenericWheeledVehicleSensor::OnDeactivateVehicleComponent()
 
 bool UGenericWheeledVehicleSensor::IsVehicleComponentInitializing() const
 {
-	return PublisherHelper.IsPublisherInitializing();
+	return IsValid(Publisher) && Publisher->IsInitializing();
 }
 
 void UGenericWheeledVehicleSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	PublisherHelper.Tick();
-}
 
-#if WITH_EDITOR
-void UGenericWheeledVehicleSensor::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
+	if (IsValid(Publisher))
+	{
+		Publisher->CheckStatus(this);
+	}
 }
-
-void UGenericWheeledVehicleSensor::PostInitProperties()
-{
-	Super::PostInitProperties();
-	PublisherHelper.RefreshClass();
-}
-#endif
 
 bool UGenericWheeledVehicleSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FWheeledVehicleSensorData& VehicleStateExtra)
 {

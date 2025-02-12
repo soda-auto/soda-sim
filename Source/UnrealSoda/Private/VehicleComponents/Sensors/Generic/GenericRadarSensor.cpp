@@ -52,23 +52,14 @@ UGenericRadarSensor::UGenericRadarSensor(const FObjectInitializer& ObjectInitial
 
 }
 
-void UGenericRadarSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
-}
-
-void UGenericRadarSensor::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-	PublisherHelper.OnSerialize(Ar);
-}
-
 bool UGenericRadarSensor::OnActivateVehicleComponent()
 {
 	if (Super::OnActivateVehicleComponent())
 	{
-		return PublisherHelper.Advertise();
+		if (IsValid(Publisher))
+		{
+			return Publisher->AdvertiseAndSetHealth(this);
+		}
 	}
 	return true;
 }
@@ -76,33 +67,26 @@ bool UGenericRadarSensor::OnActivateVehicleComponent()
 void UGenericRadarSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
-	PublisherHelper.Shutdown();
+	if (IsValid(Publisher))
+	{
+		Publisher->Shutdown();
+	}
 }
 
 bool UGenericRadarSensor::IsVehicleComponentInitializing() const
 {
-	return PublisherHelper.IsPublisherInitializing();
+	return IsValid(Publisher) && Publisher->IsInitializing();
 }
 
 void UGenericRadarSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	PublisherHelper.Tick();
-}
 
-#if WITH_EDITOR
-void UGenericRadarSensor::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
+	if (IsValid(Publisher))
+	{
+		Publisher->CheckStatus(this);
+	}
 }
-
-void UGenericRadarSensor::PostInitProperties()
-{
-	Super::PostInitProperties();
-	PublisherHelper.RefreshClass();
-}
-#endif
 
 bool UGenericRadarSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FRadarClusters& InClusters, const FRadarObjects& InObjects)
 {

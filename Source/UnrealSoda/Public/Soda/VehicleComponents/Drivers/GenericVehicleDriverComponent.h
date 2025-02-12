@@ -77,14 +77,8 @@ class UNREALSODA_API UGenericVehicleDriverComponent : public UVehicleDriverCompo
 {
 	GENERATED_UCLASS_BODY()
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime))
-	//TSubclassOf<UGenericWheeledVehiclePublisher> PublisherClass;
-
 	//UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
 	//TObjectPtr<UGenericWheeledVehiclePublisher> Publisher;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime))
-	TSubclassOf<UGenericWheeledVehicleControlListener> VehicleControlClass;
 
 	UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
 	TObjectPtr<UGenericWheeledVehicleControlListener> VehicleControl;
@@ -135,7 +129,6 @@ public:
 	float TargetSpeedDelta = 10;
 
 protected:
-	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnPostActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
@@ -168,13 +161,7 @@ public:
 
 
 protected:
-	virtual void Serialize(FArchive& Ar) override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-#if WITH_EDITOR
-	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
-	virtual void PostInitProperties() override;
-#endif
-
 
 protected:
 	bool bVapiPing = false;
@@ -187,7 +174,4 @@ protected:
 	bool bWheelRadiusValid = false;
 
 	soda::FGenericWheeledVehiclControl Control;
-
-	//FGenericPublisherHelper<UGenericVehicleDriverComponent, UGenericWheeledVehiclePublisher> PublisherHelper { this, &UGenericVehicleDriverComponent::PublisherClass, &UGenericVehicleDriverComponent::Publisher };
-	FGenericListenerHelper<UGenericVehicleDriverComponent, UGenericWheeledVehicleControlListener> ListenerHelper { this, &UGenericVehicleDriverComponent::VehicleControlClass, &UGenericVehicleDriverComponent::VehicleControl, "VehicleControlClass", "VehicleControl", "VehicleControlRecord" };
 };

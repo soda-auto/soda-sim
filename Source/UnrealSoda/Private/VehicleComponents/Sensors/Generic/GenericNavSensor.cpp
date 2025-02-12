@@ -11,23 +11,14 @@ UGenericNavSensor::UGenericNavSensor(const FObjectInitializer& ObjectInitializer
 	GUI.bIsPresentInAddMenu = true;
 }
 
-void UGenericNavSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
-}
-
-void UGenericNavSensor::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-	PublisherHelper.OnSerialize(Ar);
-}
-
 bool UGenericNavSensor::OnActivateVehicleComponent()
 {
 	if (Super::OnActivateVehicleComponent())
 	{
-		return PublisherHelper.Advertise();
+		if (IsValid(Publisher))
+		{
+			return Publisher->AdvertiseAndSetHealth(this);
+		}
 	}
 	return true;
 }
@@ -35,33 +26,27 @@ bool UGenericNavSensor::OnActivateVehicleComponent()
 void UGenericNavSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
-	PublisherHelper.Shutdown();
+
+	if (IsValid(Publisher))
+	{
+		Publisher->Shutdown();
+	}
 }
 
 bool UGenericNavSensor::IsVehicleComponentInitializing() const
 {
-	return PublisherHelper.IsPublisherInitializing();
+	return IsValid(Publisher) && Publisher->IsInitializing();
 }
 
 void UGenericNavSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	PublisherHelper.Tick();
-}
 
-#if WITH_EDITOR
-void UGenericNavSensor::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
+	if (IsValid(Publisher))
+	{
+		Publisher->CheckStatus(this);
+	}
 }
-
-void UGenericNavSensor::PostInitProperties()
-{
-	Super::PostInitProperties();
-	PublisherHelper.RefreshClass();
-}
-#endif
 
 bool UGenericNavSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FTransform& RelativeTransform, const FPhysBodyKinematic& VehicleKinematic)
 {

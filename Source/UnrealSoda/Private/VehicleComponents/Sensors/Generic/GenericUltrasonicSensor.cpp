@@ -9,23 +9,14 @@ UGenericUltrasonicHubSensor::UGenericUltrasonicHubSensor(const FObjectInitialize
 	GUI.bIsPresentInAddMenu = true;
 }
 
-void UGenericUltrasonicHubSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
-}
-
-void UGenericUltrasonicHubSensor::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-	PublisherHelper.OnSerialize(Ar);
-}
-
 bool UGenericUltrasonicHubSensor::OnActivateVehicleComponent()
 {
 	if (Super::OnActivateVehicleComponent())
 	{
-		return PublisherHelper.Advertise();
+		if (IsValid(Publisher))
+		{
+			return Publisher->AdvertiseAndSetHealth(this);
+		}
 	}
 	return true;
 }
@@ -33,33 +24,26 @@ bool UGenericUltrasonicHubSensor::OnActivateVehicleComponent()
 void UGenericUltrasonicHubSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
-	PublisherHelper.Shutdown();
+	if (IsValid(Publisher))
+	{
+		Publisher->Shutdown();
+	}
 }
 
 bool UGenericUltrasonicHubSensor::IsVehicleComponentInitializing() const
 {
-	return PublisherHelper.IsPublisherInitializing();
+	return IsValid(Publisher) && Publisher->IsInitializing();
 }
 
 void UGenericUltrasonicHubSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	PublisherHelper.Tick();
-}
 
-#if WITH_EDITOR
-void UGenericUltrasonicHubSensor::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
+	if (IsValid(Publisher))
+	{
+		Publisher->CheckStatus(this);
+	}
 }
-
-void UGenericUltrasonicHubSensor::PostInitProperties()
-{
-	Super::PostInitProperties();
-	PublisherHelper.RefreshClass();
-}
-#endif
 
 bool UGenericUltrasonicHubSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const TArray < FUltrasonicEchos >& InEchoCollections)
 {

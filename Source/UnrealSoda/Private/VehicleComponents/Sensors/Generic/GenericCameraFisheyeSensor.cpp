@@ -9,23 +9,14 @@ UGenericCameraFisheyeSensor::UGenericCameraFisheyeSensor(const FObjectInitialize
 	GUI.bIsPresentInAddMenu = true;
 }
 
-void UGenericCameraFisheyeSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
-}
-
-void UGenericCameraFisheyeSensor::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-	PublisherHelper.OnSerialize(Ar);
-}
-
 bool UGenericCameraFisheyeSensor::OnActivateVehicleComponent()
 {
 	if (Super::OnActivateVehicleComponent())
 	{
-		return PublisherHelper.Advertise();
+		if (IsValid(Publisher))
+		{
+			return Publisher->AdvertiseAndSetHealth(this);
+		}
 	}
 	return true;
 }
@@ -33,33 +24,26 @@ bool UGenericCameraFisheyeSensor::OnActivateVehicleComponent()
 void UGenericCameraFisheyeSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
-	PublisherHelper.Shutdown();
+	if (IsValid(Publisher))
+	{
+		Publisher->Shutdown();
+	}
 }
 
 bool UGenericCameraFisheyeSensor::IsVehicleComponentInitializing() const
 {
-	return PublisherHelper.IsPublisherInitializing();
+	return IsValid(Publisher) && Publisher->IsInitializing();
 }
 
 void UGenericCameraFisheyeSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	PublisherHelper.Tick();
-}
 
-#if WITH_EDITOR
-void UGenericCameraFisheyeSensor::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
+	if (IsValid(Publisher))
+	{
+		Publisher->CheckStatus(this);
+	}
 }
-
-void UGenericCameraFisheyeSensor::PostInitProperties()
-{
-	Super::PostInitProperties();
-	PublisherHelper.RefreshClass();
-}
-#endif
 
 bool UGenericCameraFisheyeSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FCameraFrame& CameraFrame, const TArray<FColor>& BGRA8, uint32 ImageStride)
 {

@@ -12,7 +12,7 @@ struct FPhysBodyKinematic;
 /**
  * UGenericNavPublisher
  */
-UCLASS(abstract, ClassGroup = Soda)
+UCLASS(abstract, ClassGroup = Soda, EditInlineNew, EditInlineNew)
 class UNREALSODA_API UGenericNavPublisher: public UGenericPublisher
 {
 	GENERATED_BODY()

@@ -84,8 +84,18 @@ bool UGenericVehicleDriverComponent::OnActivateVehicleComponent()
 
 	bWheelRadiusValid = false;
 
-	//PublisherHelper.Advertise();
-	ListenerHelper.StartListen();
+	if (IsValid(VehicleControl))
+	{
+		if (VehicleControl->StartListen(this))
+		{
+			return true;
+		}
+		else
+		{
+			SetHealth(EVehicleComponentHealth::Warning, "Can't Initialize VehicleControl");
+			return false;
+		}
+	}
 
 	return true;
 }
@@ -104,7 +114,10 @@ void UGenericVehicleDriverComponent::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
 
-	ListenerHelper.StopListen();
+	if (IsValid(VehicleControl))
+	{
+		VehicleControl->StopListen();
+	}
 }
 
 void UGenericVehicleDriverComponent::PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
@@ -391,20 +404,6 @@ FString UGenericVehicleDriverComponent::GetRemark() const
 	return VehicleControl ? VehicleControl->GetRemark() : "null";
 }
 
-void UGenericVehicleDriverComponent::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	//PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	ListenerHelper.OnPropertyChanged(PropertyChangedEvent);
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
-}
-
-void UGenericVehicleDriverComponent::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-	//PublisherHelper.OnSerialize(Ar);
-	ListenerHelper.OnSerialize(Ar);
-}
-
 /*
 bool UGenericVehicleDriverComponent::IsVehicleComponentInitializing() const
 {
@@ -417,20 +416,3 @@ void UGenericVehicleDriverComponent::TickComponent(float DeltaTime, ELevelTick T
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	//PublisherHelper.Tick();
 }
-
-#if WITH_EDITOR
-void UGenericVehicleDriverComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	//PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	ListenerHelper.OnPropertyChanged(PropertyChangedEvent);
-}
-
-void UGenericVehicleDriverComponent::PostInitProperties()
-{
-	Super::PostInitProperties();
-	//PublisherHelper.RefreshClass();
-	ListenerHelper.RefreshClass();
-}
-#endif
-

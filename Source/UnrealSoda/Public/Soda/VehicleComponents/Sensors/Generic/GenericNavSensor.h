@@ -16,14 +16,10 @@ class UNREALSODA_API UGenericNavSensor : public UNavSensor
 	GENERATED_UCLASS_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	TSubclassOf<UGenericNavPublisher> PublisherClass;
-
-	UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	TObjectPtr<UGenericNavPublisher> Publisher;
 
 protected:
-	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual bool IsVehicleComponentInitializing() const override;
@@ -32,13 +28,5 @@ protected:
 	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FTransform& RelativeTransform, const FPhysBodyKinematic& VehicleKinematic) override;
 
 protected:
-	virtual void Serialize(FArchive& Ar) override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-#if WITH_EDITOR
-	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
-	virtual void PostInitProperties() override;
-#endif
-
-	FGenericPublisherHelper<UGenericNavSensor, UGenericNavPublisher> PublisherHelper{ this, &UGenericNavSensor::PublisherClass, &UGenericNavSensor::Publisher };
-
 };

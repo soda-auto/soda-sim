@@ -13,9 +13,6 @@ class UNREALSODA_API UGenericLidarRayTraceSensor : public ULidarRayTraceSensor
 {
 	GENERATED_UCLASS_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	TSubclassOf<UGenericLidarPublisher> PublisherClass;
-
 	UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
 	TObjectPtr<UGenericLidarPublisher> Publisher;
 
@@ -44,7 +41,6 @@ class UNREALSODA_API UGenericLidarRayTraceSensor : public ULidarRayTraceSensor
 	float DistanseMax = 10000;
 
 protected:
-	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual bool IsVehicleComponentInitializing() const override;
@@ -63,16 +59,8 @@ protected:
 	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& Scan) override;
 
 protected:
-	virtual void Serialize(FArchive& Ar) override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-#if WITH_EDITOR
-	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
-	virtual void PostInitProperties() override;
-#endif
 
 protected:
 	TArray<FVector> LidarRays;
-
-	FGenericPublisherHelper<UGenericLidarRayTraceSensor, UGenericLidarPublisher> PublisherHelper{ this, &UGenericLidarRayTraceSensor::PublisherClass, &UGenericLidarRayTraceSensor::Publisher };
-
 };

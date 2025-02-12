@@ -15,9 +15,6 @@ class UNREALSODA_API UGenericRadarSensor : public URadarSensor
 {
 	GENERATED_UCLASS_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime, ReactivateComponent))
-	TSubclassOf<UGenericRadarPublisher> PublisherClass;
-
 	UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
 	TObjectPtr<UGenericRadarPublisher> Publisher;
 
@@ -28,7 +25,6 @@ class UNREALSODA_API UGenericRadarSensor : public URadarSensor
 	ERadarMode RadarMode = ERadarMode::ClusterMode;
 
 protected:
-	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual bool IsVehicleComponentInitializing() const override;
@@ -41,12 +37,5 @@ protected:
 	virtual const TArray<FRadarParams>& GetRadarParams() const override { return RadarParams; }
 
 protected:
-	virtual void Serialize(FArchive& Ar) override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-#if WITH_EDITOR
-	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
-	virtual void PostInitProperties() override;
-#endif
-
-	FGenericPublisherHelper<UGenericRadarSensor, UGenericRadarPublisher> PublisherHelper{ this, &UGenericRadarSensor::PublisherClass, &UGenericRadarSensor::Publisher };
 };
