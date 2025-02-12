@@ -196,10 +196,6 @@ FFileDatabaseImpl::~FFileDatabaseImpl()
 
 // ---------------------------------------------------------------------------------------------------------------
 
-static const FString DBDir = FPaths::ProjectSavedDir() / TEXT("SODA");
-static const FString DBExtension = TEXT(".ssdb");
-static const FString DefaultDB = TEXT("Default") + DBExtension;
-
 void FFileDatabaseManager::RegisterSource(TSharedRef<IFileDatabaseSource> Source)
 {
 	Sources.Add(Source->GetSourceName(), Source);
@@ -212,6 +208,10 @@ void FFileDatabaseManager::UnregisterSource(FName SourceName)
 
 void FFileDatabaseManager::ScanFiles()
 {
+	static const FString DBDir = FPaths::ProjectSavedDir() / TEXT("SODA");
+	static const FString DBExtension = TEXT(".ssdb");
+	static const FString DefaultDB = TEXT("Default") + DBExtension;
+
 	TArray<FString> Files;
 	IFileManager::Get().FindFiles(Files, *DBDir, *DBExtension);
 
