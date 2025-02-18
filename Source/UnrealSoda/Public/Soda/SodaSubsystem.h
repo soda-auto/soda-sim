@@ -152,10 +152,12 @@ protected:
 	virtual bool OnWindowCloseRequested();
 
 	void OnPostGarbageCollect(float Delay);
-	void AfterScenarioStop();
+	void RestoreLevelTransientData();
 
 	void OnActorSpawned(AActor* InActor);
 	void OnActorDestroyed(AActor* InActor);
+
+	virtual void InitLevelState();
 
 protected:
 	bool bIsScenarioRunning = false;
@@ -167,20 +169,21 @@ protected:
 	TMap<TSoftClassPtr<AActor>, FSodaActorDescriptor> SodaActorDescriptors;
 	TSharedPtr<soda::SSodaViewport> SodaViewport;
 
-	struct FScenarioLevelSavedData
+	struct FLevelTransientData
 	{
-		//TArray<uint8> Memory{};
+		TArray<uint8> Memory{};
 		TArray<FString> ActorsDirty{};
 		soda::EUIMode Mode{};
 		FString SelectedActor{};
 		FString PossesdActor{};
-		bool bIsValid = false;
 		FString UserMessage;
-		//inline const bool IsValid() { return Memory.Num(); }
+		inline bool IsValid() { return Memory.Num() > 0; }
 	};
-	static FScenarioLevelSavedData ScenarioLevelSavedData;
+	static FLevelTransientData LevelTransientData;
 	static FGuid SlotToLoad;
 
 	UPROPERTY()
 	TSet<AActor*> SodaActors;
+
+	TArray<TSharedPtr<soda::IDatasetManager>> ActiveDatasets;
 };

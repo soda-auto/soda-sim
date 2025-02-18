@@ -111,6 +111,9 @@ public:
 	float DPIScale;
 
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = UI, meta = (EditInRuntime))
+	bool bIsDrawVehicleDebugPanel = true;
+
+	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = UI, meta = (EditInRuntime))
 	float VehicleDebugAreaWidth;
 
 	UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Advanced, meta = (EditInRuntime))

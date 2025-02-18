@@ -21,8 +21,6 @@
 #include "Soda/FileDatabaseManager.h"
 #include "Soda/SodaDelegates.h"
 
-#define TRANSIENT_SLOT TEXT("LevelState_Transient")
-
 
 void ULevelSaveGame::Serialize(FArchive& Ar)
 {
@@ -138,7 +136,7 @@ ULevelSaveGame * ALevelState::CreateSaveGame(bool bSerializePinnedActorsAsUnpinn
 	return SaveGame;
 }
 
-bool ALevelState::SaveToTransientSlot()
+bool ALevelState::SaveToToMemory(TArray<uint8>& OutSaveData)
 {
 	//Slot.LevelName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
 
@@ -149,7 +147,7 @@ bool ALevelState::SaveToTransientSlot()
 		return false;
 	}
 
-	if (!UGameplayStatics::SaveGameToSlot(SaveGame, TRANSIENT_SLOT, 0))
+	if (!UGameplayStatics::SaveGameToMemory(SaveGame, OutSaveData))
 	{
 		UE_LOG(LogSoda, Error, TEXT("ALevelState::SaveToTransientSlot(); Can't SaveGameToSlot()"));
 		return false;
@@ -260,90 +258,7 @@ ULevelSaveGame* ALevelState::LoadSaveGameFromSlot(const FGuid& Guid, soda::FFile
 	return SaveGame;
 }
 
-ALevelState* ALevelState::CreateOrLoad(const UObject* WorldContextObject, UClass* DefaultClass, bool bFromTransientSlot, const FGuid& FromSlotGuid)
-{
-	if (!WorldContextObject)
-	{
-		WorldContextObject = USodaStatics::GetGameWorld();
-	}
-
-	UWorld* World = WorldContextObject->GetWorld();
-	check(World);
-
-	const FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(WorldContextObject, true);
-	ULevelSaveGame* LevelSaveGame = nullptr;
-	soda::FFileDatabaseSlotInfo SlotInfo;
-	bool bSlotInfoIsValid = false;
-
-	if (bFromTransientSlot)
-	{
-		LevelSaveGame = Cast<ULevelSaveGame>(UGameplayStatics::LoadGameFromSlot(TRANSIENT_SLOT, 0));
-		if (!LevelSaveGame)
-		{
-			UE_LOG(LogSoda, Error, TEXT("ALevelState::CreateOrLoad(); Can't load SavaGame from TransientSlot"));
-		}
-	}
-	else if(FromSlotGuid.IsValid())
-	{
-		LevelSaveGame = LoadSaveGameFromSlot(FromSlotGuid, SlotInfo);
-		if (LevelSaveGame)
-		{
-			bSlotInfoIsValid = true;
-		}
-		else
-		{
-			UE_LOG(LogSoda, Error, TEXT("ALevelState::CreateOrLoad(); Can't load SavaGame from Slot"));
-		}
-	}
-
-	if (LevelSaveGame)
-	{
-		if (LevelSaveGame->LevelName != CurrentLevelName)
-		{
-			UE_LOG(LogSoda, Error, TEXT("ALevelState::CreateOrLoad(); Transient slot LevelName mismatch, loaded name \"%s\", current name \"%s\""), *LevelSaveGame->LevelName, *CurrentLevelName);
-			LevelSaveGame = nullptr;
-		}
-	}
-
-	auto It = TActorIterator<ALevelState>(World);
-	ALevelState* LevelState = It ? *It : nullptr;
-
-	if (LevelSaveGame)
-	{
-		if (LevelState)
-		{
-			LevelSaveGame->LevelDataRecord.DeserializeActor(LevelState, false);
-		}
-		else
-		{
-			LevelState = LevelSaveGame->LevelDataRecord.SpawnActor<ALevelState>(World, false);
-		}
-
-		if (bSlotInfoIsValid)
-		{
-			LevelState->SlotGuid = SlotInfo.GUID;
-			LevelState->SlotLable = SlotInfo.Lable;
-		}
-	}
-
-	if (!LevelState)
-	{
-		if (DefaultClass)
-		{
-			LevelState = World->SpawnActor<ALevelState>(DefaultClass);
-		}
-		else
-		{
-			LevelState = World->SpawnActor<ALevelState>();
-		}
-	}
-
-	check(LevelState)
-
-	return LevelState;
-}
-
-void ALevelState::FinishLoadLevel()
+void ALevelState::SpawnSavedActors()
 {
 	UWorld* World = GetWorld();
 	check(World);

@@ -74,16 +74,13 @@ public:
 	bool SaveToSlot(const FString& Lable, const FString& Description, const FGuid& Guid = FGuid());
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	bool SaveToTransientSlot();
+	bool SaveToToMemory(TArray<uint8>& OutSaveData);
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	bool Resave();
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	static ALevelState* CreateOrLoad(const UObject* WorldContextObject, UClass * DefaultClass, bool bFromTransientSlot = false, const FGuid & FromSlotGuid = FGuid());
-
-	UFUNCTION(BlueprintCallable, Category = LevelState)
-	void FinishLoadLevel();
+	void SpawnSavedActors();
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	virtual bool IsDirty() { return bIsDirty; }
@@ -99,6 +96,7 @@ public:
 
 	static ALevelState* Get();
 	static ALevelState* GetChecked();
+	static ULevelSaveGame* LoadSaveGameFromSlot(const FGuid& Guid, soda::FFileDatabaseSlotInfo& OutSlotInfo);
 
 	virtual ULevelSaveGame* CreateSaveGame(bool bSerializePinnedActorsAsUnpinned);
 
@@ -116,8 +114,6 @@ public:
 	FActorRecord ActorFactoryRecord;
 	TArray<FActorRecord> AdditionalActorRecords;
 
-protected:
-	static ULevelSaveGame* LoadSaveGameFromSlot(const FGuid& Guid, soda::FFileDatabaseSlotInfo & OutSlotInfo);
 
 protected:
 	bool bIsDirty = false;

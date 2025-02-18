@@ -23,6 +23,7 @@
 #include "Soda/LevelState.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/UnrealSodaVersion.h"
+#include "Soda/SodaCommonSettings.h"
 
 static void DrawSelectBox(FPrimitiveDrawInterface* PDI, const FBox& Box, float SizeK, const FLinearColor& Color, uint8 DepthPriority, float Thickness = 0.0f, float DepthBias = 0.0f, bool bScreenSpace = false)
 {
@@ -113,7 +114,7 @@ void USodaGameViewportClient::PostRender(UCanvas* Canvas)
 {
 	Super::PostRender(Canvas);
 
-	if (bIsDrawVehicleDebugPanel)
+	if (GetDefault<USodaCommonSettings>()->bIsDrawVehicleDebugPanel)
 	{
 		ASodaVehicle* Vehicle = nullptr;
 		APlayerController* PlayerController = World->GetFirstPlayerController();

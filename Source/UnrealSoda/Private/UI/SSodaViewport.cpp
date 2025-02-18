@@ -204,21 +204,16 @@ void SSodaViewport::BindCommands()
 
 	CommandListRef.MapAction(
 		Commands.ToggleVehiclePanel,
-		FExecuteAction::CreateLambda([ViewportClient=ViewportClient]()
+		FExecuteAction::CreateLambda([]()
 		{
-			if (ViewportClient.IsValid())
-			{
-				ViewportClient->SetIsDrawVehicleDebugPanel(!ViewportClient->GetIsDrawVehicleDebugPanel());
-			}
+			USodaCommonSettings * Settings = GetMutableDefault<USodaCommonSettings>();
+			Settings->bIsDrawVehicleDebugPanel = !Settings->bIsDrawVehicleDebugPanel;
+			Settings->SaveConfig();
 		}),
 		FCanExecuteAction(),
-		FIsActionChecked::CreateLambda([ViewportClient=ViewportClient]()
+		FIsActionChecked::CreateLambda([]()
 		{
-			if (ViewportClient.IsValid())
-			{
-				return ViewportClient->GetIsDrawVehicleDebugPanel();
-			}
-			return false;
+			return GetDefault<USodaCommonSettings>()->bIsDrawVehicleDebugPanel;
 		})
 	);
 

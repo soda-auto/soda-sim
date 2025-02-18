@@ -69,9 +69,6 @@ public:
 	virtual void SetWidgetTarget(USceneComponent * WidgetTargetComponent);
 	virtual USceneComponent* GetWidgetTarget() const { return WidgetTargetComponent; }
 
-	void SetIsDrawVehicleDebugPanel(bool Val) { bIsDrawVehicleDebugPanel = Val; }
-	bool GetIsDrawVehicleDebugPanel() const { return bIsDrawVehicleDebugPanel; }
-
 	void DrawBoundingBox(const FSceneView* View, FPrimitiveDrawInterface* PDI, const AActor* Actor, const FLinearColor& InColor);
 
 	virtual bool UpdateDropPreviewActor(int32 MouseX, int32 MouseY);
@@ -105,7 +102,6 @@ protected:
 	uint32 CachedMouseY = 0;
 
 	bool bIsWidgetDragging = false;
-	bool bIsDrawVehicleDebugPanel = true;
 
 	EEditorMouseCaptureMode EditorMouseCaptureMode = EEditorMouseCaptureMode::Default;
 	bool bEditorCaptureModeDragging = false;

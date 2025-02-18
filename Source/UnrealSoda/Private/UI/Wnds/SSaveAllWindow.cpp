@@ -14,6 +14,7 @@
 #include "EngineUtils.h"
 #include "Soda/ISodaActor.h"
 #include "Soda/Vehicles/SodaVehicle.h"
+#include "Soda/SodaApp.h"
 
 
 #define LOCTEXT_NAMESPACE "SSaveAllWindow"
@@ -103,16 +104,10 @@ public:
 			.ButtonStyle(FSodaStyle::Get(), "MenuWindow.SaveButton")
 			.OnClicked_Lambda([this]()
 				{
-					Item.Pin()->SaveAction.Execute();
+					Item.Pin()->SaveAction.ExecuteIfBound();
 					return FReply::Handled();
 				}
 			);
-
-			Button->SetEnabled(TAttribute<bool>::CreateLambda([this]()
-				{
-					return Item.Pin()->SaveAction.CanExecute();
-				}
-			));
 			return SNew(SBox)
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
@@ -155,21 +150,20 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 		ALevelState * LevelState = ALevelState::GetChecked();
 		return LevelState->IsDirty() || !LevelState->GetSlotGuid().IsValid();
 	});
-	LevelItem->SaveAction.CanExecuteAction.BindLambda([LevelState]()
-	{
-		return true;
-	});
-	LevelItem->SaveAction.ExecuteAction.BindLambda([]()
+	LevelItem->SaveAction.BindLambda([]()
 	{
 		USodaSubsystem::GetChecked()->OpenWindow("Level Save & Load", SNew(SLevelSaveLoadWindow));	
 	});
-	LevelItem->ResaveAction.CanExecuteAction.BindLambda([LevelState]()
+	LevelItem->ResaveAction.BindLambda([]()
 	{
-		return true;
-	});
-	LevelItem->ResaveAction.ExecuteAction.BindLambda([]()
-	{
-		ALevelState::GetChecked()->Resave();
+		if(ALevelState::GetChecked()->GetSlotGuid().IsValid())
+		{
+			ALevelState::GetChecked()->Resave();
+		}
+		else
+		{
+			soda::ShowNotification(ENotificationLevel::Error, 8.0, TEXT("The level was not saved. You must manually create a slot for the level "));
+		}
 	});
 	bFoundDirtySlot = LevelItem->bIsDirty.Get();
 	Source.Add(LevelItem);
@@ -201,11 +195,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 				{ 
 					return SodaActor.IsValid() && SodaActor->IsDirty();
 				});
-				PinnedItem->SaveAction.CanExecuteAction.BindLambda([SodaActor]()
-				{
-					return true;
-				});
-				PinnedItem->SaveAction.ExecuteAction.BindLambda([SodaActor, Actor]()
+				PinnedItem->SaveAction.BindLambda([SodaActor, Actor]()
 				{
 					if (SodaActor.IsValid())
 					{
@@ -216,11 +206,7 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 							SNew(soda::SSlotActorManagerWindow, bIsVehicle ? soda::EFileSlotType::Vehicle : soda::EFileSlotType::Actor, Actor));
 					}
 				});
-				PinnedItem->ResaveAction.CanExecuteAction.BindLambda([SodaActor]()
-				{
-					return true;
-				});
-				PinnedItem->ResaveAction.ExecuteAction.BindLambda([SodaActor, SodaSubsystem]()
+				PinnedItem->ResaveAction.BindLambda([SodaActor, SodaSubsystem]()
 				{
 					if (SodaActor.IsValid())
 					{

@@ -23,8 +23,8 @@ enum class ESaveAllWindowMode
 struct FSaveAllWindowItem
 {
 	TAttribute<FString> Lable;
-	FUIAction SaveAction;
-	FUIAction ResaveAction;
+	FExecuteAction SaveAction;
+	FExecuteAction ResaveAction;
 	FName IconName;
 	FName ClassName;
 	TAttribute<bool> bIsDirty;
