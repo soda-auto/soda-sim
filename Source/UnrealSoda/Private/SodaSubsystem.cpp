@@ -552,7 +552,7 @@ void USodaSubsystem::ScenarioStop(EScenarioStopReason Reason, EScenarioStopMode 
 
 		for (TObjectIterator<UObject> It; It; ++It)
 		{
-			if (It->GetWorld() == GetWorld() && !It->GetName().StartsWith(TEXT("SKEL_")) || !It->GetName().StartsWith(TEXT("REINST_")))
+			if (It->GetWorld() == GetWorld() && (!It->GetName().StartsWith(TEXT("SKEL_")) || !It->GetName().StartsWith(TEXT("REINST_"))))
 			{
 				if (IObjectDataset* DatasetObject = Cast<IObjectDataset>(*It))
 				{

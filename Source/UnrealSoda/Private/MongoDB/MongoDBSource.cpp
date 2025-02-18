@@ -1,7 +1,5 @@
 // Copyright 2023 SODA.AUTO UK LTD. All Rights Reserved.
 
-#pragma once
-
 #include "Soda/MongoDB/MongoDBSource.h"
 #include "Soda/MongoDB/MongoDBGateway.h"
 #include "Framework/Notifications/NotificationManager.h"
@@ -233,7 +231,7 @@ bool FMongoDBSource::PushSlot(const FFileDatabaseSlotInfo& Info, const TArray<ui
 					<< "lable" << TCHAR_TO_UTF8(*Info.Lable)
 					<< "description" << TCHAR_TO_UTF8(*Info.Description)
 					<< "class" << TCHAR_TO_UTF8(Info.DataClass ? *Info.DataClass->GetClassPathName().ToString() : TEXT(""))
-					<< "last_modified" << Info.DateTime.ToUnixTimestamp()
+					<< "last_modified" << std::int64_t(Info.DateTime.ToUnixTimestamp())
 					<< "hash" << GuidToBin(Info.DataMD5Hash)
 					<< "data" << bsoncxx::types::b_binary{ bsoncxx::binary_sub_type::k_binary, static_cast<std::uint32_t>(Data.Num()), reinterpret_cast<const std::uint8_t*>(Data.GetData()) }
 				<< finalize,

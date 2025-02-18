@@ -109,10 +109,10 @@ bool FMongoDBDatasetManager::BeginRecording()
 		DatasetID = -1;
 		for (const auto& It : CollectionListNames)
 		{
-			FString CollectionName = UTF8_TO_TCHAR(It.c_str());
-			if (CollectionName.StartsWith(COLLECTION_NAME_DATASETE_PREFIX))
+			FString SrcCollectionName = UTF8_TO_TCHAR(It.c_str());
+			if (SrcCollectionName.StartsWith(COLLECTION_NAME_DATASETE_PREFIX))
 			{
-				int32 CollectionID = FCString::Atoi64(*CollectionName.RightChop(FString(COLLECTION_NAME_DATASETE_PREFIX).Len()));
+				int32 CollectionID = FCString::Atoi64(*SrcCollectionName.RightChop(FString(COLLECTION_NAME_DATASETE_PREFIX).Len()));
 				FString CollectionNameChecked = FString(COLLECTION_NAME_DATASETE_PREFIX) + FString::FromInt(CollectionID);
 				if (std::find(CollectionListNames.begin(), CollectionListNames.end(), TCHAR_TO_UTF8(*CollectionNameChecked)) != CollectionListNames.end())
 				{
@@ -193,8 +193,6 @@ void FMongoDBDatasetManager::EndRecording(EScenarioStopReason Reasone, bool bImm
 					Handler->FinalizeBatch();
 				}
 
-				mongocxx::database DB = (**MongoDBGetway.GetMongoThreadClient())[TCHAR_TO_UTF8(*MongoDBGetway.GetDatabaseName())];
-				mongocxx::collection Collectioin = DB[TCHAR_TO_UTF8(*CollectionName)];
 				try
 				{
 					Collectioin.update_one(
