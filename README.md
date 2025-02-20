@@ -21,33 +21,35 @@ Quick start [here](https://docs.soda.auto/projects/soda-sim/en/latest/How_To/Qui
 
 This repository is plugin for UnrealEngine. You can clone this repo to the UnrealEngine's plugins folder or to the project plugins folders. Then you need to follow the next steps: [Setup a New UProject](https://docs.soda.auto/projects/soda-sim/en/latest/How_To/Setup_a_New_UProject.html)
 
-> [!NOTE]
-> * The repose includes LFS files. Make sure you clone LFS files as well.
+> [!NOTE]  
+> The repose includes LFS files. Make sure you clone LFS files as well.
 
 See more information about [Working with Plugins in Unreal Engine](https://docs.unrealengine.com/5.0/en-US/working-with-plugins-in-unreal-engine/).
 
 ## Supported OS
-* Windows
-* Linux (not tested)
+- Windows
+- Linux
 
 ## Ecosystem
-* [soda-sim-uproject] (https://github.com/soda-auto/soda-sim-uproject) - Just an example of UnreanEngine project for building the SODA.Sim.
-* [soda-sim-ros2](https://github.com/soda-auto/soda-sim-ros2) - support ROS2 capabilities for the SODA.Sim
-* [soda-sim-ros2-ws](https://github.com/soda-auto/soda-sim-ros2-ws) - scripts for build ROS2 for [SODA.Sim ROS2](https://github.com/soda-auto/soda-sim-ros2) for Windows and Linux.
-* [soda-sim-proto-v1](https://github.com/soda-auto/soda-sim-proto-v1) - implementation of the generic snesors messages serialization for the SodaSim.
-* [soda-sim-remote-ctr](https://github.com/soda-auto/soda-sim-remote-ctrl) - HTTP Python client for [Remote Control](https://docs.unrealengine.com/5.3/en-US/remote-control-for-unreal-engine/) implementing [Remote Control API HTTP](https://docs.unrealengine.com/5.3/en-US/remote-control-api-http-reference-for-unreal-engine/)
-* [soda-sim-city-sample-vehicles](https://github.com/soda-auto/soda-sim-city-sample-vehicles) - additional GhostVehicles library based on City Sample Vehicles
+- [soda-sim-uproject](https://github.com/soda-auto/soda-sim-uproject) - just an example of UnreanEngine project for building the SODA.Sim.
+- [soda-sim-ros2](https://github.com/soda-auto/soda-sim-ros2) - support ROS2 capabilities for the SODA.Sim
+- [ros-humble](https://github.com/soda-auto/ros-humble) - precompiled ROS Humble binaries for use in the *soda-sim-ros2*
+- [ros-soda-msgs](https://github.com/soda-auto/ros-soda-msgs) - custom ROS messages used in SODA.Sim
+- [ros-ue-wrapper](https://github.com/soda-auto/ros-ue-wrapper) - a wrapper over the ROS C++ interfaces (rclcpp), with the ability to use rclcpp in UnrealEngine.
+- [soda-sim-proto-v1](https://github.com/soda-auto/soda-sim-proto-v1) - implementation of the generic snesors messages serialization for the SodaSim.
+- [soda-sim-remote-ctr](https://github.com/soda-auto/soda-sim-remote-ctrl) - HTTP Python client for [Remote Control](https://docs.unrealengine.com/5.3/en-US/remote-control-for-unreal-engine/) implementing [Remote Control API HTTP](https://docs.unrealengine.com/5.3/en-US/remote-control-api-http-reference-for-unreal-engine/)
+- [soda-sim-city-sample-vehicles](https://github.com/soda-auto/soda-sim-city-sample-vehicles) - additional GhostVehicles library based on City Sample Vehicles
 
 ## Roadmap
-* Integration with [Project Chrono](https://projectchrono.org/) for accurate vehicle physics simulation.
-* Analog/Digital Input/Output hardware interface. 
+- Integration with [Project Chrono](https://projectchrono.org/) for accurate vehicle physics simulation.
+- Analog/Digital Input/Output hardware interface. 
 We have almost finished developing our own hardware, which will allow virtual Analog/Digital Input/Output to be mapped to real hardware for HIL purpose.
-* Realtime Python Scripts. Support [Unreal Editor Python](https://docs.unrealengine.com/5.2/en-US/scripting-the-unreal-editor-using-python/) to work in game mode.
-* Simulink Model Importing. Ability to develop vehicle components using Simulinks and import them into the simulator.
-* LIN interfce support.
-* City Traffic Generation based on the Summo.
-* Support of the OpenScenario.
-* Distributed simulation. Horisontal parallelization of simulation on multiple computers to simulate more vehicle sensors.
+- Realtime Python Scripts. Support [Unreal Editor Python](https://docs.unrealengine.com/5.2/en-US/scripting-the-unreal-editor-using-python/) to work in game mode.
+- Simulink Model Importing. Ability to develop vehicle components using Simulinks and import them into the simulator.
+- LIN interfce support.
+- City Traffic Generation based on the Summo.
+- Support of the OpenScenario.
+- Distributed simulation. Horisontal parallelization of simulation on multiple computers to simulate more vehicle sensors.
 
 ## Contact
 Please feel free to provide feedback or ask questions by creating a Github issue. For inquiries about collaboration, please email us at sim@soda.auto.
@@ -59,13 +61,13 @@ This software contains code licensed as described in [LICENSE](LICENSE.md).
 ### Third Parties Licenses
 Please ensure to comply with the respective licenses when using these third-party components in your project.
 Lists the licenses for third-party software used in this project:
-* **dbcppp** - Licensed under the [MIT License](https://opensource.org/licenses/MIT).
-* **libzmq** - Licensed under the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
-* mongodb Licensed under the [Server Side Public License v1.0](https://www.mongodb.com/licensing/server-side-public-license). MongoDB drivers are available under the [Apache License v2.0](https://www.apache.org/licenses/LICENSE-2.0).
-* **mongodb-cxx** - Licensed under the [Apache License, version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
-* **opendrive_reader** - Licensed under the [MIT License](https://opensource.org/licenses/MIT).
-* **pugixml** - Distributed under the [MIT License](https://opensource.org/licenses/MIT).
-* **quickhull** - Licensed under the [BSD-2-Clause license](https://opensource.org/licenses/BSD-2-Clause).
-* **3D models** - Licensed under the [CC-BY License](https://creativecommons.org/licenses/by/4.0/).
-* **Unreal Engine** - Dependencies Associated with the [Unreal Engine EULA](https://www.unrealengine.com/en-US/eula).
+- **dbcppp** - Licensed under the [MIT License](https://opensource.org/licenses/MIT).
+- **libzmq** - Licensed under the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
+- mongodb Licensed under the [Server Side Public License v1.0](https://www.mongodb.com/licensing/server-side-public-license). MongoDB drivers are available under the [Apache License v2.0](https://www.apache.org/licenses/LICENSE-2.0).
+- **mongodb-cxx** - Licensed under the [Apache License, version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+- **opendrive_reader** - Licensed under the [MIT License](https://opensource.org/licenses/MIT).
+- **pugixml** - Distributed under the [MIT License](https://opensource.org/licenses/MIT).
+- **quickhull** - Licensed under the [BSD-2-Clause license](https://opensource.org/licenses/BSD-2-Clause).
+- **3D models** - Licensed under the [CC-BY License](https://creativecommons.org/licenses/by/4.0/).
+- **Unreal Engine** - Dependencies Associated with the [Unreal Engine EULA](https://www.unrealengine.com/en-US/eula).
 
