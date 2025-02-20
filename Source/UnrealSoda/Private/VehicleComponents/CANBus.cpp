@@ -36,7 +36,7 @@ void UCANBusComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 void UCANBusComponent::OnPreActivateVehicleComponent()
 {
-	RegistredCANDev.Empty();
+	//RegistredCANDev.Empty();
 }
 
 bool UCANBusComponent::OnActivateVehicleComponent()
@@ -49,7 +49,6 @@ bool UCANBusComponent::OnActivateVehicleComponent()
 		return false;
 	}
 
-	
 	if (bUseIntervaledSendingFrames)
 	{
 		IntervaledThreadCounter = 0;
@@ -92,7 +91,7 @@ void UCANBusComponent::OnDeactivateVehicleComponent()
 	//RecvMessages.clear();
 	//SendMessages.clear();
 
-	RegistredCANDev.Reset();
+	//RegistredCANDev.Reset();
 }
 
 void UCANBusComponent::RegisterCanDev(UCANDevComponent* CANDev)
@@ -291,6 +290,11 @@ void UCANBusComponent::UnregSendMsgJ1939(const FString& MessageName, uint8 Sourc
 
 bool UCANBusComponent::ProcessRecvMessage(const TTimestamp& Timestamp, const dbc::FCanFrame & CanFrame)
 {
+	if (!HealthIsWorkable())
+	{
+		return false;
+	}
+
 	++PkgReceived;
 
 	RecvDelegate.Broadcast(Timestamp, CanFrame);
@@ -348,28 +352,27 @@ void UCANBusComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 	{
 		UFont* RenderFont = GEngine->GetSmallFont();
 		Canvas->SetDrawColor(FColor::White);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Registred send msgs: %d"), RecvMessages.size()), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Registred recv msgs: %d"), SendMessages.size()), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("PkgSent: %d"), PkgSent), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("PkgReceived: %d"), PkgReceived), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("PkgSentErr: %d"), PkgSentErr), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("PkgDecoded: %d"), PkgDecoded), 16, YPos);
-		if (bShowRegRecvMsgs)
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Registred CAN Dev Num: %d"), RegistredCANDev.Num()), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Registred Recv Msgs: %d"), RecvMessages.size()), 16, YPos);
+		if (bShowRegMsgs)
 		{
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Recv Messages:")), 16, YPos);
 			for (auto& [Key, Value] : RecvMessages)
 			{
 				YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("    %s: #%08X"), *Value->GetName(), Value->GetRegistredCANID()), 16, YPos);
 			}
 		}
-		if (bShowRegSendMsgs)
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Registred Send Msgs: %d"), SendMessages.size()), 16, YPos);
+		if (bShowRegMsgs)
 		{
-			YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Send Messages:")), 16, YPos);
 			for (auto& [Key, Value] : SendMessages)
 			{
 				YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("    %s: #%08X"), *Value->GetName(), Value->GetRegistredCANID()), 16, YPos);
 			}
 		}
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Pkg Sent: %d"), PkgSent), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Pkg Received: %d"), PkgReceived), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Pkg SentErr: %d"), PkgSentErr), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Pkg Decoded: %d"), PkgDecoded), 16, YPos);
 	}
 }
 

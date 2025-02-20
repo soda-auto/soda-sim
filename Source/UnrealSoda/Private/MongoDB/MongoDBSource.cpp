@@ -76,7 +76,7 @@ FFileDatabaseSlotInfo ToSlotInfo(const bsoncxx::v_noabi::document::view & DocVie
 
 FName FMongoDBSource::GetSourceName() const
 {
-	static FName SourceName("ManogDB");
+	static FName SourceName("MongoDB");
 	return SourceName;
 }
 

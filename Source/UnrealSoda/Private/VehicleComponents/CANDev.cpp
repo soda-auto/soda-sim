@@ -21,23 +21,21 @@ UCANDevComponent::UCANDevComponent(const FObjectInitializer& ObjectInitializer)
 void UCANDevComponent::OnPreActivateVehicleComponent()
 {
 	Super::OnPreActivateVehicleComponent();
+}
 
+bool UCANDevComponent::OnActivateVehicleComponent()
+{
 	CANBus = LinkToCANBus.GetObject<UCANBusComponent>(GetOwner());
 	if (CANBus)
 	{
 		CANBus->RegisterCanDev(this);
 	}
-}
 
-bool UCANDevComponent::OnActivateVehicleComponent()
-{
 	if (!CANBus)
 	{
 		SetHealth(EVehicleComponentHealth::Warning, TEXT("CAN bus isn't connectd"));
 	}
 
-	//RecvMessages.clear();
-	//SendMessages.clear();
 
 	return Super::OnActivateVehicleComponent();
 }
@@ -51,9 +49,6 @@ void UCANDevComponent::OnDeactivateVehicleComponent()
 		CANBus->UnregisterCanDev(this);
 	}
 	CANBus = nullptr;
-
-	//RecvMessages.clear();
-	//SendMessages.clear();
 }
 
 int UCANDevComponent::SendFrame(const dbc::FCanFrame& CanFrame) 
