@@ -127,7 +127,7 @@ public:
 	virtual bool SaveToBinFile(const FString& FileName);
 
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	virtual bool SaveToSlot(const FString& Lable, const FString & Description, const FGuid & Guid = FGuid(), bool bRebase = true) override;
+	virtual bool SaveToSlot(const FString& Label, const FString & Description, const FGuid & Guid = FGuid(), bool bRebase = true) override;
 
 	static ASodaVehicle* SpawnVehicleFromJsonArchive(UWorld* World, const TSharedPtr<FJsonActorArchive> & Ar, const FVector& Location, const FRotator& Rotation, bool Posses = true, FName DesireName = NAME_None, bool bApplyOffset = false);
 
@@ -236,7 +236,7 @@ public:
 	virtual const FGuid& GetSlotGuid() const override { return SlotGuid; }
 
 	UFUNCTION(BlueprintCallable, Category = "Save & Load")
-	virtual FString GetSlotLable() const override;
+	virtual FString GetSlotLabel() const override;
 
 	virtual AActor* SpawnActorFromSlot(UWorld* World, const FGuid& Slot, const FTransform& Transform, FName DesireName = NAME_None) const override;
 
@@ -274,7 +274,7 @@ protected:
 	FGuid SlotGuid;
 
 	UPROPERTY(SaveGame)
-	FString SlotLable;
+	FString SlotLabel;
 
 	TArray<IVehicleTickablObject*> PreTickedVehicleComponens;
 	TArray<IVehicleTickablObject*> PostTickedVehicleComponens;

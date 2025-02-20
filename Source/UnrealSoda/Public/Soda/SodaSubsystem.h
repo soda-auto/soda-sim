@@ -128,6 +128,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	bool LoadLevelFromSlot(const FGuid& Guid);
+
+	UFUNCTION(BlueprintCallable, Category = LevelState)
+	bool LoadLevelFromSlotByLable(const FString& SlotLabel);
 	
 public:
 	static USodaSubsystem* Get();

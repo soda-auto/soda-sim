@@ -65,7 +65,7 @@ FFileDatabaseSlotInfo ToSlotInfo(const bsoncxx::v_noabi::document::view & DocVie
 
 	Slot.GUID = BinToGuid(DocView["_id"].get_binary());
 	Slot.Type = static_cast<EFileSlotType>(DocView["type"].get_int32().value);
-	Slot.Lable = UTF8_TO_TCHAR(DocView["lable"].get_string().value.to_string().c_str());
+	Slot.Label = UTF8_TO_TCHAR(DocView["label"].get_string().value.to_string().c_str());
 	Slot.Description = UTF8_TO_TCHAR(DocView["description"].get_string().value.to_string().c_str());
 	Slot.DataClass = GetClassFromString(UTF8_TO_TCHAR(DocView["class"].get_string().value.to_string().c_str()));
 	Slot.DateTime = FDateTime::FromUnixTimestamp(DocView["last_modified"].get_int64().value);
@@ -228,7 +228,7 @@ bool FMongoDBSource::PushSlot(const FFileDatabaseSlotInfo& Info, const TArray<ui
 				document{}
 					<< "_id" << Id
 				    << "type" << static_cast<int>(Info.Type)
-					<< "lable" << TCHAR_TO_UTF8(*Info.Lable)
+					<< "label" << TCHAR_TO_UTF8(*Info.Label)
 					<< "description" << TCHAR_TO_UTF8(*Info.Description)
 					<< "class" << TCHAR_TO_UTF8(Info.DataClass ? *Info.DataClass->GetClassPathName().ToString() : TEXT(""))
 					<< "last_modified" << std::int64_t(Info.DateTime.ToUnixTimestamp())

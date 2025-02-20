@@ -245,7 +245,7 @@ void USodaSubsystem::InitLevelState()
 		if (bSlotInfoIsValid)
 		{
 			LevelState->SlotGuid = SlotInfo.GUID;
-			LevelState->SlotLable = SlotInfo.Lable;
+			LevelState->SlotLabel = SlotInfo.Label;
 		}
 		*/
 	}
@@ -902,7 +902,7 @@ bool USodaSubsystem::LoadLevelFromSlot(const FGuid& Guid)
 	FString LevelName;
 	if (!ALevelState::DeserializeSlotDescriptor(SlotInfo.JsonDescription, LevelName))
 	{
-		UE_LOG(LogSoda, Error, TEXT("ALevelState::LoadLevelFromSlot(); DeserializeSlotDescriptor() faild"));
+		UE_LOG(LogSoda, Error, TEXT("USodaSubsystem::LoadLevelFromSlot(); DeserializeSlotDescriptor() faild"));
 		return false;
 	}
 
@@ -911,4 +911,17 @@ bool USodaSubsystem::LoadLevelFromSlot(const FGuid& Guid)
 
 	UGameplayStatics::OpenLevel(this, *LevelName, false);
 	return true;
+}
+
+bool USodaSubsystem::LoadLevelFromSlotByLable(const FString& SlotLabel)
+{
+	for (auto& [Guid, SlotInfo] : SodaApp.GetFileDatabaseManager().GetSlots(soda::EFileSlotType::Level))
+	{
+		if (SlotInfo->Label == SlotLabel)
+		{
+			return LoadLevelFromSlot(Guid);
+		}
+	}
+	UE_LOG(LogSoda, Error, TEXT("USodaSubsystem::LoadLevelFromSlotByLable(); Can't find slot with lable \"%s\""), *SlotLabel);
+	return false;
 }

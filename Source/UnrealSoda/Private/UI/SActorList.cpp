@@ -149,7 +149,7 @@ public:
 							ISodaActor* SodaActor = Cast<ISodaActor>(Actor);
 							if (SodaActor && SodaActor->GetSlotGuid().IsValid())
 							{
-								Ret = " [" + SodaActor->GetSlotLable() + "]";
+								Ret = " [" + SodaActor->GetSlotLabel() + "]";
 							}
 							return FText::FromString(*Ret);
 						})

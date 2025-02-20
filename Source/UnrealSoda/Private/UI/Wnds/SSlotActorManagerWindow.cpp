@@ -106,7 +106,7 @@ FReply SSlotActorManagerWindow::OnNewSave()
 	ISodaActor* SodaActor = Cast<ISodaActor>(SelectedActor);
 	if (SodaActor)
 	{
-		if (!SodaActor->SaveToSlot(FileDatabaseManager->GetLableText(), FileDatabaseManager->GetDescriptionText(), FGuid(), true))
+		if (!SodaActor->SaveToSlot(FileDatabaseManager->GetLabelText(), FileDatabaseManager->GetDescriptionText(), FGuid(), true))
 		{
 			soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Can't save vehilce to a new slot"));
 		}
@@ -124,11 +124,11 @@ FReply SSlotActorManagerWindow::OnSave()
 		{
 			USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 
-			auto ProccSave = [Slot, SelectedVehicle = SelectedActor, Lable = FileDatabaseManager->GetLableText(), Description = FileDatabaseManager->GetDescriptionText(), SodaActor]()
+			auto ProccSave = [Slot, SelectedVehicle = SelectedActor, Label = FileDatabaseManager->GetLabelText(), Description = FileDatabaseManager->GetDescriptionText(), SodaActor]()
 			{
 				if(SelectedVehicle.IsValid())
 				{
-					if (!SodaActor->SaveToSlot(Lable, Description, Slot->GUID, true))
+					if (!SodaActor->SaveToSlot(Label, Description, Slot->GUID, true))
 					{
 						soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Can't save to the selected slot"));
 					}
@@ -140,7 +140,7 @@ FReply SSlotActorManagerWindow::OnSave()
 				TSharedPtr<soda::SMessageBox> MsgBox = SodaSubsystem->ShowMessageBox(
 					soda::EMessageBoxType::YES_NO_CANCEL,
 					"Replace Slot",
-					"Are you sure you want to replace the \"" + Slot->Lable + "\" with new slot data ?");
+					"Are you sure you want to replace the \"" + Slot->Label + "\" with new slot data ?");
 				MsgBox->SetOnMessageBox(soda::FOnMessageBox::CreateLambda([this, ProccSave](soda::EMessageBoxButton Button)
 				{
 					if (Button == soda::EMessageBoxButton::YES)

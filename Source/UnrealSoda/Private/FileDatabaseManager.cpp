@@ -66,7 +66,7 @@ public:
 	}
 
 	SQLITE_PREPARED_STATEMENT(FGetSlotsInfo,
-		"SELECT guid, type, lable, description, class, json_description, last_modified, hash FROM table_files WHERE type = ?1;",
+		"SELECT guid, type, label, description, class, json_description, last_modified, hash FROM table_files WHERE type = ?1;",
 		SQLITE_PREPARED_STATEMENT_COLUMNS(FGuid, EFileSlotType, FString, FString, FString, FString, FDateTime, FGuid),
 		SQLITE_PREPARED_STATEMENT_BINDINGS(EFileSlotType)
 	);
@@ -78,7 +78,7 @@ public:
 		{
 			FFileDatabaseSlotInfo Slot;
 			FString DataClassName;
-			if (InStatement.GetColumnValues(Slot.GUID, Slot.Type, Slot.Lable,  Slot.Description, DataClassName, Slot.JsonDescription, Slot.DateTime, Slot.DataMD5Hash))
+			if (InStatement.GetColumnValues(Slot.GUID, Slot.Type, Slot.Label,  Slot.Description, DataClassName, Slot.JsonDescription, Slot.DateTime, Slot.DataMD5Hash))
 			{
 				Slot.DataClass = GetClassFromString(DataClassName);
 				return InCallback(MoveTemp(Slot));
@@ -88,7 +88,7 @@ public:
 	}
 
 	SQLITE_PREPARED_STATEMENT(FGetSlotInfo,
-		"SELECT type, lable, description, class, json_description, last_modified, hash FROM table_files WHERE guid = ?1;",
+		"SELECT type, label, description, class, json_description, last_modified, hash FROM table_files WHERE guid = ?1;",
 		SQLITE_PREPARED_STATEMENT_COLUMNS(EFileSlotType, FString, FString, FString, FString, FDateTime, FGuid),
 		SQLITE_PREPARED_STATEMENT_BINDINGS(FGuid)
 	);
@@ -98,7 +98,7 @@ public:
 	{
 		FString JsonDescription_Dummy;
 		FString DataClassName;
-		if (Statement_GetSlotInfo.BindAndExecuteSingle(Guid, Slot.Type, Slot.Lable, Slot.Description, DataClassName, Slot.JsonDescription, Slot.DateTime, Slot.DataMD5Hash))
+		if (Statement_GetSlotInfo.BindAndExecuteSingle(Guid, Slot.Type, Slot.Label, Slot.Description, DataClassName, Slot.JsonDescription, Slot.DateTime, Slot.DataMD5Hash))
 		{
 			Slot.GUID = Guid;
 			Slot.DataClass = GetClassFromString(DataClassName);
@@ -124,7 +124,7 @@ public:
 
 	SQLITE_PREPARED_STATEMENT_BINDINGS_ONLY(
 		FUpdateSlotInfo,
-		" UPDATE table_files SET type = ?2, lable = ?3, description = ?4, class = ?5, json_description = ?6, last_modified = ?7 WHERE guid = ?1;",
+		" UPDATE table_files SET type = ?2, label = ?3, description = ?4, class = ?5, json_description = ?6, last_modified = ?7 WHERE guid = ?1;",
 		SQLITE_PREPARED_STATEMENT_BINDINGS(FGuid, EFileSlotType, FString, FString, FString, FString, FDateTime)
 	);
 	private: FUpdateSlotInfo Statement_UpdateSlotInfo;
@@ -143,7 +143,7 @@ public:
 
 	SQLITE_PREPARED_STATEMENT_BINDINGS_ONLY(
 		FAddSlot,
-		" INSERT INTO table_files(guid, type, lable, description, class, json_description, last_modified, hash)"
+		" INSERT INTO table_files(guid, type, label, description, class, json_description, last_modified, hash)"
 		" VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);",
 		SQLITE_PREPARED_STATEMENT_BINDINGS(FGuid, EFileSlotType, FString, FString, FString, FString, FDateTime, FGuid)
 	);
@@ -154,14 +154,14 @@ public:
 		FFileDatabaseSlotInfo FoundSlot;
 		if (GetSlotInfo(Slot.GUID, FoundSlot))
 		{
-			if (!Statement_UpdateSlotInfo.BindAndExecute(Slot.GUID, Slot.Type, Slot.Lable, Slot.Description, Slot.DataClass ? *Slot.DataClass->GetClassPathName().ToString() : TEXT(""), Slot.JsonDescription, Slot.DateTime))
+			if (!Statement_UpdateSlotInfo.BindAndExecute(Slot.GUID, Slot.Type, Slot.Label, Slot.Description, Slot.DataClass ? *Slot.DataClass->GetClassPathName().ToString() : TEXT(""), Slot.JsonDescription, Slot.DateTime))
 			{
 				return false;
 			}
 		}
 		else
 		{
-			if (!Statement_AddSlot.BindAndExecute(Slot.GUID, Slot.Type, Slot.Lable, Slot.Description, Slot.DataClass ? *Slot.DataClass->GetClassPathName().ToString() : TEXT(""), Slot.JsonDescription, Slot.DateTime, FGuid{}))
+			if (!Statement_AddSlot.BindAndExecute(Slot.GUID, Slot.Type, Slot.Label, Slot.Description, Slot.DataClass ? *Slot.DataClass->GetClassPathName().ToString() : TEXT(""), Slot.JsonDescription, Slot.DateTime, FGuid{}))
 			{
 				return false;
 			}
@@ -243,7 +243,7 @@ void FFileDatabaseManager::ScanFiles()
 			DatabaseImpl->Statements = MakeUnique<FFileDatabaseStatement>(*DatabaseImpl->Database.Get());
 			if (!DatabaseImpl->Statements->CreatePreparedStatements())
 			{
-				soda::ShowNotificationAndLog(ENotificationLevel::Error, 5.0, ANSI_TO_TCHAR(__FUNCTION__), TEXT("Can't create statements"));
+				SHOW_NOTIFICATION(Error, 5.0, TEXT("Can't create statements"));
 				continue;
 			}
 		}
@@ -283,7 +283,7 @@ TMap<FGuid, TSharedPtr<FFileDatabaseSlotInfo>> FFileDatabaseManager::GetSlots(EF
 
 		if (!bRes)
 		{
-			soda::ShowNotificationAndLog(ENotificationLevel::Error, 5.0, ANSI_TO_TCHAR(__FUNCTION__), *It->Database->GetLastError());
+			SHOW_NOTIFICATION(Error, 5.0, *It->Database->GetLastError());
 			continue;
 		}
 	}
@@ -298,7 +298,7 @@ TMap<FGuid, TSharedPtr<FFileDatabaseSlotInfo>> FFileDatabaseManager::GetSlots(EF
 			{
 				if (!(*FoundSource)->PullSlotsInfo(SourceSlots, Type))
 				{
-					soda::ShowNotificationAndLog(ENotificationLevel::Error, 5.0, ANSI_TO_TCHAR(__FUNCTION__), TEXT("Can't pull slots from\"%s\""), *SourceName.ToString());
+					SHOW_NOTIFICATION(Error, 5.0, TEXT("Can't pull slots from\"%s\""), *SourceName.ToString());
 				}
 			}
 		}
@@ -353,7 +353,7 @@ TUniquePtr<FSQLiteDatabase> FFileDatabaseManager::OpenDatabase(const FString& Fi
 
 	if (!Database->Open(*FilePath, ESQLiteDatabaseOpenMode::ReadWriteCreate))
 	{
-		soda::ShowNotificationAndLog(ENotificationLevel::Error, 5.0, ANSI_TO_TCHAR(__FUNCTION__), TEXT("Can't open %s database"), *FilePath);
+		SHOW_NOTIFICATION(Error, 5.0, TEXT("Can't open %s database"), *FilePath);
 		return {};
 	}
 
@@ -365,21 +365,21 @@ TUniquePtr<FSQLiteDatabase> FFileDatabaseManager::OpenDatabase(const FString& Fi
 
 	if (!Database->PerformQuickIntegrityCheck())
 	{
-		soda::ShowNotificationAndLog(ENotificationLevel::Error, 5.0, ANSI_TO_TCHAR(__FUNCTION__), TEXT("Database failed integrity check."));
+		SHOW_NOTIFICATION(Error, 5.0, TEXT("Database failed integrity check."));
 		Database->Close();
 		return {};
 	}
 
-	if (!ensure(Database->Execute(TEXT("CREATE TABLE IF NOT EXISTS table_files(guid BLOB PRIMARY KEY, type INT, lable TEXT, description TEXT, class TEXT, json_description TEXT, last_modified INTEGER, hash BLOB NOT NULL, data BLOB);"))))
+	if (!ensure(Database->Execute(TEXT("CREATE TABLE IF NOT EXISTS table_files(guid BLOB PRIMARY KEY, type INT, label TEXT, description TEXT, class TEXT, json_description TEXT, last_modified INTEGER, hash BLOB NOT NULL, data BLOB);"))))
 	{
-		soda::ShowNotificationAndLog(ENotificationLevel::Error, 5.0, ANSI_TO_TCHAR(__FUNCTION__), *Database->GetLastError());
+		SHOW_NOTIFICATION(Error, 5.0, *Database->GetLastError());
 		Database->Close();
 		return {};
 	}
 
 	if (!ensure(Database->Execute(TEXT("CREATE INDEX IF NOT EXISTS type_index ON table_files(type);"))))
 	{
-		soda::ShowNotificationAndLog(ENotificationLevel::Error, 5.0, ANSI_TO_TCHAR(__FUNCTION__), *Database->GetLastError());
+		SHOW_NOTIFICATION(Error, 5.0, *Database->GetLastError());
 		return {};
 	}
 
@@ -399,7 +399,7 @@ bool FFileDatabaseManager::AddOrUpdateSlotInfo(const FFileDatabaseSlotInfo& InSl
 
 	if (!DefaultDatabasesImpl->Statements->AddOrUpdateSlotInfo(Slot))
 	{
-		soda::ShowNotificationAndLog(ENotificationLevel::Error, 5.0, ANSI_TO_TCHAR(__FUNCTION__), *DefaultDatabasesImpl->Database->GetLastError());
+		SHOW_NOTIFICATION(Error, 5.0, *DefaultDatabasesImpl->Database->GetLastError());
 		return false;
 	}
 
@@ -445,7 +445,7 @@ bool FFileDatabaseManager::UpdateSlotData(const FGuid& Guid, const TArray<uint8>
 			Hash.Set(MD5);
 			if (!It->Statements->UpdateSlotData(Guid, FDateTime::Now(), MD5HashToGuid(Hash), Data))
 			{
-				soda::ShowNotificationAndLog(ENotificationLevel::Error, 5.0, ANSI_TO_TCHAR(__FUNCTION__), *DefaultDatabasesImpl->Database->GetLastError());
+				SHOW_NOTIFICATION(Error, 5.0, *DefaultDatabasesImpl->Database->GetLastError());
 				return false;
 			}
 			return true;

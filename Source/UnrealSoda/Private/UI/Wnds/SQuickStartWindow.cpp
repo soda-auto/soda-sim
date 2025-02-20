@@ -128,7 +128,7 @@ void SQuickStartWindow::Construct(const FArguments& InArgs)
 	TSharedRef<SVerticalBox> DemoList = SNew(SVerticalBox);
 	for (const auto& Slot : Slots)
 	{
-		if (Slot.Value->Lable.StartsWith(TEXT("Demo")))
+		if (Slot.Value->Label.StartsWith(TEXT("Demo")))
 		{
 			DemoList->AddSlot()
 			[

@@ -155,4 +155,6 @@ namespace soda
 	}
 }
 
+#define SHOW_NOTIFICATION(Level, Duration, Foramt, ...) soda::ShowNotificationAndLog(ENotificationLevel::Level, Duration, ANSI_TO_TCHAR(__FUNCTION__), Foramt, ##__VA_ARGS__);
+
 extern UNREALSODA_API class FSodaApp SodaApp;

@@ -64,7 +64,7 @@ public:
 				.Padding(5, 1, 1, 1)
 				[
 					SNew(STextBlock)
-					.Text_Lambda([this]() { return FText::FromString(Item.Pin()->Lable.Get()); })
+					.Text_Lambda([this]() { return FText::FromString(Item.Pin()->Label.Get()); })
 				];
 		}
 
@@ -139,9 +139,9 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 	// Add Level State
 	ALevelState * LevelState = ALevelState::GetChecked();
 	TSharedPtr<FSaveAllWindowItem> LevelItem = MakeShared<FSaveAllWindowItem>();
-	LevelItem->Lable = TAttribute<FString>::CreateLambda([LevelName=LevelName, LevelState=TWeakObjectPtr<ALevelState>(LevelState)]()
+	LevelItem->Label = TAttribute<FString>::CreateLambda([LevelName=LevelName, LevelState=TWeakObjectPtr<ALevelState>(LevelState)]()
 	{
-		return LevelName + " [" + (LevelState->GetSlotGuid().IsValid() ? LevelState->GetSlotLable() : FString(TEXT("New"))) + "]";
+		return LevelName + " [" + (LevelState->GetSlotGuid().IsValid() ? LevelState->GetSlotLabel() : FString(TEXT("New"))) + "]";
 	});
 	LevelItem->IconName = "Icons.Level";
 	LevelItem->ClassName = "Level";
@@ -185,9 +185,9 @@ void SSaveAllWindow::Construct(const FArguments& InArgs, ESaveAllWindowMode Mode
 				TSharedPtr<FSaveAllWindowItem> PinnedItem = MakeShared<FSaveAllWindowItem>();
 				Source.Add(PinnedItem);
 				const FSodaActorDescriptor & Desc = SodaSubsystem->GetSodaActorDescriptor(Actor->GetClass());
-				PinnedItem->Lable = TAttribute<FString>::CreateLambda([SodaActor=SodaActor]()
+				PinnedItem->Label = TAttribute<FString>::CreateLambda([SodaActor=SodaActor]()
 				{
-					return SodaActor.IsValid() ? SodaActor->GetSlotLable() : TEXT("");
+					return SodaActor.IsValid() ? SodaActor->GetSlotLabel() : TEXT("");
 				});
 				PinnedItem->IconName = Desc.Icon;
 				PinnedItem->ClassName = Actor->GetClass()->GetFName();

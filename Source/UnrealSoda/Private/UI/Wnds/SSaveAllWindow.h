@@ -22,7 +22,7 @@ enum class ESaveAllWindowMode
 
 struct FSaveAllWindowItem
 {
-	TAttribute<FString> Lable;
+	TAttribute<FString> Label;
 	FExecuteAction SaveAction;
 	FExecuteAction ResaveAction;
 	FName IconName;

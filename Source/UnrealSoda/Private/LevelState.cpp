@@ -156,12 +156,12 @@ bool ALevelState::SaveToToMemory(TArray<uint8>& OutSaveData)
 	return true;
 }
 
-bool ALevelState::SaveToSlot(const FString& Lable, const FString& Description, const FGuid& Guid)
+bool ALevelState::SaveToSlot(const FString& Label, const FString& Description, const FGuid& Guid)
 {
 	soda::FFileDatabaseSlotInfo SlotInfo{};
 	SlotInfo.GUID = Guid.IsValid() ? Guid : FGuid::NewGuid();
 	SlotInfo.Type = soda::EFileSlotType::Level;
-	SlotInfo.Lable = Lable;
+	SlotInfo.Label = Label;
 	SlotInfo.Description = Description;
 	SlotInfo.DataClass = GetClass();
 	if (!SerializeSlotDescriptor(UGameplayStatics::GetCurrentLevelName(GetWorld(), true), SlotInfo.JsonDescription))
@@ -171,7 +171,7 @@ bool ALevelState::SaveToSlot(const FString& Lable, const FString& Description, c
 	}
 
 	SlotGuid = SlotInfo.GUID;
-	SlotLable = SlotInfo.Lable;
+	SlotLabel = SlotInfo.Label;
 
 	ULevelSaveGame* SaveGame = CreateSaveGame(false);
 	if (!SaveGame)
@@ -221,7 +221,7 @@ bool ALevelState::Resave()
 		return false;
 	}
 
-	return SaveToSlot(Slot.Lable, Slot.Description, Slot.GUID);
+	return SaveToSlot(Slot.Label, Slot.Description, Slot.GUID);
 }
 
 ULevelSaveGame* ALevelState::LoadSaveGameFromSlot(const FGuid& Guid, soda::FFileDatabaseSlotInfo& SlotInfo)

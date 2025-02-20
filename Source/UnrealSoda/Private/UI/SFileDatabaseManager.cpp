@@ -22,7 +22,7 @@
 namespace soda
 {
 static const FName Column_DateTime("DateTime");
-static const FName Column_Lable("Lable");
+static const FName Column_Label("Label");
 static const FName Column_Type("Type");
 static const FName Column_Version("Version");
 static const FName Column_OptButton("OptButton");
@@ -104,7 +104,7 @@ public:
 						[
 							SNew(STextBlock)
 							.AutoWrapText(true)
-							.Text(FText::FromString("Are you sure you want to delete the \"" + Slot->Lable + "\" slot?"))
+							.Text(FText::FromString("Are you sure you want to delete the \"" + Slot->Label + "\" slot?"))
 						]
 					]
 					+ SVerticalBox::Slot()
@@ -164,7 +164,7 @@ public:
 		{
 			if (!SodaApp.GetFileDatabaseManager().DeleteSlot(Slot->GUID))
 			{
-				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Can't delete the local slot: \"%s\""), *Slot->Lable);
+				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Can't delete the local slot: \"%s\""), *Slot->Label);
 				bRes = false;
 			}
 		}
@@ -174,14 +174,14 @@ public:
 			auto Source = SodaApp.GetFileDatabaseManager().GetSources()[Parent.Pin()->GetSelectedSource()];
 			if (!Source->DeleteSlot(Slot->GUID))
 			{
-				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Can't delete the remote slot: \"%s\""), *Slot->Lable);
+				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Can't delete the remote slot: \"%s\""), *Slot->Label);
 				bRes = false;
 			}
 		}
 
 		if (bRes)
 		{
-			soda::ShowNotification(ENotificationLevel::Success, 5.0, TEXT("Slot is deleted: \"%s\""), *Slot->Lable);
+			soda::ShowNotification(ENotificationLevel::Success, 5.0, TEXT("Slot is deleted: \"%s\""), *Slot->Label);
 		}
 
 		Parent.Pin()->UpdateSlots();
@@ -223,10 +223,10 @@ public:
 				.ColorAndOpacity(bIsActiveSlot ? FLinearColor::Yellow : FLinearColor::White);
 		}
 
-		if (InColumnName == Column_Lable)
+		if (InColumnName == Column_Label)
 		{
 			return SNew(STextBlock)
-				.Text(FText::FromString(Slot->Lable))
+				.Text(FText::FromString(Slot->Label))
 				.ColorAndOpacity(bIsActiveSlot ? FLinearColor::Yellow : FLinearColor::White);
 		}
 
@@ -333,18 +333,18 @@ public:
 			TArray<uint8> Data;
 			if(!SodaApp.GetFileDatabaseManager().GetSlotData(Slot->GUID, Data))
 			{
-				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Slot \"%s\" isn't find"), *Slot->Lable);
+				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Slot \"%s\" isn't find"), *Slot->Label);
 				return;
 			}
 
 			auto Source = SodaApp.GetFileDatabaseManager().GetSources()[Parent.Pin()->GetSelectedSource()];
 			if (Source->PushSlot(*Slot, Data))
 			{
-				soda::ShowNotification(ENotificationLevel::Success, 5.0, TEXT("Push success. Slot: \"%s\""), *Slot->Lable);
+				soda::ShowNotification(ENotificationLevel::Success, 5.0, TEXT("Push success. Slot: \"%s\""), *Slot->Label);
 			}
 			else
 			{
-				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Push faild. Slot: \"%s\""), *Slot->Lable);
+				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Push faild. Slot: \"%s\""), *Slot->Label);
 			}
 			Parent.Pin()->UpdateSlots();
 		});
@@ -480,8 +480,8 @@ void SFileDatabaseManager::Construct( const FArguments& InArgs, EFileSlotType In
 						+ SHeaderRow::Column(Column_DateTime)
 						.DefaultLabel(FText::FromString("DateTime"))
 						.FixedWidth(140)
-						+ SHeaderRow::Column(Column_Lable)
-						.DefaultLabel(FText::FromString("Lable"))
+						+ SHeaderRow::Column(Column_Label)
+						.DefaultLabel(FText::FromString("Label"))
 						.FillWidth(1)
 						+ SHeaderRow::Column(Column_Type)
 						.DefaultLabel(FText::FromString(GetSlotTypeColumnName(SlotType)))
@@ -507,13 +507,13 @@ void SFileDatabaseManager::Construct( const FArguments& InArgs, EFileSlotType In
 				.AutoWidth()
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString("Lable"))
+					.Text(FText::FromString("Label"))
 				]
 				+ SHorizontalBox::Slot()
 				.FillWidth(1.0)
 				.Padding(0, 0, 5, 0)
 				[
-					SAssignNew(LableTextBox, SEditableTextBox)
+					SAssignNew(LabelTextBox, SEditableTextBox)
 					//.IsEnabled(TargetGuid.IsValid())
 				]
 			]
@@ -619,14 +619,14 @@ void SFileDatabaseManager::OnSelectionChanged(TSharedPtr<FFileDatabaseSlotInfo> 
 {
 	if (Slot)
 	{
-		LableTextBox->SetText(FText::FromString(Slot->Lable));
+		LabelTextBox->SetText(FText::FromString(Slot->Label));
 		DescriptionTextBox->SetText(FText::FromString(Slot->Description));
 		//SaveButton->SetEnabled(true);
 		//LoadButton->SetEnabled(true);
 	}
 	else
 	{
-		LableTextBox->SetText(FText::GetEmpty());
+		LabelTextBox->SetText(FText::GetEmpty());
 		DescriptionTextBox->SetText(FText::GetEmpty());
 		//SaveButton->SetEnabled(false);
 		//LoadButton->SetEnabled(false);
@@ -641,9 +641,9 @@ TSharedPtr<FFileDatabaseSlotInfo> SFileDatabaseManager::GetSelectedSlot()
 	else return nullptr;
 }
 
-FString SFileDatabaseManager::GetLableText() const
+FString SFileDatabaseManager::GetLabelText() const
 {
-	return LableTextBox->GetText().ToString();
+	return LabelTextBox->GetText().ToString();
 }
 
 FString SFileDatabaseManager::GetDescriptionText() const

@@ -55,7 +55,7 @@ namespace soda
 	{
 		FGuid GUID;
 		EFileSlotType Type;
-		FString Lable;
+		FString Label;
 		FString Description; // Optional 
 		TObjectPtr<UClass> DataClass; // Optional
 		FString DataClassName;
@@ -74,7 +74,7 @@ namespace soda
 				GUID == Other.GUID &&
 				Type == Other.Type &&
 				DataClass == Other.DataClass &&
-				Lable == Other.Lable &&
+				Label == Other.Label &&
 				Description == Other.Description &&
 				DataMD5Hash == Other.DataMD5Hash &&
 				DateTime == Other.DateTime;

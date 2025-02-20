@@ -97,9 +97,9 @@ FReply SLevelSaveLoadWindow::OnSave()
 		USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 		ALevelState* LevelState = ALevelState::GetChecked();
 
-		auto ProccSave = [Slot, Lable = FileDatabaseManager->GetLableText(), Description = FileDatabaseManager->GetDescriptionText()]()
+		auto ProccSave = [Slot, Label = FileDatabaseManager->GetLabelText(), Description = FileDatabaseManager->GetDescriptionText()]()
 		{
-			if (!ALevelState::GetChecked()->SaveToSlot(Lable, Description, Slot->GUID))
+			if (!ALevelState::GetChecked()->SaveToSlot(Label, Description, Slot->GUID))
 			{
 				soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Can't save to the selected slot"));
 			}
@@ -110,7 +110,7 @@ FReply SLevelSaveLoadWindow::OnSave()
 			TSharedPtr<soda::SMessageBox> MsgBox = SodaSubsystem->ShowMessageBox(
 				soda::EMessageBoxType::YES_NO_CANCEL,
 				"Replace Slot",
-				"Are you sure you want to replace the \"" + Slot->Lable + "\" with new slot data ?");
+				"Are you sure you want to replace the \"" + Slot->Label + "\" with new slot data ?");
 			MsgBox->SetOnMessageBox(soda::FOnMessageBox::CreateLambda([this, ProccSave](soda::EMessageBoxButton Button)
 			{
 				if (Button == soda::EMessageBoxButton::YES)
@@ -131,7 +131,7 @@ FReply SLevelSaveLoadWindow::OnSave()
 
 FReply SLevelSaveLoadWindow::OnNewSave()
 {
-	if (!ALevelState::GetChecked()->SaveToSlot(FileDatabaseManager->GetLableText(), FileDatabaseManager->GetDescriptionText(), FGuid()))
+	if (!ALevelState::GetChecked()->SaveToSlot(FileDatabaseManager->GetLabelText(), FileDatabaseManager->GetDescriptionText(), FGuid()))
 	{
 		soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Can't save level to a new slot"));
 	}

@@ -890,7 +890,7 @@ TSharedRef<SWidget> SSodaViewportToolBar::GenerateAddMenu()
 					TEXT("Icons.Save"),
 					TEXT("Icons.Save"),
 					TOptional<FLinearColor>(),
-					FName(*Info->Lable)
+					FName(*Info->Label)
 				);
 				MenuBuilder.AddWidget(
 					SNew(SPlacementAssetMenuEntry, Item), FText()

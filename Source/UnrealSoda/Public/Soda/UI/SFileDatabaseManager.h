@@ -28,7 +28,7 @@ public:
 	FName GetSelectedSource() const { return Source; }
 
 	TSharedPtr<FFileDatabaseSlotInfo> GetSelectedSlot();
-	FString GetLableText() const;
+	FString GetLabelText() const;
 	FString GetDescriptionText() const;
 
 	TSharedPtr<SListView<TSharedPtr<FFileDatabaseSlotInfo>>> ListView;
@@ -40,7 +40,7 @@ protected:
 	TSharedRef<SWidget> GetComboMenuContent();
 
 
-	TSharedPtr<SEditableTextBox> LableTextBox;
+	TSharedPtr<SEditableTextBox> LabelTextBox;
 	TSharedPtr<SEditableTextBox> DescriptionTextBox;
 	TArray<TSharedPtr<FFileDatabaseSlotInfo>> Slots;
 	FName Source = NAME_None;

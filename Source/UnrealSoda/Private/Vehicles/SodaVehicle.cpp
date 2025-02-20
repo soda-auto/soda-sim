@@ -527,7 +527,7 @@ ASodaVehicle* ASodaVehicle::SpawnVehicleFormSlot(const UObject* WorldContextObje
 	if (ASodaVehicle* Vehicle = SpawnVehicleFromJsonArchive(World, Ar, Location, Rotation, Posses, DesireName, bApplyOffset))
 	{
 		Vehicle->SlotGuid = SlotGuid;
-		Vehicle->SlotLable = SlotInfo.Lable;
+		Vehicle->SlotLabel = SlotInfo.Label;
 		return Vehicle;
 	}
 	
@@ -550,7 +550,7 @@ bool ASodaVehicle::DrawDebug(class UCanvas* Canvas, float& YL, float& YPos)
 	YPos += Canvas->DrawText(
 		UEngine::GetMediumFont(), 
 		FString::Printf(TEXT("Slot: %s %s"), 
-			SlotGuid.IsValid() ? *SlotLable : TEXT("-"), 
+			SlotGuid.IsValid() ? *SlotLabel : TEXT("-"),
 			IsDirty() ? TEXT("*") : TEXT("")),
 		4, YPos + 4);
 
@@ -777,7 +777,7 @@ bool ASodaVehicle::SaveToBinFile(const FString& FileName)
 	
 }
 
-bool ASodaVehicle::SaveToSlot(const FString& Lable, const FString& Description, const FGuid& CustomGuid, bool bRebase)
+bool ASodaVehicle::SaveToSlot(const FString& Label, const FString& Description, const FGuid& CustomGuid, bool bRebase)
 {
 	FJsonActorArchive Ar;
 	if (!Ar.SerializeActor(this, true))
@@ -800,7 +800,7 @@ bool ASodaVehicle::SaveToSlot(const FString& Lable, const FString& Description, 
 	soda::FFileDatabaseSlotInfo SlotInfo{};
 	SlotInfo.GUID = CustomGuid.IsValid() ? CustomGuid : FGuid::NewGuid();
 	SlotInfo.Type = soda::EFileSlotType::Vehicle;
-	SlotInfo.Lable = Lable;
+	SlotInfo.Label = Label;
 	SlotInfo.Description = Description;
 	SlotInfo.DataClass = GetClass();
 
@@ -823,7 +823,7 @@ bool ASodaVehicle::SaveToSlot(const FString& Lable, const FString& Description, 
 			ALevelState::GetChecked()->MarkAsDirty();
 		}
 		SlotGuid = SlotInfo.GUID;
-		SlotLable = Lable;
+		SlotLabel = Label;
 	}
 
 	ClearDirty();
@@ -846,7 +846,7 @@ bool ASodaVehicle::Resave()
 		return false;
 	}
 
-	if (!SaveToSlot(Slot.Lable, Slot.Description, Slot.GUID, false))
+	if (!SaveToSlot(Slot.Label, Slot.Description, Slot.GUID, false))
 	{
 		UE_LOG(LogSoda, Error, TEXT("ASodaVehicle::Resave(); SaveToSlot() faild "));
 		return false;
@@ -1069,9 +1069,9 @@ bool ASodaVehicle::Unpin()
 	return true;
 }
 
-FString ASodaVehicle::GetSlotLable() const
+FString ASodaVehicle::GetSlotLabel() const
 {
-	return SlotLable;
+	return SlotLabel;
 }
 
 AActor* ASodaVehicle::SpawnActorFromSlot(UWorld* World, const FGuid& Slot, const FTransform& Transform, FName DesireName) const

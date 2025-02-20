@@ -97,14 +97,14 @@ public:
 
 	virtual bool Unpin() { return false; }
 
-	virtual bool SaveToSlot(const FString& Lable, const FString& Description, const FGuid& Guid = FGuid(), bool bRebase = true) { return false; }
+	virtual bool SaveToSlot(const FString& Label, const FString& Description, const FGuid& Guid = FGuid(), bool bRebase = true) { return false; }
 
 	/** Spawn actor from Slot. Called from the CDO object */
 	virtual AActor* SpawnActorFromSlot(UWorld* World, const FGuid& Slot, const FTransform& Transform, FName DesireName = NAME_None) const { return nullptr; }
 
 	virtual const FGuid& GetSlotGuid() const { static FGuid Dummy{}; return Dummy; }
 
-	virtual FString GetSlotLable() const { return ""; }
+	virtual FString GetSlotLabel() const { return ""; }
 
 	virtual bool Resave() { return false; }
 

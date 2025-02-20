@@ -59,7 +59,7 @@ public:
 	const FGuid& GetSlotGuid() const { return SlotGuid; }
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	const FString& GetSlotLable() const { return SlotLable; }
+	const FString& GetSlotLabel() const { return SlotLabel; }
 	
 	UPROPERTY(BlueprintReadOnly, Category = LevelState)
 	ASodaActorFactory * ActorFactory = nullptr;
@@ -71,7 +71,7 @@ protected:
 public:
 	/**  if Guid is empty - create new slot */
 	UFUNCTION(BlueprintCallable, Category = LevelState)
-	bool SaveToSlot(const FString& Lable, const FString& Description, const FGuid& Guid = FGuid());
+	bool SaveToSlot(const FString& Label, const FString& Description, const FGuid& Guid = FGuid());
 
 	UFUNCTION(BlueprintCallable, Category = LevelState)
 	bool SaveToToMemory(TArray<uint8>& OutSaveData);
@@ -122,7 +122,7 @@ protected:
 	FGuid SlotGuid;
 
 	UPROPERTY(SaveGame)
-	FString SlotLable;
+	FString SlotLabel;
 
 	FDelegateHandle ActorsMapChenagedHandle;
 };
