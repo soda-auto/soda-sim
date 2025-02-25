@@ -905,7 +905,7 @@ void ANavigationRouteEditable::PullToGround()
 const FSodaActorDescriptor* ANavigationRouteEditable::GenerateActorDescriptor() const
 {
 	static FSodaActorDescriptor Desc{
-		TEXT("Navigatopn Route"), /*DisplayName*/
+		TEXT("Navigation Route"), /*DisplayName*/
 		TEXT("Scenario"), /*Category*/
 		TEXT(""), /*SubCategory*/
 		TEXT("SodaIcons.Route"), /*Icon*/
