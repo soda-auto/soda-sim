@@ -1163,12 +1163,12 @@ TSharedPtr<SWidget> ASodaVehicle::GenerateToolBar()
 			{
 				if (USodaSubsystem* SodaSubsystem = USodaSubsystem::Get())
 				{
-					SodaSubsystem->OpenWindow("Vehcile Manager", SNew(soda::SSlotActorManagerWindow, soda::EFileSlotType::Vehicle, this));
+					SodaSubsystem->OpenWindow("Vehicle Manager", SNew(soda::SSlotActorManagerWindow, soda::EFileSlotType::Vehicle, this));
 				}
 			})),
 		NAME_None, 
 		FText::FromString("Manager"),
-		FText::FromString("Open the Vehicled Manager"), 
+		FText::FromString("Open the Vehicle Manager"), 
 		FSlateIcon(FSodaStyle::Get().GetStyleSetName(), "SodaVehicleBar.Save"),
 		EUserInterfaceActionType::Button
 	);

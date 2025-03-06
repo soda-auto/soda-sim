@@ -49,15 +49,15 @@ struct UNREALSODA_API FRadarParams
 
 	/** Minimum distance, m */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RadarParams, SaveGame, meta = (EditInRuntime, ReactivateComponent, UpdateFOVRendering))
-	float DistanseMin = 0.2f;
+	float DistanceMin = 0.2f;
 
 	/** Maximum distance, m */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RadarParams, SaveGame, meta = (EditInRuntime, ReactivateComponent, UpdateFOVRendering))
-	float DistanseMax = 70;
+	float DistanceMax = 70;
 
 	/** Maximum distance on full horizontal FOV, m */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RadarParams, SaveGame, meta = (EditInRuntime, ReactivateComponent, UpdateFOVRendering))
-	float DistanseOnMaxAngle = 40;
+	float DistanceOnMaxAngle = 40;
 
 	/** Best horizontal resolution, deg */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RadarParams, SaveGame, meta = (EditInRuntime, ReactivateComponent))

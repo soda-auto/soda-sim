@@ -64,11 +64,11 @@ URadarSensor::URadarSensor(const FObjectInitializer& ObjectInitializer)
 	/*
 	FOVSetupNear.Color = FLinearColor(1.0, 1.0, 0.3, 0.5);
 	FOVSetupNear.WireframeColor = FLinearColor(0.4, 0.4, 0, 1);
-	FOVSetupNear.MaxViewDistance = RadarParamsNear.DistanseMax * 100;
+	FOVSetupNear.MaxViewDistance = RadarParamsNear.DistanceMax * 100;
 
 	FOVSetupFar.Color = FLinearColor(1.0, 0.6, 0.3, 0.5);
 	FOVSetupFar.WireframeColor = FLinearColor(0.4, 0.4, 0, 1);
-	FOVSetupFar.MaxViewDistance = RadarParamsFar.DistanseMax * 100;
+	FOVSetupFar.MaxViewDistance = RadarParamsFar.DistanceMax * 100;
 	*/
 }
 
@@ -179,7 +179,7 @@ void URadarSensor::ProcessHit(const FHitResult* Hit, const FRadarParams* Params)
 	RadarHit.Distance = (RadarHit.HitPosition - Loc).Size();
 	RadarHit.Azimuth = RelHitRot.Yaw;
 
-	if (RadarHit.Distance > Params->DistanseMax * 100)
+	if (RadarHit.Distance > Params->DistanceMax * 100)
 	{
 		return;
 	}
@@ -331,7 +331,7 @@ void URadarSensor::ProcessRadarBeams(const FRadarParams & RadarParams)
 	const float BeamRadius = RadarParams.GetBeamWidth() / 2;
 	const float Step = 2 * RadarParams.FOV_HorizontMax / (float)RadarParams.GetBeamsNum();
 	const FCollisionShape Collider = FCollisionShape::MakeCapsule(BeamRadius, BeamVerticalSize * 0.5f);
-	const float DistanseMin = FMath::Max(0.f, RadarParams.DistanseMin * 100 - BeamRadius);
+	const float DistanceMin = FMath::Max(0.f, RadarParams.DistanceMin * 100 - BeamRadius);
 
 	for (int i = 0; i < RadarParams.GetBeamsNum(); i++)
 	{
@@ -340,8 +340,8 @@ void URadarSensor::ProcessRadarBeams(const FRadarParams & RadarParams)
 		const FQuat Q = RelTrans.GetRotation() * FQuat(FRotator(90.f, 0.f, 0.f));
 		const float Dist = RadarParams.GetRayLength(HorizontAng) * 100;
 
-		const FVector Start = Loc + Norm * DistanseMin;
-		const FVector End = Loc + Norm * (DistanseMin + Dist);
+		const FVector Start = Loc + Norm * DistanceMin;
+		const FVector End = Loc + Norm * (DistanceMin + Dist);
 
 		BatchStart.Add(Start);
 		BatchEnd.Add(End);
@@ -579,12 +579,12 @@ void FRadarObjects::SortObjectsByDistance(TArray<const FRadarObject* >& SortedOb
 
 float FRadarParams::GetBeamWidth() const
 {
-	return 2 * DistanseMax * 100 * atan(_DEG2RAD(HorizontalBestResolution / 2));
+	return 2 * DistanceMax * 100 * atan(_DEG2RAD(HorizontalBestResolution / 2));
 }
 
 float FRadarParams::GetBeamHeight() const
 {
-	return 2 * DistanseMax * 100 * atan(_DEG2RAD(FOV_Vertical / 2));
+	return 2 * DistanceMax * 100 * atan(_DEG2RAD(FOV_Vertical / 2));
 }
 
 float FRadarParams::GetResolutionForAngle(float Angle) const
@@ -602,12 +602,12 @@ float FRadarParams::GetResolutionForAngle(float Angle) const
 
 float FRadarParams::GetRayLength(float HorizontAng) const
 {
-	float Dist = DistanseMax;
+	float Dist = DistanceMax;
 	if (fabs(HorizontAng) > FOV_HorizontFullDist)
 	{
-		Dist = FMath::Lerp(Dist, DistanseOnMaxAngle, (fabs(HorizontAng) - FOV_HorizontFullDist) / (FOV_HorizontMax - FOV_HorizontFullDist));
+		Dist = FMath::Lerp(Dist, DistanceOnMaxAngle, (fabs(HorizontAng) - FOV_HorizontFullDist) / (FOV_HorizontMax - FOV_HorizontFullDist));
 	}
-	return Dist - DistanseMin;
+	return Dist - DistanceMin;
 }
 
 bool URadarSensor::AddFOVMesh(const FRadarParams& Params, TArray<FSensorFOVMesh>& OutMeshes)
@@ -635,13 +635,13 @@ bool URadarSensor::AddFOVMesh(const FRadarParams& Params, TArray<FSensorFOVMesh>
 			if (FMath::Abs(HorizontAng) > Params.FOV_HorizontFullDist / 2)
 			{
 				Distance = FMath::Lerp(
-					Params.DistanseMax,
-					Params.DistanseOnMaxAngle,
+					Params.DistanceMax,
+					Params.DistanceOnMaxAngle,
 					FMath::Abs((Params.FOV_HorizontFullDist / 2.0 - FMath::Abs(HorizontAng)) / (Params.FOV_HorizontMax / 2.0 - Params.FOV_HorizontFullDist / 2.0))) * 100;
 			}
 			else
 			{
-				Distance = Params.DistanseMax * 100;
+				Distance = Params.DistanceMax * 100;
 			}
 
 			Cloud.Add(RayNorm * Distance);

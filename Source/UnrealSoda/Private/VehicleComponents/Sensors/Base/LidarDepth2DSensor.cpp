@@ -119,7 +119,7 @@ public:
 			Scan.Points[k].Location = LidarRays[k] * Depth * DepthMapNorm;
 			Scan.Points[k].Depth = Scan.Points[k].Location.Size();
 
-			if (Depth >= 1 || Scan.Points[k].Depth < DistanseMin || Scan.Points[k].Depth > DistanseMax)
+			if (Depth >= 1 || Scan.Points[k].Depth < DistanceMin || Scan.Points[k].Depth > DistanceMax)
 			{
 				Scan.Points[k].Status = soda::ELidarPointStatus::Invalid;
 			}
@@ -138,8 +138,8 @@ public:
 	{
 		Sensor = InSensor;
 		Interpolation = InSensor->Interpolation;
-		DistanseMax = InSensor->GetLidarMaxDistance();
-		DistanseMin = InSensor->GetLidarMinDistance();
+		DistanceMax = InSensor->GetLidarMaxDistance();
+		DistanceMin = InSensor->GetLidarMinDistance();
 		DepthMapNorm = InSensor->DepthMapNorm;
 	}
 
@@ -154,8 +154,8 @@ public:
 protected:
 	TWeakObjectPtr<ULidarDepth2DSensor> Sensor;
 	ELidarInterpolation Interpolation;
-	float DistanseMax;
-	float DistanseMin;
+	float DistanceMax;
+	float DistanceMin;
 	float DepthMapNorm;
 
 protected:

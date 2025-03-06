@@ -124,7 +124,7 @@ public:
 				FVector RayPoint = Ray * Depth * DepthMapNorm;
 				float RayLen = RayPoint.Size();
 
-				if (RayLen < DistanseMin || RayLen > DistanseMax)
+				if (RayLen < DistanceMin || RayLen > DistanceMax)
 				{
 					RayPoint = FVector(0.0, 0.0, 0.0);
 				}
@@ -147,8 +147,8 @@ public:
 	{
 		Sensor = InSensor;
 		Interpolation = InSensor->Interpolation;
-		DistanseMax = InSensor->GetLidarMaxDistance();
-		DistanseMin = InSensor->GetLidarMinDistance();
+		DistanceMax = InSensor->GetLidarMaxDistance();
+		DistanceMin = InSensor->GetLidarMinDistance();
 		DepthMapNorm = InSensor->DepthMapNorm;
 	}
 
@@ -166,8 +166,8 @@ public:
 protected:
 	TWeakObjectPtr<ULidarDepthCubeSensor> Sensor;
 	ELidarInterpolation Interpolation;
-	float DistanseMax;
-	float DistanseMin;
+	float DistanceMax;
+	float DistanceMin;
 	float DepthMapNorm;
 
 protected:

@@ -127,7 +127,7 @@ void UUltrasonicHubSensor::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 	if (bDrawTracedRays)
 	{
-		DrawDebugLine(GetWorld(), Loc + Rot.RotateVector(FVector(1.0, 0.0, 0.0)) * Sensor->DistanseMin, Loc + Rot.RotateVector(FVector(1.0, 0.0, 0.0)) * Sensor->DistanseMax, FColor(0, 0, 255), false, -1.f, 0, 2.f);
+		DrawDebugLine(GetWorld(), Loc + Rot.RotateVector(FVector(1.0, 0.0, 0.0)) * Sensor->DistanceMin, Loc + Rot.RotateVector(FVector(1.0, 0.0, 0.0)) * Sensor->DistanceMax, FColor(0, 0, 255), false, -1.f, 0, 2.f);
 	}
 
 	{
@@ -139,8 +139,8 @@ void UUltrasonicHubSensor::TickComponent(float DeltaTime, ELevelTick TickType, F
 			{
 				float HorizontAng = Sensor->FOV_Horizont * -0.5f + Sensor->FOV_Horizont / (float)Sensor->Step * (float)j;
 				FVector RayNorm = Rot.RotateVector(FRotator(VerticalAng, HorizontAng, 0.0f).RotateVector(FVector(1.0, 0.0, 0.0)));
-				BatchStart.Add(Loc + RayNorm * Sensor->DistanseMin);
-				BatchEnd.Add(Loc + RayNorm * Sensor->DistanseMax);
+				BatchStart.Add(Loc + RayNorm * Sensor->DistanceMin);
+				BatchEnd.Add(Loc + RayNorm * Sensor->DistanceMax);
 			}
 		}
 	}
@@ -196,7 +196,7 @@ void UUltrasonicHubSensor::TickComponent(float DeltaTime, ELevelTick TickType, F
 						FVector MirrorPerpendicular = ((CurLoc - Hit.Location) + (Loc - Hit.Location)) / 2;
 						float Dot = FVector::DotProduct(Hit.Normal.GetSafeNormal(), MirrorPerpendicular.GetSafeNormal());
 						float Power = powf(Dot / (CurDistance / 100.f), 2);
-						if (CosHor < EchoCollections[k].CosFovHorizontal || CosVert < EchoCollections[k].CosFovVertical || CurDistance > Sensor->DistanseMax || Power < SensorThreshold)
+						if (CosHor < EchoCollections[k].CosFovHorizontal || CosVert < EchoCollections[k].CosFovVertical || CurDistance > Sensor->DistanceMax || Power < SensorThreshold)
 							continue;
 
 						EchoCollections[k].AddHit(&Hit, (k == CurrentTransmitter) ? CurDistance : CurDistance + (Hit.Location - Sensors[CurrentTransmitter]->GetComponentLocation()).Size(), Power, MinDistGap);
@@ -210,11 +210,11 @@ void UUltrasonicHubSensor::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 					if (bDrawTracedRays && Traced)
 					{
-						DrawDebugLine(GetWorld(), Loc + RayNorm * Sensor->DistanseMin, Hit.Location, FColor(255, 0, 0), false, -1.f, 0, 2.f);
+						DrawDebugLine(GetWorld(), Loc + RayNorm * Sensor->DistanceMin, Hit.Location, FColor(255, 0, 0), false, -1.f, 0, 2.f);
 					}
 					else if (bDrawNotTracedRays && !Traced)
 					{
-						DrawDebugLine(GetWorld(), Loc + RayNorm * Sensor->DistanseMin, Loc + RayNorm * Sensor->DistanseMax, FColor(0, 255, 0), false, -1.f, 0, 2.f);
+						DrawDebugLine(GetWorld(), Loc + RayNorm * Sensor->DistanceMin, Loc + RayNorm * Sensor->DistanceMax, FColor(0, 255, 0), false, -1.f, 0, 2.f);
 					}
 				}
 			}

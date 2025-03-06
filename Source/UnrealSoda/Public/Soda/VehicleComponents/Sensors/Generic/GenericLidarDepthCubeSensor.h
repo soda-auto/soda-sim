@@ -41,10 +41,10 @@ class UNREALSODA_API UGenericLidarDepthCubeSensor : public ULidarDepthCubeSensor
 	float FOV_VerticalMax = 15;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sensor, SaveGame, meta = (EditInRuntime, ReactivateComponent, UpdateFOVRendering))
-	float DistanseMin = 50; // cm
+	float DistanceMin = 50; // cm
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sensor, SaveGame, meta = (EditInRuntime, ReactivateComponent, UpdateFOVRendering))
-	float DistanseMax = 20000; // cm
+	float DistanceMax = 20000; // cm
 
 protected:
 	virtual bool OnActivateVehicleComponent() override;
@@ -58,8 +58,8 @@ protected:
 	virtual float GetFOVHorizontMin() const override { return FOV_HorizontMin; }
 	virtual float GetFOVVerticalMax() const override { return FOV_VerticalMax; }
 	virtual float GetFOVVerticalMin() const override { return FOV_VerticalMin; }
-	virtual float GetLidarMinDistance() const override { return DistanseMin; }
-	virtual float GetLidarMaxDistance() const override { return DistanseMax; }
+	virtual float GetLidarMinDistance() const override { return DistanceMin; }
+	virtual float GetLidarMaxDistance() const override { return DistanceMax; }
 	virtual TOptional<FUintVector2> GetLidarSize() const { return TOptional<FUintVector2>({ uint32(Step), uint32(Channels) }); }
 	virtual const TArray<FVector>& GetLidarRays() const override { return LidarRays; }
 	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& Scan) override;

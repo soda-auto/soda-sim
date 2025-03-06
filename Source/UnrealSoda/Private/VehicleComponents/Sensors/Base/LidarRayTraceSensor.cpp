@@ -134,11 +134,11 @@ void ULidarRayTraceSensor::TickComponent(float DeltaTime, ELevelTick TickType, F
 				FVector HitPosition = OutHits[i * Step + j].Location;
 				if (DrawTracedRays && Traced)
 				{
-					DrawDebugLine(GetWorld(), Loc + RayNorm * DistanseMin, HitPosition, FColor(255, 0, 0), false, -1.f, 0, 2.f);
+					DrawDebugLine(GetWorld(), Loc + RayNorm * DistanceMin, HitPosition, FColor(255, 0, 0), false, -1.f, 0, 2.f);
 				}
 				else if (bDrawNotTracedRays && !Traced)
 				{
-					DrawDebugLine(GetWorld(), Loc + RayNorm * DistanseMin, Loc + RayNorm * DistanseMax, FColor(0, 255, 0), false, -1.f, 0, 2.f);
+					DrawDebugLine(GetWorld(), Loc + RayNorm * DistanceMin, Loc + RayNorm * DistanceMax, FColor(0, 255, 0), false, -1.f, 0, 2.f);
 				}
 			}
 		}

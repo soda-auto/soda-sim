@@ -100,14 +100,14 @@ FReply SExportVehicleWindow::OnExportAs()
 
 	if (!Exporter)
 	{
-		FReply::Handled();
+		return FReply::Handled();
 	}
 		
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
 	if (!DesktopPlatform)
 	{
 		UE_LOG(LogSoda, Error, TEXT("SExportVehicleWindow::OnExportAs(); Can't get the IDesktopPlatform ref"));
-		FReply::Handled();
+		return FReply::Handled();
 	}
 
 	const FString FileTypes = Exporter->GetFileTypes(); 
@@ -116,26 +116,26 @@ FReply SExportVehicleWindow::OnExportAs()
 	if (!DesktopPlatform->SaveFileDialog(nullptr, FString(TEXT("Export to ")) + Exporter->GetExporterName().ToString(), TEXT(""), TEXT(""), FileTypes, EFileDialogFlags::None, OutFilenames) || OutFilenames.Num() <= 0)
 	{
 		UE_LOG(LogSoda, Warning, TEXT("SExportVehicleWindow::OnExportAs(); File isn't change"));
-		FReply::Handled();
+		return FReply::Handled();
 	}
 
 	if (OutFilenames.Num() != 1)
 	{
 		UE_LOG(LogSoda, Warning, TEXT("SExportVehicleWindow::OnExportAs(); File isn't change"));
-		FReply::Handled();
+		return FReply::Handled();
 	}
 
 	FString JsonString;
 	if (!Exporter->ExportToString(Vehicle.Get(), JsonString))
 	{
 		UE_LOG(LogSoda, Error, TEXT("SExportVehicleWindow::OnExportAs(); Can't export to '%s'"), *Exporter->GetExporterName().ToString());
-		FReply::Handled();
+		return FReply::Handled();
 	}
 
 	if (!FFileHelper::SaveStringToFile(JsonString, *OutFilenames[0]))
 	{
 		UE_LOG(LogSoda, Error, TEXT("SExportVehicleWindow::OnExportAs(); Can't write to '%s' file"), *OutFilenames[0]);
-		FReply::Handled();
+		return FReply::Handled();
 	}
 	
 	CloseWindow();

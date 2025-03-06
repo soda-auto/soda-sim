@@ -54,6 +54,9 @@ bool UCANBusComponent::OnActivateVehicleComponent()
 		IntervaledThreadCounter = 0;
 		PrecisionTimer.TimerDelegate.BindLambda([this](const std::chrono::nanoseconds& InDeltatime, const std::chrono::nanoseconds& Elapsed)
 		{
+			//UE_LOG(LogSoda, Error, TEXT("UCANBusComponent::OnActivateVehicleComponent(); Tick; %lldms"), soda::RawTimestamp<std::chrono::milliseconds>(soda::Now()))
+			//SCOPE_LOG_TIME_IN_SECONDS(TEXT("***"), nullptr);
+
 			std::lock_guard<std::mutex> Lock{ regMsgsMutex };
 			for (const auto& [Key, Value] : SendMessages)
 			{
