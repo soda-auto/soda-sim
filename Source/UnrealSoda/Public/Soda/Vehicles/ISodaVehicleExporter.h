@@ -5,10 +5,15 @@
 
 class ASodaVehicle;
 
-class ISodaVehicleExporter
+namespace soda
 {
-public:
-	virtual bool ExportToString(const ASodaVehicle* Vehicle, FString& String) = 0;
-	virtual const FString & GetExporterName() const = 0;
-	virtual const FString& GetFileTypes() const = 0;
-};
+
+	class ISodaVehicleExporter
+	{
+	public:
+		virtual bool ExportToString(const ASodaVehicle* Vehicle, FString& String) = 0;
+		virtual const FName& GetExporterName() const = 0;
+		virtual const FString& GetFileTypes() const = 0;
+	};
+
+}

@@ -6,17 +6,12 @@
 #include "Components/BillboardComponent.h"
 #include "Soda/Misc/TrajectoryPlaner.h"
 #include "Soda/ISodaActor.h"
+#include "Soda/ISodaDataset.h"
 #include <vector>
 #include "GhostPedestrian.generated.h"
 
 
 class ANavigationRouteEditable;
-
-namespace soda
-{
-	class FActorDatasetData;
-	struct FBsonDocument;
-}
 
 /**
  * AGhostPedestrian 
@@ -24,9 +19,10 @@ namespace soda
  * it is able to simply walk along the ANavigationRoute
  */
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API AGhostPedestrian :
-	public AActor,
-	public ISodaActor
+class UNREALSODA_API AGhostPedestrian 
+	: public AActor
+	, public ISodaActor
+	, public IObjectDataset
 {
 GENERATED_BODY()
 
@@ -128,6 +124,7 @@ public:
 	virtual void InputWidgetDelta(const USceneComponent* WidgetTargetComponent, FTransform& NewWidgetTransform) override;
 	virtual void RuntimePostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+	virtual bool ShouldRecordDataset() const override { return bRecordDataset; }
 
 public:
 	AGhostPedestrian();
@@ -143,9 +140,6 @@ protected:
 	FTransform AdjustTransform(const FTransform& Transform);
 	bool CheckCollision(const FTransform& Transform);
 
-	virtual void GenerateDatasetDescription(soda::FBsonDocument& Doc) const;
-	virtual void OnPushDataset() const;
-
 	FTransform InitTransform;
 	bool bIsMoving = false;
 	float CurrentVelocity = 0;
@@ -154,6 +148,4 @@ protected:
 	FGuid SplineGuid;
 
 	TArray<FVector> JoiningCurvePoints;
-
-	TSharedPtr<soda::FActorDatasetData> Dataset;
 };

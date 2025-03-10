@@ -56,6 +56,26 @@ struct UNREALSODA_API FVehicleLightItemSetupHelper
 	TArray<ULightComponent*> Lights;
 };
 
+namespace VehicleLightNames
+{
+	static FName TurnFL("TurnFL");
+	static FName TurnFR("TurnFR");
+	static FName TurnRL("TurnRL");
+	static FName TurnRR("TurnRR");
+	static FName BrakeL("BrakeL");
+	static FName BrakeR("BrakeR");
+	static FName HighBeamL("HighBeamL");
+	static FName HighBeamR("HighBeamR");
+	static FName LowBeamL("LowBeamL");
+	static FName LowBeamR("LowBeamR");
+	static FName TailFL("TailFL");
+	static FName TailFR("TailFR");
+	static FName TailRL("TailRL");
+	static FName TailRR("TailRR");
+	static FName ReverseL("ReverseL");
+	static FName ReverseR("ReverseR");
+}
+
 UCLASS(ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API UVehicleLightItem : public UObject
 {
@@ -63,7 +83,7 @@ class UNREALSODA_API UVehicleLightItem : public UObject
 
 public:
 	void Setup(const FVehicleLightItemSetup& ItemSetup);
-	bool SetupIO(UIOBusNode* Node);
+	bool SetupIO(UIOBusComponent* IOBus);
 
 	/** Intensity = [0..1] */
 	UFUNCTION(BlueprintCallable, Category = LightSet)
@@ -76,14 +96,14 @@ public:
 	const FVehicleLightItemSetup& GetSetup() const { return ItemSetup; }
 
 	UFUNCTION(BlueprintCallable, Category = LightSet)
-	UIOExchange * GetExchange() const { return Exchange; }
+	UIOPin* GetPinInterface() const { return PinInterface; }
 
 protected:
 	bool bEnabled = false;
 	FVehicleLightItemSetup ItemSetup;
 
 	UPROPERTY();
-	UIOExchange* Exchange {};
+	TObjectPtr<UIOPin> PinInterface;
 };
 
 UCLASS(ClassGroup = Soda, BlueprintType, meta = (BlueprintSpawnableComponent))
@@ -92,9 +112,6 @@ class UNREALSODA_API ULightSetComponent : public UWheeledVehicleComponent
 	GENERATED_UCLASS_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LightSet, SaveGame, meta = (EditInRuntime))
-	FName IOBusNodeName = TEXT("LightSetNode");
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "/Script/UnrealSoda.IOBusComponent"))
 	FSubobjectReference LinkToIOBus;
 
@@ -140,7 +157,4 @@ protected:
 
 	UPROPERTY();
 	UIOBusComponent* IOBus{};
-
-	UPROPERTY();
-	UIOBusNode* Node{};
 };

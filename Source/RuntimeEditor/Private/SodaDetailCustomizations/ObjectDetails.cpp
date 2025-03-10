@@ -116,7 +116,7 @@ void FObjectDetails::AddCallInEditorMethods(IDetailLayoutBuilder& DetailBuilder)
 	{
 		// Copy off the objects being customized so we can invoke a function on them later, removing any that are a CDO
 		DetailBuilder.GetObjectsBeingCustomized(/*out*/ SelectedObjectsList);
-		SelectedObjectsList.RemoveAllSwap([](TWeakObjectPtr<UObject> ObjPtr) { UObject* Obj = ObjPtr.Get(); return (Obj == nullptr) || Obj->HasAnyFlags(RF_ArchetypeObject); });
+		SelectedObjectsList.RemoveAllSwap([](TWeakObjectPtr<UObject> ObjPtr) { UObject* Obj = ObjPtr.Get(); return (Obj == nullptr) /*|| Obj->HasAnyFlags(RF_ArchetypeObject)*/;});
 		if (SelectedObjectsList.Num() == 0)
 		{
 			return;

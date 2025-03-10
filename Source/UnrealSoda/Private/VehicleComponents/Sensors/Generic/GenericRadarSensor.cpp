@@ -13,9 +13,9 @@ UGenericRadarSensor::UGenericRadarSensor(const FObjectInitializer& ObjectInitial
 	RadarParamsNearest.FOV_HorizontMax = 60;
 	RadarParamsNearest.FOV_HorizontFullDist = 40;
 	RadarParamsNearest.FOV_Vertical = 20;
-	RadarParamsNearest.DistanseMin = 0.2;
-	RadarParamsNearest.DistanseMax = 70 * 0.18;
-	RadarParamsNearest.DistanseOnMaxAngle = 40;
+	RadarParamsNearest.DistanceMin = 0.2;
+	RadarParamsNearest.DistanceMax = 70 * 0.18;
+	RadarParamsNearest.DistanceOnMaxAngle = 40;
 	RadarParamsNearest.HorizontalBestResolution = 1.0f;
 	RadarParamsNearest.HorizontalResolutionFullDistAngle = 4.5f;
 	RadarParamsNearest.HorizontalResolutionMaxAngle = 12.3f;
@@ -27,9 +27,9 @@ UGenericRadarSensor::UGenericRadarSensor(const FObjectInitializer& ObjectInitial
 	RadarParamsNear.FOV_HorizontMax = 60;
 	RadarParamsNear.FOV_HorizontFullDist = 40;
 	RadarParamsNear.FOV_Vertical = 20;
-	RadarParamsNear.DistanseMin = 70 * 0.18;
-	RadarParamsNear.DistanseMax = 70;
-	RadarParamsNear.DistanseOnMaxAngle = 40;
+	RadarParamsNear.DistanceMin = 70 * 0.18;
+	RadarParamsNear.DistanceMax = 70;
+	RadarParamsNear.DistanceOnMaxAngle = 40;
 	RadarParamsNear.HorizontalBestResolution = 1.0f;
 	RadarParamsNear.HorizontalResolutionFullDistAngle = 4.5f;
 	RadarParamsNear.HorizontalResolutionMaxAngle = 12.3f;
@@ -41,9 +41,9 @@ UGenericRadarSensor::UGenericRadarSensor(const FObjectInitializer& ObjectInitial
 	RadarParamsFar.FOV_HorizontMax = 9;
 	RadarParamsFar.FOV_HorizontFullDist = 4;
 	RadarParamsFar.FOV_Vertical = 20;
-	RadarParamsFar.DistanseMin = 1;
-	RadarParamsFar.DistanseMax = 250;
-	RadarParamsFar.DistanseOnMaxAngle = 150;
+	RadarParamsFar.DistanceMin = 1;
+	RadarParamsFar.DistanceMax = 250;
+	RadarParamsFar.DistanceOnMaxAngle = 150;
 	RadarParamsFar.HorizontalBestResolution = 1.0f;
 	RadarParamsFar.HorizontalResolutionFullDistAngle = 4.5f;
 	RadarParamsFar.HorizontalResolutionMaxAngle = 12.3f;
@@ -52,23 +52,14 @@ UGenericRadarSensor::UGenericRadarSensor(const FObjectInitializer& ObjectInitial
 
 }
 
-void UGenericRadarSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
-}
-
-void UGenericRadarSensor::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-	PublisherHelper.OnSerialize(Ar);
-}
-
 bool UGenericRadarSensor::OnActivateVehicleComponent()
 {
 	if (Super::OnActivateVehicleComponent())
 	{
-		return PublisherHelper.Advertise();
+		if (IsValid(Publisher))
+		{
+			return Publisher->AdvertiseAndSetHealth(this);
+		}
 	}
 	return true;
 }
@@ -76,33 +67,26 @@ bool UGenericRadarSensor::OnActivateVehicleComponent()
 void UGenericRadarSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
-	PublisherHelper.Shutdown();
+	if (IsValid(Publisher))
+	{
+		Publisher->Shutdown();
+	}
 }
 
 bool UGenericRadarSensor::IsVehicleComponentInitializing() const
 {
-	return PublisherHelper.IsPublisherInitializing();
+	return IsValid(Publisher) && Publisher->IsInitializing();
 }
 
 void UGenericRadarSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	PublisherHelper.Tick();
-}
 
-#if WITH_EDITOR
-void UGenericRadarSensor::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
+	if (IsValid(Publisher))
+	{
+		Publisher->CheckStatus(this);
+	}
 }
-
-void UGenericRadarSensor::PostInitProperties()
-{
-	Super::PostInitProperties();
-	PublisherHelper.RefreshClass();
-}
-#endif
 
 bool UGenericRadarSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FRadarClusters& InClusters, const FRadarObjects& InObjects)
 {

@@ -77,7 +77,7 @@ public:
 	virtual UWheelBrake* GetWheel(int Ind) const { return nullptr; }
 
 	UFUNCTION(BlueprintCallable, Category = BrakeSystem)
-	virtual UWheelBrake* GetWheel4WD(E4WDWheelIndex Ind) const { return nullptr; }
+	virtual UWheelBrake* FindWheelByIndex(EWheelIndex Ind) const { return nullptr; }
 
 	UFUNCTION(BlueprintCallable, Category = BrakeSystem)
 	virtual float ComputeFullTorqByRatio(float InRatio) { return 0; }
@@ -123,7 +123,7 @@ struct FWheelBrakeSetup
  * UWheelBrakeSimple
  */
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
-class UWheelBrakeSimple: public UWheelBrake
+class UNREALSODA_API UWheelBrakeSimple: public UWheelBrake
 {
 	friend UVehicleBrakeSystemSimpleComponent;
 
@@ -168,17 +168,20 @@ class UNREALSODA_API UVehicleBrakeSystemSimpleComponent : public UVehicleBrakeSy
 	UPROPERTY(EditAnywhere, Category = BrakeSystem, SaveGame, meta = (EditInRuntime))
 	bool bAcceptPedalFromVehicleInput = true;
 
+	float GetPedalPos() const { return PedalPos; }
+
+	const TArray<UWheelBrakeSimple*> GetWheelBrakes() const { return WheelBrakes; }
+
 public:
 	virtual void RequestByAcceleration(float InAcceleration, double DeltaTime) override;
 	virtual void RequestByForce(float InForce, double DeltaTime) override;
 	virtual void RequestByRatio(float InRatio, double DeltaTime) override;
 	virtual void RequestByPressure(float InBar, double DeltaTime) override;
 	virtual UWheelBrake* GetWheel(int Ind) const override { return WheelBrakes[Ind]; }
-	virtual UWheelBrake* GetWheel4WD(E4WDWheelIndex Ind) const override { return GetWheelSimple4WD(Ind); }
+	virtual UWheelBrake* FindWheelByIndex(EWheelIndex Ind) const override;
 	virtual float ComputeFullTorqByRatio(float InRatio) override;
 
 	UWheelBrakeSimple* GetWheelSimple(int Ind) const { return WheelBrakes[Ind]; }
-	UWheelBrakeSimple* GetWheelSimple4WD(E4WDWheelIndex Ind) const;
 
 public:
 	virtual void InitializeComponent() override;
@@ -189,14 +192,13 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 	UPROPERTY()
 	TArray<UWheelBrakeSimple*> WheelBrakes;
 
-	UPROPERTY()
-	TArray<TWeakObjectPtr<UWheelBrakeSimple>> WheelBrakes4WD;
+	//UPROPERTY()
+	//TArray<TWeakObjectPtr<UWheelBrakeSimple>> WheelBrakes4WD;
 
 	float PedalPos = 0;
 };

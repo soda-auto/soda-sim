@@ -76,7 +76,7 @@ void USodaChaosWheeledVehicleSimulation::UpdateSimulation(float DeltaTime, const
 		SodaChaosWheelSetup[i].SodaWheel->Steer = ChaosWheels[i].GetSteeringAngle() / 180 * M_PI;
 		SodaChaosWheelSetup[i].SodaWheel->AngularVelocity = ChaosWheels[i].GetAngularVelocity();
 		SodaChaosWheelSetup[i].SodaWheel->Slip = FVector2D(std::cos(ChaosWheels[i].GetSlipAngle()), std::sin(ChaosWheels[i].GetSlipAngle())) * ChaosWheels[i].GetSlipMagnitude();
-		SodaChaosWheelSetup[i].SodaWheel->SuspensionOffset = PVehicle->Suspension[i].GetSuspensionOffset();
+		SodaChaosWheelSetup[i].SodaWheel->SuspensionOffset2 = -PVehicle->Suspension[i].Setup().SuspensionAxis * PVehicle->Suspension[i].GetSuspensionOffset();
 	}
 
 	WheeledVehicleComponent->PostPhysicSimulation(DeltaTime, VehicleSimData.VehicleKinematic, VehicleSimData.SimulatedTimestamp);
@@ -95,6 +95,7 @@ void USodaChaosWheeledVehicleSimulation::UpdateSimulation(float DeltaTime, const
 		PVehicle->Wheels[i].SetBrakeTorque(Chaos::TorqueMToCm(SodaChaosWheelSetup[i].SodaWheel->ReqBrakeTorque));
 	}
 	
+	WheeledVehicleComponent->SyncDataset();
 }
 
 /**********************************************************************************
@@ -353,14 +354,14 @@ bool USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent()
 		return false;
 	}
 
-	if (GetWheeledVehicle()->GetWheels().Num() != SodaWheelSetups.Num())
+	if (GetWheeledVehicle()->GetWheelsSorted().Num() != SodaWheelSetups.Num())
 	{
 		SetHealth(EVehicleComponentHealth::Error);
-		UE_LOG(LogSoda, Error, TEXT("USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent(); Mismatch count of SodaWheels[%i] and SodaWheelSetups[%i]"), GetWheeledVehicle()->GetWheels().Num(), SodaWheelSetups.Num());
+		UE_LOG(LogSoda, Error, TEXT("USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent(); Mismatch count of SodaWheels[%i] and SodaWheelSetups[%i]"), GetWheeledVehicle()->GetWheelsSorted().Num(), SodaWheelSetups.Num());
 		return false;
 	}
 
-	if (GetWheeledVehicle()->GetWheels().Num() == 0)
+	if (GetWheeledVehicle()->GetWheelsSorted().Num() == 0)
 	{
 		SetHealth(EVehicleComponentHealth::Error);
 		UE_LOG(LogSoda, Error, TEXT("USodaChaosWheeledVehicleMovementComponent::OnActivateVehicleComponent(); USodaVehicleWheel.Num() == 0"));

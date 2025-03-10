@@ -4,18 +4,12 @@
 
 #include "CoreGlobals.h"
 #include "Engine/EngineBaseTypes.h"
-#include "GameFramework/WorldSettings.h"
-#include "Soda/Misc/LLConverter.h"
 #include "Soda/Misc/AsyncTaskManager.h"
-#include "Soda/Misc/Utils.h"
 #include "Soda/Misc/Time.h"
-#include "Soda/Vehicles/ISodaVehicleExporter.h"
-#include "JsonObjectWrapper.h"
-#include <cmath>
+#include "Templates/IsValidVariadicFunctionArg.h"
 
 class IHttpRouter;
 class USodaSubsystem;
-class USodaUserSettings;
 
 namespace dbc
 {
@@ -25,6 +19,9 @@ namespace dbc
 namespace soda
 {
 	class FOutputLogHistory;
+	class FFileDatabaseManager;
+	class IDatasetManager;
+	class ISodaVehicleExporter;
 }
 
 namespace zmq
@@ -61,17 +58,19 @@ public:
 	USodaSubsystem* GetSodaSubsystem() const;
 	USodaSubsystem* GetSodaSubsystemChecked() const;
 
-	const USodaUserSettings* GetSodaUserSettings() const;
-	USodaUserSettings* GetSodaUserSettings();
-
 	TSharedPtr<dbc::FMessageSerializator> FindDBCSerializator(const FString& MessageName, const FString& Namespace = FString());
 	bool RegisterDBC(const FString& Namespace, const FString& FileName);
 
-	void RegisterVehicleExporter(TSharedPtr<ISodaVehicleExporter> Exporter);
-	void UnregisterVehicleExporter(const FString& ExporteName);
-	const TMap<FString, TSharedPtr<ISodaVehicleExporter>>& GetVehicleExporters() const { return VehicleExporters; }
+	void RegisterVehicleExporter(TSharedRef<soda::ISodaVehicleExporter> Exporter);
+	void UnregisterVehicleExporter(const FName& ExporteName);
+	const TMap<FName, TSharedPtr<soda::ISodaVehicleExporter>>& GetVehicleExporters() const { return VehicleExporters; }
 
-	TSharedPtr<soda::FOutputLogHistory> GetOutputLogHistory() { return OutputLogHistory; }
+	void RegisterDatasetManager(FName DatasetName, TSharedRef<soda::IDatasetManager> DatasetManager);
+	void UnregisterDatasetManager(FName DatasetName);
+	const TMap<FName, TSharedPtr<soda::IDatasetManager>>& GetDatasetManagers() const { return DatasetManagers; }
+
+	soda::FOutputLogHistory & GetOutputLogHistory() { return *OutputLogHistory.Get(); }
+	soda::FFileDatabaseManager & GetFileDatabaseManager() { return *FileDatabaseManager.Get(); }
 
 public:
 	soda::FAsyncTaskManager CamTaskManager;
@@ -99,8 +98,6 @@ protected:
 	void SetSodaSubsystem(USodaSubsystem* InSodaSubsystem);
 	void ResetSodaSubsystem();
 
-	void CreateSodaUserSettings();
-
 	zmq::context_t* ZmqCtx = nullptr;
 
 	// Current GameWorld
@@ -123,13 +120,41 @@ protected:
 	TWeakObjectPtr<USodaSubsystem> SodaSubsystem;
 	bool bInitialized = false;
 
-	TWeakObjectPtr<USodaUserSettings> SodaUserSettings;
-
 	TMap<FString, TMap<FString, TSharedPtr<dbc::FMessageSerializator>>> DBCPool;
 
-	TMap<FString, TSharedPtr<ISodaVehicleExporter>> VehicleExporters;
+	TMap<FName, TSharedPtr<soda::ISodaVehicleExporter>> VehicleExporters;
+	TMap<FName, TSharedPtr<soda::IDatasetManager>> DatasetManagers;
 
 	TSharedPtr<soda::FOutputLogHistory> OutputLogHistory;
+	TSharedPtr<soda::FFileDatabaseManager> FileDatabaseManager;
 };
+
+enum class ENotificationLevel
+{
+	Success,
+	Warning,
+	Error
+};
+
+namespace soda
+{
+	UNREALSODA_API void ShowNotificationImpl(ENotificationLevel Level, double Duration, bool bLog, const TCHAR* FunctionName, const TCHAR* Fmt, ...);
+
+	template <typename... Types>
+	void ShowNotification(ENotificationLevel Level, double Duration, const TCHAR * Fmt, Types... Args)
+	{
+		static_assert((TIsValidVariadicFunctionArg<Types>::Value && ...), "Invalid argument(s) passed to Printf");
+		ShowNotificationImpl(Level, Duration, false, TEXT(""), Fmt, Args...);
+	}
+
+	template <typename... Types>
+	void ShowNotificationAndLog(ENotificationLevel Level, double Duration, const TCHAR* FunctionName, const TCHAR* Fmt, Types... Args)
+	{
+		static_assert((TIsValidVariadicFunctionArg<Types>::Value && ...), "Invalid argument(s) passed to Printf");
+		ShowNotificationImpl(Level, Duration, true, FunctionName, Fmt, Args...);
+	}
+}
+
+#define SHOW_NOTIFICATION(Level, Duration, Foramt, ...) soda::ShowNotificationAndLog(ENotificationLevel::Level, Duration, ANSI_TO_TCHAR(__FUNCTION__), Foramt, ##__VA_ARGS__);
 
 extern UNREALSODA_API class FSodaApp SodaApp;

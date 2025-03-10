@@ -5,15 +5,7 @@
 #include "Soda/VehicleComponents/Mechanicles/VehicleGearBoxComponent.h"
 #include "Soda/UnrealSoda.h"
 #include "DrawDebugHelpers.h"
-#include "Soda/LevelState.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
-#include "Soda/DBGateway.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
 
 UGenericWheeledVehicleSensor::UGenericWheeledVehicleSensor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -29,18 +21,6 @@ UGenericWheeledVehicleSensor::UGenericWheeledVehicleSensor(const FObjectInitiali
 	TickData.bAllowVehiclePostDeferredPhysTick = true;
 }
 
-void UGenericWheeledVehicleSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
-}
-
-void UGenericWheeledVehicleSensor::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-	PublisherHelper.OnSerialize(Ar);
-}
-
 bool UGenericWheeledVehicleSensor::OnActivateVehicleComponent()
 {
 	if (!Super::OnActivateVehicleComponent())
@@ -50,7 +30,7 @@ bool UGenericWheeledVehicleSensor::OnActivateVehicleComponent()
 
 	WheeledVehicle = Cast<ASodaWheeledVehicle>(GetVehicle());
 
-	if (!WheeledVehicle && !WheeledVehicle->Is4WDVehicle())
+	if (!WheeledVehicle && !WheeledVehicle->IsXWDVehicle(4))
 	{
 		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only 4WD vehicles"));
 		return false;
@@ -59,7 +39,7 @@ bool UGenericWheeledVehicleSensor::OnActivateVehicleComponent()
 	//Engine = LinkToEngine.GetObject<UVehicleEngineBaseComponent>(GetOwner());
 	//SteeringRack = LinkToSteering.GetObject<UVehicleSteeringRackBaseComponent>(GetOwner());
 	//BrakeSystem = LinkToBrakeSystem.GetObject<UVehicleBrakeSystemBaseComponent>(GetOwner());
-	//HandBrake = LinkToHandBrake.GetObject<UVehicleHandBrakeBaseComponent>(GetOwner());
+	//HandBrake = LinkToHandBrake.GetObject<UVehicleBrakeSystemBaseComponent>(GetOwner());
 	GearBox = LinkToGearBox.GetObject<UVehicleGearBoxBaseComponent>(GetOwner());
 	VehicleDriver = LinkToGearBox.GetObject<UVehicleDriverComponent>(GetOwner());
 
@@ -96,13 +76,21 @@ bool UGenericWheeledVehicleSensor::OnActivateVehicleComponent()
 	}
 	*/
 
-	return PublisherHelper.Advertise();
+	if (IsValid(Publisher))
+	{
+		return Publisher->Advertise(this);
+	}
+	
+	return true;
 }
 
 void UGenericWheeledVehicleSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
-	PublisherHelper.Shutdown();
+	if (IsValid(Publisher))
+	{
+		Publisher->Shutdown();
+	}
 
 	//Engine = nullptr;
 	//SteeringRack = nullptr;
@@ -114,28 +102,18 @@ void UGenericWheeledVehicleSensor::OnDeactivateVehicleComponent()
 
 bool UGenericWheeledVehicleSensor::IsVehicleComponentInitializing() const
 {
-	return PublisherHelper.IsPublisherInitializing();
+	return IsValid(Publisher) && Publisher->IsInitializing();
 }
 
 void UGenericWheeledVehicleSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	PublisherHelper.Tick();
-}
 
-#if WITH_EDITOR
-void UGenericWheeledVehicleSensor::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
+	if (IsValid(Publisher))
+	{
+		Publisher->CheckStatus(this);
+	}
 }
-
-void UGenericWheeledVehicleSensor::PostInitProperties()
-{
-	Super::PostInitProperties();
-	PublisherHelper.RefreshClass();
-}
-#endif
 
 bool UGenericWheeledVehicleSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FWheeledVehicleSensorData& VehicleStateExtra)
 {
@@ -167,54 +145,4 @@ void UGenericWheeledVehicleSensor::DrawDebug(UCanvas* Canvas, float& YL, float& 
 FString UGenericWheeledVehicleSensor::GetRemark() const
 {
 	return Publisher ? Publisher->GetRemark() : "null";
-}
-
-void UGenericWheeledVehicleSensor::OnPushDataset(soda::FActorDatasetData& Dataset) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	try
-	{
-		auto DriveMode = VehicleDriver ? VehicleDriver->GetDriveMode() : ESodaVehicleDriveMode::Manual;
-		auto GearState = GearBox ? GearBox->GetGearState() : EGearState::Neutral;
-		int GearNum = GearBox ? GearBox->GetGearNum() : 0;
-		float Steer = WheeledVehicle->Is4WDVehicle() 
-			? (WheeledVehicle->GetWheel4WD(E4WDWheelIndex::FL)->Steer + WheeledVehicle->GetWheel4WD(E4WDWheelIndex::FR)->Steer) / 2 
-			: 0;
-
-		bsoncxx::builder::stream::document& Doc = Dataset.GetRowDoc();
-		Doc << std::string(TCHAR_TO_UTF8(*GetName())) << open_document
-			<< "DriveMode" << int(DriveMode)
-			<< "GearState" << int(GearState)
-			<< "GearNum" << GearNum
-			<< "bIs4WDVehicle" << WheeledVehicle->Is4WDVehicle()
-			<< "Steer" << Steer;
-
-		auto WheelsArray = Doc << "Wheels" << open_array;
-		for (auto & Wheel : WheeledVehicle->GetWheels())
-		{
-			WheelsArray
-				<< open_document
-				<< "WheelIndex4WD" << int(Wheel->WheelIndex4WD)
-				<< "ReqTorq" << Wheel->ReqTorq
-				<< "ReqBrakeTorque" << Wheel->ReqBrakeTorque
-				<< "ReqSteer" << Wheel->ReqSteer
-				<< "Steer" << Wheel->Steer
-				<< "Pitch" << Wheel->Pitch
-				<< "AngularVelocity" << Wheel->AngularVelocity
-				<< "SuspensionOffset" << Wheel->SuspensionOffset
-				<< "Slip" << open_array << Wheel->Slip.X << Wheel->Slip.Y << close_array
-				<< close_document;
-		}
-		WheelsArray << close_array << close_document;
-	}
-	catch (const std::system_error& e)
-	{
-		UE_LOG(LogSoda, Error, TEXT("UGenericWheeledVehicleSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
-	}
 }

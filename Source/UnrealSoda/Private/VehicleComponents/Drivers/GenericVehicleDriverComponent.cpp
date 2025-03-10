@@ -10,18 +10,9 @@
 #include "Soda/VehicleComponents/Mechanicles/VehicleSteeringComponent.h"
 #include "Soda/VehicleComponents/Mechanicles/VehicleEngineComponent.h"
 #include "Soda/VehicleComponents/Mechanicles/VehicleBrakeSystemComponent.h"
-#include "Soda/VehicleComponents/Mechanicles/VehicleHandBrakeComponent.h"
 #include "Soda/VehicleComponents/Mechanicles/VehicleGearBoxComponent.h"
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
-#include "Soda/LevelState.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
-#include "Soda/DBGateway.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
 #include <cmath>
 
 
@@ -30,7 +21,7 @@ static inline float NormAng(float a)
 	return (a > M_PI) ? (a - 2.0 * M_PI) : ((a < -M_PI) ? (a + 2 * M_PI) : a);
 }
 
-UGenericVehicleDriverComponentComponent::UGenericVehicleDriverComponentComponent(const FObjectInitializer& ObjectInitializer)
+UGenericVehicleDriverComponent::UGenericVehicleDriverComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	GUI.ComponentNameOverride = TEXT("Generic Vehicle Driver");
@@ -42,14 +33,14 @@ UGenericVehicleDriverComponentComponent::UGenericVehicleDriverComponentComponent
 	Common.Activation = EVehicleComponentActivation::OnStartScenario;
 }
 
-bool UGenericVehicleDriverComponentComponent::OnActivateVehicleComponent()
+bool UGenericVehicleDriverComponent::OnActivateVehicleComponent()
 {
 	if (!Super::OnActivateVehicleComponent())
 	{
 		return false;
 	}
 
-	if (!GetWheeledVehicle()->Is4WDVehicle())
+	if (!GetWheeledVehicle()->IsXWDVehicle(4))
 	{
 		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only 4WD vehicles"));
 		return false;
@@ -58,7 +49,7 @@ bool UGenericVehicleDriverComponentComponent::OnActivateVehicleComponent()
 	Engine = LinkToEngine.GetObject<UVehicleEngineBaseComponent>(GetOwner()); 
 	SteeringRack = LinkToSteering.GetObject<UVehicleSteeringRackBaseComponent>(GetOwner());
 	BrakeSystem = LinkToBrakeSystem.GetObject<UVehicleBrakeSystemBaseComponent>(GetOwner());
-	HandBrake = LinkToHandBrake.GetObject<UVehicleHandBrakeBaseComponent>(GetOwner());
+	HandBrake = LinkToHandBrake.GetObject<UVehicleBrakeSystemBaseComponent>(GetOwner());
 	GearBox = LinkToGearBox.GetObject<UVehicleGearBoxBaseComponent>(GetOwner());
 
 	if (!Engine)
@@ -93,13 +84,23 @@ bool UGenericVehicleDriverComponentComponent::OnActivateVehicleComponent()
 
 	bWheelRadiusValid = false;
 
-	//PublisherHelper.Advertise();
-	ListenerHelper.StartListen();
+	if (IsValid(VehicleControl))
+	{
+		if (VehicleControl->StartListen(this))
+		{
+			return true;
+		}
+		else
+		{
+			SetHealth(EVehicleComponentHealth::Warning, "Can't Initialize VehicleControl");
+			return false;
+		}
+	}
 
 	return true;
 }
 
-void UGenericVehicleDriverComponentComponent::OnPostActivateVehicleComponent()
+void UGenericVehicleDriverComponent::OnPostActivateVehicleComponent()
 {
 	bWheelRadiusValid = (Engine) && (Engine->FindWheelRadius(WheelRadius)) && (WheelRadius > 1.0);
 	if (!bWheelRadiusValid)
@@ -109,14 +110,17 @@ void UGenericVehicleDriverComponentComponent::OnPostActivateVehicleComponent()
 	}
 }
 
-void UGenericVehicleDriverComponentComponent::OnDeactivateVehicleComponent()
+void UGenericVehicleDriverComponent::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
 
-	ListenerHelper.StopListen();
+	if (IsValid(VehicleControl))
+	{
+		VehicleControl->StopListen();
+	}
 }
 
-void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
+void UGenericVehicleDriverComponent::PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp)
 {
 	Super::PrePhysicSimulation(DeltaTime, VehicleKinematic, Timestamp);
 
@@ -166,7 +170,7 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 			if (Engine) Engine->RequestByRatio(ThrottleReq);
 			if (BrakeSystem) BrakeSystem->RequestByRatio(BrakeReq, DeltaTime);
 			if (SteeringRack) SteeringRack->RequestByRatio(SteerReq);
-			if (HandBrake) HandBrake->RequestByRatio(HandBrakeReq);
+			if (HandBrake) HandBrake->RequestByRatio(HandBrakeReq, DeltaTime);
 		}
 	}
 	else if ((GetDriveMode() == ESodaVehicleDriveMode::SafeStop) || (GetDriveMode() == ESodaVehicleDriveMode::AD && !bVapiPing)) // SafeStop mode
@@ -175,7 +179,7 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 		if (Engine) Engine->RequestByRatio(0.0);
 		if (BrakeSystem) BrakeSystem->RequestByRatio(0.0, DeltaTime);
 		if (SteeringRack) SteeringRack->RequestByRatio(0.0);
-		if (HandBrake) HandBrake->RequestByRatio(1.0);
+		if (HandBrake) HandBrake->RequestByRatio(1.0, DeltaTime);
 	}
 	else // AD mode
 	{
@@ -333,17 +337,19 @@ void UGenericVehicleDriverComponentComponent::PrePhysicSimulation(float DeltaTim
 		{
 			if (GearState == EGearState::Park)
 			{
-				HandBrake->RequestByRatio(1.0);
+				HandBrake->RequestByRatio(1.0, DeltaTime);
 			}
 			else
 			{
-				HandBrake->RequestByRatio(0.0);
+				HandBrake->RequestByRatio(0.0, DeltaTime);
 			}
 		}
 	}
+
+	SyncDataset();
 }
 
-ESodaVehicleDriveMode UGenericVehicleDriverComponentComponent::GetDriveMode() const
+ESodaVehicleDriveMode UGenericVehicleDriverComponent::GetDriveMode() const
 {
 	if (bSafeStopEnbaled)
 	{
@@ -370,7 +376,7 @@ ESodaVehicleDriveMode UGenericVehicleDriverComponentComponent::GetDriveMode() co
 	}
 }
 
-void UGenericVehicleDriverComponentComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
+void UGenericVehicleDriverComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
 {
 	Super::DrawDebug(Canvas, YL, YPos);
 
@@ -393,86 +399,20 @@ void UGenericVehicleDriverComponentComponent::DrawDebug(UCanvas* Canvas, float& 
 	}
 }
 
-FString UGenericVehicleDriverComponentComponent::GetRemark() const
+FString UGenericVehicleDriverComponent::GetRemark() const
 {
 	return VehicleControl ? VehicleControl->GetRemark() : "null";
 }
 
-void UGenericVehicleDriverComponentComponent::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	//PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	ListenerHelper.OnPropertyChanged(PropertyChangedEvent);
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
-}
-
-void UGenericVehicleDriverComponentComponent::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-	//PublisherHelper.OnSerialize(Ar);
-	ListenerHelper.OnSerialize(Ar);
-}
-
 /*
-bool UGenericVehicleDriverComponentComponent::IsVehicleComponentInitializing() const
+bool UGenericVehicleDriverComponent::IsVehicleComponentInitializing() const
 {
 	return PublisherHelper.IsPublisherInitializing();
 }
 */
 
-void UGenericVehicleDriverComponentComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UGenericVehicleDriverComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	//PublisherHelper.Tick();
-}
-
-#if WITH_EDITOR
-void UGenericVehicleDriverComponentComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	//PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	ListenerHelper.OnPropertyChanged(PropertyChangedEvent);
-}
-
-void UGenericVehicleDriverComponentComponent::PostInitProperties()
-{
-	Super::PostInitProperties();
-	//PublisherHelper.RefreshClass();
-	ListenerHelper.RefreshClass();
-}
-#endif
-
-void UGenericVehicleDriverComponentComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	try
-	{
-		Dataset.GetRowDoc()
-			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
-			<< "bVapiPing" << bVapiPing
-			<< "bADModeEnbaled" << bADModeEnbaled
-			<< "bSafeStopEnbaled" << bSafeStopEnbaled
-			<< "GearState" << int(GearState)
-			<< "GearNum" << int(GearNum)
-			<< "Control" << open_document
-			<< "SteerReq" << Control.SteerReq.ByRatio
-			<< "DriveEffortReq" << Control.DriveEffortReq.ByRatio
-			<< "TargetSpeedReq" << Control.TargetSpeedReq
-			<< "GearStateReq" << int(Control.GearStateReq)
-			<< "GearNumReq" << int(Control.GearNumReq)
-			<< "SteerReqMode" << int(Control.SteerReqMode)
-			<< "DriveEffortReqMode" << int(Control.DriveEffortReqMode)
-			<< "TimestampUs" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(Control.Timestamp))
-			<< close_document // Control
-			<< close_document;
-	}
-	catch (const std::system_error& e)
-	{
-		UE_LOG(LogSoda, Error, TEXT("UGenericVehicleDriverComponentComponent::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
-	}
 }

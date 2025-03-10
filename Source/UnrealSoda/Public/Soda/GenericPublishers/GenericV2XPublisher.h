@@ -13,7 +13,7 @@ class UV2XMarkerSensor;
 /**
  * UGenericV2XPublisher
  */
-UCLASS(abstract, ClassGroup = Soda)
+UCLASS(abstract, ClassGroup = Soda, EditInlineNew)
 class UNREALSODA_API UGenericV2XPublisher: public UGenericPublisher
 {
 	GENERATED_BODY()

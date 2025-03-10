@@ -101,10 +101,13 @@ public:
 	virtual float GetMaxTorque() const override { return MaxTorq; }
 	virtual float GetTorque() const override { return ActualTorque; }
 
+	float GetAngularVelocity() const { return AngularVelocity; }
+	float GetRequestedTorque() const { return RequestedTorque; }
+	float GetPedalPos() const { return PedalPos; }
+
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 public:
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;

@@ -116,8 +116,8 @@ public:
 	TSharedPtr< FUICommandInfo > CycleTransformGizmos;
 	TSharedPtr< FUICommandInfo > CycleTransformGizmoCoordSystem;
 
-	TSharedPtr< FUICommandInfo > RecordDataset;
-	TSharedPtr< FUICommandInfo > AutoConnectDB;
+	//TSharedPtr< FUICommandInfo > RecordDataset;
+	//TSharedPtr< FUICommandInfo > AutoConnectDB;
 
 
 	TSharedPtr< FUICommandInfo > ToggleSpectatorMode;

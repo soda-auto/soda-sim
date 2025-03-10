@@ -7,6 +7,7 @@
 #include "Engine/DirectionalLight.h"
 #include "GameFramework/Actor.h"
 #include "Soda/ISodaActor.h"
+#include "Soda/ISodaDataset.h"
 #include "WeatherSystem.generated.h"
 
 DEFINE_LOG_CATEGORY_STATIC(WEATHER, Log, All);
@@ -15,9 +16,10 @@ class UMaterialInstanceDynamic;
 class AVolumetricCloud;
 
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API AWeatherSystem : 
-	public AActor,
-	public ISodaActor
+class UNREALSODA_API AWeatherSystem 
+	: public AActor
+	, public ISodaActor
+	, public IObjectDataset
 {
 	GENERATED_BODY()
 

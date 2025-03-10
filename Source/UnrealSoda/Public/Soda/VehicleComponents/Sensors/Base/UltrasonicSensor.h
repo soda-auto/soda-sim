@@ -99,10 +99,10 @@ class UNREALSODA_API UUltrasonicSensor : public USensorComponent
 	float FOV_Vertical = 60;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sensor, SaveGame, meta = (EditInRuntime, UpdateFOVRendering, UpdateFOVRendering))
-	float DistanseMin = 20;
+	float DistanceMin = 20;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sensor, SaveGame, meta = (EditInRuntime, UpdateFOVRendering, UpdateFOVRendering))
-	float DistanseMax = 300;
+	float DistanceMax = 300;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = FOVRenderer, SaveGame, meta = (EditInRuntime, UpdateFOVRendering))
 	FSensorFOVRenderer FOVSetup;
@@ -158,7 +158,7 @@ protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 
-	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const TArray < FUltrasonicEchos >& InEchoCollections) { return true; }
+	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const TArray < FUltrasonicEchos >& InEchoCollections) { SyncDataset(); return true; }
 
 protected:
 	TInlineComponentArray<UUltrasonicSensor*> Sensors;

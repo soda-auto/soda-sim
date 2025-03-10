@@ -55,9 +55,6 @@ public:
 	FSubobjectReference LinkToIOBus;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ThrottalPedal, SaveGame, meta = (EditInRuntime, ReactivateActor))
-	FName IOBusNodeName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ThrottalPedal, SaveGame, meta = (EditInRuntime, ReactivateActor))
 	TArray<FIOButtonArraySetup> ButtonSetups;
 
 public:
@@ -72,15 +69,12 @@ protected:
 	UPROPERTY();
 	UIOBusComponent* IOBus{};
 
-	UPROPERTY();
-	UIOBusNode* Node {};
-
 	struct FIOButtonArrayItem
 	{
 		FIOButtonArraySetup Setup{};
 		bool bIsPressed {};
 		float Voltage {};
-		TStrongObjectPtr<UIOExchange> Exchange;
+		TStrongObjectPtr<UIOPin> PinInterface{};
 	};
 
 	TArray<FIOButtonArrayItem> Buttons;

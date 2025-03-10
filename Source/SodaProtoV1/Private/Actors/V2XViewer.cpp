@@ -259,7 +259,7 @@ void AV2XViewer::Recv(const FArrayReaderPtr& ArrayReaderPtr, const FIPv4Endpoint
 	V2XObject.Data = GenericObject;
 	V2XObject.Timestamp = SodaApp.GetRealtimeTimestamp();
 	V2XObject.Extent = FVector(GenericObject.length * 100.f, GenericObject.width * 100.f, GenericObject.height * 100.f);
-	V2XObject.Rot = FRotator(0.f, -GenericObject.yaw_angle / M_PI * 180.f, 0.f);
+	V2XObject.Rot = FRotator(0.f, -GenericObject.yaw_angle / PI * 180.f, 0.f);
 	V2XObject.Pos.X = -GenericObject.east * 100.f;
 	V2XObject.Pos.Y = GenericObject.north * 100.f;
 	if(!V2XObject.Traced) V2XObject.Pos.Z = GenericObject.up * 100.f;

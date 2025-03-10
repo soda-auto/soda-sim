@@ -12,7 +12,7 @@ struct FCameraFrame;
 /**
  * UGenericCameraPublisher
  */
-UCLASS(abstract, ClassGroup = Soda)
+UCLASS(abstract, ClassGroup = Soda, EditInlineNew)
 class UNREALSODA_API UGenericCameraPublisher : public UGenericPublisher
 {
 	GENERATED_BODY()

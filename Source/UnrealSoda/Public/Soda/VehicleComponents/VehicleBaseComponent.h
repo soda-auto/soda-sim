@@ -4,6 +4,7 @@
 
 #include "Components/PrimitiveComponent.h"
 #include "Soda/ISodaVehicleComponent.h"
+#include "Soda/ISodaDataset.h"
 #include "VehicleBaseComponent.generated.h"
 
 class ASodaVehicle;
@@ -21,10 +22,11 @@ struct FSensorDataHeader
  * UVehicleBaseComponent
  */
 UCLASS(Abstract, ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UVehicleBaseComponent : 
-	public UPrimitiveComponent,
-	public ISodaVehicleComponent,
-	public IVehicleTickablObject
+class UNREALSODA_API UVehicleBaseComponent 
+	: public UPrimitiveComponent
+	, public ISodaVehicleComponent
+	, public IVehicleTickablObject
+	, public IObjectDataset
 {
 	GENERATED_UCLASS_BODY()
 

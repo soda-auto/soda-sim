@@ -49,15 +49,15 @@ struct UNREALSODA_API FRadarParams
 
 	/** Minimum distance, m */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RadarParams, SaveGame, meta = (EditInRuntime, ReactivateComponent, UpdateFOVRendering))
-	float DistanseMin = 0.2f;
+	float DistanceMin = 0.2f;
 
 	/** Maximum distance, m */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RadarParams, SaveGame, meta = (EditInRuntime, ReactivateComponent, UpdateFOVRendering))
-	float DistanseMax = 70;
+	float DistanceMax = 70;
 
 	/** Maximum distance on full horizontal FOV, m */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RadarParams, SaveGame, meta = (EditInRuntime, ReactivateComponent, UpdateFOVRendering))
-	float DistanseOnMaxAngle = 40;
+	float DistanceOnMaxAngle = 40;
 
 	/** Best horizontal resolution, deg */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RadarParams, SaveGame, meta = (EditInRuntime, ReactivateComponent))
@@ -287,9 +287,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ObjectRCS, SaveGame, meta = (EditInRuntime, ReactivateComponent))
 	float WallsRCS = 0.05;
 
+	/** Master switch on drawing debug primitives */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
+	bool bDrawDebugPrimitives = false;
+
 	/** Show debug points */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
-	bool bDrawDebugPoints = false;
+	bool bDrawDebugTracedPoints = false;
+
+	/** Show debug lines to detected objects */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
+	bool bDrawDebugLinesToObjects = false;
 
 	/** Show debug clusters RCS, hits num and distance */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug, SaveGame, meta = (EditInRuntime))
@@ -322,7 +330,7 @@ protected:
 	virtual void ProcessRadarBeams(const FRadarParams & Params);
 	virtual const TArray<FRadarParams>& GetRadarParams() const { static TArray<FRadarParams> Params; return Params; }
 	virtual void ProcessHit(const FHitResult* Hit, const FRadarParams * Params);
-	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FRadarClusters& InClusters, const FRadarObjects& InObjects) { return false; }
+	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const FRadarClusters& InClusters, const FRadarObjects& InObjects) { SyncDataset(); return false; }
 	virtual void ShowDebudPoints();
 
 private:
@@ -332,4 +340,6 @@ private:
 	TTimestamp PrevTickTime;
 	TArray<FVector> BatchStart;
 	TArray<FVector> BatchEnd;
+
+
 };

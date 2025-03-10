@@ -4,6 +4,7 @@
 
 #include "GameFramework/PawnMovementComponent.h"
 #include "Soda/ISodaVehicleComponent.h"
+#include "Soda/ISodaDataset.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
 #include "WheeledVehicleMovementBaseComponent.generated.h"
 
@@ -14,10 +15,11 @@ class ASodaWheeledVehicle;
  * This is just template for implement the IWheeledVehicleMovementInterface component
  */
 UCLASS(abstract, ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UWheeledVehicleMovementBaseComponent :
-	public UPawnMovementComponent,
-	public IWheeledVehicleMovementInterface,
-	public ISodaVehicleComponent
+class UNREALSODA_API UWheeledVehicleMovementBaseComponent 
+	: public UPawnMovementComponent
+	, public IWheeledVehicleMovementInterface
+	, public ISodaVehicleComponent
+	, public IObjectDataset
 {
 	GENERATED_UCLASS_BODY()
 

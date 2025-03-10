@@ -145,7 +145,7 @@ enum class EVehicleComponentPostDeferredPhysTickGroup : uint8
 };
 
 UINTERFACE(Blueprintable)
-class UTorqueTransmission : public UInterface
+class UNREALSODA_API UTorqueTransmission : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -167,6 +167,8 @@ public:
 	virtual bool FindToWheelRatio(float & OutRatio) const = 0;
 };
 
+/*
+* 
 USTRUCT(BlueprintType)
 struct FWheeledVehicleWheelState
 {
@@ -217,6 +219,7 @@ struct FWheeledVehicleState
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = VehicleInputRate)
 	FWheeledVehicleWheelState WheelsRR;
 };
+*/
 
 struct FVehicleSimData
 {

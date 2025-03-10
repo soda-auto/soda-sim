@@ -8,19 +8,13 @@
 #include "Soda/SodaSubsystem.h"
 #include "Soda/SodaStatics.h"
 #include "Soda/Misc/EditorUtils.h"
+#include "Soda/Misc/Utils.h"
 #include "Actors/GhostVehicle/SpeedProfile/UnifiedSpeedProfile.h"
 #include "Actors/GhostVehicle/SpeedProfile/Curvature.h"
-#include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
 #include "Math/UnrealMathUtility.h"
 #include "VehicleUtility.h"
 #include "Templates/Tuple.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
 
 
 AGhostVehicle::AGhostVehicle()
@@ -170,7 +164,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 
 			if (BaseLength > 0)
 			{
-				const double SteerAngle = (TrajectoryPlaner.GetCurvatureAtKey(TrajectoryPlaner.GetCurrentSplineKey()) * BaseLength / 100.0) / M_PI * 180;
+				const double SteerAngle = (TrajectoryPlaner.GetCurvatureAtKey(TrajectoryPlaner.GetCurrentSplineKey()) * BaseLength / 100.0) / PI * 180;
 				for (auto& Wheel : Wheels)
 				{
 					if (Wheel.bApplySteer)
@@ -204,7 +198,7 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 				}
 
 				Wheel.RotationAngularVelocit = -CurrentVelocity  / Wheel.Radius;
-				Wheel.RotationAngle = NormAngDeg( Wheel.RotationAngle + Wheel.RotationAngularVelocit * DeltaTime / M_PI * 180);
+				Wheel.RotationAngle = NormAngDeg( Wheel.RotationAngle + Wheel.RotationAngularVelocit * DeltaTime / PI * 180);
 			}
 
 			if (Points.Num() >= 3)
@@ -237,14 +231,6 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 			);
 			SetActorTransform(VehicleTransform, false, nullptr, ETeleportType::TeleportPhysics);
 		}
-
-		if (Dataset)
-		{
-			Dataset->BeginRow();
-			OnPushDataset();
-			Dataset->EndRow();
-		}
-
 	}
 	else
 	{
@@ -285,6 +271,10 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 		TrajectoryPlaner.DrawRoute(this);
 	}
 
+	if (SodaSubsystem->IsScenarioRunning())
+	{
+		SyncDataset();
+	}
 }
 
 void AGhostVehicle::Serialize(FArchive& Ar)
@@ -435,14 +425,6 @@ bool AGhostVehicle::IsLinkedToRoute() const
 void AGhostVehicle::ScenarioBegin()
 {
 	ISodaActor::ScenarioBegin();
-
-	if (bRecordDataset && soda::FDBGateway::Instance().GetStatus() == soda::EDBGatewayStatus::Connected && soda::FDBGateway::Instance().IsDatasetRecording())
-	{
-		soda::FBsonDocument Doc;
-		GenerateDatasetDescription(Doc);
-		Dataset = soda::FDBGateway::Instance().CreateActorDataset(GetName(), "vehicle", GetClass()->GetName(), *Doc);
-	}
-
 	StartMoving();
 }
 
@@ -450,12 +432,6 @@ void AGhostVehicle::ScenarioEnd()
 {
 	ISodaActor::ScenarioEnd();
 	StopMoving();
-
-	if (Dataset)
-	{
-		Dataset->PushAsync();
-		Dataset.Reset();
-	}
 }
 
 void AGhostVehicle::RuntimePostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) 
@@ -512,80 +488,6 @@ FTransform AGhostVehicle::GetRealAxesTransform() const
 	return Transform;
 }
 
-
-void AGhostVehicle::GenerateDatasetDescription(soda::FBsonDocument& Doc) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	FExtent Extent = USodaStatics::CalculateActorExtent(this);
-	*Doc
-		<< "Extents" << open_document
-		<< "Forward" << Extent.Forward
-		<< "Backward" << Extent.Backward
-		<< "Left" << Extent.Left
-		<< "Right" << Extent.Right
-		<< "Up" << Extent.Up
-		<< "Down" << Extent.Down
-		<< close_document;
-}
-
-void AGhostVehicle::OnPushDataset() const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	if (Dataset.IsValid())
-	{
-		try
-		{
-			FVector Location = GetActorLocation();
-			FRotator Rotation = GetActorRotation();
-			FVector Vel = FVector(CurrentVelocity, 0, 0);
-			FVector Acc = FVector(CurrentAcc, 0, 0);
-			//FVector AngVel = FVector(0, 0, 0);
-
-			Dataset->GetRowDoc()
-				<< "Ts" << std::int64_t(soda::RawTimestamp<std::chrono::microseconds>(SodaApp.GetSimulationTimestamp()))
-				<< "Loc" << open_array << Location.X << Location.Y << Location.Z << close_array
-				<< "Rot" << open_array << Rotation.Pitch << Rotation.Yaw << Rotation.Roll << close_array
-				<< "Vel" << open_array << Vel.X << Vel.Y << Vel.Z << close_array
-				<< "Acc" << open_array << Acc.X << Acc.Y << Acc.Z << close_array;
-				//<< "ang_vel" << open_array << AngVel.X << AngVel.Y << AngVel.Z << close_array;
-
-			auto RouteDoc = Dataset->GetRowDoc() << "route" << open_document;
-			if (const FTrajectoryPlaner::FWayPoint* WayPoint = TrajectoryPlaner.GetCurrentWayPoint())
-			{
-				if (WayPoint->OwndedRoute.IsValid())
-				{
-					RouteDoc << "Name" << TCHAR_TO_UTF8(*WayPoint->OwndedRoute->GetName());
-				}
-				else
-				{
-					RouteDoc << "Name" << "";
-				}
-			}
-			else
-			{
-				RouteDoc << "Name" << "";
-			}
-			RouteDoc << close_document;
-				
-		}
-		catch (const std::system_error& e)
-		{
-			UE_LOG(LogSoda, Error, TEXT("AGhostPedestrian::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
-		}
-	}
-}
 
 const FSodaActorDescriptor* AGhostVehicle::GenerateActorDescriptor() const
 {

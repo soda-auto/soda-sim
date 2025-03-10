@@ -11,7 +11,7 @@ struct FUltrasonicEchos;
 /**
  * UGenericUltrasoncHubPublisher
  */
-UCLASS(abstract, ClassGroup = Soda)
+UCLASS(abstract, ClassGroup = Soda, EditInlineNew)
 class UNREALSODA_API UGenericUltrasoncHubPublisher: public UGenericPublisher
 {
 	GENERATED_BODY()

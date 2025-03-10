@@ -14,6 +14,8 @@
 
 class SWidget;
 class FSceneView;
+class USodaGameViewportClient;
+class PDI;
 class FPrimitiveDrawInterface;
 class UCanvas;
 class ASodaVehicle;
@@ -21,12 +23,6 @@ class UActorComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FVehicleComponentActivatedDelegate, UActorComponent*, Component);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FVehicleComponentDeactivateDelegate, UActorComponent*, Component);
-
-namespace soda
-{
-	class FActorDatasetData;
-	struct FBsonDocument;
-}
 
 enum class EVehicleComponentDeferredTask
 {
@@ -104,7 +100,6 @@ public:
 
 	/** 
 	  * Whether to write a dataset for this component. Valid only if this component supports dataset writing.
-	  * See USodaVehicleComponent::OnPushDataset().
 	  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleComponent, SaveGame, meta = (EditInRuntime))
 	bool bWriteDataset = false;
@@ -163,12 +158,14 @@ struct FVehicleComponentTick
  * USodaVehicleComponent
  */
 UINTERFACE(BlueprintType, meta = (CannotImplementInterfaceInBlueprint, RuntimeMetaData))
-class UNREALSODA_API USodaVehicleComponent : public UEditableObject
+class UNREALSODA_API USodaVehicleComponent 
+	: public UEditableObject
 {
 	GENERATED_BODY()
 };
 
-class UNREALSODA_API ISodaVehicleComponent : public IEditableObject
+class UNREALSODA_API ISodaVehicleComponent 
+	: public IEditableObject
 {
 	friend ASodaVehicle;
 
@@ -255,6 +252,8 @@ public:
 
 	virtual void DrawSelection(const FSceneView* View, FPrimitiveDrawInterface* PDI);
 
+	virtual void DrawVisualization(USodaGameViewportClient* ViewportClient, const FSceneView* View, FPrimitiveDrawInterface* PDI) {}
+
 	EVehicleComponentDeferredTask GetDeferredTask() const { return DeferredTask; }
 	void SetDeferredTask(EVehicleComponentDeferredTask Task) { DeferredTask = Task; }
 
@@ -275,19 +274,6 @@ protected:
 	virtual void OnPreDeactivateVehicleComponent() {}
 	virtual void OnDeactivateVehicleComponent();
 	virtual void OnPostDeactivateVehicleComponent() {}
-
-	/** 
-	 * Callen during scenario playing if the datset is recording for this vehicle.
-	 * This function called in the vehicle physic thread.
-	 */
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const {}
-
-	/**
-	 * Callen after ScenarioPlay()
-	 * Here you can fill in the descriptor that will be written to the database
-	 */
-	virtual void GenerateDatasetDescription(soda::FBsonDocument& Doc) const {}
-
 
 private:
 	EVehicleComponentHealth Health = EVehicleComponentHealth::Disabled;

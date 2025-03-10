@@ -5,15 +5,8 @@
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
 #include "Soda/Actors/NavigationRoute.h"
-#include "Soda/IToolActor.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
-
-
+#include "Soda/ISodaActor.h"
+#include "Soda/ISodaDataset.h"
 #include "TrackBuilder.generated.h"
 
 class FJsonObject;
@@ -25,9 +18,10 @@ class ALapCounter;
  * TODO: Need to check the functionality after switching to a new triangulation algorithm.
  */
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API ATrackBuilder : 
-	public AActor,
-	public IToolActor
+class UNREALSODA_API ATrackBuilder 
+	: public AActor
+	, public ISodaActor
+	, public IObjectDataset
 {
 	GENERATED_BODY()
 
@@ -269,8 +263,6 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
-	virtual void Serialize(FArchive& Ar) override { Super::Serialize(Ar); ToolActorSerialize(Ar); }
-
 
 protected:
 	static bool JSONReadLine(const TSharedPtr<FJsonObject>& JSON, const FString& FieldName, TArray<FVector>& OutPoints, bool ImportAltitude);

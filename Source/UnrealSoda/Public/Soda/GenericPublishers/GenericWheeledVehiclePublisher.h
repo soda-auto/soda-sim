@@ -12,7 +12,7 @@ struct FWheeledVehicleSensorData;
 /**
  * UGenericWheeledVehiclePublisher
  */
-UCLASS(abstract, ClassGroup = Soda)
+UCLASS(abstract, ClassGroup = Soda, EditInlineNew)
 class UNREALSODA_API UGenericWheeledVehiclePublisher: public UGenericPublisher
 {
 	GENERATED_BODY()

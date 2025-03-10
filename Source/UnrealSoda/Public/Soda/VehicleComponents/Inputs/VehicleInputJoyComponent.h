@@ -7,6 +7,8 @@
 #include "Soda/Vehicles/VehicleBaseTypes.h"
 #include "VehicleInputJoyComponent.generated.h"
 
+class UVehicleSteeringRackBaseComponent;
+
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API UVehicleInputJoyComponent : public UVehicleInputComponent
 {
@@ -111,12 +113,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BumpEffect, SaveGame, meta = (EditInRuntime))
 	float BumpEffectForceCoef = 30;
 
-
 public:
 	UFUNCTION(Category = "VehicleJoyInput", BlueprintCallable, CallInEditor, meta = (CallInRuntime))
 	void ReinitDevice();
 
 public:
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	virtual const FWheeledVehicleInputState& GetInputState() const override { return InputState; }
 	virtual FWheeledVehicleInputState& GetInputState() override { return InputState; }
 	virtual float GetDriverInputSteerTension() const override { return FeedbackDriverSteerTension; }
@@ -124,13 +127,20 @@ public:
 	virtual void SetHapticAutocenter(bool Enable) { bFeedbackAutocenterEnabled = Enable; }
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 
+	float GetFeedbackDiffFactor() const { return FeedbackDiffFactor; }
+	float GetFeedbackResistionFactor() const { return FeedbackResistionFactor; }
+	float GetFeedbackAutocenterFactor() const { return FeedbackAutocenterFactor; }
+	float GetFeedbackFullFactor() const { return FeedbackFullFactor; }
+
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 	ISodaJoystickPlugin * Joy = nullptr;
+
+	UPROPERTY()
+	UVehicleSteeringRackBaseComponent* SteeringRack = nullptr;
 
 	float MaxSteer = 0;
 

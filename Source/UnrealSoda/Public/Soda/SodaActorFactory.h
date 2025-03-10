@@ -11,14 +11,14 @@
 struct FPinnedActorRecord
 {
 	TSoftClassPtr<AActor> Class;
-	FString SlotName;
+	FGuid Slot;
 	FTransform Transform;
 	FName DesireName;
 
 	friend FArchive& operator<<(FArchive& Ar, FPinnedActorRecord& Record)
 	{
 		Ar << Record.Class;
-		Ar << Record.SlotName;
+		Ar << Record.Slot;
 		Ar << Record.Transform;
 		Ar << Record.DesireName;
 		return Ar;
@@ -26,7 +26,7 @@ struct FPinnedActorRecord
 
 	inline FString ToString() const
 	{
-		return FString::Printf(TEXT("SlotName=(%s), DesireName=(%s), Class=(%s)"), *SlotName, *DesireName.ToString(), *Class.ToString());
+		return FString::Printf(TEXT("SlotName=(%s), DesireName=(%s), Class=(%s)"), *Slot.ToString(), *DesireName.ToString(), *Class.ToString());
 	}
 };
 
@@ -34,13 +34,8 @@ UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API ASodaActorFactory : public AActor
 {
 	GENERATED_BODY()
-
 public:
-	/** Called if any actor was addwd or removed or renamed */
-	DECLARE_MULTICAST_DELEGATE(FInvalidateEvent);
-	FInvalidateEvent OnInvalidateDelegate;
 
-public:
 	/** ActorClass must be ISodaActor interface */
 	UFUNCTION(BlueprintCallable, Category = ActorFactory)
 	AActor * SpawnActor(TSubclassOf<AActor> ActorClass , FTransform Transform);

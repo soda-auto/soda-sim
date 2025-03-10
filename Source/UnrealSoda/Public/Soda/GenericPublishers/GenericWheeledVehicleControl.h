@@ -14,7 +14,7 @@ namespace soda
 /**
  * UGenericWheeledVehiclePublisher
  */
-UCLASS(abstract, ClassGroup = Soda)
+UCLASS(abstract, ClassGroup = Soda, EditInlineNew)
 class UNREALSODA_API UGenericWheeledVehicleControlListener: public UGenericListener
 {
 	GENERATED_BODY()

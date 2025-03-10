@@ -11,7 +11,9 @@ class UScenarioActionBlock;
 class SScenarioActionEditor;
 
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API AScenarioAction : public AActor, public ISodaActor
+class UNREALSODA_API AScenarioAction 
+	: public AActor
+	, public ISodaActor
 {
 	GENERATED_BODY()
 

@@ -84,7 +84,7 @@ class UNREALSODA_API UV2XReceiverSensor : public USensorComponent
 	bool bDrawDebugBoxes = false;
 
 protected:
-	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const TArray<UV2XMarkerSensor*>& InTransmitters) { return false; }
+	virtual bool PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const TArray<UV2XMarkerSensor*>& InTransmitters) { SyncDataset(); return false; }
 
 protected:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

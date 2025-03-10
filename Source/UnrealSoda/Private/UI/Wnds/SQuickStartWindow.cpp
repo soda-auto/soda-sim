@@ -12,10 +12,11 @@
 #include "Widgets/Layout/SWrapBox.h"
 #include "Soda/SodaSubsystem.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "SodaStyleSet.h"
 #include "Widgets/Layout/SUniformGridPanel.h"
 #include "Soda/LevelState.h"
+#include "Soda/FileDatabaseManager.h"
 
 namespace soda
 {
@@ -31,32 +32,32 @@ TSharedRef<SWidget> MakeTextItem(FName Icon, const FString& CaptionRow1, const F
 		.Padding(10)
 		[
 			SNew(SVerticalBox)
-				+ SVerticalBox::Slot()
-				.HAlign(HAlign_Center)
-				.VAlign(VAlign_Center)
-				.AutoHeight()
-				[
-					SNew(SImage)
-					.Image(FSodaStyle::GetBrush(Icon))
-				]
-				+ SVerticalBox::Slot()
-				.HAlign(HAlign_Center)
-				.VAlign(VAlign_Center)
-				.AutoHeight()
-				[
-					SNew(STextBlock)
-					.Text(FText::FromString(CaptionRow1))
+			+ SVerticalBox::Slot()
+			.HAlign(HAlign_Center)
+			.VAlign(VAlign_Center)
+			.AutoHeight()
+			[
+				SNew(SImage)
+				.Image(FSodaStyle::GetBrush(Icon))
+			]
+			+ SVerticalBox::Slot()
+			.HAlign(HAlign_Center)
+			.VAlign(VAlign_Center)
+			.AutoHeight()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(CaptionRow1))
+				.AutoWrapText(true)
+			]
+			+ SVerticalBox::Slot()
+			.HAlign(HAlign_Center)
+			.VAlign(VAlign_Center)
+			.AutoHeight()
+			[
+				SNew(STextBlock)
+					.Text(FText::FromString(CaptionRow2))
 					.AutoWrapText(true)
-				]
-				+ SVerticalBox::Slot()
-				.HAlign(HAlign_Center)
-				.VAlign(VAlign_Center)
-				.AutoHeight()
-				[
-					SNew(STextBlock)
-						.Text(FText::FromString(CaptionRow2))
-						.AutoWrapText(true)
-				]
+			]
 		];
 };
 
@@ -92,7 +93,7 @@ TSharedRef<SWidget> MakeLinkItem(FName Icon, const FString& Caption, const FStri
 		];
 };
 
-TSharedRef<SWidget> MakeScenarioItem(const FString& Caption, int SlotIndex)
+TSharedRef<SWidget> MakeScenarioItem(TSharedPtr<FFileDatabaseSlotInfo> Slot)
 {
 	return
 		SNew(SHorizontalBox)
@@ -111,10 +112,10 @@ TSharedRef<SWidget> MakeScenarioItem(const FString& Caption, int SlotIndex)
 		.Padding(5, 0, 0, 0)
 		[
 			SNew(SHyperlink)
-			.Text(FText::FromString(Caption))
+			.Text(FText::FromString(Slot->Description))
 			.OnNavigate_Lambda([=]() 
 			{ 
-					ALevelState::ReloadLevelFromSlotLocally(nullptr, SlotIndex, DemoLevel);
+				USodaSubsystem::GetChecked()->LoadLevelFromSlot(Slot->GUID);
 			})
 			.Style(FSodaStyle::Get(), "HoverOnlyHyperlink")
 		];
@@ -122,16 +123,16 @@ TSharedRef<SWidget> MakeScenarioItem(const FString& Caption, int SlotIndex)
 
 void SQuickStartWindow::Construct(const FArguments& InArgs)
 {
-	TArray<FLevelStateSlotDescription> Slots;
-	ALevelState::GetLevelSlotsLocally(nullptr, Slots, false, DemoLevel);
+	auto Slots = SodaApp.GetFileDatabaseManager().GetSlots(EFileSlotType::Level);
+
 	TSharedRef<SVerticalBox> DemoList = SNew(SVerticalBox);
 	for (const auto& Slot : Slots)
 	{
-		if (Slot.Description.StartsWith(TEXT("Demo")))
+		if (Slot.Value->Label.StartsWith(TEXT("Demo")))
 		{
 			DemoList->AddSlot()
 			[
-				MakeScenarioItem(Slot.Description, Slot.SlotIndex)
+				MakeScenarioItem(Slot.Value)
 			];
 		}
 	}
@@ -317,12 +318,13 @@ void SQuickStartWindow::Construct(const FArguments& InArgs)
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Lambda([](ECheckBoxState NewState) 
 				{
-					SodaApp.GetSodaUserSettings()->bShowQuickStartAtStartUp = (NewState == ECheckBoxState::Checked ? true : false);
-					SodaApp.GetSodaUserSettings()->SaveSettings();
+					GetMutableDefault<USodaCommonSettings>()->bShowQuickStartAtStartUp = (NewState == ECheckBoxState::Checked ? true : false);
+					GetMutableDefault<USodaCommonSettings>()->SaveConfig();
+					//GetMutableDefault<USodaCommonSettings>()->SaveSettings();
 				})
 				.IsChecked_Lambda([]() 
 				{ 
-					return SodaApp.GetSodaUserSettings()->bShowQuickStartAtStartUp ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+					return GetDefault<USodaCommonSettings>()->bShowQuickStartAtStartUp ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
 				})
 			]
 		]

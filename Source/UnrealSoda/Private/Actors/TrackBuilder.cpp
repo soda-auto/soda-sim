@@ -18,7 +18,6 @@
 #include "Soda/Actors/LapCounter.h"
 #include "Misc/Paths.h"
 #include "Components/DecalComponent.h"
-#include "Soda/LevelState.h"
 #include "DesktopPlatformModule.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/Material.h"
@@ -29,9 +28,7 @@
 #include "Widgets/SWindow.h"
 #include "SodaStyleSet.h"
 #include "Widgets/Layout/SBorder.h"
-#include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaSubsystem.h"
 #include "Soda/UI/SMessageBox.h"
 #include "RuntimeEditorUtils.h"
 #include <map>
@@ -1616,52 +1613,6 @@ TSharedPtr<SWidget> ATrackBuilder::GenerateToolBar()
 void ATrackBuilder::ScenarioBegin()
 {
 	ISodaActor::ScenarioBegin();
-
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	if (bRecordDataset && soda::FDBGateway::Instance().GetStatus() == soda::EDBGatewayStatus::Connected && soda::FDBGateway::Instance().IsDatasetRecording())
-	{		
-		bsoncxx::builder::stream::document Doc;
-		Doc << "json_file" << TCHAR_TO_UTF8(*LoadedFileName);
-		Doc << "json_is_valid" << bJSONLoaded;
-		if (bJSONLoaded)
-		{
-			auto PointsArray = Doc << "outside_points" << open_array;
-			for (auto& Pt : OutsidePoints)
-			{
-				PointsArray << open_array << Pt.X << Pt.Y << Pt.Z << close_array;
-			}
-			PointsArray << close_array;
-
-			PointsArray = Doc << "inside_points" << open_array;
-			for (auto& Pt : InsidePoints)
-			{
-				PointsArray << open_array << Pt.X << Pt.Y << Pt.Z << close_array;
-			}
-			PointsArray << close_array;
-
-			PointsArray = Doc << "centre_points" << open_array;
-			for (auto& Pt : CentrePoints)
-			{
-				PointsArray << open_array << Pt.X << Pt.Y << Pt.Z << close_array;
-			}
-			PointsArray << close_array;
-
-			Doc << "lon" << RefPointLon;
-			Doc << "lat" << RefPointLat;
-			Doc << "alt" << RefPointAlt;
-		}
-		auto Dataset = soda::FDBGateway::Instance().CreateActorDataset(GetName(), "trackbuilder", GetClass()->GetName(), Doc);
-		if (!Dataset)
-		{
-			SodaApp.GetSodaSubsystemChecked()->ScenarioStop(EScenarioStopReason::InnerError, EScenarioStopMode::RestartLevel, "Can't create dataset for \"" + GetName() + "\"");
-		}
-	}
 }
 
 void ATrackBuilder::ScenarioEnd()

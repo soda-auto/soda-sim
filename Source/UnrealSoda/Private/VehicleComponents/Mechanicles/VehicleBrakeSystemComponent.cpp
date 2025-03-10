@@ -7,13 +7,6 @@
 #include "Engine/Engine.h"
 #include "Soda/Vehicles/IWheeledVehicleMovementInterface.h"
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
-#include "Soda/DBGateway.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
 
 UWheelBrake::UWheelBrake(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -98,9 +91,10 @@ void UVehicleBrakeSystemSimpleComponent::InitializeComponent()
 	Super::InitializeComponent();
 }
 
-UWheelBrakeSimple* UVehicleBrakeSystemSimpleComponent::GetWheelSimple4WD(E4WDWheelIndex Ind) const
+/*
+UWheelBrakeSimple* UVehicleBrakeSystemSimpleComponent::GetWheelSimple4WD(EWheelIndex Ind) const
 {
-	if (WheelBrakes4WD.Num() == 4 && Ind != E4WDWheelIndex::None)
+	if (WheelBrakes4WD.Num() == 4 && Ind != EWheelIndex::None)
 	{
 		return WheelBrakes4WD[int(Ind)].Get();;
 	}
@@ -108,6 +102,14 @@ UWheelBrakeSimple* UVehicleBrakeSystemSimpleComponent::GetWheelSimple4WD(E4WDWhe
 	{
 		return nullptr;
 	}
+}
+*/
+
+UWheelBrake* UVehicleBrakeSystemSimpleComponent::FindWheelByIndex(EWheelIndex Ind) const
+{
+	auto Found = WheelBrakes.FindByPredicate([Ind](auto& WheelBrake) { return WheelBrake->ConnectedWheel->GetWheelIndex() == Ind; });
+	if (Found) return *Found;
+	else return nullptr;
 }
 
 bool UVehicleBrakeSystemSimpleComponent::OnActivateVehicleComponent()
@@ -120,9 +122,7 @@ bool UVehicleBrakeSystemSimpleComponent::OnActivateVehicleComponent()
 	PedalPos = 0;
 
 	WheelBrakes.Empty();
-	WheelBrakes4WD.Empty();
 
-	const TArray<USodaVehicleWheelComponent*> & Wheels = GetWheeledVehicle()->GetWheels();
 	for (auto& Setup : WheelBrakesSetup)
 	{
 		UWheelBrakeSimple * WheelBrake = NewObject<UWheelBrakeSimple>(this);
@@ -140,25 +140,7 @@ bool UVehicleBrakeSystemSimpleComponent::OnActivateVehicleComponent()
 		WheelBrakes.Add(WheelBrake);
 	}
 
-	if (GetWheeledVehicle()->Is4WDVehicle())
-	{
-		auto Add4WDWheel = [this](E4WDWheelIndex Index)
-		{
-			if (UWheelBrakeSimple** Wheel = WheelBrakes.FindByPredicate([this, Index](const UWheelBrakeSimple* Wheel) { return IsValid(Wheel->ConnectedWheel) && Wheel->ConnectedWheel->WheelIndex4WD == Index; }))
-			{
-				WheelBrakes4WD.Add(*Wheel);
-			}
-		};
 
-		Add4WDWheel(E4WDWheelIndex::FL);
-		Add4WDWheel(E4WDWheelIndex::FR);
-		Add4WDWheel(E4WDWheelIndex::RL);
-		Add4WDWheel(E4WDWheelIndex::RR);
-		if (WheelBrakes4WD.Num() != 4)
-		{
-			WheelBrakes4WD.Empty();
-		}
-	}
 
 	return true;
 }
@@ -171,7 +153,6 @@ void UVehicleBrakeSystemSimpleComponent::OnDeactivateVehicleComponent()
 		It->ConditionalBeginDestroy();
 	}
 	WheelBrakes.Empty();
-	WheelBrakes4WD.Empty();
 	PedalPos = 0;
 }
 
@@ -247,6 +228,8 @@ void UVehicleBrakeSystemSimpleComponent::PrePhysicSimulation(float DeltaTime, co
 	{
 		RequestByRatio(PedalPos, DeltaTime);
 	}
+
+	SyncDataset();
 }
 
 void UVehicleBrakeSystemSimpleComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -265,40 +248,3 @@ void UVehicleBrakeSystemSimpleComponent::TickComponent(float DeltaTime, enum ELe
 		}
 	}
 }
-
-void UVehicleBrakeSystemSimpleComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	try
-	{
-		auto& Doc = Dataset.GetRowDoc();
-
-		Doc
-			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
-			<< "PedalPos" << PedalPos;
-
-		auto Array = Doc << "Wheels" << open_array;
-		for (auto& Wheel : WheelBrakes)
-		{
-			Array 
-				<< open_document
-				<< "Torque" << Wheel->GetTorque()
-				<< "Pressure" << Wheel->GetPressure()
-				<< "Load" << Wheel->GetLoad()
-				<< close_document;
-		}
-
-		Array << close_array << close_document;
-	}
-	catch (const std::system_error& e)
-	{
-		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
-	}
-}
-

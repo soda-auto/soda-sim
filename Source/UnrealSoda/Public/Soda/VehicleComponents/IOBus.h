@@ -3,44 +3,31 @@
 #pragma once
 
 #include "Soda/VehicleComponents/VehicleBaseComponent.h"
-#include "Kismet/BlueprintFunctionLibrary.h"
 #include "IOBus.generated.h"
 
-class UIOExchange;
-class UIODevComponent;
-
 /**
- * EIOExchangeMode
+ * EIOPinMode
  */
 UENUM(BlueprintType)
-enum class EIOExchangeMode: uint8
+enum class EIOPinMode : uint8
 {
-    Undefined,
-    Fixed,
-    Analogue,
-    PWM,
+	Undefined,
+	Fixed,
+	Analogue,
+	PWM,
+	Input
 };
 
 /**
- * EIOPinDir
- */
-UENUM(BlueprintType)
-enum class EIOPinDir : uint8
-{
-	Output,
-	Input,
-};
-
-/**
- * FIOExchangeSourceValue
+ * FIOPinSourceValue
  */
 USTRUCT(BlueprintType)
-struct FIOExchangeSourceValue
+struct UNREALSODA_API FIOPinSourceValue
 {
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(BlueprintReadWrite, Category = SourceValue)
-	EIOExchangeMode Mode = EIOExchangeMode::Undefined;
+	EIOPinMode Mode = EIOPinMode::Undefined;
 
 	UPROPERTY(BlueprintReadWrite, Category = SourceValue)
 	bool LogicalVal = false;
@@ -59,10 +46,10 @@ struct FIOExchangeSourceValue
 };
 
 /**
- * FIOExchangeSourceValue
+ * FIOPinSourceValue
  */
 USTRUCT(BlueprintType)
-struct FIOExchangeFeedbackValue
+struct UNREALSODA_API FIOPinFeedbackValue
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -79,9 +66,8 @@ struct FIOExchangeFeedbackValue
 	bool bIsMeasuredVoltageValid = false;
 };
 
-
 /**
- * FIOPinDescription
+ * FIOPinSetup
  */
 USTRUCT(BlueprintType)
 struct UNREALSODA_API FIOPinSetup
@@ -89,208 +75,114 @@ struct UNREALSODA_API FIOPinSetup
 	GENERATED_USTRUCT_BODY()
 
 public:
-	/** Example: Pedl_Ch1, Whl_Enc_FL */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = IOPin, meta = (EditInRuntime, ReactivateComponent))
-	FName ExchangeName;
+	/** Wire name. Used to connect two pins. Example: wire0, wire1 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = PinSetup, meta = (EditInRuntime, ReactivateComponent))
+	FName WireKey;
 
 	/** Example: X1.20, X2.9 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = IOPinDescription, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = PinSetup, meta = (EditInRuntime))
 	FName PinName;
 
 	/** Example: HB30_OUT_A1, UIO1 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = IOPinDescription, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = PinSetup, meta = (EditInRuntime))
 	FName PinFunction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = IOPinDescription, meta = (EditInRuntime))
-	EIOPinDir PinDir{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = PinSetup, meta = (EditInRuntime))
+	int PinIndex = INDEX_NONE;
+
+	/** Example: WAGO_202 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = PinSetup, meta = (EditInRuntime))
+	FName DeviceName;
 
 	/** [V] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = IOPinDescription, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = PinSetup, meta = (EditInRuntime))
 	float MinVoltage = 0;
 
 	/** [V] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = IOPinDescription, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = PinSetup, meta = (EditInRuntime))
 	float MaxVoltage = 1;
 
 	/** [A] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = IOPinDescription, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = PinSetup, meta = (EditInRuntime))
 	float MaxCurrent = 1;
 };
 
 /**
- * FIOPin
+ * FIOPinInputData
  */
 USTRUCT(BlueprintType)
-struct UNREALSODA_API FIOPin
+struct UNREALSODA_API FIOPinInputData
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(BlueprintReadOnly, Category = IOPin)
-	FIOPinSetup Setup {};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = IOPinDescription, meta = (EditInRuntime))
+	FIOPinSourceValue SourceValuel;
 
-	UPROPERTY(BlueprintReadOnly, Category = IOPin)
-	UIOExchange* Exchange {};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = IOPinDescription, meta = (EditInRuntime))
+	FIOPinFeedbackValue FeedbackValue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = IOPinDescription, meta = (EditInRuntime))
+	FIOPinSetup RemotePinSetup;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = IOPinDescription, meta = (EditInRuntime))
+	FTimestamp SourceTimestamp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = IOPinDescription, meta = (EditInRuntime))
+	FTimestamp FeedbackTimestamp;
 };
 
 /**
- * UIOBusNode
+ * UIOPin
  */
-UCLASS(BlueprintType)
-class UNREALSODA_API UIOBusNode: public UObject
+UCLASS(abstract, BlueprintType, Blueprintable)
+class UNREALSODA_API UIOPin: public UObject
 {
 	GENERATED_UCLASS_BODY()
 
 public:
-	void Setup(UIOBusComponent * Bus, FName NodeName);
+	UFUNCTION(BlueprintCallable, Category = IOPin)
+	virtual void PublishSource(FIOPinSourceValue& Value) {} 
 
-	UFUNCTION(BlueprintCallable, Category = IOBus)
-	FName GetNodeName() { return NodeName; }
+	UFUNCTION(BlueprintCallable, Category = IOPin)
+	virtual void PublishFeedback(FIOPinFeedbackValue& Value) {}
 
-	UFUNCTION(BlueprintCallable, Category = IOBus)
-	UIOBusComponent* GetBus() const { return BusComponent; }
+	UFUNCTION(BlueprintCallable, Category = IOPin)
+	virtual const FIOPinSetup& GetLocalPinSetup() const { static FIOPinSetup Dummy{}; return Dummy; }
 
-	UFUNCTION(BlueprintCallable, Category = IOBus)
-	UIOExchange * RegisterPin(const FIOPinSetup& PinSetup);
+	UFUNCTION(BlueprintCallable, Category = IOPin)
+	virtual const FIOPinSourceValue& GetInputSourceValue(FTimestamp& OutTimestamp) const { return GetInputSourceValue(&OutTimestamp); }
 
-	UFUNCTION(BlueprintCallable, Category = IOBus)
-	bool UnregisterPinByExchange(UIOExchange * Exchange);
+	UFUNCTION(BlueprintCallable, Category = IOPin)
+	virtual const FIOPinFeedbackValue& GetInputFeedbackValue(FTimestamp& OutTimestamp) const { return GetInputFeedbackValue(&OutTimestamp); }
 
-	UFUNCTION(BlueprintCallable, Category = IOBus)
-	bool UnregisterPinByExchangeName(FName ExchangeName);
+	UFUNCTION(BlueprintCallable, Category = IOPin)
+	virtual const FIOPinSetup& GetRemotePinSetup(FTimestamp& OutTimestamp) const { return GetRemotePinSetup(&OutTimestamp); }
 
-	UFUNCTION(BlueprintCallable, Category = IOBus)
-	bool UnregisterPinByPinName(FName PinName);
-
-	UFUNCTION(BlueprintCallable, Category = IOBus)
-	bool UnregisterPinByPinFunction(FName PinFunction);
-
-	UFUNCTION(BlueprintCallable, Category = IOBus)
-	const TArray<FIOPin>& GetPins() const { return Pins; }
-
-	UFUNCTION(BlueprintCallable, Category = IOBus)
-	UIOExchange* FindExchange(FName ExchangeName) const;
-
-private:
-	FName NodeName;
-
-	UPROPERTY()
-	TArray<FIOPin> Pins;
-
-	UPROPERTY()
-	UIOBusComponent* BusComponent{};
+	virtual const FIOPinSourceValue& GetInputSourceValue(FTimestamp* OutTimestamp = nullptr) const { static FIOPinSourceValue Dummy{}; return Dummy; }
+	virtual const FIOPinFeedbackValue& GetInputFeedbackValue(FTimestamp* OutTimestamp = nullptr) const { static FIOPinFeedbackValue Dummy{}; return Dummy; }
+	virtual const FIOPinSetup& GetRemotePinSetup(FTimestamp* OutTimestam = nullptr) const { static FIOPinSetup Dummy{}; return Dummy; }
 };
-
 
 /**
  * UIOBusComponent
  */
-UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
+UCLASS(abstract, ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
 class UNREALSODA_API UIOBusComponent : public UVehicleBaseComponent
 {
 	GENERATED_UCLASS_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = IOBus)
-	virtual UIOBusNode* RegisterNode(FName NodeName);
 
-	UFUNCTION(BlueprintCallable, Category = IOBus)
-	virtual bool UnregisterNodeByName(FName NodeName);
+	/** CreatePin() store only weak pointer to the created UIOPin object. */
+	virtual UIOPin * CreatePin(const FIOPinSetup& Setup) { return nullptr; }
+	virtual void ClearUnusedPins() {}
 
-	UFUNCTION(BlueprintCallable, Category = IOBus)
-	virtual bool UnregisterNode(const UIOBusNode * Node);
-
-	const TMap<FName, UIOBusNode*>& GetNodes() const { return Nodes; }
-
-	UFUNCTION(BlueprintCallable, Category = IOBus)
-	UIOExchange* FindExchange(FName ExchaneName);
-
-
-	virtual void RegisterIODev(UIODevComponent* IODev);
-	virtual bool UnregisterIODev(UIODevComponent* IODev);
-
-	//virtual void OnSetExchangeValue(const UIOExchange* Exchange, const FIOExchangeSourceValue& Value);
-	virtual void OnChangePins();
+	//virtual void OnSetExchangeValue(const UIOExchange* Exchange, const FIOPinSourceValue& Value) {}
+	//virtual void OnChangePins() {}
 
 protected:
 	virtual void OnPreActivateVehicleComponent() override;
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
-
-protected:
-	UPROPERTY()
-	TMap<FName, UIOBusNode*> Nodes;
-
-	UPROPERTY()
-	TSet<UIODevComponent*> RegistredIODevs;
 };
-
-/**
- * UIOExchange
- */
-UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable)
-class UNREALSODA_API UIOExchange : public UObject
-{
-	friend UIOBusNode;
-
-	GENERATED_UCLASS_BODY()
-
-public:
-
-	UFUNCTION(BlueprintCallable, Category = IOExchange)
-	void SetSourceValue(const FIOExchangeSourceValue& Value);
-
-	UFUNCTION(BlueprintCallable, Category = IOExchange)
-	void SetFeedbackValue(const FIOExchangeFeedbackValue& Value);
-
-	UFUNCTION(BlueprintCallable, Category = IOExchange)
-	const FIOExchangeSourceValue& GetSourceValue() const { return SourceValue; }
-
-	UFUNCTION(BlueprintCallable, Category = IOExchange)
-	const FIOExchangeFeedbackValue& GetFeedbackValue() const { return FeedbackValue; }
-
-	//FIOExchangeSourceValue& GetValue() { return SourceValue; }
-
-	UFUNCTION(BlueprintCallable, Category = IOExchange)
-	UIOBusComponent* GetIOBus() const { return IOBus; }
-
-	UFUNCTION(BlueprintCallable, Category = IOExchange)
-	FName GetExchangeName() const { return ExchangeName; }
-
-	UFUNCTION(BlueprintCallable, Category = IOExchange)
-	bool IsIOExchangeRegistred() const { return !!IOBus; }
-
-protected:
-	virtual void BeginDestroy() override;
-
-protected:
-	virtual void RigisterExchange(UIOBusComponent* IOBus, FName ExchangeName);
-	virtual void UnregisterExchange();
-
-protected:
-	FName ExchangeName;
-	UPROPERTY()
-	UIOBusComponent * IOBus = nullptr;
-	TTimestamp SetSourceValue_Ts{};
-	TTimestamp SetFeedbackValue_Ts{};
-
-	FIOExchangeSourceValue SourceValue;
-	FIOExchangeFeedbackValue FeedbackValue;
-
-};
-
-
-/**
- * UIOBusFunctionLibrary
- */
-/*
-UCLASS(Category = Soda)
-class UNREALSODA_API UIOBusFunctionLibrary : public UBlueprintFunctionLibrary
-{
-	GENERATED_UCLASS_BODY()
-
-public:
-
-};
-*/
- 

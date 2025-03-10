@@ -5,12 +5,13 @@
 #include "UObject/UObjectHash.h"
 #include "Blueprint/WidgetTree.h"
 #include "Soda/SodaSubsystem.h"
+#include "Soda/SodaApp.h"
 #include "Soda/ISodaActor.h"
 #include "EngineUtils.h"
 #include "Soda/UnrealSoda.h"
 #include "Soda/Misc/EditorUtils.h"
-#include "Framework/Notifications/NotificationManager.h"
-#include "Widgets/Notifications/SNotificationList.h"
+#include "Soda/LevelState.h"
+#include "Soda/SodaDelegates.h"
 
 void ASodaActorFactory::Serialize(FArchive& Ar)
 {
@@ -27,12 +28,12 @@ void ASodaActorFactory::Serialize(FArchive& Ar)
 				if (IsValid(Actor) && Actor->GetClass()->ImplementsInterface(USodaActor::StaticClass()))
 				{
 					ISodaActor* SodaActor = Cast<ISodaActor>(Actor);
-					if (!bSerializePinnedActorsAsUnpinned && SodaActor && SodaActor->IsPinnedActor())
+					if (!bSerializePinnedActorsAsUnpinned && SodaActor && SodaActor->GetSlotGuid().IsValid())
 					{
 						FPinnedActorRecord & Record = PinnedActors.Add_GetRef(FPinnedActorRecord());
 						Record.DesireName = Actor->GetFName();
 						Record.Class = Actor->GetClass();
-						Record.SlotName = SodaActor->GetPinnedActorSlotName();
+						Record.Slot = SodaActor->GetSlotGuid();
 						Record.Transform = Actor->GetActorTransform();
 					}
 					else
@@ -87,7 +88,8 @@ AActor* ASodaActorFactory::SpawnActor(TSubclassOf<AActor> ActorClass, FTransform
 	{
 		NewActor->FinishSpawning(Transform);
 		SpawnedActors.Add(NewActor);
-		OnInvalidateDelegate.Broadcast();
+		FSodaDelegates::ActorsMapChenaged.Broadcast();
+		ALevelState::GetChecked()->MarkAsDirty();
 		return NewActor;
 	}
 
@@ -98,7 +100,7 @@ void ASodaActorFactory::AddActor(AActor* Actor)
 {
 	if (IsValid(Actor))
 	{
-		OnInvalidateDelegate.Broadcast();
+		FSodaDelegates::ActorsMapChenaged.Broadcast();
 		SpawnedActors.Add(Actor);
 	}
 }
@@ -113,7 +115,7 @@ void ASodaActorFactory::RemoveAllActors()
 		}
 	}
 	SpawnedActors.Empty();
-	OnInvalidateDelegate.Broadcast();
+	FSodaDelegates::ActorsMapChenaged.Broadcast();
 }
 
 void ASodaActorFactory::SpawnAllSavedActors(bool bSaved, bool bPinned)
@@ -123,21 +125,16 @@ void ASodaActorFactory::SpawnAllSavedActors(bool bSaved, bool bPinned)
 	UWorld* World = GetWorld();
 	check(World);
 
-	FSlateNotificationManager& NotificationManager = FSlateNotificationManager::Get();
-
 	int ErrorNum = 0;
 	const int MaxNotifyError = 10;
 
-	auto ShowError = [&ErrorNum, MaxNotifyError, &NotificationManager](const FString & Msg, const auto & Record)
+	auto ShowError = [&ErrorNum, MaxNotifyError](const FString & Msg, const auto & Record)
 	{
 		UE_LOG(LogSoda, Error, TEXT("ASodaActorFactory::SpawnAllSavedActors(). %s %s"), *Msg, *Record.ToString());
 
 		if (ErrorNum < MaxNotifyError)
 		{
-			FNotificationInfo Info(FText::FromString(TEXT("Faild spawn pinned actor.") + Msg + TEXT(" ") + Record.ToString()));
-			Info.ExpireDuration = 5.0f;
-			Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.WarningWithColor"));
-			NotificationManager.AddNotification(Info);
+			soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Faild spawn pinned actor \"%s\""), *Record.ToString());
 		}
 		++ErrorNum;
 	};
@@ -157,7 +154,7 @@ void ASodaActorFactory::SpawnAllSavedActors(bool bSaved, bool bPinned)
 				{
 					if (ISodaActor* SodaActor = Cast<ISodaActor>(Record.Class->GetDefaultObject()))
 					{
-						if (AActor* Actor = SodaActor->LoadPinnedActor(World, Record.Transform, Record.SlotName, false, Record.DesireName))
+						if (AActor* Actor = SodaActor->SpawnActorFromSlot(World, Record.Slot, Record.Transform, Record.DesireName))
 						{
 							SpawnedActors.Add(Actor);
 						}
@@ -231,13 +228,10 @@ void ASodaActorFactory::SpawnAllSavedActors(bool bSaved, bool bPinned)
 
 	if (ErrorNum > MaxNotifyError)
 	{
-		FNotificationInfo Info(FText::FromString(TEXT("Too many errors. See the log to see all.")));
-		Info.ExpireDuration = 5.0f;
-		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.WarningWithColor"));
-		NotificationManager.AddNotification(Info);
+		soda::ShowNotification(ENotificationLevel::Error, 5.0, TEXT("Too many errors. See the log to see all"));
 	}
 
-	OnInvalidateDelegate.Broadcast();
+	FSodaDelegates::ActorsMapChenaged.Broadcast();
 }
 
 bool ASodaActorFactory::ReplaceActor(AActor* NewActor, AActor* PreviewActor, bool bPushActorIfNotFound)
@@ -246,14 +240,14 @@ bool ASodaActorFactory::ReplaceActor(AActor* NewActor, AActor* PreviewActor, boo
 	{
 		SpawnedActors.Remove(PreviewActor);
 		SpawnedActors.Add(NewActor);
-		OnInvalidateDelegate.Broadcast();
+		FSodaDelegates::ActorsMapChenaged.Broadcast();
 		return true;
 	}
 
 	if (bPushActorIfNotFound)
 	{
 		SpawnedActors.Add(NewActor);
-		OnInvalidateDelegate.Broadcast();
+		FSodaDelegates::ActorsMapChenaged.Broadcast();
 		return true;
 	}
 
@@ -274,7 +268,7 @@ bool ASodaActorFactory::RenameActor(AActor * Actor, const FString & NewName)
 
 	if (Actor->Rename(*NewName))
 	{
-		OnInvalidateDelegate.Broadcast();
+		FSodaDelegates::ActorsMapChenaged.Broadcast();
 		return true;
 	}
 
@@ -293,6 +287,6 @@ bool ASodaActorFactory::RemoveActor(AActor* Actor, bool bAndDestroy)
 		Actor->Destroy();
 	}
 
-	OnInvalidateDelegate.Broadcast();
+	FSodaDelegates::ActorsMapChenaged.Broadcast();
 	return true;
 }

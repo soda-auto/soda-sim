@@ -5,7 +5,7 @@
 #include "InputCoreTypes.h"
 #include "Soda/Vehicles/SodaWheeledVehicle.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
 
@@ -91,23 +91,11 @@ void UVehicleInputComponent::UpdateInputStates(float DeltaTime, float ForwardSpe
 	{
 		UpdateInputStatesDefaultsButtons(DeltaTime, ForwardSpeed, PlayerController);
 	}
-
-	/*
-	USodaUserSettings* Settings = SodaApp.GetSodaUserSettings();
-
-
-	if ((CruiseControlMode == ECruiseControlMode::CruiseControlActive && GetBrakeInput() > 0.1f) || GetGearStateInput() != EGearState::Drive)
-	{
-		CruiseControlMode = ECruiseControlMode::Off;
-	}
-
-	CCThrottleInput = FMath::Clamp(CruiseControlPropCoef * (CruiseControlTargetSpeed - std::abs(ForwardSpeed)), 0.0f, CruiseControlMode == ECruiseControlMode::CruiseControlActive ? MaxCruiseControlThrottle : 1.f);
-	*/
 }
 
 void UVehicleInputComponent::UpdateInputStatesDefaultsButtons(float DeltaTime, float ForwardSpeed, const APlayerController* PlayerController)
 {
-	USodaUserSettings* Settings = SodaApp.GetSodaUserSettings();
+	const USodaCommonSettings* Settings = GetDefault<USodaCommonSettings>();
 
 	if (PlayerController->WasInputKeyJustPressed(Settings->ChangeModeKeyInput))
 	{

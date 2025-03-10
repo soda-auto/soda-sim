@@ -14,11 +14,11 @@
 class ASodaVehicle;
 class ALevelState;
 class ASodaActorFactory;
-class UPinnedToolActorsSaveGame;
 
 namespace soda
 {
 	class SSodaViewport;
+	class IDatasetManager;
 	class SMenuWindowContent;
 	class SMessageBox;
 	class SMenuWindow;
@@ -58,9 +58,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, Transient, DuplicateTransient, Category = SodaSubsystem)
 	ASodalSpectator* SpectatorActor = nullptr;
 
-	UPROPERTY(BlueprintReadWrite, Category = SodaSubsystem)
-	TMap<UClass*, UPinnedToolActorsSaveGame*> PinnedToolActorsSaveGame;
-
 	UPROPERTY(BlueprintReadOnly, Category = SodaSubsystem)
 	USodaGameViewportClient* ViewportClient = nullptr;
 
@@ -71,13 +68,6 @@ public:
 	FScenarioStopSignature OnScenarioStop;
 
 public:
-	UFUNCTION(BlueprintCallable, Category = DB)
-	virtual void UpdateDBGateway(bool bSync);
-
-	UFUNCTION(BlueprintCallable, Category = DB, meta = (CallInRuntime))
-	virtual void ReconnectDBGateway() { UpdateDBGateway(false); }
-
-
 	void PushToolBox(TSharedRef<soda::SToolBox> Widget, bool InstedPrev = false);
 
 	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
@@ -104,10 +94,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Scenario)
 	void ScenarioStop(EScenarioStopReason Reason, EScenarioStopMode Mode, const FString & UserMessage=TEXT(""));
 
-	/** Valid only during scenario playing. -1 means no dataset recording in this scenario */
-	UFUNCTION(BlueprintCallable, Category = Scenario)
-	int64 GetScenarioID() const;
-
 	UFUNCTION(BlueprintCallable, Category = Scenario)
 	bool IsScenarioRunning() { return bIsScenarioRunning; }
 
@@ -118,10 +104,10 @@ public:
 	void RequestRestartLevel(bool bForce = false);
 
 	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
-	void NotifyLevelIsChanged();
+	ASodaActorFactory * GetActorFactory();
 
 	UFUNCTION(BlueprintCallable, Category = SodaSubsystem)
-	ASodaActorFactory * GetActorFactory();
+	const TSet<AActor*>& GetSodaActors() const { return SodaActors; }
 
 	const FSodaActorDescriptor& GetSodaActorDescriptor(TSoftClassPtr<AActor> Class) const;
 	const TMap<TSoftClassPtr<AActor>, FSodaActorDescriptor> & GetSodaActorDescriptors() const;
@@ -135,6 +121,16 @@ public:
 	bool CloseWaitingPanel(bool bCloseAll = false);
 
 	soda::SSodaViewport* GetSodaViewport() const { return SodaViewport.Get(); }
+
+	/** if  LevelName is empty will reload current level*/
+	UFUNCTION(BlueprintCallable, Category = LevelState)
+	bool LoadEmptyLevel(const FString& LevelName = TEXT(""));
+
+	UFUNCTION(BlueprintCallable, Category = LevelState)
+	bool LoadLevelFromSlot(const FGuid& Guid);
+
+	UFUNCTION(BlueprintCallable, Category = LevelState)
+	bool LoadLevelFromSlotByLable(const FString& SlotLabel);
 	
 public:
 	static USodaSubsystem* Get();
@@ -159,26 +155,38 @@ protected:
 	virtual bool OnWindowCloseRequested();
 
 	void OnPostGarbageCollect(float Delay);
-	void AfterScenarioStop();
+	void RestoreLevelTransientData();
+
+	void OnActorSpawned(AActor* InActor);
+	void OnActorDestroyed(AActor* InActor);
+
+	virtual void InitLevelState();
 
 protected:
 	bool bIsScenarioRunning = false;
 	FDelegateHandle InitGameHandle;
 	FDelegateHandle PreEndGameHandle;
+	FDelegateHandle ActorSpawnedDelegateHandle;
+	FDelegateHandle ActorDestroyedDelegateHandle;
 	FTimerHandle TimerHandle;
 	TMap<TSoftClassPtr<AActor>, FSodaActorDescriptor> SodaActorDescriptors;
 	TSharedPtr<soda::SSodaViewport> SodaViewport;
 
-	struct FScenarioLevelSavedData
+	struct FLevelTransientData
 	{
-		//TArray<uint8> Memory{};
+		TArray<uint8> Memory{};
 		TArray<FString> ActorsDirty{};
 		soda::EUIMode Mode{};
 		FString SelectedActor{};
 		FString PossesdActor{};
-		bool bIsValid = false;
 		FString UserMessage;
-		//inline const bool IsValid() { return Memory.Num(); }
+		inline bool IsValid() { return Memory.Num() > 0; }
 	};
-	static FScenarioLevelSavedData ScenarioLevelSavedData;
+	static FLevelTransientData LevelTransientData;
+	static FGuid SlotToLoad;
+
+	UPROPERTY()
+	TSet<AActor*> SodaActors;
+
+	TArray<TSharedPtr<soda::IDatasetManager>> ActiveDatasets;
 };

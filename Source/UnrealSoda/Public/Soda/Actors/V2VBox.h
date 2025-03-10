@@ -6,6 +6,7 @@
 #include "Components/BillboardComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Soda/ISodaActor.h"
+#include "Soda/ISodaDataset.h"
 #include "Soda/VehicleComponents/Sensors/Base/V2XSensor.h"
 #include "V2VBox.generated.h"
 
@@ -14,9 +15,10 @@
   * ANoiseBox
   */
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API AV2XBox :
-	public AActor,
-	public ISodaActor
+class UNREALSODA_API AV2XBox 
+	: public AActor
+	, public ISodaActor
+	, public IObjectDataset
 {
 GENERATED_BODY()
 

@@ -13,6 +13,8 @@ namespace FEditorUtils
 
 class SWidget;
 class USodaGameViewportClient;
+class FSceneView;
+class PDI;
 
 /**
  * FSodaActorDescriptor
@@ -50,12 +52,14 @@ struct FSodaActorDescriptor
  * The "Pinned Actor" means the actor SaveGame serialization will be carried over between different levels
  */
 UINTERFACE(BlueprintType, Blueprintable, meta=(RuntimeMetaData))
-class UNREALSODA_API USodaActor: public UEditableObject
+class UNREALSODA_API USodaActor
+	: public UEditableObject
 {
 	GENERATED_BODY()
 };
 
-class UNREALSODA_API ISodaActor: public IEditableObject
+class UNREALSODA_API ISodaActor
+	: public IEditableObject
 {
 	GENERATED_BODY()
 
@@ -89,26 +93,20 @@ public:
 	/** Get actor descriptor for viewport. Called from the CDO object */
 	virtual const FSodaActorDescriptor* GenerateActorDescriptor() const { return nullptr; }
 
-	/** Try to pin/unpin actor. Typically this method invokes UI elements. Retrun true if alloes pin/unpin actor */
-	virtual bool OnSetPinnedActor(bool bIsPinnedActor) { return false; }
+	virtual bool CanBePinned() const { return false; }
 
-	/** Is actor pinned? */
-	virtual bool IsPinnedActor() const { return false; }
+	virtual bool Unpin() { return false; }
 
-	/** Try save pinned actor */
-	virtual bool SavePinnedActor() { return false; }
+	virtual bool SaveToSlot(const FString& Label, const FString& Description, const FGuid& Guid = FGuid(), bool bRebase = true) { return false; }
 
-	/** Spawn new pinned actor from SlotName. Can be called from the CDO object */
-	virtual AActor* LoadPinnedActor(UWorld* World, const FTransform & Transform, const FString& SlotName, bool bForceCreate, FName DesireName = NAME_None) const { return nullptr; }
+	/** Spawn actor from Slot. Called from the CDO object */
+	virtual AActor* SpawnActorFromSlot(UWorld* World, const FGuid& Slot, const FTransform& Transform, FName DesireName = NAME_None) const { return nullptr; }
 
-	/** Evry pinned actor have its own unique name for save */
-	virtual FString GetPinnedActorSlotName() const { return ""; }
+	virtual const FGuid& GetSlotGuid() const { static FGuid Dummy{}; return Dummy; }
 
-	/** Evry pinned actor have its own unique name for UI. This is usually a shorter name of GetPinnedActorSlotName() */
-	virtual FString GetPinnedActorName() const { return ""; }
+	virtual FString GetSlotLabel() const { return ""; }
 
-	/** Rename pinned actor slot name */
-	virtual bool RenamePinnedActor(const FString& NewSlotName) { return false; }
+	virtual bool Resave() { return false; }
 
 	/** Actor has been modified and needs to be saved */
 	virtual bool IsDirty() { return bIsDirty; }
@@ -134,7 +132,7 @@ public:
 	virtual bool GetActorHiddenInScenario() const { return false; }
 
 	// TODO: may by add these in the future
-	//virtual void DrawVisualization(USodaGameViewportClient* ViewportClient, const FSceneView* View, FPrimitiveDrawInterface* PDI) {}
+
 	//virtual bool HandleClick(USodaGameViewportClient* ViewportClient, UActorComponent* ActorComponent, const FEditorUtils::FViewportClick& Click) { return false; }
 	//virtual bool GetWidgetLocation(const USodaGameViewportClient* ViewportClient, FVector& OutLocation) const { return false; }
 	//virtual bool GetCustomInputCoordinateSystem(const USodaGameViewportClient* ViewportClient, FMatrix& OutMatrix) const { return false; }
@@ -144,6 +142,7 @@ public:
 	//virtual void EndEditing() {}
 	//virtual TSharedPtr<SWidget> GenerateContextMenu() const { return SNullWidget::NullWidget; }
 	virtual void InputWidgetDelta(const USceneComponent* WidgetTargetComponent, FTransform & NewWidgetTransform) {}
+	virtual void DrawVisualization(USodaGameViewportClient* ViewportClient, const FSceneView* View, FPrimitiveDrawInterface* PDI) {}
 
 public:
 	/* Override from IEditableObject */

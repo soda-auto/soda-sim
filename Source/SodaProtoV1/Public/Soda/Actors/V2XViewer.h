@@ -4,7 +4,8 @@
 
 #include "GameFramework/Actor.h"
 #include "Soda/Misc/Time.h"
-#include "Soda/IToolActor.h"
+#include "Soda/ISodaActor.h"
+#include "Soda/ISodaDataset.h"
 #include "soda/sim/proto-v1/V2X.hpp"
 #include "Sockets.h"
 #include "SocketSubsystem.h"
@@ -18,9 +19,10 @@
 class UInstancedStaticMeshComponent;
 
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class SODAPROTOV1_API AV2XViewer :
-	public AActor,
-	public IToolActor
+class SODAPROTOV1_API AV2XViewer 
+	: public AActor 
+	, public ISodaActor
+	, public IObjectDataset
 {
 	GENERATED_BODY()
 
@@ -90,7 +92,6 @@ public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;
-	virtual void Serialize(FArchive& Ar) override { Super::Serialize(Ar); ToolActorSerialize(Ar); }
 
 private:
 	FVector OrignShift;

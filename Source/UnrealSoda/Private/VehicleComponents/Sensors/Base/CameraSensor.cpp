@@ -584,8 +584,7 @@ bool UCameraSensor::IsColorFormat(ECameraSensorShader Fromat)
 
 bool UCameraSensor::NeedRenderSensorFOV() const
 {
-	return (FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::Ever) ||
-		(FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::OnSelect && IsVehicleComponentSelected());
+	return FOVSetup.NeedRenderSensorFOV(this);
 }
 
 FBoxSphereBounds UCameraSensor::CalcBounds(const FTransform& LocalToWorld) const

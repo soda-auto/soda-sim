@@ -3,7 +3,7 @@
 #include "Soda/UI/SResetScaleBox.h"
 #include "Soda/SodaSubsystem.h"
 #include "Soda/SodaApp.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "Layout/ArrangedChildren.h"
 #include "Engine/GameViewportClient.h"
 
@@ -19,7 +19,7 @@ float SResetScaleBox::GetRelativeLayoutScale(int32 ChildIndex, float LayoutScale
 {
 	USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 
-	CashedScale = 1 / LayoutScaleMultiplier * SodaSubsystem->GetWorld()->GetGameViewport()->GetDPIScale() * SodaApp.GetSodaUserSettings()->DPIScale;
+	CashedScale = 1 / LayoutScaleMultiplier * SodaSubsystem->GetWorld()->GetGameViewport()->GetDPIScale() * GetDefault<USodaCommonSettings>()->DPIScale;
 	return CashedScale;
 }
 

@@ -65,7 +65,7 @@ protected:
 	TWeakObjectPtr<AActor> SelectedItem;
 	TWeakPtr<SInlineEditableTextBlock> RequestedEditeTextBox;
 	SListView<TWeakObjectPtr<AActor>>::FOnSelectionChanged OnSelectionChangedDelegate;
-	FDelegateHandle InvalidateDelegateHandle;
+	FDelegateHandle ActorsMapChenagedHandle;
 	FOnShouldFilterActor ActorFilter;
 };
 

@@ -10,7 +10,6 @@
 class UVehicleBrakeSystemBaseComponent;
 class UVehicleEngineBaseComponent;
 class UVehicleSteeringRackBaseComponent;
-class UVehicleHandBrakeBaseComponent;
 class UVehicleGearBoxBaseComponent;
 
 namespace soda
@@ -74,18 +73,12 @@ namespace soda
  */
 
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API UGenericVehicleDriverComponentComponent : public UVehicleDriverComponent
+class UNREALSODA_API UGenericVehicleDriverComponent : public UVehicleDriverComponent
 {
 	GENERATED_UCLASS_BODY()
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime))
-	//TSubclassOf<UGenericWheeledVehiclePublisher> PublisherClass;
-
 	//UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
 	//TObjectPtr<UGenericWheeledVehiclePublisher> Publisher;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Publishing, SaveGame, meta = (EditInRuntime))
-	TSubclassOf<UGenericWheeledVehicleControlListener> VehicleControlClass;
 
 	UPROPERTY(EditAnywhere, Instanced, Category = Publishing, SaveGame, meta = (EditInRuntime))
 	TObjectPtr<UGenericWheeledVehicleControlListener> VehicleControl;
@@ -100,7 +93,7 @@ class UNREALSODA_API UGenericVehicleDriverComponentComponent : public UVehicleDr
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/UnrealSoda.VehicleBrakeSystemBaseComponent"))
 	FSubobjectReference LinkToBrakeSystem { TEXT("BrakeSystem") };
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/UnrealSoda.VehicleHandBrakeBaseComponent"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/UnrealSoda.VehicleBrakeSystemBaseComponent"))
 	FSubobjectReference LinkToHandBrake { TEXT("HandBrake") };
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateComponent, AllowedClasses = "/Script/UnrealSoda.VehicleGearBoxBaseComponent"))
@@ -117,7 +110,7 @@ public:
 	UVehicleSteeringRackBaseComponent * SteeringRack = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, Category = VehicleDriver)
-	UVehicleHandBrakeBaseComponent * HandBrake = nullptr;
+	UVehicleBrakeSystemBaseComponent* HandBrake = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, Category = VehicleDriver)
 	UVehicleGearBoxBaseComponent * GearBox = nullptr;
@@ -136,7 +129,6 @@ public:
 	float TargetSpeedDelta = 10;
 
 protected:
-	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnPostActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
@@ -145,12 +137,17 @@ protected:
 	virtual FString GetRemark() const override;
 	virtual void PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
 	//virtual void PostPhysicSimulationDeferred(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp& Timestamp) override;
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 public:
 	virtual EGearState GetGearState() const override { return GearState; }
+	int GetGearNum() const { return GearNum; }
 	virtual bool IsADPing() const override { return bVapiPing; }
+	bool IsADModeEnbaled() const { return bADModeEnbaled; }
 	virtual ESodaVehicleDriveMode GetDriveMode() const override;
+	bool IsSafeStopEnbaled() const { return bSafeStopEnbaled; }
+	float GetWheelRadius()  const { return WheelRadius; }
+	bool GetWheelRadiusValid() const { return bWheelRadiusValid; }
+	const soda::FGenericWheeledVehiclControl& GetControl() const { return Control; }
 
 	//virtual bool IsEnabledLeftTurningLights() const { return false; }
 	//virtual bool IsEnabledRightTurningLights() const { return false; }
@@ -161,13 +158,10 @@ public:
 	//virtual bool IsEnabledHorn() const { return false; }
 	//virtual FColor GetLED() const;
 
+
+
 protected:
-	virtual void Serialize(FArchive& Ar) override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-#if WITH_EDITOR
-	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
-	virtual void PostInitProperties() override;
-#endif
 
 protected:
 	bool bVapiPing = false;
@@ -180,7 +174,4 @@ protected:
 	bool bWheelRadiusValid = false;
 
 	soda::FGenericWheeledVehiclControl Control;
-
-	//FGenericPublisherHelper<UGenericVehicleDriverComponentComponent, UGenericWheeledVehiclePublisher> PublisherHelper { this, &UGenericVehicleDriverComponentComponent::PublisherClass, &UGenericVehicleDriverComponentComponent::Publisher };
-	FGenericListenerHelper<UGenericVehicleDriverComponentComponent, UGenericWheeledVehicleControlListener> ListenerHelper { this, &UGenericVehicleDriverComponentComponent::VehicleControlClass, &UGenericVehicleDriverComponentComponent::VehicleControl, "VehicleControlClass", "VehicleControl", "VehicleControlRecord" };
 };

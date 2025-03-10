@@ -108,7 +108,10 @@ bool USodaSelection::InputAxis(FViewport* Viewport, FInputDeviceId InputDevice, 
 
 AActor * USodaSelection::GetSodaActorUnderCursor(FViewport* Viewport)
 {
-	check(Viewport);
+	if (!Viewport)
+	{
+		return nullptr;
+	}
 
 	UWorld * World = USodaSubsystem::GetChecked()->GetWorld();
 	check(World);

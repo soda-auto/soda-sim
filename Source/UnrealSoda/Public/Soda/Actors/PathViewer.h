@@ -10,7 +10,7 @@
 #include "Interfaces/IPv4/IPv4Address.h"
 #include "Interfaces/IPv4/IPv4Endpoint.h"
 #include "DrawDebugHelpers.h"
-#include "Soda/IToolActor.h"
+#include "Soda/ISodaActor.h"
 #include <vector>
 #include <mutex>
 #include "PathViewer.generated.h"
@@ -21,9 +21,9 @@
  * UDP protocol format: |double(Lon0),double(Lat0)|double(Lon1),double(Lat1)|double(Lon2),double(Lat2)|...|
  */
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API APathViewer : 
-	public AActor,
-	public IToolActor
+class UNREALSODA_API APathViewer 
+	: public AActor
+	, public ISodaActor
 {
 	GENERATED_BODY()
 
@@ -68,7 +68,6 @@ public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;
-	virtual void Serialize(FArchive& Ar) override { Super::Serialize(Ar); ToolActorSerialize(Ar); }
 
 private:
 	FSocket* ListenSocket = nullptr;

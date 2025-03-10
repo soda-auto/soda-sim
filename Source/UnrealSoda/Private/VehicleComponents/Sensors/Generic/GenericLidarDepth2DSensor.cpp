@@ -26,18 +26,6 @@ UGenericLidarDepth2DSensor::UGenericLidarDepth2DSensor(const FObjectInitializer&
 	GUI.bIsPresentInAddMenu = true;
 }
 
-void UGenericLidarDepth2DSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
-}
-
-void UGenericLidarDepth2DSensor::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-	PublisherHelper.OnSerialize(Ar);
-}
-
 bool UGenericLidarDepth2DSensor::OnActivateVehicleComponent()
 {
 	if (!Super::OnActivateVehicleComponent())
@@ -70,41 +58,40 @@ bool UGenericLidarDepth2DSensor::OnActivateVehicleComponent()
 		AddDebugMessage(EVehicleComponentHealth::Warning, FString::Printf(TEXT("%i point(s) did't include into the FOV"), PointsSkiped));
 	}
 
-	return PublisherHelper.Advertise();
+	if (IsValid(Publisher))
+	{
+		return Publisher->AdvertiseAndSetHealth(this);
+	}
+
+	return true;
 }
 
 void UGenericLidarDepth2DSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
-	PublisherHelper.Shutdown();
+
+	if (IsValid(Publisher))
+	{
+		Publisher->Shutdown();
+	}
 	LidarRays.Reset();
 	UVs.Reset();
 }
 
 bool UGenericLidarDepth2DSensor::IsVehicleComponentInitializing() const
 {
-	return PublisherHelper.IsPublisherInitializing();
+	return IsValid(Publisher) && Publisher->IsInitializing();
 }
 
 void UGenericLidarDepth2DSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	PublisherHelper.Tick();
-}
 
-#if WITH_EDITOR
-void UGenericLidarDepth2DSensor::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
+	if (IsValid(Publisher))
+	{
+		Publisher->CheckStatus(this);
+	}
 }
-
-void UGenericLidarDepth2DSensor::PostInitProperties()
-{
-	Super::PostInitProperties();
-	PublisherHelper.RefreshClass();
-}
-#endif
 
 bool UGenericLidarDepth2DSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& Scan)
 {

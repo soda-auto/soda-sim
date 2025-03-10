@@ -9,19 +9,10 @@
 #include "Soda/SodaStatics.h"
 #include "Sockets.h"
 #include "SocketSubsystem.h"
-#include "Soda/LevelState.h"
 #include "UObject/UObjectIterator.h"
 #include "Soda/Actors/TrackBuilder.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
-#include "Soda/DBGateway.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
-
 
 URacingSensor::URacingSensor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -121,34 +112,5 @@ void URacingSensor::PostPhysicSimulationDeferred(float DeltaTime, const FPhysBod
 		SensorData.CoveredDistanceFull += Dist;
 
 		PublishSensorData(DeltaTime, GetHeaderGameThread(), SensorData);
-	}
-}
-
-void URacingSensor::OnPushDataset(soda::FActorDatasetData& Dataset) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	try
-	{
-		Dataset.GetRowDoc()
-			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
-			<< "bBorderIsValid" << SensorData.bBorderIsValid
-			<< "bLapCounterIsValid" << SensorData.bLapCounterIsValid
-			<< "CenterLineYaw" << SensorData.CenterLineYaw / M_PI * 180
-			<< "CoveredDistanceCurrentLap" << SensorData.CoveredDistanceCurrentLap
-			<< "CoveredDistanceFull" << SensorData.CoveredDistanceFull
-			<< "LapCaunter" << SensorData.LapCaunter
-			<< "LeftBorderOffset" << SensorData.LeftBorderOffset
-			<< "RightBorderOffset" << SensorData.RightBorderOffset
-			<< close_document;
-	}
-	catch (const std::system_error& e)
-	{
-		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
 	}
 }

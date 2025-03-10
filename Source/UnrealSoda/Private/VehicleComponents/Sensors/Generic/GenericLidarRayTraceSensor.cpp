@@ -9,18 +9,6 @@ UGenericLidarRayTraceSensor::UGenericLidarRayTraceSensor(const FObjectInitialize
 	GUI.bIsPresentInAddMenu = true;
 }
 
-void UGenericLidarRayTraceSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-}
-
-void UGenericLidarRayTraceSensor::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-	PublisherHelper.OnSerialize(Ar);
-}
-
 bool UGenericLidarRayTraceSensor::OnActivateVehicleComponent()
 {
 	if (!Super::OnActivateVehicleComponent())
@@ -38,41 +26,38 @@ bool UGenericLidarRayTraceSensor::OnActivateVehicleComponent()
 		}
 	}
 
-	return PublisherHelper.Advertise();
+	if (IsValid(Publisher))
+	{
+		return Publisher->AdvertiseAndSetHealth(this);
+	}
+	
+	return true;
 }
 
 void UGenericLidarRayTraceSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
-	PublisherHelper.Shutdown();
+	if (IsValid(Publisher))
+	{
+		Publisher->Shutdown();
+	}
 	LidarRays.Reset();
 }
 
 bool UGenericLidarRayTraceSensor::IsVehicleComponentInitializing() const
 {
-	return PublisherHelper.IsPublisherInitializing();
+	return IsValid(Publisher) && Publisher->IsInitializing();
 }
 
 void UGenericLidarRayTraceSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	PublisherHelper.Tick();
-}
 
-#if WITH_EDITOR
-void UGenericLidarRayTraceSensor::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
+	if (IsValid(Publisher))
+	{
+		Publisher->CheckStatus(this);
+	}
 }
-
-void UGenericLidarRayTraceSensor::PostInitProperties()
-{
-	Super::PostInitProperties();
-	PublisherHelper.RefreshClass();
-}
-#endif
-
 
 bool UGenericLidarRayTraceSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& InScan)
 {

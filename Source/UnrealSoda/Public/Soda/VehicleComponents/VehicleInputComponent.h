@@ -84,6 +84,26 @@ struct UNREALSODA_API FWheeledVehicleInputState
 	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	bool bHornEnabled = false;
 
+	/** External request to enable the TVC */
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	bool bTVCEnabled = false;
+
+	/** External request to enable the TVC */
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	bool bSpeedLimitEnabled = false;
+
+	/** External request to enable the TVC */
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	float SpeedLimit = 0;
+
+	/** External request to enable the left turn lights. */
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	bool bLeftTurnLightsEnabled = false;
+
+	/** External request to enable the right turn lights. */
+	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
+	bool bRightTurnLightsEnabled = false;
+
 	/** Cruise Control / Speed Limiter mode */
 	UPROPERTY(BlueprintReadWrite, Category = WheeledVehicleInputState, meta = (EditInRuntime))
 	ECruiseControlMode CruiseControlMode = ECruiseControlMode::Off;
@@ -98,6 +118,50 @@ struct UNREALSODA_API FWheeledVehicleInputState
 	bool IsReversGear() const;
 	bool IsNeutralGear() const;
 	bool IsParkGear() const;
+};
+
+
+
+/**
+ * Init to drive parameters
+ */
+USTRUCT(BlueprintType)
+struct FInitToDrivePrms
+{
+	GENERATED_BODY()
+
+public:
+	/** True to perform init to drive sequence  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "InitSequence")
+	bool bDoInitToDriveSequence = false;
+
+	/** Time to keep vehicle stationary in Park, sec  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "InitSequence")
+	float TimeToStayInPark = 5.0;
+
+	/** Time to press brake pedal from 0 to 100%, sec */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "InitSequence", meta = (ClampMin = "1"))
+	float TimeToPressBrakePedal = 0.5;
+
+	/** Time to wait after full press to request Drive, sec  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "InitSequence")
+	float TimeToWaitBeforeSwitchToDrive = 4;
+
+	/** Time to keep pedal pressed after switch to Drive, sec  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "InitSequence")
+	float TimeToStayInDriveWithPedalPressed = 1;
+
+	/** Time to release brake pedal from 100% to 0%, sec  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, meta = (EditInRuntime), Category = "InitSequence")
+	float TimeToReleaseBrakePedal = 0.25;
+
+	// Local states of the initialization process
+	float InitSequenceLocalTime = 0;
+	bool bInitSequenceIsDone = false;
+	float CurPedlPosn = 0;
+
+
+
 };
 
 UCLASS(abstract, ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))

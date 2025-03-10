@@ -7,13 +7,16 @@
 #include "Components/SplineComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Soda/ISodaActor.h"
+#include "Soda/ISodaDataset.h"
 #include "NavigationRoute.generated.h"
 
 class USodaRandomEngine;
 class UProceduralMeshComponent;
 
+
 UCLASS(meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API URouteSplineComponent : public USplineComponent
+class UNREALSODA_API URouteSplineComponent 
+	: public USplineComponent
 {
 	GENERATED_BODY()
 
@@ -86,6 +89,9 @@ public:
 	TSoftObjectPtr<ANavigationRoute> SuccessorRoute;
 
 public:
+
+
+
 	UFUNCTION(Category = NavigationRoute, BlueprintCallable)
 	bool SetRoutePoints(const TArray< FVector >& RoutePoints, bool bUpdateMesh=true);
 
@@ -188,9 +194,10 @@ protected:
  * TODO: Save route to dataset
  */
 UCLASS()
-class UNREALSODA_API ANavigationRouteEditable : 
-	public ANavigationRoute,
-	public ISodaActor
+class UNREALSODA_API ANavigationRouteEditable 
+	: public ANavigationRoute
+	, public ISodaActor
+	, public IObjectDataset
 {
 	GENERATED_BODY()
 
@@ -222,6 +229,12 @@ public:
 	virtual bool ShowSelectBox() const override { return false; }
 	virtual void RuntimePostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+
+
+	UFUNCTION(CallInEditor, Category = LoadCustomFile, meta = (DisplayName = "Save the data of this route into the file", CallInRuntime))
+	void SaveNavigationRouteToFile();
+	UFUNCTION(CallInEditor, Category = LoadCustomFile, meta = (DisplayName = "Recreate the data of this route from the file", CallInRuntime))
+	void RecreateNavigationRouteFromFile();
 
 public:
 	ANavigationRouteEditable(const FObjectInitializer& ObjectInitializer);

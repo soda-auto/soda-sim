@@ -88,6 +88,8 @@ void UStaticWheeledVehicleMovementComponent::TickComponent(float DeltaTime, enum
 
 	PostPhysicSimulation(DeltaTime, VehicleSimData.VehicleKinematic, VehicleSimData.SimulatedTimestamp);
 	PostPhysicSimulationDeferred(DeltaTime, VehicleSimData.VehicleKinematic, VehicleSimData.SimulatedTimestamp);
+
+	SyncDataset();
 }
 
 bool UStaticWheeledVehicleMovementComponent::SetVehiclePosition(const FVector& NewLocation, const FRotator& NewRotation)

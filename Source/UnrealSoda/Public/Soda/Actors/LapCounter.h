@@ -5,6 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "Components/BillboardComponent.h"
 #include "Soda/ISodaActor.h"
+#include "Soda/ISodaDataset.h"
 #include "LapCounter.generated.h"
 
 UINTERFACE(BlueprintType)
@@ -22,9 +23,10 @@ public:
 };
 
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API ALapCounter :
-	public AActor,
-	public ISodaActor
+class UNREALSODA_API ALapCounter 
+	: public AActor
+	, public ISodaActor
+	, public IObjectDataset
 {
 GENERATED_BODY()
 

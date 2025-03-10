@@ -10,18 +10,11 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Texture2D.h"
 #include "Materials/Material.h"
-#include "Soda/DBGateway.h"
 #include "Soda/SodaApp.h"
 #include "Soda/SodaSubsystem.h"
 #include "Soda/UI/SMessageBox.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
 
 FOpenDriveRoadMarkProfile::FOpenDriveRoadMarkProfile()
 {
@@ -481,77 +474,6 @@ void AOpenDriveTool::OnConstruction(const FTransform& Transform)
 void AOpenDriveTool::ScenarioBegin()
 {
 	ISodaActor::ScenarioBegin();
-
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	if (bRecordDataset && soda::FDBGateway::Instance().GetStatus() == soda::EDBGatewayStatus::Connected && soda::FDBGateway::Instance().IsDatasetRecording())
-	{
-		if (OpenDriveData.IsValid())
-		{
-			bsoncxx::builder::stream::document Doc;
-
-			if (bStoreLanesMarks)
-			{
-				auto laneArray = Doc << "road_lanes_marks" << open_array;
-				for (int road_id = 0; road_id < OpenDriveData->roads.size(); ++road_id)
-				{
-					std::vector<opendrive::LaneMark> LaneMarkers;
-					opendrive::geometry::GenerateRoadMarkLines(OpenDriveData->roads[road_id], LaneMarkers, MarkAccuracy / 100.f);
-
-					auto laneDoc = laneArray << open_document;
-					for (auto& MarkLine : LaneMarkers)
-					{
-						laneDoc << "type" << MarkLine.type;
-						auto ptArray = laneDoc << "points" << open_array;
-						for (auto& Pt : MarkLine.Edge)
-						{
-							FVector Pt2{ Pt.x * 100, -Pt.y * 100, Pt.z * 100 };
-							ptArray << open_array << Pt2.X << Pt2.Y << Pt2.Z << close_array;
-						}
-						ptArray << close_array;
-					}
-					laneDoc << close_document;
-				}
-				laneArray << close_array;
-			}
-
-			if (bStoreXDOR)
-			{
-				FString FileName = FindXDORFile();
-				FString FileContent;
-				if (!FileName.IsEmpty())
-				{
-					if (FFileHelper::LoadFileToString(FileContent, *FileName))
-					{
-						Doc << "xdor" << TCHAR_TO_UTF8(*FileContent);
-					}
-					else
-					{
-						UE_LOG(LogSoda, Error, TEXT("AOpenDriveTool::ScenarioBegin(); Can't load %s"), *FileName);
-					}
-				}
-				else
-				{
-					UE_LOG(LogSoda, Error, TEXT("AOpenDriveTool::ScenarioBegin(); Can't find XDOR file"));
-				}
-			}
-
-			auto Dataset = soda::FDBGateway::Instance().CreateActorDataset(GetName(), "opendrive", GetClass()->GetName(), Doc);
-			if (!Dataset)
-			{
-				SodaApp.GetSodaSubsystemChecked()->ScenarioStop(EScenarioStopReason::InnerError, EScenarioStopMode::RestartLevel, "Can't create dataset for \"" + GetName() + "\"");
-			}
-		}
-		else
-		{
-			UE_LOG(LogSoda, Error, TEXT("AOpenDriveTool::ScenarioBegin(); Can't find OpenDriveData isn't valid"));
-		}
-	}
 }
 
 void AOpenDriveTool::ScenarioEnd()

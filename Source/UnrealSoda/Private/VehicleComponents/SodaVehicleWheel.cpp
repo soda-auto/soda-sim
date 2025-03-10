@@ -33,7 +33,7 @@ void USodaVehicleWheelComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YP
 		UFont* RenderFont = GEngine->GetSmallFont();
 		Canvas->SetDrawColor(FColor::White);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("ReqTorq:%.1fH/m, ReqBrake:%.1fH/m, ReqSteer:%.1fdeg"), ReqTorq, ReqBrakeTorque, ReqSteer / M_PI * 180.0), 16, YPos);
-		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Ang Vel:%.1frad/s, Slip:[%.1f, %.1f], Sus Offset: %.1fcm"), AngularVelocity, Slip.X, Slip.Y, SuspensionOffset), 16, YPos);
+		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Ang Vel:%.1frad/s, Slip:[%.1f, %.1f], Sus Offset: %.1fcm"), AngularVelocity, Slip.X, Slip.Y, SuspensionOffset2.Z), 16, YPos);
 		
 	}
 }
@@ -52,7 +52,7 @@ FVector USodaVehicleWheelComponent::GetWheelLocation( bool bWithSuspensionOffset
 	FVector Location = RestingLocation;
 	if (bWithSuspensionOffset)
 	{
-		Location += FVector(0, 0, SuspensionOffset);
+		Location += SuspensionOffset2;
 	}
 
 	if (bInWorldSpase)
@@ -80,6 +80,9 @@ float USodaVehicleWheelComponent::ResolveAngularVelocity() const
 	{
 		UE_LOG(LogSoda, Log, TEXT("USodaVehicleWheelComponent::ResolveAngularVelocity(); AngularVelocity: %f"), AngularVelocity);
 	}
+
+	SyncDataset();
+
 	return  AngularVelocity; 
 }
 

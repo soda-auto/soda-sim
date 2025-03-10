@@ -13,7 +13,7 @@
 #include "Soda/SodaStatics.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/Misc/MeshGenerationUtils.h"
-#include "Soda/SodaUserSettings.h"
+#include "Soda/SodaCommonSettings.h"
 #include "DynamicMeshBuilder.h"
 
 #define _DEG2RAD(a) ((a) / (180.0 / M_PI))
@@ -64,11 +64,11 @@ URadarSensor::URadarSensor(const FObjectInitializer& ObjectInitializer)
 	/*
 	FOVSetupNear.Color = FLinearColor(1.0, 1.0, 0.3, 0.5);
 	FOVSetupNear.WireframeColor = FLinearColor(0.4, 0.4, 0, 1);
-	FOVSetupNear.MaxViewDistance = RadarParamsNear.DistanseMax * 100;
+	FOVSetupNear.MaxViewDistance = RadarParamsNear.DistanceMax * 100;
 
 	FOVSetupFar.Color = FLinearColor(1.0, 0.6, 0.3, 0.5);
 	FOVSetupFar.WireframeColor = FLinearColor(0.4, 0.4, 0, 1);
-	FOVSetupFar.MaxViewDistance = RadarParamsFar.DistanseMax * 100;
+	FOVSetupFar.MaxViewDistance = RadarParamsFar.DistanceMax * 100;
 	*/
 }
 
@@ -81,12 +81,17 @@ bool URadarSensor::OnActivateVehicleComponent()
 
 	PrevTickTime = SodaApp.GetSimulationTimestamp();
 
+
+	MarkRenderStateDirty();
+
 	return true;
 }
 
 void URadarSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
+
+	MarkRenderStateDirty();
 }
 
 void URadarSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
@@ -131,7 +136,7 @@ void URadarSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 
 	PublishSensorData(DeltaTime, GetHeaderGameThread(), Clusters, Objects);
 
-	if (bDrawDebugPoints)
+	if (bDrawDebugPrimitives)
 	{
 		ShowDebudPoints();
 	}
@@ -174,7 +179,7 @@ void URadarSensor::ProcessHit(const FHitResult* Hit, const FRadarParams* Params)
 	RadarHit.Distance = (RadarHit.HitPosition - Loc).Size();
 	RadarHit.Azimuth = RelHitRot.Yaw;
 
-	if (RadarHit.Distance > Params->DistanseMax * 100)
+	if (RadarHit.Distance > Params->DistanceMax * 100)
 	{
 		return;
 	}
@@ -257,14 +262,23 @@ void URadarSensor::ShowDebudPoints()
 		SCOPE_CYCLE_COUNTER(STAT_RadarShowDebug);
 		for (auto It = Clusters.Clusters.CreateConstIterator(); It; ++It)
 		{
-			DrawDebugLine(GetWorld(), Loc, It->HitPosition, FColor(255, 255, 0), false, -1.f, 0, 2.f);
-			DrawDebugPoint(GetWorld(), It->HitPosition, 10, FColor::Yellow, false, -1.0f);
+			if (bDrawDebugLinesToObjects)
+			{
+				DrawDebugLine(GetWorld(), Loc, It->HitPosition, FColor(255, 255, 0), false, -1.f, 0, 2.f);
+			}
+			if (bDrawDebugTracedPoints)
+			{
+				DrawDebugPoint(GetWorld(), It->HitPosition, 10, FColor::Yellow, false, -1.0f);
+			}
 			if (bDrawDebugLabels)
+			{
 				DrawDebugString(GetWorld(), It->HitPosition, *FString::Printf(TEXT("RCS=%f, hits=%d, Dist=%f"), It->RCS, It->Hits.Num(), It->Distance), NULL, FColor::Yellow, 0.01f, false);
-		}
-	}
-	break;
 
+			}
+		}
+
+		break;
+	}
 	case ERadarMode::ObjectMode:
 	{
 		SCOPE_CYCLE_COUNTER(STAT_RadarShowDebug);
@@ -273,8 +287,17 @@ void URadarSensor::ShowDebudPoints()
 			auto& Object = It.Value();
 			FVector TracedPoint = GetComponentTransform().TransformPosition(It->Value.GetObjectPoint());
 			FColor Color = It->Value.bUpdated ? FColor::Green : FColor::Red;
-			DrawDebugLine(GetWorld(), Loc, TracedPoint, Color, false, -1, 0, 2.f);
-			DrawDebugPoint(GetWorld(), TracedPoint, 10, Color);
+
+			if (bDrawDebugLinesToObjects)
+			{
+				DrawDebugLine(GetWorld(), Loc, TracedPoint, Color, false, -1, 0, 2.f);
+			}
+
+			if (bDrawDebugTracedPoints)
+			{
+				DrawDebugPoint(GetWorld(), TracedPoint, 10, Color);
+			}
+
 			if (bDrawDebugLabels)
 			{
 				DrawDebugString(GetWorld(), TracedPoint, *FString::Printf(TEXT("Id=%d, RCS=%f, Dist=%f, RelLonVel=%f, RelLatVel=%f"),
@@ -284,11 +307,12 @@ void URadarSensor::ShowDebudPoints()
 			FVector Center, Extents;
 			Object.LocalBounds.GetCenterAndExtents(Center, Extents);
 			DrawDebugBox(GetWorld(), this->GetComponentTransform().TransformPosition(Center), Extents, GetComponentRotation().Quaternion(), Color);
-		}
 
+		}
+		break;
 	}
-	break;
 	}
+
 }
 
 void URadarSensor::ProcessRadarBeams(const FRadarParams & RadarParams)
@@ -307,7 +331,7 @@ void URadarSensor::ProcessRadarBeams(const FRadarParams & RadarParams)
 	const float BeamRadius = RadarParams.GetBeamWidth() / 2;
 	const float Step = 2 * RadarParams.FOV_HorizontMax / (float)RadarParams.GetBeamsNum();
 	const FCollisionShape Collider = FCollisionShape::MakeCapsule(BeamRadius, BeamVerticalSize * 0.5f);
-	const float DistanseMin = FMath::Max(0.f, RadarParams.DistanseMin * 100 - BeamRadius);
+	const float DistanceMin = FMath::Max(0.f, RadarParams.DistanceMin * 100 - BeamRadius);
 
 	for (int i = 0; i < RadarParams.GetBeamsNum(); i++)
 	{
@@ -316,8 +340,8 @@ void URadarSensor::ProcessRadarBeams(const FRadarParams & RadarParams)
 		const FQuat Q = RelTrans.GetRotation() * FQuat(FRotator(90.f, 0.f, 0.f));
 		const float Dist = RadarParams.GetRayLength(HorizontAng) * 100;
 
-		const FVector Start = Loc + Norm * DistanseMin;
-		const FVector End = Loc + Norm * (DistanseMin + Dist);
+		const FVector Start = Loc + Norm * DistanceMin;
+		const FVector End = Loc + Norm * (DistanceMin + Dist);
 
 		BatchStart.Add(Start);
 		BatchEnd.Add(End);
@@ -336,7 +360,7 @@ void URadarSensor::ProcessRadarBeams(const FRadarParams & RadarParams)
 	UWorld* World = GetWorld();
 	TArray<TArray<struct FHitResult>> OutHits;
 	bool Res = FSodaPhysicsInterface::GeomSweepMultiScope(World, Collider, ZeroQaud, OutHits, BatchStart, BatchEnd,
-		SodaApp.GetSodaUserSettings()->RadarCollisionChannel,
+		GetDefault<USodaCommonSettings>()->RadarCollisionChannel,
 		FCollisionQueryParams(NAME_None, true, GetOwner()), 
 		FCollisionResponseParams::DefaultResponseParam,
 		FCollisionObjectQueryParams::DefaultObjectQueryParam);
@@ -350,13 +374,13 @@ void URadarSensor::ProcessRadarBeams(const FRadarParams & RadarParams)
 	}
 	
 
-	if (bDrawDebugPoints)
+	if (bDrawDebugPrimitives)
 	{
 		for (auto& Hits : OutHits)
 		{
 			for (auto& Hit : Hits)
 			{
-				//if (Hit.IsValidBlockingHit())
+				if (bDrawDebugTracedPoints)
 				{
 					DrawDebugPoint(World, Hit.ImpactPoint, 10, FColor::Red, false, -1.0f);
 				}
@@ -555,12 +579,12 @@ void FRadarObjects::SortObjectsByDistance(TArray<const FRadarObject* >& SortedOb
 
 float FRadarParams::GetBeamWidth() const
 {
-	return 2 * DistanseMax * 100 * atan(_DEG2RAD(HorizontalBestResolution / 2));
+	return 2 * DistanceMax * 100 * atan(_DEG2RAD(HorizontalBestResolution / 2));
 }
 
 float FRadarParams::GetBeamHeight() const
 {
-	return 2 * DistanseMax * 100 * atan(_DEG2RAD(FOV_Vertical / 2));
+	return 2 * DistanceMax * 100 * atan(_DEG2RAD(FOV_Vertical / 2));
 }
 
 float FRadarParams::GetResolutionForAngle(float Angle) const
@@ -578,12 +602,12 @@ float FRadarParams::GetResolutionForAngle(float Angle) const
 
 float FRadarParams::GetRayLength(float HorizontAng) const
 {
-	float Dist = DistanseMax;
+	float Dist = DistanceMax;
 	if (fabs(HorizontAng) > FOV_HorizontFullDist)
 	{
-		Dist = FMath::Lerp(Dist, DistanseOnMaxAngle, (fabs(HorizontAng) - FOV_HorizontFullDist) / (FOV_HorizontMax - FOV_HorizontFullDist));
+		Dist = FMath::Lerp(Dist, DistanceOnMaxAngle, (fabs(HorizontAng) - FOV_HorizontFullDist) / (FOV_HorizontMax - FOV_HorizontFullDist));
 	}
-	return Dist - DistanseMin;
+	return Dist - DistanceMin;
 }
 
 bool URadarSensor::AddFOVMesh(const FRadarParams& Params, TArray<FSensorFOVMesh>& OutMeshes)
@@ -611,13 +635,13 @@ bool URadarSensor::AddFOVMesh(const FRadarParams& Params, TArray<FSensorFOVMesh>
 			if (FMath::Abs(HorizontAng) > Params.FOV_HorizontFullDist / 2)
 			{
 				Distance = FMath::Lerp(
-					Params.DistanseMax,
-					Params.DistanseOnMaxAngle,
+					Params.DistanceMax,
+					Params.DistanceOnMaxAngle,
 					FMath::Abs((Params.FOV_HorizontFullDist / 2.0 - FMath::Abs(HorizontAng)) / (Params.FOV_HorizontMax / 2.0 - Params.FOV_HorizontFullDist / 2.0))) * 100;
 			}
 			else
 			{
-				Distance = Params.DistanseMax * 100;
+				Distance = Params.DistanceMax * 100;
 			}
 
 			Cloud.Add(RayNorm * Distance);
@@ -668,11 +692,7 @@ bool URadarSensor::NeedRenderSensorFOV() const
 	const bool bIsSelected = IsVehicleComponentSelected();
 	for (auto& It : RadarParams)
 	{
-		if ((It.FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::Ever) ||
-			(It.FOVSetup.FOVRenderingStrategy == EFOVRenderingStrategy::OnSelect && bIsSelected))
-		{
-			return true;
-		}
+		return It.FOVSetup.NeedRenderSensorFOV(this);
 	}
 	return false;
 }

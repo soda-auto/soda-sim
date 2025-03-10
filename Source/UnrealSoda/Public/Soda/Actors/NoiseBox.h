@@ -6,6 +6,7 @@
 #include "Components/BillboardComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Soda/ISodaActor.h"
+#include "Soda/ISodaDataset.h"
 #include "Soda/VehicleComponents/Sensors/Base/NavSensor.h"
 #include "NoiseBox.generated.h"
 
@@ -15,9 +16,10 @@
  * When the sensor leaves the trigger, the previous values ??will be returned to it.
  */
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API ANoiseBox : 
-	public AActor,
-	public ISodaActor
+class UNREALSODA_API ANoiseBox 
+	: public AActor
+	, public ISodaActor
+	, public IObjectDataset
 {
 GENERATED_BODY()
 

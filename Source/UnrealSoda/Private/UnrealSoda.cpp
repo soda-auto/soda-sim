@@ -18,10 +18,14 @@
 #include "Misc/SodaVehicleCommonExporter.h"
 #include "Soda/SodaUserSettings.h"
 #include "Misc/ConfigContext.h"
+#include "Soda/MongoDB/MongoDBGateway.h"
+#include "Soda/MongoDB/MongoDBDataset.h"
+#include "MongoDB/MongoDBDatasetRegisterObjects.h"
+#include "Soda/MongoDB/MongoDBSource.h"
 
 #define LOCTEXT_NAMESPACE "FUnrealSodaModule"
 
-class FSodaVehicleJSONExporter : public ISodaVehicleExporter
+class FSodaVehicleJSONExporter : public soda::ISodaVehicleExporter
 {
 public:
 	virtual bool ExportToString(const ASodaVehicle* Vehicle, FString& String) override
@@ -46,14 +50,14 @@ public:
 		}
 	}
 
-	virtual const FString& GetExporterName() const override { return ExporterName; }
+	virtual const FName& GetExporterName() const override { return ExporterName; }
 	virtual const FString& GetFileTypes() const override { return ExporterFileType; }
 
-	static const FString ExporterName;
+	static const FName ExporterName;
 	static const FString ExporterFileType;
 };
 
-const FString FSodaVehicleJSONExporter::ExporterName = TEXT("Soda JSON Vehicles");
+const FName FSodaVehicleJSONExporter::ExporterName = TEXT("Soda JSON Vehicles");
 const FString FSodaVehicleJSONExporter::ExporterFileType = TEXT("Soda JSON Vehicles (*.json)|*.json");
 
 
@@ -159,11 +163,19 @@ void FUnrealSodaModule::StartupModule()
 	SodaApp.RegisterVehicleExporter(MakeShared<FSodaVehicleJSONExporter>());
 	SodaApp.RegisterVehicleExporter(MakeShared<FSodaVehicleCommonExporter>());
 
+	auto MongoDBDatasetManager = MakeShared<soda::mongodb::FMongoDBDatasetManager>();
+	SodaApp.RegisterDatasetManager("MongoDB", MongoDBDatasetManager);
+	soda::mongodb::RegisteDefaultObjects(*MongoDBDatasetManager);
+
+	SodaApp.GetFileDatabaseManager().RegisterSource(MakeShared<soda::FMongoDBSource>());
+
 	UE_LOG(LogSoda, Log, TEXT("FUnrealSodaModule::StartupModule(); CustomConfig: \"%s\""), *FConfigCacheIni::GetCustomConfigString());
 }
 
 void FUnrealSodaModule::ShutdownModule()
 {
+	soda::FMongoDBGetway::Get(false).Destroy();
+
 	SodaApp.UnregisterVehicleExporter(FSodaVehicleJSONExporter::ExporterName);
 	SodaApp.UnregisterVehicleExporter(FSodaVehicleCommonExporter::ExporterName);
 

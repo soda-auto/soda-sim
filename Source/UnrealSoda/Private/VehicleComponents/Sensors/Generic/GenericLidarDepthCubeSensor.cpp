@@ -9,18 +9,6 @@ UGenericLidarDepthCubeSensor::UGenericLidarDepthCubeSensor(const FObjectInitiali
 	GUI.bIsPresentInAddMenu = true;
 }
 
-void UGenericLidarDepthCubeSensor::RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-	Super::RuntimePostEditChangeChainProperty(PropertyChangedEvent);
-}
-
-void UGenericLidarDepthCubeSensor::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-	PublisherHelper.OnSerialize(Ar);
-}
-
 bool UGenericLidarDepthCubeSensor::OnActivateVehicleComponent()
 {
 	if (!Super::OnActivateVehicleComponent())
@@ -48,40 +36,35 @@ bool UGenericLidarDepthCubeSensor::OnActivateVehicleComponent()
 
 	return LidarRays.Num() > 0;
 
-	return PublisherHelper.Advertise();
+	if (IsValid(Publisher))
+	{
+		return Publisher->AdvertiseAndSetHealth(this);
+	}
 }
 
 void UGenericLidarDepthCubeSensor::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
-	PublisherHelper.Shutdown();
+	if (IsValid(Publisher))
+	{
+		Publisher->Shutdown();
+	}
 	LidarRays.Reset();
 }
 
 bool UGenericLidarDepthCubeSensor::IsVehicleComponentInitializing() const
 {
-	return PublisherHelper.IsPublisherInitializing();
+	return IsValid(Publisher) && Publisher->IsInitializing();
 }
 
 void UGenericLidarDepthCubeSensor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	PublisherHelper.Tick();
+	if (IsValid(Publisher))
+	{
+		Publisher->CheckStatus(this);
+	}
 }
-
-#if WITH_EDITOR
-void UGenericLidarDepthCubeSensor::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	PublisherHelper.OnPropertyChanged(PropertyChangedEvent);
-}
-
-void UGenericLidarDepthCubeSensor::PostInitProperties()
-{
-	Super::PostInitProperties();
-	PublisherHelper.RefreshClass();
-}
-#endif
 
 bool UGenericLidarDepthCubeSensor::PublishSensorData(float DeltaTime, const FSensorDataHeader& Header, const soda::FLidarSensorData& Scan)
 {

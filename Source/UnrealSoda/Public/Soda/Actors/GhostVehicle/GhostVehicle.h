@@ -6,6 +6,7 @@
 #include "Components/BillboardComponent.h"
 #include "Soda/Misc/TrajectoryPlaner.h"
 #include "Soda/ISodaActor.h"
+#include "Soda/ISodaDataset.h"
 #include <vector>
 #include "GhostVehicle.generated.h"
 
@@ -17,12 +18,6 @@ namespace SpeedProfile
 }
 
 class ANavigationRouteEditable;
-
-namespace soda
-{
-	class FActorDatasetData;
-	struct FBsonDocument;
-}
 
 USTRUCT(BlueprintType)
 struct FGhostVehicleWheel
@@ -61,9 +56,10 @@ struct FGhostVehicleWheel
  */
 
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API AGhostVehicle : 
-	public AActor,
-	public ISodaActor
+class UNREALSODA_API AGhostVehicle 
+	: public AActor
+	, public ISodaActor
+	, public IObjectDataset
 {
 GENERATED_BODY()
 
@@ -173,6 +169,9 @@ public:
 	float GetCurrentVelocity() const { return CurrentVelocity;}
 
 	UFUNCTION(BlueprintCallable, Category = GhostVehicle)
+	float GetCurrentAcc() const { return CurrentAcc; }
+
+	UFUNCTION(BlueprintCallable, Category = GhostVehicle)
 	float GetCurrentSplineOffset() const { return CurrentSplineOffset;}
 	
 public:
@@ -187,6 +186,7 @@ public:
 	virtual void InputWidgetDelta(const USceneComponent* WidgetTargetComponent, FTransform& NewWidgetTransform) override;
 	virtual void RuntimePostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+	virtual bool ShouldRecordDataset() const override { return bRecordDataset; }
 
 public:
 	AGhostVehicle();
@@ -202,9 +202,6 @@ public:
 protected:
 	void CalculateSpeedProfile();
 	void UpdateJoinCurve();
-
-	virtual void GenerateDatasetDescription(soda::FBsonDocument& Doc) const;
-	virtual void OnPushDataset() const;
 
 	FTransform InitTransform;
 	bool bIsMoving = false;
@@ -223,5 +220,4 @@ protected:
 
 	TArray<FVector> JoiningCurvePoints;
 
-	TSharedPtr<soda::FActorDatasetData> Dataset;
 };

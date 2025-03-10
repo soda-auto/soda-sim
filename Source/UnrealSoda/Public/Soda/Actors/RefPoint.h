@@ -8,6 +8,7 @@
 #include "Engine/EngineTypes.h"
 #include "Components/TextRenderComponent.h"
 #include "Soda/ISodaActor.h"
+#include "Soda/ISodaDataset.h"
 #include "RefPoint.generated.h"
 
 
@@ -18,9 +19,10 @@
  * TODO: Try to use AGeoReferencingSystem insted ARefPoint
  */
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API ARefPoint : 
-	public AActor,
-	public ISodaActor
+class UNREALSODA_API ARefPoint 
+	: public AActor
+	, public ISodaActor
+	, public IObjectDataset
 {
 	GENERATED_BODY()
 

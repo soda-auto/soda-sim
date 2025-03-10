@@ -81,7 +81,7 @@ const AActor* ISodaActor::AsActor() const
 
 void ISodaActor::MarkAsDirty() 
 {
-	if (!IsPinnedActor())
+	if (!GetSlotGuid().IsValid())
 	{
 		if (ALevelState* LevelState = ALevelState::Get())
 		{

@@ -103,3 +103,22 @@ void USensorComponent::RuntimePostEditChangeChainProperty(FPropertyChangedChainE
 		MarkRenderStateDirty();
 	}
 }
+
+
+
+
+bool FSensorFOVRenderer::NeedRenderSensorFOV(const USensorComponent* Component) const
+{
+	if (!Component)
+	{
+		return false;
+	}
+
+	bool bIsSelected = Component->IsVehicleComponentSelected();
+	bool bIsActivated = Component->IsVehicleComponentActiveted();
+
+	return ((FOVRenderingStrategy == EFOVRenderingStrategy::Ever) ||
+		(FOVRenderingStrategy == EFOVRenderingStrategy::OnSelect && bIsSelected) ||
+		(FOVRenderingStrategy == EFOVRenderingStrategy::OnSelectWhenActive && bIsSelected && bIsActivated) ||
+		(FOVRenderingStrategy == EFOVRenderingStrategy::EverWhenActive && bIsActivated));
+}

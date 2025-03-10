@@ -6,6 +6,7 @@
 #include "Components/BillboardComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Soda/ISodaActor.h"
+#include "Soda/ISodaDataset.h"
 #include "SpawnPoint.generated.h"
 
 
@@ -13,9 +14,10 @@
   * ASpawnPoint
   */
 UCLASS(ClassGroup = Soda, meta = (BlueprintSpawnableComponent))
-class UNREALSODA_API ASpawnPoint : 
-	public AActor,
-	public ISodaActor
+class UNREALSODA_API ASpawnPoint 
+	: public AActor
+	, public ISodaActor
+	, public IObjectDataset
 {
 GENERATED_BODY()
 

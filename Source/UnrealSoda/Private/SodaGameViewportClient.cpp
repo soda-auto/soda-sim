@@ -23,6 +23,7 @@
 #include "Soda/LevelState.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/UnrealSodaVersion.h"
+#include "Soda/SodaCommonSettings.h"
 
 static void DrawSelectBox(FPrimitiveDrawInterface* PDI, const FBox& Box, float SizeK, const FLinearColor& Color, uint8 DepthPriority, float Thickness = 0.0f, float DepthBias = 0.0f, bool bScreenSpace = false)
 {
@@ -113,7 +114,7 @@ void USodaGameViewportClient::PostRender(UCanvas* Canvas)
 {
 	Super::PostRender(Canvas);
 
-	if (bIsDrawVehicleDebugPanel)
+	if (GetDefault<USodaCommonSettings>()->bIsDrawVehicleDebugPanel)
 	{
 		ASodaVehicle* Vehicle = nullptr;
 		APlayerController* PlayerController = World->GetFirstPlayerController();
@@ -166,6 +167,14 @@ void USodaGameViewportClient::Draw(const FSceneView* View, FPrimitiveDrawInterfa
 
 		USodaSubsystem* SodaSubsystem = USodaSubsystem::GetChecked();
 
+		for (auto& It : SodaSubsystem->GetSodaActors())
+		{
+			if (ISodaActor* SodaActor = Cast<ISodaActor>(It))
+			{
+				SodaActor->DrawVisualization(this, View, PDI);
+			}
+		}
+
 		AActor* SelectedActor = Selection->GetSelectedActor();
 		ISodaActor* SodaActor = Cast<ISodaActor>(SelectedActor);
 		if (SelectedActor && (!SodaActor || SodaActor->ShowSelectBox()))
@@ -189,33 +198,35 @@ void USodaGameViewportClient::Draw(const FSceneView* View, FPrimitiveDrawInterfa
 
 void USodaGameViewportClient::Tick(float DeltaTime)
 {
-
-	if (GetGameMode() == soda::EUIMode::Editing)
+	if (Viewport)
 	{
-		if (Widget)
+		if (GetGameMode() == soda::EUIMode::Editing)
 		{
-			Widget->TickWidget(this);
+			if (Widget)
+			{
+				Widget->TickWidget(this);
 
-			if (!bIsWidgetDragging)
-			{
-				CheckAxisUnderCursor();
+				if (!bIsWidgetDragging)
+				{
+					CheckAxisUnderCursor();
+				}
+				else
+				{
+					UpdateMouseDelta();
+				}
 			}
-			else
+
+			if (EditorMouseCaptureMode == EEditorMouseCaptureMode::Default)
 			{
-				UpdateMouseDelta();
+				Selection->Tick(Viewport);
 			}
 		}
 
-		if (EditorMouseCaptureMode == EEditorMouseCaptureMode::Default)
+		if (WidgetTargetComponent && !IsValid(WidgetTargetComponent))
 		{
-			Selection->Tick(Viewport);
+			SetWidgetTarget(nullptr);
+			StopTracking();
 		}
-	}
-
-	if (WidgetTargetComponent && !IsValid(WidgetTargetComponent))
-	{
-		SetWidgetTarget(nullptr);
-		StopTracking();
 	}
 }
 
@@ -850,7 +861,6 @@ bool USodaGameViewportClient::DropActorAtCoordinates(int32 MouseX, int32 MouseY,
 		USodaSubsystem* SodaSubsystem = USodaSubsystem::Get();
 		ASodaActorFactory* ActorFactory = SodaSubsystem->GetActorFactory();
 		ActorFactory->AddActor(NewActor);
-		SodaSubsystem->LevelState->MarkAsDirty();
 	}
 
 	if (OutNewActor)

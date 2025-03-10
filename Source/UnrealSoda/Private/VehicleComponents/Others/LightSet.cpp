@@ -5,6 +5,8 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/LightComponent.h"
 
+using namespace std::chrono_literals;
+
 UVehicleLightItem::UVehicleLightItem(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -14,13 +16,13 @@ void UVehicleLightItem::Setup(const FVehicleLightItemSetup& InItemSetup)
 	ItemSetup = InItemSetup;
 }
 
-bool UVehicleLightItem::SetupIO(UIOBusNode* Node)
+bool UVehicleLightItem::SetupIO(UIOBusComponent* IOBus)
 {
-	if (IsValid(Node) && ItemSetup.bUseIO)
+	if (ItemSetup.bUseIO)
 	{
-		Exchange = Node->RegisterPin(ItemSetup.IOPinSetup);
+		PinInterface = IOBus->CreatePin(ItemSetup.IOPinSetup);
 	}
-	return !!Exchange;
+	return !!PinInterface;
 }
 
 void UVehicleLightItem::SetEnabled( bool bNewEnabled, float Intensity)
@@ -36,15 +38,15 @@ void UVehicleLightItem::SetEnabled( bool bNewEnabled, float Intensity)
 		if (IsValid(It)) It->SetVisibility(bEnabled);
 	}
 
-	if (IsValid(Exchange) && ItemSetup.bSendIOFeedback)
+	if (IsValid(PinInterface) && ItemSetup.bSendIOFeedback)
 	{
-		float Voltage = Exchange->GetSourceValue().Voltage;
-		FIOExchangeFeedbackValue FeedbackValue;
+		float Voltage = PinInterface->GetInputSourceValue().Voltage;
+		FIOPinFeedbackValue FeedbackValue;
 		FeedbackValue.MeasuredCurrent = Voltage * FMath::Clamp(Intensity, 0.f, 1.f) * ItemSetup.Resistanse;
 		FeedbackValue.MeasuredVoltage = Voltage;
 		FeedbackValue.bIsMeasuredCurrentValid = true;
 		FeedbackValue.bIsMeasuredVoltageValid = true;
-		Exchange->SetFeedbackValue(FeedbackValue);
+		PinInterface->PublishFeedback(FeedbackValue);
 	}
 }
 
@@ -68,18 +70,14 @@ void ULightSetComponent::OnPreActivateVehicleComponent()
 {
 	Super::OnPreActivateVehicleComponent();
 
-	IOBus = LinkToIOBus.GetObject<UIOBusComponent>(GetOwner());
+	AddLightItems(DefaultLightSetups);
 
+	IOBus = LinkToIOBus.GetObject<UIOBusComponent>(GetOwner());
 	if (IOBus)
 	{
-		Node = IOBus->RegisterNode(IOBusNodeName);
-		check(Node);
-
-		AddLightItems(DefaultLightSetups);
-		
 		for (auto& Itme : LightItems)
 		{
-			Itme.Value->SetupIO(Node);
+			Itme.Value->SetupIO(IOBus);
 		}
 	}
 }
@@ -98,13 +96,7 @@ void ULightSetComponent::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
 
-	if (IsValid(IOBus))
-	{
-		IOBus->UnregisterNode(Node);
-	}
 	IOBus = nullptr;
-	Node = nullptr;
-
 	LightItems.Reset();
 }
 
@@ -165,30 +157,46 @@ void ULightSetComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 	if (bUseIOs)
 	{
+		auto Now = soda::Now();
 		for (auto& LightItem : LightItems)
 		{
-			UIOExchange* Exchange = LightItem.Value->GetExchange();
+			UIOPin* PinInterface = LightItem.Value->GetPinInterface();
 			const FVehicleLightItemSetup& LightSetup = LightItem.Value->GetSetup();
 
-			if (Exchange)
+			if (PinInterface && LightSetup.bUseIO)
 			{
-				if (LightSetup.bUseIO)
+				FTimestamp ValueTS;
+				auto Value = PinInterface->GetInputSourceValue(ValueTS);
+				float Coef = 0;
+				float Voltage = 0;
+				if (Now - *ValueTS < 500ms)
 				{
-					float Coef = 0;
-					auto& Value = Exchange->GetSourceValue();
-					switch (EIOExchangeMode::Analogue) //(Value.Mode)
+					switch (Value.Mode)
 					{
-					case EIOExchangeMode::Fixed:
-					case EIOExchangeMode::Analogue:
+					case EIOPinMode::Fixed:
+					case EIOPinMode::Analogue:
 						Coef = (Value.Voltage - LightSetup.IOPinSetup.MinVoltage) / (LightSetup.IOPinSetup.MaxVoltage - LightSetup.IOPinSetup.MinVoltage);
 						break;
-					case EIOExchangeMode::PWM:
+					case EIOPinMode::PWM:
 						Coef = Value.Duty;
 						break;
 					}
-					//LightItem.Value->SetEnabled(Value.LogicalVal, Coef);
-					LightItem.Value->SetEnabled(Value.Voltage > 0.5, Coef);
+					Voltage = Value.Voltage;
 				}
+
+				LightItem.Value->SetEnabled(Voltage > 0.5, Coef);
+
+				FIOPinSourceValue PubSourceValue{};
+				PubSourceValue.Mode = EIOPinMode::Input;
+				PubSourceValue.Voltage = Voltage;
+				PinInterface->PublishSource(PubSourceValue);
+
+				FIOPinFeedbackValue PubFeedbackValue{};
+				PubFeedbackValue.bIsMeasuredVoltageValid = true;
+				PubFeedbackValue.MeasuredVoltage = Voltage;
+				PubFeedbackValue.bIsMeasuredCurrentValid = true;
+				PubFeedbackValue.MeasuredCurrent = FMath::Clamp(Voltage / LightSetup.Resistanse, 0.0f, LightSetup.IOPinSetup.MaxCurrent);
+				PinInterface->PublishFeedback(PubFeedbackValue);
 			}
 		}
 	}

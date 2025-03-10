@@ -10,13 +10,6 @@
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include <algorithm>
-#include "Soda/DBGateway.h"
-
-#include "bsoncxx/builder/stream/helpers.hpp"
-#include "bsoncxx/exception/exception.hpp"
-#include "bsoncxx/builder/stream/document.hpp"
-#include "bsoncxx/builder/stream/array.hpp"
-#include "bsoncxx/json.hpp"
 
 UVehicleSteeringRackBaseComponent::UVehicleSteeringRackBaseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -52,9 +45,9 @@ bool UVehicleSteeringRackSimpleComponent::OnActivateVehicleComponent()
 
 	SteerInputRatio = 0;
 
-	if (!GetWheeledVehicle()->Is4WDVehicle())
+	if (GetWheeledVehicle()->GetNumChassis() <= 0)
 	{
-		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only 4WD vehicles"));
+		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only xWD vehicles"));
 		return false;
 	}
 
@@ -92,8 +85,8 @@ void UVehicleSteeringRackSimpleComponent::UpdateSteer(float DeltaTime, const FPh
 	CurrentSteerAng += std::abs(DeltaSteerReq) < std::abs(DeltaSteer) ? DeltaSteerReq : DeltaSteer;
 	CurrentSteerAng = FMath::Clamp(CurrentSteerAng, -MaxSteerAngle, MaxSteerAngle);
 
-	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FL)->ReqSteer = CurrentSteerAng;
-	GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex::FR)->ReqSteer = CurrentSteerAng;
+	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FL)->ReqSteer = CurrentSteerAng;
+	GetWheeledVehicle()->GetWheelByIndex(EWheelIndex::FR)->ReqSteer = CurrentSteerAng;
 }
 
 void UVehicleSteeringRackSimpleComponent::PrePhysicSimulation(float DeltaTime, const FPhysBodyKinematic& VehicleKinematic, const TTimestamp & Timestamp)
@@ -108,6 +101,8 @@ void UVehicleSteeringRackSimpleComponent::PrePhysicSimulation(float DeltaTime, c
 	}
 
 	UpdateSteer(DeltaTime, VehicleKinematic, Timestamp);
+
+	SyncDataset();
 }
 
 void UVehicleSteeringRackSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, float& YPos)
@@ -140,29 +135,3 @@ void UVehicleSteeringRackSimpleComponent::TickComponent(float DeltaTime, enum EL
 		}
 	}
 }
-
-void UVehicleSteeringRackSimpleComponent::OnPushDataset(soda::FActorDatasetData& Dataset) const
-{
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::open_array;
-	using bsoncxx::builder::stream::close_array;
-
-	try
-	{
-		Dataset.GetRowDoc()
-			<< std::string(TCHAR_TO_UTF8(*GetName())) << open_document
-			<< "CurrentSteer" << CurrentSteerAng
-			<< "TargetSteer" << TargetSteerAng
-			<< close_document;
-	}
-	catch (const std::system_error& e)
-	{
-		UE_LOG(LogSoda, Error, TEXT("URacingSensor::OnPushDataset(); %s"), UTF8_TO_TCHAR(e.what()));
-	}
-}
-
-
-

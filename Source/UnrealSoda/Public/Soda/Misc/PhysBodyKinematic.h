@@ -105,6 +105,13 @@ struct UNREALSODA_API FPhysBodyKinematic
 		return Curr.GetLocalVelocity().X;
 	}
 
+	// Get body frame acceleration without differentiate speed, if vehicle model supports direct acceleration information
+	inline FVector GetBodyFrameAcceleration() const
+	{
+		return Curr.GetLocalAcceleration();
+	}
+
+
 	inline void CalcIMU(const FTransform& LocalPose, FTransform& WorldPose, FVector& WorldVel, FVector& LocalAcc, FVector& Gyro, float Gravity = -980.f) const
 	{
 		WorldPose = LocalPose * Curr.GlobalPose;

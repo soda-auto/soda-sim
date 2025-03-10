@@ -26,7 +26,7 @@ void UWheelsRenderingComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	for (int32 i = 0; i < 4; ++i)
 	{
 		FWheelAnimationData& WheelInstance = WheelsAnimationData[i];
-		const USodaVehicleWheelComponent* SodaWheel = GetWheeledVehicle()->GetWheel4WD(E4WDWheelIndex(i));
+		const USodaVehicleWheelComponent* SodaWheel = GetWheeledVehicle()->GetWheelsSorted()[i];
 		UStaticMeshComponent* WheelMesheComponent = WheelMesheComponents[i];
 		bool bFlip = bool(((i % 2 != 0) + bFlipWheelsMesh) % 2);
 
@@ -70,7 +70,7 @@ void UWheelsRenderingComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 		WheelInstance.RotOffset.Yaw = SodaWheel->Steer / M_PI * 180 + (bFlip ? 180 : 0);
 		WheelInstance.RotOffset.Roll = 0.f;
-		WheelInstance.LocOffset = FVector(0, 0, SodaWheel->SuspensionOffset);
+		WheelInstance.LocOffset = SodaWheel->SuspensionOffset2;
 
 		/*
 		if (i % 2)
@@ -89,7 +89,7 @@ void UWheelsRenderingComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 			FTransform(
 				SodaWheel->RestingRotation + WheelInstance.RotOffset,
 				SodaWheel->RestingLocation + WheelInstance.LocOffset),
-			false, nullptr, ETeleportType::None);
+			false, nullptr, ETeleportType::None); //+ SodaWheel->AdditionalOffset
 	}
 }
 
@@ -100,13 +100,13 @@ bool UWheelsRenderingComponent::OnActivateVehicleComponent()
 		return false;
 	}
 
-	if (!GetWheeledVehicle()->Is4WDVehicle())
+	if (GetWheeledVehicle()->GetNumChassis() <= 0)
 	{
-		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only 4WD vehicles"));
+		SetHealth(EVehicleComponentHealth::Error, TEXT("Support only xWD vehicles"));
 		return false;
 	}
 
-	for (size_t i = 0; i < GetWheeledVehicle()->GetWheels().Num(); i++)
+	for (size_t i = 0; i < GetWheeledVehicle()->GetWheelsSorted().Num(); i++)
 	{
 		UStaticMeshComponent* WheelMeshComponent = NewObject<UStaticMeshComponent>(this);
 		WheelMeshComponent->SetupAttachment(GetWheeledVehicle()->GetMesh());

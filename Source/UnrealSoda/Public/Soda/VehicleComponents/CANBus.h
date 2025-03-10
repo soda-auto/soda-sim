@@ -48,14 +48,13 @@ public:
 	bool bLogRecvFrames = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateActor))
-	bool bShowRegRecvMsgs = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Debug, SaveGame, meta = (EditInRuntime, ReactivateActor))
-	bool bShowRegSendMsgs = false;
+	bool bShowRegMsgs = false;
 
 	FCanDevRecvFrameDelegate RecvDelegate;
 
 public:
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	virtual bool ProcessRecvMessage(const TTimestamp& Timestamp, const dbc::FCanFrame& CanFrame);
 	virtual int SendFrame(const dbc::FCanFrame& CanFrame);
 
@@ -117,7 +116,7 @@ public:
 	virtual void DrawDebug(UCanvas* Canvas, float& YL, float& YPos) override;
 
 protected:
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TSet<UCANDevComponent*> RegistredCANDev;
 
 	int PkgSent = 0;

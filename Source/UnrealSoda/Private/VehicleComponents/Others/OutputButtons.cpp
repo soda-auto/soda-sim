@@ -12,11 +12,8 @@ UOutputButtonsComponent::UOutputButtonsComponent(const FObjectInitializer& Objec
 
 	GUI.Category = TEXT("IO");
 	GUI.IcanName = TEXT("SodaIcons.Soda");
-	GUI.ComponentNameOverride = TEXT("Throttal Pedal");
+	GUI.ComponentNameOverride = TEXT("IO Button");
 	GUI.bIsPresentInAddMenu = true;
-
-	IOBusNodeName = "SimIOButtons";
-
 }
 
 void UOutputButtonsComponent::OnPreActivateVehicleComponent()
@@ -26,13 +23,12 @@ void UOutputButtonsComponent::OnPreActivateVehicleComponent()
 	IOBus = LinkToIOBus.GetObject<UIOBusComponent>(GetOwner());
 	if (IOBus)
 	{
-		Node = IOBus->RegisterNode(IOBusNodeName);
-		check(Node);
 		for (auto& Setup : ButtonSetups)
 		{
 			auto & Button = Buttons.Add_GetRef({});
 			Button.Setup = Setup;
-			Button.Exchange = TStrongObjectPtr<UIOExchange>(Node->RegisterPin(Button.Setup.Pin));
+			Button.PinInterface = TStrongObjectPtr<UIOPin>(IOBus->CreatePin(Button.Setup.Pin));
+			
 		}
 	}
 }
@@ -44,7 +40,7 @@ bool UOutputButtonsComponent::OnActivateVehicleComponent()
 		return false;
 	}
 
-	if (!IOBus || !Node)
+	if (!IOBus)
 	{
 		SetHealth(EVehicleComponentHealth::Error, TEXT("Can't link IOBus"));
 		return false;
@@ -57,12 +53,8 @@ void UOutputButtonsComponent::OnDeactivateVehicleComponent()
 {
 	Super::OnDeactivateVehicleComponent();
 
-	if (IsValid(IOBus))
-	{
-		IOBus->UnregisterNode(Node);
-	}
+	Buttons.Reset();
 	IOBus = nullptr;
-	Node = nullptr;
 }
 
 void UOutputButtonsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -78,46 +70,49 @@ void UOutputButtonsComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	{
 		for (auto& Button : Buttons)
 		{
-			Button.Voltage = Button.Setup.ReleasedVoltage;
-			for (auto& Item : Button.Setup.ButtonItmes)
+			if (Button.PinInterface)
 			{
-				if (Item.SwitchMode == EIOButtonSwitchMode::Momentary)
+				Button.Voltage = Button.Setup.ReleasedVoltage;
+				for (auto& Item : Button.Setup.ButtonItmes)
 				{
-					if (PlayerController->IsInputKeyDown(Item.Key))
+					if (Item.SwitchMode == EIOButtonSwitchMode::Momentary)
 					{
-						Button.bIsPressed = true;
-						Button.Voltage = Item.Voltage;
-						break;
-					}
-					else
-					{
-						Button.bIsPressed = false;
-					}
-				}
-				else if (Item.SwitchMode == EIOButtonSwitchMode::Position)
-				{
-					if (PlayerController->WasInputKeyJustPressed(Item.Key))
-					{
-						Button.bIsPressed = !Button.bIsPressed;
-						if (Button.bIsPressed)
+						if (PlayerController->IsInputKeyDown(Item.Key))
 						{
+							Button.bIsPressed = true;
 							Button.Voltage = Item.Voltage;
+							break;
 						}
-						break;
+						else
+						{
+							Button.bIsPressed = false;
+						}
+					}
+					else if (Item.SwitchMode == EIOButtonSwitchMode::Position)
+					{
+						if (PlayerController->WasInputKeyJustPressed(Item.Key))
+						{
+							Button.bIsPressed = !Button.bIsPressed;
+							if (Button.bIsPressed)
+							{
+								Button.Voltage = Item.Voltage;
+							}
+							break;
+						}
+					}
+					else // Item.SwitchMode == EIOButtonSwitchMode::Analogue
+					{
+
 					}
 				}
-				else // Item.SwitchMode == EIOButtonSwitchMode::Analogue
-				{
-
-				}
+				FIOPinSourceValue SourceValue;
+				SourceValue.Mode = EIOPinMode::Analogue;
+				SourceValue.LogicalVal = Button.bIsPressed;
+				SourceValue.Voltage = Button.Voltage;
+				SourceValue.Frequency = 0;
+				SourceValue.Duty = 0;
+				Button.PinInterface->PublishSource(SourceValue);
 			}
-			FIOExchangeSourceValue SourceValue;
-			SourceValue.Mode = EIOExchangeMode::Analogue;
-			SourceValue.LogicalVal = Button.bIsPressed;
-			SourceValue.Voltage = Button.Voltage;
-			SourceValue.Frequency = 0;
-			SourceValue.Duty = 0;
-			Button.Exchange->SetSourceValue(SourceValue);
 		}
 	}
 }

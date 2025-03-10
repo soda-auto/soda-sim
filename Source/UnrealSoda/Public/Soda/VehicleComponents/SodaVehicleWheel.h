@@ -6,31 +6,79 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "SodaVehicleWheel.generated.h"
 
+#define WHEEL_CHASSIS_BIT_MASK 0xF
+#define WHEEL_CHASSIS_BIT_OFFSET 4
+#define WHEEL_SIDE_BIT_MASK 0xF
+
+
+UENUM(BlueprintType)
+enum class  EWheelChassis : uint8
+{
+	Ch0 = 0,
+	Ch1 = 1,
+	Ch2 = 2,
+	Ch3 = 3,
+	Ch4 = 4,
+	Ch5 = 5,
+	Ch6 = 6,
+	Ch7 = 7,
+	Undefined = 0xF
+};
+
+UENUM(BlueprintType)
+enum class  EWheelSida: uint8
+{
+	Left = 0,
+	Right = 1,
+	Center = 2,
+	Undefined = 0xF
+};
+
 /**
  * Wheeled vehicle wheel indexes
  */
 UENUM(BlueprintType)
-enum class  E4WDWheelIndex: uint8
+enum class  EWheelIndex : uint8
 {
-	/** Front left */
-	FL = 0,
+	/* 4WD - classic wheeled vehicle */
+	FL = ((uint8)EWheelChassis::Ch0 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Left,
+	FR = ((uint8)EWheelChassis::Ch0 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Right,
+	RL = ((uint8)EWheelChassis::Ch1 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Left,
+	RR = ((uint8)EWheelChassis::Ch1 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Right,
 
-	/** Front right */
-	FR = 1,
+	/* xWD - symmetrical wheeled vehicle, the same number of wheels on the left and right sides */
+	Ch0L = ((uint8)EWheelChassis::Ch0 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Left,
+	Ch0R = ((uint8)EWheelChassis::Ch0 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Right,
+	Ch1L = ((uint8)EWheelChassis::Ch1 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Left,
+	Ch1R = ((uint8)EWheelChassis::Ch1 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Right,
+	Ch2L = ((uint8)EWheelChassis::Ch2 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Left,
+	Ch2R = ((uint8)EWheelChassis::Ch2 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Right,
+	Ch3L = ((uint8)EWheelChassis::Ch3 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Left,
+	Ch3R = ((uint8)EWheelChassis::Ch3 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Right,
+	Ch4L = ((uint8)EWheelChassis::Ch4 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Left,
+	Ch4R = ((uint8)EWheelChassis::Ch4 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Right,
+	Ch5L = ((uint8)EWheelChassis::Ch5 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Left,
+	Ch5R = ((uint8)EWheelChassis::Ch5 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Right,
+	Ch6L = ((uint8)EWheelChassis::Ch6 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Left,
+	Ch6R = ((uint8)EWheelChassis::Ch6 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Right,
+	Ch7L = ((uint8)EWheelChassis::Ch7 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Left,
+	Ch7R = ((uint8)EWheelChassis::Ch7 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Right,
 
-	/** Rear left */
-	RL = 2,
+	/* 2WD - bicycle */
+	FC = ((uint8)EWheelChassis::Ch0 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Center,
+	RC = ((uint8)EWheelChassis::Ch1 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Center,
 
-	/** Rear right */
-	RR = 3,
+	/* Only left & right */
+	L = ((uint8)EWheelChassis::Ch0 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Left,
+	R = ((uint8)EWheelChassis::Ch0 << WHEEL_CHASSIS_BIT_OFFSET) | (uint8)EWheelSida::Right,
 
-	/** Current vehicle isn't 4WD */
-	None = 0xFF,
+	Undefined = 0xFF
 };
 
 
 /**
  * USodaVehicleWheelComponent object
+ * TODO: Rename to UVehicleWheelInterfaceComponent 
  */
 UCLASS(ClassGroup = Soda, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))   
 class UNREALSODA_API USodaVehicleWheelComponent 
@@ -44,9 +92,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
 	FName BoneName = NAME_None;
 
-	/** if current vehicle is 4WD, this is index of current wheel */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
-	E4WDWheelIndex WheelIndex4WD = E4WDWheelIndex::None;
+	EWheelChassis WheelChassis = EWheelChassis::Undefined;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
+	EWheelSida WheelSida = EWheelSida::Undefined;
 
 	/** Additional offset to give the wheels for this axle */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WheelSetup, SaveGame, meta = (EditInRuntime))
@@ -94,8 +144,12 @@ public:
 	FVector2D Slip;
 
 	/** Current suspension z - offset in [cm] */
+	//UPROPERTY(Category = VehicleWheel, BlueprintReadOnly)
+	//float SuspensionOffset = 0;
+
+	/** Current relative location */
 	UPROPERTY(Category = VehicleWheel, BlueprintReadOnly)
-	float SuspensionOffset = 0;
+	FVector SuspensionOffset2;
 
 public:
 	/** Wheel radius [Cm]*/
@@ -111,6 +165,9 @@ public:
 	virtual FVector GetWheelLocalVelocity() const;
 
 	inline float GetLinearVelocity() const { return Radius * AngularVelocity; }
+
+	UFUNCTION(BlueprintCallable, Category = VehicleWhee)
+	inline EWheelIndex GetWheelIndex() const { return (EWheelIndex)((((uint8)WheelChassis & WHEEL_CHASSIS_BIT_MASK) << WHEEL_CHASSIS_BIT_OFFSET) | ((uint8)WheelSida & WHEEL_SIDE_BIT_MASK)); }
 
 
 public:

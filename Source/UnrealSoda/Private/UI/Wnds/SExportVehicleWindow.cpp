@@ -6,7 +6,6 @@
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SButton.h"
-#include "UI/Wnds/SVehcileManagerWindow.h"
 #include "Soda/UI/SMessageBox.h"
 #include "Soda/Vehicles/SodaVehicle.h"
 #include "Soda/SodaSubsystem.h"
@@ -45,7 +44,7 @@ void SExportVehicleWindow::Construct( const FArguments& InArgs, TWeakObjectPtr<A
 				.BorderImage(FSodaStyle::GetBrush("MenuWindow.Content"))
 				.Padding(5.0f)
 				[
-					SAssignNew(ListView, SListView<TSharedPtr<ISodaVehicleExporter>>)
+					SAssignNew(ListView, SListView<TSharedPtr<soda::ISodaVehicleExporter>>)
 					.ListItemsSource(&Source)
 					.SelectionMode(ESelectionMode::Single)
 					.OnGenerateRow(this, &SExportVehicleWindow::OnGenerateRow)
@@ -73,10 +72,10 @@ void SExportVehicleWindow::UpdateSlots()
 	SodaApp.GetVehicleExporters().GenerateValueArray(Source);
 }
 
-TSharedRef<ITableRow> SExportVehicleWindow::OnGenerateRow(TSharedPtr<ISodaVehicleExporter> Exporter, const TSharedRef< STableViewBase >& OwnerTable)
+TSharedRef<ITableRow> SExportVehicleWindow::OnGenerateRow(TSharedPtr<soda::ISodaVehicleExporter> Exporter, const TSharedRef< STableViewBase >& OwnerTable)
 {
 	return 
-		SNew(STableRow<TSharedPtr<ISodaVehicleExporter>>, OwnerTable)
+		SNew(STableRow<TSharedPtr<soda::ISodaVehicleExporter>>, OwnerTable)
 		[
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()
@@ -84,12 +83,12 @@ TSharedRef<ITableRow> SExportVehicleWindow::OnGenerateRow(TSharedPtr<ISodaVehicl
 			//.AutoWidth()
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString(Exporter->GetExporterName()))
+				.Text(FText::FromName(Exporter->GetExporterName()))
 			]
 		];
 }
 
-void SExportVehicleWindow::OnSelectionChanged(TSharedPtr<ISodaVehicleExporter> Exporter, ESelectInfo::Type SelectInfo)
+void SExportVehicleWindow::OnSelectionChanged(TSharedPtr<soda::ISodaVehicleExporter> Exporter, ESelectInfo::Type SelectInfo)
 {
 	ExportButton->SetEnabled(Exporter.IsValid());
 }
@@ -101,36 +100,42 @@ FReply SExportVehicleWindow::OnExportAs()
 
 	if (!Exporter)
 	{
-		FReply::Handled();
+		return FReply::Handled();
 	}
 		
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
 	if (!DesktopPlatform)
 	{
 		UE_LOG(LogSoda, Error, TEXT("SExportVehicleWindow::OnExportAs(); Can't get the IDesktopPlatform ref"));
-		FReply::Handled();
+		return FReply::Handled();
 	}
 
 	const FString FileTypes = Exporter->GetFileTypes(); 
 
 	TArray<FString> OutFilenames;
-	if (!DesktopPlatform->SaveFileDialog(nullptr, FString(TEXT("Export to ")) + Exporter->GetExporterName(), TEXT(""), TEXT(""), FileTypes, EFileDialogFlags::None, OutFilenames) || OutFilenames.Num() <= 0)
+	if (!DesktopPlatform->SaveFileDialog(nullptr, FString(TEXT("Export to ")) + Exporter->GetExporterName().ToString(), TEXT(""), TEXT(""), FileTypes, EFileDialogFlags::None, OutFilenames) || OutFilenames.Num() <= 0)
 	{
 		UE_LOG(LogSoda, Warning, TEXT("SExportVehicleWindow::OnExportAs(); File isn't change"));
-		FReply::Handled();
+		return FReply::Handled();
+	}
+
+	if (OutFilenames.Num() != 1)
+	{
+		UE_LOG(LogSoda, Warning, TEXT("SExportVehicleWindow::OnExportAs(); File isn't change"));
+		return FReply::Handled();
 	}
 
 	FString JsonString;
 	if (!Exporter->ExportToString(Vehicle.Get(), JsonString))
 	{
-		UE_LOG(LogSoda, Error, TEXT("SExportVehicleWindow::OnExportAs(); Can't export to '%s'"), *Exporter->GetExporterName());
-		FReply::Handled();
+		UE_LOG(LogSoda, Error, TEXT("SExportVehicleWindow::OnExportAs(); Can't export to '%s'"), *Exporter->GetExporterName().ToString());
+		return FReply::Handled();
 	}
 
 	if (!FFileHelper::SaveStringToFile(JsonString, *OutFilenames[0]))
 	{
 		UE_LOG(LogSoda, Error, TEXT("SExportVehicleWindow::OnExportAs(); Can't write to '%s' file"), *OutFilenames[0]);
-		FReply::Handled();
+		return FReply::Handled();
 	}
 	
 	CloseWindow();

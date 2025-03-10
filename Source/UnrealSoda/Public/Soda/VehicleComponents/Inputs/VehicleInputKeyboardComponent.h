@@ -53,7 +53,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VehicleKeyInput, SaveGame, meta = (EditInRuntime))
 	float GearChangeTime = 0.2;
 
+	float GetFeedbackDriverSteerTension() const { return FeedbackDriverSteerTension; }
+
 public:
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	virtual const FWheeledVehicleInputState& GetInputState() const override { return InputState; }
 	virtual FWheeledVehicleInputState& GetInputState() override { return InputState; }
 	virtual void UpdateInputStates(float DeltaTime, float ForwardSpeed, const APlayerController* PlayerController) override;
@@ -62,7 +66,6 @@ public:
 protected:
 	virtual bool OnActivateVehicleComponent() override;
 	virtual void OnDeactivateVehicleComponent() override;
-	virtual void OnPushDataset(soda::FActorDatasetData& Dataset) const override;
 
 protected:
 
