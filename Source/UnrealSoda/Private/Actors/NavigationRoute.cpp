@@ -426,10 +426,6 @@ bool ANavigationRoute::GroundHitFilter(const FHitResult& Hit)
 
 void ANavigationRoute::PullToGround()
 {
-	FVector2D ScreenPosition;
-	FVector WorldOrigin;
-	FVector WorldDirection;
-
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	check(PlayerController);
 	FHitResult Hit;

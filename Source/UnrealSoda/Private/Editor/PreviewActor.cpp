@@ -78,11 +78,10 @@ static void DrawThickArc(
 
 			// Push out the arc line borders so they dont z-fight with the mesh arcs
 			// DrawLine needs vertices in world space, but this is fine because it takes FVectors and works with LWC well
-			FVector StartLinePos = LastWorldVertex;
 			FVector EndLinePos = VertexPosition + InLocation;
 			if (VertexIndex != 0)
 			{
-				PDI->DrawLine(StartLinePos, EndLinePos, RingColor, SDPG_Foreground);
+				PDI->DrawLine(LastWorldVertex, EndLinePos, RingColor, SDPG_Foreground);
 			}
 			LastWorldVertex = EndLinePos;
 		}

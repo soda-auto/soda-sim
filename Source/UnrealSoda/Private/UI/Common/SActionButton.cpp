@@ -5,6 +5,9 @@
 #include "Widgets/Input/SButton.h"
 #include "Styling/StyleColors.h"
 
+namespace soda
+{
+
 void SActionButton::Construct(const FArguments& InArgs)
 {
 	check(InArgs._Icon.IsSet());
@@ -103,3 +106,5 @@ void SActionButton::SetIsMenuOpen(bool bIsOpen, bool bIsFocused)
 	check(ComboButton.IsValid());
 	ComboButton->SetIsOpen(bIsOpen, bIsFocused);
 }
+
+}// namespace soda
