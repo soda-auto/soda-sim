@@ -6,7 +6,7 @@
 #include "Modules/ModuleManager.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Engine/UserDefinedEnum.h"
-#include "Engine/UserDefinedStruct.h"
+#include "StructUtils/UserDefinedStruct.h"
 #include "RuntimePropertyEditor/Presentation/PropertyEditor/PropertyEditor.h"
 #include "RuntimePropertyEditor/SSingleProperty.h"
 #include "RuntimePropertyEditor/IDetailsView.h"
@@ -31,6 +31,7 @@
 #include "RuntimePropertyEditor/SStructureDetailsView.h"
 //#include "Widgets/Colors/SColorPicker.h"
 #include "RuntimePropertyEditor/PropertyRowGenerator.h"
+
 
 #include "RuntimeMetaData.h"
 
@@ -259,8 +260,9 @@ void FRuntimeEditorModule::StartupModule()
 
 	StructViewerModule.StartupModule();
 
+
 	Documentation = soda::FDocumentation::Create();
-	FMultiBoxSettings::ToolTipConstructor = FMultiBoxSettings::FConstructToolTip::CreateLambda([this](const TAttribute<FText>& ToolTipText, const TSharedPtr<SWidget>& OverrideContent, const TSharedPtr<const FUICommandInfo>& Action) 
+	FMultiBoxSettings::ToolTipConstructor = FMultiBoxSettings::FConstructToolTip::CreateLambda([this](const TAttribute<FText>& ToolTipText, const TSharedPtr<SWidget>& OverrideContent, const TSharedPtr<const FUICommandInfo>& Action, bool ShowActionShortcut)
 	{
 		if ( Action.IsValid() )
 		{
@@ -615,7 +617,7 @@ FStructProperty* FRuntimeEditorModule::RegisterStructOnScopeProperty(TSharedRef<
 		UScriptStruct* InnerStruct = Cast<UScriptStruct>(const_cast<UStruct*>(StructOnScope->GetStruct()));
 		StructProperty = new FStructProperty(StructOnScopePropertyOwner, *MakeUniqueObjectName(StructOnScopePropertyOwner, UField::StaticClass(), InnerStruct->GetFName()).ToString(), RF_Transient);
 		StructProperty->Struct = InnerStruct;
-		StructProperty->ElementSize = StructOnScope->GetStruct()->GetStructureSize();
+		StructProperty->SetElementSize(StructOnScope->GetStruct()->GetStructureSize());
 		StructOnScopePropertyOwner->AddCppProperty(StructProperty);
 
 		RegisteredStructToProxyMap.Add(StructName, StructProperty);

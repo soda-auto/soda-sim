@@ -815,23 +815,23 @@ void ASodaWidget::DrawThickArc (const FThickArcParams& InParams, const FVector& 
 	for (int32 RadiusIndex = 0; RadiusIndex < 2; ++RadiusIndex)
 	{
 		float Radius = (RadiusIndex == 0) ? InParams.OuterRadius : InParams.InnerRadius;
-		float TCRadius = Radius / (float) InParams.OuterRadius;
+		float TCRadius = Radius / (float)InParams.OuterRadius;
 		//Compute vertices for base circle.
-		for(int32 VertexIndex = 0;VertexIndex <= NumPoints;VertexIndex++)
+		for (int32 VertexIndex = 0; VertexIndex <= NumPoints; VertexIndex++)
 		{
-			float Percent = VertexIndex/(float)NumPoints;
+			float Percent = VertexIndex / (float)NumPoints;
 			float Angle = FMath::Lerp(InStartAngle, InEndAngle, Percent);
 			float AngleDeg = FRotator::ClampAxis(Angle * 180.f / PI);
 
 			FVector VertexDir = Axis0.RotateAngleAxis(AngleDeg, ZAxis);
 			VertexDir.Normalize();
 
-			float TCAngle = Percent*(PI/2);
-			FVector2f TC(TCRadius*FMath::Cos(Angle), TCRadius*FMath::Sin(Angle));
+			float TCAngle = Percent * (PI / 2);
+			FVector2f TC(TCRadius * FMath::Cos(Angle), TCRadius * FMath::Sin(Angle));
 
 			// Keep the vertices in local space so that we don't lose precision when dealing with LWC
 			// The local-to-world transform is handled in the MeshBuilder.Draw() call at the end of this function
-			const FVector VertexPosition = VertexDir*Radius;
+			const FVector VertexPosition = VertexDir * Radius;
 			FVector Normal = VertexPosition;
 			Normal.Normalize();
 
@@ -844,17 +844,16 @@ void ASodaWidget::DrawThickArc (const FThickArcParams& InParams, const FVector& 
 				(FVector3f)-ZAxis,
 				FVector3f((-ZAxis) ^ Normal),
 				(FVector3f)Normal
-				);
+			);
 
 			MeshBuilder.AddVertex(MeshVertex); //Add bottom vertex
 
 			// Push out the arc line borders so they dont z-fight with the mesh arcs
 			// DrawLine needs vertices in world space, but this is fine because it takes FVectors and works with LWC well
-			FVector StartLinePos = LastWorldVertex;
 			FVector EndLinePos = VertexPosition + InParams.Position;
 			if (VertexIndex != 0)
 			{
-				InParams.PDI->DrawLine(StartLinePos,EndLinePos,RingColor,SDPG_Foreground);
+				InParams.PDI->DrawLine(LastWorldVertex, EndLinePos, RingColor, SDPG_Foreground);
 			}
 			LastWorldVertex = EndLinePos;
 		}
@@ -862,13 +861,13 @@ void ASodaWidget::DrawThickArc (const FThickArcParams& InParams, const FVector& 
 
 	//Add top/bottom triangles, in the style of a fan.
 	int32 InnerVertexStartIndex = NumPoints + 1;
-	for(int32 VertexIndex = 0; VertexIndex < NumPoints; VertexIndex++)
+	for (int32 VertexIndex = 0; VertexIndex < NumPoints; VertexIndex++)
 	{
-		MeshBuilder.AddTriangle(VertexIndex, VertexIndex+1, InnerVertexStartIndex+VertexIndex);
-		MeshBuilder.AddTriangle(VertexIndex+1, InnerVertexStartIndex+VertexIndex+1, InnerVertexStartIndex+VertexIndex);
+		MeshBuilder.AddTriangle(VertexIndex, VertexIndex + 1, InnerVertexStartIndex + VertexIndex);
+		MeshBuilder.AddTriangle(VertexIndex + 1, InnerVertexStartIndex + VertexIndex + 1, InnerVertexStartIndex + VertexIndex);
 	}
 
-	MeshBuilder.Draw(InParams.PDI, FTranslationMatrix(InParams.Position), InParams.Material->GetRenderProxy(),SDPG_Foreground,0.f);
+	MeshBuilder.Draw(InParams.PDI, FTranslationMatrix(InParams.Position), InParams.Material->GetRenderProxy(), SDPG_Foreground, 0.f);
 }
 
 /**
