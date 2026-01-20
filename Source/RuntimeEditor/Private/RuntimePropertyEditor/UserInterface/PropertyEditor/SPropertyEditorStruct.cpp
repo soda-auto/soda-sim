@@ -9,7 +9,7 @@
 //#include "DragAndDrop/AssetDragDropOp.h"
 #include "RuntimeStructViewer/StructViewerModule.h"
 #include "RuntimeStructViewer/StructViewerFilter.h"
-#include "Engine/UserDefinedStruct.h"
+#include "StructUtils/UserDefinedStruct.h"
 
 #include "RuntimeMetaData.h"
 

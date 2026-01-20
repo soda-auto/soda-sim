@@ -379,7 +379,7 @@ FText FRuntimeMetaData::GetDisplayNameText(const UField* Field)
 		NativeDisplayName = FName::NameToDisplayString(FRuntimeEditorUtils::GetDisplayNameHelper(*Field), false);
 	}
 
-	if (!(FText::FindText(Namespace, Key, /*OUT*/LocalizedDisplayName, &NativeDisplayName)))
+	if (!(FText::FindTextInLiveTable_Advanced(Namespace, Key, /*OUT*/LocalizedDisplayName, &NativeDisplayName)))
 	{
 		LocalizedDisplayName = FText::FromString(NativeDisplayName);
 	}
@@ -413,7 +413,7 @@ FText FRuntimeMetaData::GetToolTipText(const UField* Field, bool bShortTooltip)
 
 	const FString Namespace = bFoundShortTooltip ? TEXT("UObjectShortTooltips") : TEXT("UObjectToolTips");
 	const FString Key = Field->GetFullGroupName(false);
-	if (!FText::FindText(Namespace, Key, /*OUT*/LocalizedToolTip, &NativeToolTip))
+	if (!FText::FindTextInLiveTable_Advanced(Namespace, Key, /*OUT*/LocalizedToolTip, &NativeToolTip))
 	{
 		if (NativeToolTip.IsEmpty())
 		{
@@ -467,7 +467,7 @@ FText FRuntimeMetaData::GetDisplayNameText(const FField* Field)
 		NativeDisplayName = FName::NameToDisplayString(FRuntimeEditorUtils::GetDisplayNameHelper(*Field), Field->IsA<FBoolProperty>());
 	}
 
-	if (!(FText::FindText(Namespace, Key, /*OUT*/LocalizedDisplayName, &NativeDisplayName)))
+	if (!(FText::FindTextInLiveTable_Advanced(Namespace, Key, /*OUT*/LocalizedDisplayName, &NativeDisplayName)))
 	{
 		LocalizedDisplayName = FText::FromString(NativeDisplayName);
 	}
@@ -501,7 +501,7 @@ FText FRuntimeMetaData::GetToolTipText(const FField* Field, bool bShortTooltip)
 
 	const FString Namespace = bFoundShortTooltip ? TEXT("UObjectShortTooltips") : TEXT("UObjectToolTips");
 	const FString Key = GetFieldFullGroupName(*Field, false);
-	if (!FText::FindText(Namespace, Key, /*OUT*/LocalizedToolTip, &NativeToolTip))
+	if (!FText::FindTextInLiveTable_Advanced(Namespace, Key, /*OUT*/LocalizedToolTip, &NativeToolTip))
 	{
 		if (!NativeToolTip.IsEmpty())
 		{
@@ -713,7 +713,7 @@ FText FRuntimeMetaData::GetToolTipTextByIndex(const UEnum* Enum, int32 NameIndex
 
 	FString Key = Enum->GetPathName(Enum->GetOutermost()) + TEXT(".") + Enum->GetNameStringByIndex(NameIndex);
 
-	if (!FText::FindText(Namespace, Key, /*OUT*/LocalizedToolTip, &NativeToolTip))
+	if (!FText::FindTextInLiveTable_Advanced(Namespace, Key, /*OUT*/LocalizedToolTip, &NativeToolTip))
 	{
 		static const FString DoxygenSee(TEXT("@see"));
 		static const FString TooltipSee(TEXT("See:"));

@@ -37,7 +37,7 @@
 //#include "ContentBrowserDataDragDropOp.h"
 
 //#include "Editor/UnrealEdEngine.h"
-#include "Engine/UserDefinedStruct.h"
+#include "StructUtils/UserDefinedStruct.h"
 //#include "EditorDirectories.h"
 //#include "Dialogs/Dialogs.h"
 

@@ -38,8 +38,9 @@ public class RuntimeEditor : ModuleRules
 				"SlateCore",
 				"Json",
 				"JsonUtilities",
-				"SodaStyle"
-			}
+				"SodaStyle",
+                "StructUtils"
+            }
 		);
 
 		PrivateDependencyModuleNames.AddRange(
