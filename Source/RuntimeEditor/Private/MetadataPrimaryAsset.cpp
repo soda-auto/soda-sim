@@ -17,8 +17,7 @@ bool UMetadataPrimaryAsset::AddStructToMetadataGlobalScope(const UStruct* Struct
 	check(Struct);
 	UPackage* Package = Struct->GetOutermost();
 	check(Package);
-	UMetaData* MetaData = Package->GetMetaData();
-	check(MetaData);
+	FMetaData& MetaData = Package->GetMetaData();
 
 	// Check store object
 	bool StoreObject = Struct->HasMetaData(TEXT("RuntimeMetaData"));
@@ -48,7 +47,7 @@ bool UMetadataPrimaryAsset::AddStructToMetadataGlobalScope(const UStruct* Struct
 		for (TFieldIterator<UField> FieldIt(Struct); FieldIt; ++FieldIt)
 		{
 			UField* Field = *FieldIt;
-			if (TMap<FName, FString>* FieldValues = MetaData->ObjectMetaDataMap.Find(Field))
+			if (TMap<FName, FString>* FieldValues = MetaData.ObjectMetaDataMap.Find(Field))
 			{
 				for (const auto& MetaDataIt : *FieldValues)
 				{
@@ -87,7 +86,7 @@ bool UMetadataPrimaryAsset::AddStructToMetadataGlobalScope(const UStruct* Struct
 	for (TFieldIterator<UField> FieldIt(Struct); FieldIt; ++FieldIt)
 	{
 		UField* Field = *FieldIt;
-		if (TMap<FName, FString>* FieldValues = MetaData->ObjectMetaDataMap.Find(Field))
+		if (TMap<FName, FString>* FieldValues = MetaData.ObjectMetaDataMap.Find(Field))
 		{
 			FRuntimeMetadataField& MetadataField = MetadataObject.Fields.FindOrAdd(Field->GetName());
 			MetadataField.DisplayName = Field->GetDisplayNameText().ToString();

@@ -52,10 +52,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Differential, SaveGame, meta = (EditInRuntime))
 	EVehicleDifferentialType DifferentialType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "TorqueTransmission"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "/Script/UnrealSoda.TorqueTransmission"))
 	FSubobjectReference LinkToTorqueTransmission1 { TEXT("WheelFL") };
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "TorqueTransmission"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "/Script/UnrealSoda.TorqueTransmission"))
 	FSubobjectReference LinkToTorqueTransmission2 { TEXT("WheelFR") };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Differential, SaveGame, meta = (EditInRuntime))

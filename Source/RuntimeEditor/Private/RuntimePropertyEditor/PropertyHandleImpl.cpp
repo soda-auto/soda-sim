@@ -106,20 +106,20 @@ FPropertyAccess::Result FPropertyValueImpl::GetValueData( void*& OutAddress ) co
 	FPropertyAccess::Result Res = FPropertyAccess::Fail;
 	OutAddress = nullptr;
 	TSharedPtr<FPropertyNode> PropertyNodePin = PropertyNode.Pin();
-	if( PropertyNodePin.IsValid() )
+	if (PropertyNodePin.IsValid())
 	{
 		uint8* ValueAddress = nullptr;
 		FReadAddressList ReadAddresses;
-		bool bAllValuesTheSame = PropertyNodePin->GetReadAddress( !!PropertyNodePin->HasNodeFlags(EPropertyNodeFlags::SingleSelectOnly), ReadAddresses, false, true );
+		bool bAllValuesTheSame = PropertyNodePin->GetReadAddress(!!PropertyNodePin->HasNodeFlags(EPropertyNodeFlags::SingleSelectOnly), ReadAddresses, false, true);
 
-		if( (ReadAddresses.Num() > 0 && bAllValuesTheSame) || ReadAddresses.Num() == 1 ) 
+		if ((ReadAddresses.Num() > 0 && bAllValuesTheSame) || ReadAddresses.Num() == 1)
 		{
 			ValueAddress = ReadAddresses.GetAddress(0);
 			const FProperty* Property = PropertyNodePin->GetProperty();
 			if (ValueAddress && Property)
 			{
 				const int32 Index = 0;
-				OutAddress = ValueAddress + Index * Property->ElementSize;
+				OutAddress = ValueAddress + Index * Property->GetElementSize();
 				Res = FPropertyAccess::Success;
 			}
 		}
@@ -148,37 +148,37 @@ FString FPropertyValueImpl::GetPropertyValueArray() const
 {
 	FString String;
 	TSharedPtr<FPropertyNode> PropertyNodePin = PropertyNode.Pin();
-	if( PropertyNodePin.IsValid() )
+	if (PropertyNodePin.IsValid())
 	{
 		FReadAddressList ReadAddresses;
 
-		bool bSingleValue = PropertyNodePin->GetReadAddress( !!PropertyNodePin->HasNodeFlags(EPropertyNodeFlags::SingleSelectOnly), ReadAddresses, false );
+		bool bSingleValue = PropertyNodePin->GetReadAddress(!!PropertyNodePin->HasNodeFlags(EPropertyNodeFlags::SingleSelectOnly), ReadAddresses, false);
 
-		if( bSingleValue )
+		if (bSingleValue)
 		{
 			FProperty* NodeProperty = PropertyNodePin->GetProperty();
-			if( NodeProperty != nullptr )
+			if (NodeProperty != nullptr)
 			{
 				uint8* Addr = ReadAddresses.GetAddress(0);
-				if( Addr )
+				if (Addr)
 				{
-					if ( FArrayProperty* ArrayProperty = CastField<FArrayProperty>(NodeProperty) )
+					if (FArrayProperty* ArrayProperty = CastField<FArrayProperty>(NodeProperty))
 					{
 						FScriptArrayHelper ArrayHelper(ArrayProperty, Addr);
-						String = FString::Printf( TEXT("%(%d)"), ArrayHelper.Num() );
+						String = FString::Printf(TEXT("%%(%d)"), ArrayHelper.Num());
 					}
-					else if ( CastField<FSetProperty>(NodeProperty) != nullptr )	
+					else if (CastField<FSetProperty>(NodeProperty) != nullptr)
 					{
-						String = FString::Printf( TEXT("%(%d)"), FScriptSetHelper::Num(Addr) );
+						String = FString::Printf(TEXT("%%(%d)"), FScriptSetHelper::Num(Addr));
 					}
 					else if (FMapProperty* MapProperty = CastField<FMapProperty>(NodeProperty))
 					{
 						FScriptMapHelper MapHelper(MapProperty, Addr);
-						String = FString::Printf(TEXT("%(%d)"), MapHelper.Num());
+						String = FString::Printf(TEXT("%%(%d)"), MapHelper.Num());
 					}
 					else
 					{
-						String = FString::Printf( TEXT("%[%d]"), NodeProperty->ArrayDim );
+						String = FString::Printf(TEXT("%%[%d]"), NodeProperty->ArrayDim);
 					}
 				}
 			}

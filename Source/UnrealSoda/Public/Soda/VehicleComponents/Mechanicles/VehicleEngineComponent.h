@@ -20,7 +20,7 @@ public:
 	 * Name of the vehicle component to which need to connect the engine shaft (wheel, gearbox, transmission, etc).
 	 * Default wheels name: WheelFL, WheelFR, WheelRL, WheelRR.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "TorqueTransmission"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Link, SaveGame, meta = (EditInRuntime, ReactivateActor, AllowedClasses = "/Script/UnrealSoda.TorqueTransmission"))
 	FSubobjectReference LinkToTorqueTransmission { TEXT("Differential") };
 
 

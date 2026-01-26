@@ -48,9 +48,9 @@ public:
 		return MakeShareable(new FCategoryLineHighlighter());
 	}
 
-	virtual int32 OnPaint(const FPaintArgs& Args, const FTextLayout::FLineView& Line, const float OffsetX, const float Width, const FTextBlockStyle& DefaultStyle, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override
+	virtual int32 OnPaint(const FPaintArgs& Args, const FTextLayout::FLineView& Line, const FVector2D Offset, const float Width, const FTextBlockStyle& DefaultStyle, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override
 	{
-		const FVector2D Location(Line.Offset.X + OffsetX, Line.Offset.Y);
+		const FVector2D Location(Line.Offset.X + Offset.X, Line.Offset.Y + Offset.Y);
 
 		// If we've not been set to an explicit color, calculate a suitable one from the linked color
 		FLinearColor SelectionBackgroundColorAndOpacity = DefaultStyle.SelectedBackgroundColor.GetColor(InWidgetStyle);// *InWidgetStyle.GetColorAndOpacityTint();
@@ -90,9 +90,9 @@ public:
 		return MakeShareable(new FCategoryBadgeHighlighter(InBadgeColor));
 	}
 
-	virtual int32 OnPaint(const FPaintArgs& Args, const FTextLayout::FLineView& Line, const float OffsetX, const float Width, const FTextBlockStyle& DefaultStyle, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override
+	virtual int32 OnPaint(const FPaintArgs& Args, const FTextLayout::FLineView& Line, const FVector2D Offset, const float Width, const FTextBlockStyle& DefaultStyle, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override
 	{
-		const FVector2D Location(Line.Offset.X + OffsetX, Line.Offset.Y);
+		const FVector2D Location(Line.Offset.X + Offset.X, Line.Offset.Y + Offset.Y);
 
 		// The block size and offset values are pre-scaled, so we need to account for that when converting the block offsets into paint geometry
 		const float InverseScale = Inverse(AllottedGeometry.Scale);

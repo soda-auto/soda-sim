@@ -47,7 +47,7 @@ void FCameraPixelReader::ReadPixels(UTextureRenderTarget2D& RenderTarget, FRHICo
 {
 	check(IsInRenderingThread());
 
-	FRHITexture2D* Texture = RenderTarget.GetRenderTargetResource()->GetRenderTargetTexture();
+	FRHITexture* Texture = RenderTarget.GetRenderTargetResource()->GetRenderTargetTexture();
 	const FTextureRenderTarget2DResource* RenderResource = static_cast<const FTextureRenderTarget2DResource*>(RenderTarget.GetResource());
 	checkf(Texture != nullptr, TEXT("ReadPixels(). UTextureRenderTarget2D missing render target texture"));
 

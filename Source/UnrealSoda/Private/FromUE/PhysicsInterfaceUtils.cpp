@@ -95,6 +95,8 @@ FCollisionFilterData CreateTraceQueryFilterData(const uint8 MyChannel, const boo
 #define TRACE_SINGLE	0
 
 /** Utility for creating a PhysX PxFilterData for performing a query (trace) against the scene */
+
+/*
 FCollisionFilterData CreateQueryFilterData(const uint8 MyChannel, const bool bTraceComplex, const FCollisionResponseContainer& InCollisionResponseContainer, const struct FCollisionQueryParams& QueryParam, const struct FCollisionObjectQueryParams& ObjectParam, const bool bMultitrace)
 {
 	//#TODO implement chaos
@@ -107,5 +109,6 @@ FCollisionFilterData CreateQueryFilterData(const uint8 MyChannel, const bool bTr
 		return CreateTraceQueryFilterData(MyChannel, bTraceComplex, InCollisionResponseContainer, QueryParam);
 	}
 }
+*/
 
 #endif // IS_MONOLITHIC

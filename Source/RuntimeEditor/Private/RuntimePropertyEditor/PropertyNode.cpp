@@ -2645,19 +2645,18 @@ bool FPropertyNode::IsReorderable()
  */
 bool FPropertyNode::AdjustEnumPropDisplayName( UEnum *InEnum, FString& DisplayName ) const
 {
+#if WITH_EDITOR
 	// see if we have alternate text to use for displaying the value
-	UMetaData* PackageMetaData = InEnum->GetOutermost()->GetMetaData();
-	if (PackageMetaData)
+	FMetaData& PackageMetaData = InEnum->GetPackage()->GetMetaData();
+	FName AltDisplayName = FName(*(DisplayName+TEXT(".DisplayName")));
+	FString ValueText = PackageMetaData.GetValue(InEnum, AltDisplayName);
+	if (ValueText.Len() > 0)
 	{
-		FName AltDisplayName = FName(*(DisplayName+TEXT(".DisplayName")));
-		FString ValueText = PackageMetaData->GetValue(InEnum, AltDisplayName);
-		if (ValueText.Len() > 0)
-		{
-			// use the alternate text for this enum value
-			DisplayName = ValueText;
-			return true;
-		}
-	}	
+		// use the alternate text for this enum value
+		DisplayName = ValueText;
+		return true;
+	}
+#endif
 
 	//DisplayName has been unmodified
 	return false;
