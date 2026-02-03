@@ -63,6 +63,9 @@ public:
 	/** Compute distance between front left and front right wheels. */
 	virtual float GetTrackWidth() const;
 
+	/** To get the flag about an issue with vehicle physics simulation for custom physics models */
+	virtual bool GetSimulationFailedFlag() { return false; };
+
 protected:
 	virtual void OnSetActiveMovement();
 

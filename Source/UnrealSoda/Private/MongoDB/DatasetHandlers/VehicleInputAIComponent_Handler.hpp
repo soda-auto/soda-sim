@@ -54,8 +54,8 @@ public:
 			<< "bADModeEnbaled" << Outer->GetInputState().bADModeEnbaled
 			<< "bSafeStopEnbaled" << Outer->GetInputState().bSafeStopEnbaled
 			//<< "TargetLocationsNum" << Outer->TargetLocations.Num()
-			<< "SideError" << Outer->GetSideError()
-			<< "ObstacleDistance" << Outer->GetObstacleDistance();
+			<< "SideError" << Outer->GetSideError();
+	
 		return true;
 	}
 

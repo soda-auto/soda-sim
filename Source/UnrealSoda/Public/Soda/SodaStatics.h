@@ -146,6 +146,10 @@ public:
 	static float FindSplineInputKeyClosestToWorldLocationFast(const FVector& WorldLocation, int32& StartSegment, USplineComponent* Spline);
 
 	UFUNCTION(BlueprintCallable, Category = "Soda")
+	static float FindSplineInputKeyClosestToWorldLocationFastLimited(const FVector& WorldLocation, int32& StartSegment, USplineComponent* Spline, int32 MaxLookaheadSegments, int32 MaxLookBackSegments);
+
+
+	UFUNCTION(BlueprintCallable, Category = "Soda")
 	static bool IsBlueprintClass(const UClass* Class) { return Class && Class->HasAnyClassFlags(EClassFlags::CLASS_CompiledFromBlueprint); }
 
 	UFUNCTION(BlueprintCallable, Category = "Soda")

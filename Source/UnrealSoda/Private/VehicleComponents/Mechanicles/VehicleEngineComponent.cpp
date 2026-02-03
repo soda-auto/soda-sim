@@ -9,6 +9,13 @@
 #include "Soda/VehicleComponents/VehicleInputComponent.h"
 #include "UObject/ConstructorHelpers.h"
 
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "HAL/PlatformFileManager.h"
+#include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Notifications/SNotificationList.h"
+#include "DesktopPlatformModule.h"
+
 UVehicleEngineBaseComponent::UVehicleEngineBaseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -113,7 +120,14 @@ void UVehicleEngineSimpleComponent::TickComponent(float DeltaTime, ELevelTick Ti
 
 	if (GetHealth() == EVehicleComponentHealth::Ok)
 	{
-		MaxTorq = TorqueCurve.ExternalCurve->GetFloatValue(AngularVelocity * ANG2RPM) * TorqueCurveMultiplier;
+		if (bCustomTorqueCurve)
+		{
+			MaxTorq = LookupTable1d(AngularVelocity * ANG2RPM, CustomTorqueCurveRPM, CustomTorqueCurveTorque) * TorqueCurveMultiplier;
+		}
+		else
+		{
+			MaxTorq = TorqueCurve.ExternalCurve->GetFloatValue(AngularVelocity * ANG2RPM) * TorqueCurveMultiplier;
+		}
 	}
 
 	if (bAcceptPedalFromVehicleInput)
@@ -127,6 +141,8 @@ void UVehicleEngineSimpleComponent::TickComponent(float DeltaTime, ELevelTick Ti
 			PedalPos = 0;
 		}
 	}
+
+
 }
 
 bool UVehicleEngineSimpleComponent::OnActivateVehicleComponent()
@@ -142,6 +158,11 @@ bool UVehicleEngineSimpleComponent::OnActivateVehicleComponent()
 	{
 		SetHealth(EVehicleComponentHealth::Error, TEXT("TorqueCurve isn't set"));
 		return false;
+	}
+
+	if (bEnableLossesCalculation)
+	{
+		InitPowerLossesData();
 	}
 
 	return true;
@@ -168,6 +189,12 @@ void UVehicleEngineSimpleComponent::RequestByTorque(float InTorque)
 		}
 
 		float Out = ActualTorque * Ratio;
+
+		if (bEnableLossesCalculation)
+		{
+			CalculatePowerLosses();
+		}
+
 
 		if (bVerboseLog)
 		{
@@ -217,4 +244,96 @@ void UVehicleEngineSimpleComponent::DrawDebug(UCanvas* Canvas, float& YL, float&
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("AngVel: %.2f rpm"), AngularVelocity * ANG2RPM), 16, YPos);
 		YPos += Canvas->DrawText(RenderFont, FString::Printf(TEXT("Pedal Pos: %.2f"), PedalPos), 16, YPos);
 	}
+}
+
+
+
+
+void UVehicleEngineBaseComponent::LoadCsvRPMvsTorqueCustomCurve()
+{
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+	if (!DesktopPlatform)
+	{
+		UE_LOG(LogSoda, Error, TEXT("UVehicleEngineBaseComponent::LoadCsvRPMvsTorqueCustomCurve() Can't get the IDesktopPlatform ref"));
+		return;
+	}
+
+	const FString FileTypes = TEXT("(*.csv)|*.csv");
+
+	TArray<FString> OpenFilenames;
+	int32 FilterIndex = -1;
+	if (!DesktopPlatform->OpenFileDialog(nullptr, TEXT("Import custom input from CSV"), TEXT(""), TEXT(""), FileTypes, EFileDialogFlags::None, OpenFilenames, FilterIndex) || OpenFilenames.Num() <= 0)
+	{
+		FNotificationInfo Info(FText::FromString(FString("Load input Error: can't open the file")));
+		Info.ExpireDuration = 5.0f;
+		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
+		FSlateNotificationManager::Get().AddNotification(Info);
+		return;
+	}
+
+	FString& FilePath = OpenFilenames[0];
+
+	if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*FilePath))
+	{
+		UE_LOG(LogTemp, Error, TEXT("File does not exist: %s"), *FilePath);
+		return;
+	}
+
+
+
+	TArray<FString> FileLines;
+	if (!FFileHelper::LoadFileToStringArray(FileLines, *FilePath))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load file: %s"), *FilePath);
+		return;
+	}
+
+
+	if (FileLines.Num() < 2)
+	{
+		FNotificationInfo Info(FText::FromString(FString("Load input Error: file has no data") + FilePath));
+		Info.ExpireDuration = 5.0f;
+		Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
+		FSlateNotificationManager::Get().AddNotification(Info);
+		return;
+	}
+
+
+
+
+	bool bErrorWasShown = false;
+
+	CustomTorqueCurveRPM.Empty();
+	CustomTorqueCurveTorque.Empty();
+
+
+	for (int32 i = 1; i < FileLines.Num(); i++) // Skip the header line
+	{
+		TArray<FString> Values;
+		FileLines[i].ParseIntoArray(Values, TEXT(","), true);
+
+		if (Values.Num() < 2)
+		{
+			if (!bErrorWasShown)
+			{
+				FNotificationInfo Info(FText::FromString(FString("Load input Error: some of the lines are invalid") + FilePath));
+				Info.ExpireDuration = 5.0f;
+				Info.Image = FCoreStyle::Get().GetBrush(TEXT("Icons.ErrorWithColor"));
+				FSlateNotificationManager::Get().AddNotification(Info);
+				bErrorWasShown = true;
+			}
+
+			UE_LOG(LogTemp, Error, TEXT("Invalid data at line %d"), i);
+			continue;
+		}
+
+		CustomTorqueCurveRPM.Add(FCString::Atof(*Values[0]));
+		CustomTorqueCurveTorque.Add(FCString::Atof(*Values[1]));
+
+	}
+	bCustomTorqueCurve = true;
+
+
+
+
 }

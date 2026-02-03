@@ -681,6 +681,77 @@ void USodaStatics::SetFKeyByName(FString& Name, FKey& Key)
 	}
 }
 
+
+float USodaStatics::FindSplineInputKeyClosestToWorldLocationFastLimited(const FVector& WorldLocation, int32& StartSegment, USplineComponent* Spline, int32 MaxLookaheadSegments, int32 MaxLookBackSegments)
+{
+	const FVector LocalLocation = Spline->GetComponentTransform().InverseTransformPosition(WorldLocation);
+	const int32 NumPoints = Spline->SplineCurves.Position.Points.Num();
+	const int32 NumSegments = Spline->SplineCurves.Position.bIsLooped ? NumPoints : NumPoints - 1;
+	bool PerformFullSearch = false;
+	if (StartSegment == -1)
+	{
+		PerformFullSearch = true;
+		StartSegment = 0;
+	}
+
+	//UE_LOG(LogTemp, Warning, TEXT("---Full search %d, start segment %d, num segments %d"), (int32)PerformFullSearch, StartSegment, NumSegments);
+
+	if (NumPoints > 1)
+	{
+		float BestDistanceSq;
+		float BestResult = Spline->SplineCurves.Position.InaccurateFindNearestOnSegment(LocalLocation, StartSegment, BestDistanceSq);
+		int32 NewStartSegment = StartSegment;
+		for (int32 Segment = StartSegment + 1; Segment < NumSegments; ++Segment)
+		{
+			float LocalDistanceSq;
+			float LocalResult = Spline->SplineCurves.Position.InaccurateFindNearestOnSegment(LocalLocation, Segment, LocalDistanceSq);
+
+			//UE_LOG(LogTemp, Warning, TEXT("-----Do cycle up %d"), Segment);
+			if (LocalDistanceSq < BestDistanceSq)
+			{
+				BestDistanceSq = LocalDistanceSq;
+				BestResult = LocalResult;
+				NewStartSegment = Segment;
+			}
+			else if (!PerformFullSearch)
+			{
+				break;
+			}
+
+
+		}
+		for (int32 Segment = StartSegment - 1; Segment >= 0; --Segment)
+		{
+			float LocalDistanceSq;
+			float LocalResult = Spline->SplineCurves.Position.InaccurateFindNearestOnSegment(LocalLocation, Segment, LocalDistanceSq);
+
+			//UE_LOG(LogTemp, Warning, TEXT("-----Do cycle down %d"), Segment);
+			if (LocalDistanceSq < BestDistanceSq)
+			{
+				BestDistanceSq = LocalDistanceSq;
+				BestResult = LocalResult;
+				NewStartSegment = Segment;
+			}
+			else
+			{
+				break;
+			}
+
+
+		}
+		StartSegment = NewStartSegment;
+		return BestResult;
+	}
+
+	if (NumPoints == 1)
+	{
+		return Spline->SplineCurves.Position.Points[0].InVal;
+	}
+
+	return 0.0f;
+
+}
+
 float USodaStatics::FindSplineInputKeyClosestToWorldLocationFast(const FVector& WorldLocation, int32& StartSegment, USplineComponent* Spline)
 {
 	const FVector LocalLocation = Spline->GetComponentTransform().InverseTransformPosition(WorldLocation);

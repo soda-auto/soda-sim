@@ -162,6 +162,23 @@ void AGhostVehicle::TickActor(float DeltaTime, enum ELevelTick TickType, FActorT
 			CurrentSplineOffset += DeltaTime * CurrentVelocity;
 			CurrentVelocity = FMath::Clamp(CurrentVelocity + CurrentAcc * DeltaTime, 0.f, Vel);
 
+			// Use velocity driven behavior without smooth changes in acceleration
+			if (bOscillateInMaxVelocity)
+			{
+				LocalTime = LocalTime + DeltaTime;
+				float ScaleFactor = LookupTable1d(LocalTime * TimeScaleFactorOscillationFactor, OscillationBreakPoints, OscillationFactorValues);
+
+				if (LocalTime > OscillationBreakPoints[OscillationBreakPoints.Num() - 1])
+				{
+					LocalTime = 0.0;
+				}
+
+				float StartVelocity = (OscillateVehicleMinVelocity + OscillateVehicleMaxVelocity) * 0.5;
+				float VelocityFractionToMoveBetween = (OscillateVehicleMaxVelocity - OscillateVehicleMinVelocity) * 0.5 * ScaleFactor;
+
+				CurrentVelocity = (StartVelocity + VelocityFractionToMoveBetween) * 100.0 / 3.6;
+			}
+
 			if (BaseLength > 0)
 			{
 				const double SteerAngle = (TrajectoryPlaner.GetCurvatureAtKey(TrajectoryPlaner.GetCurrentSplineKey()) * BaseLength / 100.0) / PI * 180;
@@ -377,6 +394,7 @@ void AGhostVehicle::CalculateSpeedProfile()
 		Accelerations.clear();
 		return;
 	}
+	
 
 	std::vector<SpeedProfile::FTrajectoryPoint> Path(TrajectoryPlaner.GetWayPointsNum());
 	for (int i = 0; i < TrajectoryPlaner.GetWayPointsNum(); ++i)

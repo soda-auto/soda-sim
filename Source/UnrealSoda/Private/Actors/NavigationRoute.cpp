@@ -196,7 +196,7 @@ ANavigationRoute* ANavigationRoute::GetRandomSuccessor() const
 
 bool ANavigationRoute::UpdateProcedureMeshSegment(int SegmentIndex)
 {
-	static const float RouteWidth = 40;
+	float RouteWidth = 40 * RouteScaleWidth;
 	static const float SegmStep = 20.0;
 	static const float MaxDistErr = 15;
 	static const float MaxCosAngErr = 0.99619469809; //cos(5deg) = 0.99619469809
@@ -215,7 +215,7 @@ bool ANavigationRoute::UpdateProcedureMeshSegment(int SegmentIndex)
 		return false;
 	}
 
-	auto CreateCap = [this](int NodeIndex, int SectionIndex, float Yaw)
+	auto CreateCap = [this](int NodeIndex, int SectionIndex, float Yaw, float RouteWidth)
 	{
 		Vertices.SetNum(0, false);
 		Triangles.SetNum(0, false);
@@ -255,12 +255,12 @@ bool ANavigationRoute::UpdateProcedureMeshSegment(int SegmentIndex)
 
 	if (SegmentIndex == 0 || ProceduralMesh->GetNumSections() < 2)
 	{
-		CreateCap(0, 0, 90);
+		CreateCap(0, 0, 90, 40);
 	}
 
 	if (SegmentIndex == Spline->GetNumberOfSplinePoints() - 2 || ProceduralMesh->GetNumSections() < 2)
 	{
-		CreateCap(Spline->GetNumberOfSplinePoints() - 1, 1, -90);
+		CreateCap(Spline->GetNumberOfSplinePoints() - 1, 1, -90, 40);
 	}
 	
 	Vertices.SetNum(0, false);
@@ -915,7 +915,7 @@ const FSodaActorDescriptor* ANavigationRouteEditable::GenerateActorDescriptor() 
 
 
 
-void ANavigationRouteEditable::SaveNavigationRouteToFile()
+void ANavigationRoute::SaveNavigationRouteToFile()
 {
 	// Open a dialog to let the user choose the directory
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
@@ -985,7 +985,7 @@ void ANavigationRouteEditable::SaveNavigationRouteToFile()
 }
 
 
-void ANavigationRouteEditable::RecreateNavigationRouteFromFile()
+void ANavigationRoute::RecreateNavigationRouteFromFile()
 {
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
 	if (!DesktopPlatform)
