@@ -246,7 +246,7 @@ private:
 
 			if ( PathAndQueryString.EndsWith( TEXT("/"), ESearchCase::CaseSensitive ) )
 			{
-				PathAndQueryString.LeftInline(PathAndQueryString.Len() - 1, false);
+				PathAndQueryString.LeftInline(PathAndQueryString.Len() - 1, EAllowShrinking::No);
 			}
 
 			// split path and query string

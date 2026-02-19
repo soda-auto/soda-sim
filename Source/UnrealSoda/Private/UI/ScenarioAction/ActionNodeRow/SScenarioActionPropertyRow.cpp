@@ -48,7 +48,7 @@ void SScenarioActionPropertyRow::Construct(const FArguments& InArgs, const TShar
 			.AutoWidth()
 			.Padding(0, 0, 21, 0)
 			[
-				SNew(SActionButton)
+				SNew(soda::SActionButton)
 				.Icon(nullptr)
 				.ContentPadding(8)
 				.ButtonStyle(FSodaStyle::Get(), "MenuWindow.AddButton")

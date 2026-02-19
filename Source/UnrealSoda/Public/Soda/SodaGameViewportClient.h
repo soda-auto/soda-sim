@@ -44,7 +44,7 @@ public:
 	virtual EMouseCursor::Type GetCursor(FViewport* Viewport, int32 X, int32 Y) override;
 	virtual void Tick(float DeltaTime) override;
 	virtual bool InputKey(const FInputKeyEventArgs& InEventArgs) override;
-	virtual bool InputAxis(FViewport* Viewport, FInputDeviceId InputDevice, FKey Key, float Delta, float DeltaTime, int32 NumSamples = 1, bool bGamepad = false) override;
+	virtual bool InputAxis(const FInputKeyEventArgs& Args) override;
 	virtual EMouseCaptureMode GetMouseCaptureMode() const override;
 	virtual bool LockDuringCapture() override;
 	virtual bool ShouldAlwaysLockMouse() override;

@@ -93,7 +93,7 @@ public:
 	inline void SetBits56(void* Data, size_t BitOffsetIn, size_t BitLengthIn)
 	{
 		check(BitLengthIn <= 56);
-		Buf.SetNum((BitOffsetIn + BitLengthIn) / 8 + 1, false);
+		Buf.SetNum((BitOffsetIn + BitLengthIn) / 8 + 1, EAllowShrinking::No);
 		uint8 Off = BitOffsetIn % 8;
 		uint64 Mask = 0xFFFFFFFFFFFFFFFF >> (64 - BitLengthIn - Off);
 		uint64& Ref = *(uint64*)&Buf[BitOffsetIn / 8];

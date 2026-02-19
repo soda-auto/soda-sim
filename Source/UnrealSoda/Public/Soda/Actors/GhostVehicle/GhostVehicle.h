@@ -137,6 +137,29 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Dataset, SaveGame, meta = (EditInRuntime))
 	bool bRecordDataset = true;
 
+	/** true to enable simplified agents motion based purely on min max velocity and some oscillatory behavior, without acceleration */
+	UPROPERTY(EditAnywhere, Category = VelocityDriverMotion, BlueprintReadOnly, SaveGame, meta = (EditInRuntime))
+	bool bOscillateInMaxVelocity = false;
+
+	/** [km/h] */
+	UPROPERTY(EditAnywhere, Category = VelocityDriverMotion, BlueprintReadOnly, SaveGame, meta = (EditInRuntime))
+	float OscillateVehicleMinVelocity = 40.0;
+
+	/** [km/h] */
+	UPROPERTY(EditAnywhere, Category = VelocityDriverMotion, BlueprintReadOnly, SaveGame, meta = (EditInRuntime))
+	float OscillateVehicleMaxVelocity = 45.0;
+	
+	UPROPERTY(EditAnywhere, Category = VelocityDriverMotion, BlueprintReadOnly, SaveGame, meta = (EditInRuntime))
+	float TimeScaleFactorOscillationFactor = 1.0;	
+	
+	UPROPERTY(EditAnywhere, Category = VelocityDriverMotion, BlueprintReadOnly, SaveGame, meta = (EditInRuntime))
+	TArray<float> OscillationBreakPoints = { 0.0, 1.0, 3.0, 4.0, 5.0, 6.0, 8.0, 9.0 };
+	
+	UPROPERTY(EditAnywhere, Category = VelocityDriverMotion, BlueprintReadOnly, SaveGame, meta = (EditInRuntime))
+	TArray<float> OscillationFactorValues = { 0.0, 1.0, 1.0, 0.0, 0.0,-1.0,-1.0, 0.0 };
+
+
+
 public:
 	UFUNCTION(BlueprintCallable, Category = GhostVehicle, meta = (ScenarioAction))
 	void GoToLeftRoute(float StaticOffset = 500, float VelocityToOffset = 0);
@@ -219,5 +242,7 @@ protected:
 	std::vector<double> Accelerations;
 
 	TArray<FVector> JoiningCurvePoints;
+
+	float LocalTime = 0.0;
 
 };

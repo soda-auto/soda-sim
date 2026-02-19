@@ -6,13 +6,28 @@
 #include "IInputInterface.h"
 #include <algorithm>
 
+#if defined(_MSC_VER)
+#	pragma warning( push )
+#	pragma warning(disable: 4668)
+#endif
+#include <SDL3/SDL.h>
+#if defined(_MSC_VER)
+#	pragma warning( pop )
+#endif
+
+
 DEFINE_LOG_CATEGORY(SodaSDLJoystickDevice);
+
+
+
 
 
 FSDLJoystickDevice::FSDLJoystickDevice(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler) :
 	MessageHandler(InMessageHandler)
 {
 	Settings = GetMutableDefault<UJoystickGameSettings>();
+
+#if 0
 
 	if (SDL_WasInit(0) != 0)
 	{
@@ -35,6 +50,7 @@ FSDLJoystickDevice::FSDLJoystickDevice(const TSharedRef<FGenericApplicationMessa
 	//	ActualizeAxesNum();
 	//	ActualizeButtonsNum();
 	}
+#endif
 }
 
 
@@ -52,6 +68,7 @@ FSDLJoystickDevice::~FSDLJoystickDevice()
 
 void FSDLJoystickDevice::Tick(float DeltaTime)
 {
+#if 0
 	if (!Joys.Num())
 	{
 		if (NoJoyWaitTimer < 0)
@@ -62,11 +79,13 @@ void FSDLJoystickDevice::Tick(float DeltaTime)
 		else
 			NoJoyWaitTimer -= DeltaTime;
 	}
+#endif
 }
 
 
 void FSDLJoystickDevice::SendControllerEvents()
 {
+#if 0
 	if (SDL_NumJoysticks() <= 0 || !Joys.Num())
 		return;
 
@@ -99,6 +118,7 @@ void FSDLJoystickDevice::SendControllerEvents()
 
 		//		UE_LOG(SodaSDLJoystickDevice, Log, TEXT("Button %d: Value = %d"), i, ButtonValue);
 	}
+#endif
 }
 
 
@@ -130,6 +150,7 @@ void FSDLJoystickDevice::SetChannelValues(int32 ControllerId, const FForceFeedba
 
 void FSDLJoystickDevice::UpdateEKeys(int NumAxes, int NumButtons)
 {
+#if 0
 #define LOCTEXT_NAMESPACE "InputKeys"
 
 	for (int i = RegisteredAxesNum; i < NumAxes; ++i)
@@ -153,10 +174,12 @@ void FSDLJoystickDevice::UpdateEKeys(int NumAxes, int NumButtons)
 
 	RegisteredAxesNum = std::max(RegisteredAxesNum, NumAxes);
 	RegisteredButtonsNum = std::max(RegisteredButtonsNum, NumButtons);
+#endif
 }
 
 bool FSDLJoystickDevice::SDLStartup()
 {
+#if 0
 	if (SDL_NumJoysticks() <= 0)
 	{
 		UpdateEKeys(20, 20); //Registre 20 Axes & 20 Butonts by default
@@ -326,10 +349,13 @@ bool FSDLJoystickDevice::SDLStartup()
 	UpdateEKeys(AxesNum, ButtonsNum);
 
 	return true;
+#endif
+	return false;
 }
 
 void FSDLJoystickDevice::RotateToPosition(float TargetPosition)
 {
+#if 0
 	for (size_t i = 0; i < Haptics.Num() && i < EffectConstantIds.Num(); ++i)
 	{
 		if (Haptics[i] && EffectConstantIds[i] != -1)
@@ -341,10 +367,12 @@ void FSDLJoystickDevice::RotateToPosition(float TargetPosition)
 			SDL_HapticRunEffect(Haptics[i], EffectConstantIds[i], 1);
 		}
 	}
+#endif
 }
 
 void FSDLJoystickDevice::ApplyConstantForce(int ForceVal)
 {
+#if 0
 	for (size_t i = 0; i < Haptics.Num() && i < EffectConstantIds.Num(); ++i)
 	{
 		if (Haptics[i] && EffectConstantIds[i] != -1)
@@ -355,10 +383,12 @@ void FSDLJoystickDevice::ApplyConstantForce(int ForceVal)
 			SDL_HapticRunEffect(Haptics[i], EffectConstantIds[i], 1);
 		}
 	}
+#endif
 }
 
 void FSDLJoystickDevice::StopConstantForceEffect()
 {
+#if 0
 	for (size_t i = 0; i < Haptics.Num() && i < EffectConstantIds.Num(); ++i)
 	{
 		if (Haptics[i] && EffectConstantIds[i] != -1)
@@ -366,10 +396,12 @@ void FSDLJoystickDevice::StopConstantForceEffect()
 			SDL_HapticStopEffect(Haptics[i], EffectConstantIds[i]);
 		}
 	}
+#endif
 }
 
 void FSDLJoystickDevice::ApplyBumpEffect(int ForceVal, int Len)
 {
+#if 0
 	for (size_t i = 0; i < Haptics.Num() && i < EffectBumpIds.Num(); ++i)
 	{
 		if (Haptics[i] && EffectBumpIds[i] != -1)
@@ -386,6 +418,7 @@ void FSDLJoystickDevice::ApplyBumpEffect(int ForceVal, int Len)
 			SDL_HapticRunEffect(Haptics[i], EffectBumpIds[i], 1);
 		}
 	}
+#endif
 }
 
 void FSDLJoystickDevice::ActualizeAxesNum()
@@ -424,6 +457,7 @@ void FSDLJoystickDevice::ActualizeButtonsNum()
 
 void FSDLJoystickDevice::CloseDevice()
 {
+#if 0
 	for (size_t i = 0; i < Haptics.Num() && i < EffectConstantIds.Num(); ++i)
 	{
 		if (Haptics[i] && EffectConstantIds[i] >= 0)
@@ -439,4 +473,5 @@ void FSDLJoystickDevice::CloseDevice()
 			SDL_JoystickClose(Joy);
 		}
 	}
+#endif
 }

@@ -263,7 +263,7 @@ TArray<TSharedPtr<IDetailTreeNode>> FPropertyRowGenerator::FindTreeNodes(const T
 	TArray<TSharedRef<IDetailTreeNode>> Children;
 	while (NodesToCheck.Num())
 	{
-		TSharedPtr<IDetailTreeNode> Node = NodesToCheck.Pop(false);
+		TSharedPtr<IDetailTreeNode> Node = NodesToCheck.Pop(EAllowShrinking::No);
 		TSharedPtr<FDetailTreeNode> TreeNodeImpl = StaticCastSharedPtr<FDetailTreeNode>(Node);
 		TSharedPtr<FPropertyNode> PropertyNode = TreeNodeImpl->GetPropertyNode();
 

@@ -111,7 +111,7 @@ FText GetCategoryText(const FField* InField)
 		if (!NativeCategory.IsEmpty())
 		{
 			FText LocalizedCategory;
-			if (!FText::FindText(CategoryLocalizationNamespace, NativeCategory, /*OUT*/LocalizedCategory, &NativeCategory))
+			if (!FText::FindTextInLiveTable_Advanced(CategoryLocalizationNamespace, NativeCategory, /*OUT*/LocalizedCategory, &NativeCategory))
 			{
 				LocalizedCategory = FText::AsCultureInvariant(NativeCategory);
 			}
@@ -134,7 +134,7 @@ FText GetCategoryText(const UField* InField)
 		if (!NativeCategory.IsEmpty())
 		{
 			FText LocalizedCategory;
-			if (!FText::FindText(CategoryLocalizationNamespace, NativeCategory, /*OUT*/LocalizedCategory, &NativeCategory))
+			if (!FText::FindTextInLiveTable_Advanced(CategoryLocalizationNamespace, NativeCategory, /*OUT*/LocalizedCategory, &NativeCategory))
 			{
 				LocalizedCategory = FText::AsCultureInvariant(NativeCategory);
 			}
@@ -242,7 +242,7 @@ FString GetFriendlyName(const FProperty* Property, UStruct* OwnerStruct/* = NULL
 	{
 		FString PropertyPathName = Property->GetPathName(CurrentStruct);
 
-		DidFindText = FText::FindText(*CurrentStruct->GetName(), *(PropertyPathName + TEXT(".FriendlyName")), /*OUT*/FoundText);
+		DidFindText = FText::FindTextInLiveTable_Advanced(*CurrentStruct->GetName(), *(PropertyPathName + TEXT(".FriendlyName")), /*OUT*/FoundText);
 		CurrentStruct = CurrentStruct->GetSuperStruct();
 	} while (CurrentStruct != NULL && CurrentStruct->IsChildOf(RealOwnerStruct) && !DidFindText);
 

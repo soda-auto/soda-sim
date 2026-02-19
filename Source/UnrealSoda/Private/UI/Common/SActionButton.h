@@ -10,6 +10,8 @@
 
 /** A Button that is used to call out/highlight a positive option (Add, Save etc). It can also be used to open a menu.
 */
+namespace soda
+{
 class UNREALSODA_API SActionButton : public SCompoundWidget
 {
 public:
@@ -58,3 +60,5 @@ private:
 	TSharedPtr<SComboButton> ComboButton;
 	TSharedPtr<class SButton> Button;
 };
+
+} // namespace soda

@@ -73,7 +73,7 @@ void AWeatherSystem::UpdateWeather()
 		{
 			if (UVolumetricCloudComponent* VolumetricCloudComponent = VolumetricClouds->FindComponentByClass<UVolumetricCloudComponent>())
 			{
-				CloudsDynamicMaterial = UMaterialInstanceDynamic::Create(VolumetricCloudComponent->Material, VolumetricCloudComponent);
+				CloudsDynamicMaterial = UMaterialInstanceDynamic::Create(VolumetricCloudComponent->Material.LoadSynchronous(), VolumetricCloudComponent);
 				VolumetricCloudComponent->SetMaterial(CloudsDynamicMaterial);
 			}
 		}

@@ -357,18 +357,21 @@ TUniquePtr<FSQLiteDatabase> FFileDatabaseManager::OpenDatabase(const FString& Fi
 		return {};
 	}
 
-	//Database->Execute(TEXT("PRAGMA journal_mode=WAL;"));
-	//Database->Execute(TEXT("PRAGMA synchronous=FULL;"));
-	//Database->Execute(TEXT("PRAGMA cache_size=1000;"));
-	//Database->Execute(TEXT("PRAGMA page_size=65535;"));
-	//Database->Execute(TEXT("PRAGMA locking_mode=EXCLUSIVE;"));
-
+	/*
 	if (!Database->PerformQuickIntegrityCheck())
 	{
 		SHOW_NOTIFICATION(Error, 5.0, TEXT("Database failed integrity check."));
 		Database->Close();
 		return {};
 	}
+	*/
+
+	// Set the database to use exclusive WAL mode for performance (exclusive works even on platforms without a mmap implementation)
+	// Set the database "NORMAL" fsync mode to only perform a fsync when checkpointing the WAL to the main database file (fewer fsync calls are better for performance, with a very slight loss of WAL durability if the power fails)
+	Database->Execute(TEXT("PRAGMA locking_mode=EXCLUSIVE;"));
+	Database->Execute(TEXT("PRAGMA journal_mode=WAL;"));
+	Database->Execute(TEXT("PRAGMA synchronous=NORMAL;"));
+
 
 	if (!ensure(Database->Execute(TEXT("CREATE TABLE IF NOT EXISTS table_files(guid BLOB PRIMARY KEY, type INT, label TEXT, description TEXT, class TEXT, json_description TEXT, last_modified INTEGER, hash BLOB NOT NULL, data BLOB);"))))
 	{
