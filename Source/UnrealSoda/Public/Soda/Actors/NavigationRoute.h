@@ -70,7 +70,7 @@ public:
 	float ZOffset = 50;
 
 	UPROPERTY(BlueprintReadWrite, Category = NavigationRoute, EditAnywhere, SaveGame, meta = (EditInRuntime))
-	float RouteScaleWidth = 1.0;
+	float RouteWidth = 40.0;
 
 	/** Tags can be used to determine which traffic participants can use a given route and which cannot */
 	UPROPERTY(BlueprintReadWrite, Category = NavigationRoute, EditAnywhere, SaveGame, meta = (EditInRuntime))

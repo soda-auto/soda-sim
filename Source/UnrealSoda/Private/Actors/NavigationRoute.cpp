@@ -196,7 +196,7 @@ ANavigationRoute* ANavigationRoute::GetRandomSuccessor() const
 
 bool ANavigationRoute::UpdateProcedureMeshSegment(int SegmentIndex)
 {
-	float RouteWidth = 40 * RouteScaleWidth;
+	
 	static const float SegmStep = 20.0;
 	static const float MaxDistErr = 15;
 	static const float MaxCosAngErr = 0.99619469809; //cos(5deg) = 0.99619469809
