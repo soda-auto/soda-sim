@@ -297,13 +297,15 @@ bool USodaGameViewportClient::InputKey(const FInputKeyEventArgs& InEventArgs)
 	}
 }
 
-bool USodaGameViewportClient::InputAxis(FViewport* InViewport, FInputDeviceId InputDevice, FKey Key, float Delta, float DeltaTime, int32 NumSamples, bool bGamepad)
+bool USodaGameViewportClient::InputAxis(const FInputKeyEventArgs& Args)
 {
+	const float Delta = Args.AmountDepressed;
+
 	if (GetGameMode() == soda::EUIMode::Editing)
 	{
 		if (bIsWidgetDragging && Widget)
 		{
-			FVector Wk = FVector(Key == EKeys::MouseX ? Delta : 0, Key == EKeys::MouseY ? Delta : 0, 0);
+			FVector Wk = FVector(Args.Key == EKeys::MouseX ? Delta : 0, Args.Key == EKeys::MouseY ? Delta : 0, 0);
 
 			if (TrackingWidgetMode == soda::WM_Rotate)
 			{
@@ -326,11 +328,11 @@ bool USodaGameViewportClient::InputAxis(FViewport* InViewport, FInputDeviceId In
 		}
 		else
 		{
-			Selection->InputAxis(InViewport, InputDevice, Key, Delta, DeltaTime, NumSamples, bGamepad);
+			Selection->InputAxis(Args.Viewport, Args.InputDevice, Args.Key, Delta, Args.DeltaTime, Args.NumSamples, Args.IsGamepad());
 		}
 	}
 
-	return Super::InputAxis(InViewport, InputDevice, Key, Delta, DeltaTime, NumSamples, bGamepad);
+	return Super::InputAxis(Args);
 }
 
 EMouseCursor::Type USodaGameViewportClient::GetCursor(FViewport* InViewport, int32 X, int32 Y)

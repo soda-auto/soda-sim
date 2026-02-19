@@ -218,7 +218,7 @@ struct TSQTraits
 #if !(UE_BUILD_TEST || UE_BUILD_SHIPPING)
 		DebugParams.bDebugQuery = Params.bDebugQuery;
 #endif
-		LowLevelRaycast(Container, StartTM.GetLocation(), Dir, DeltaMag, HitBuffer, OutputFlags, QueryFlags, FilterData, QueryFilterData, QueryCallback, DebugParams);	//todo(ocohen): namespace?
+		Chaos::Private::LowLevelRaycast(Container, StartTM.GetLocation(), Dir, DeltaMag, HitBuffer, OutputFlags, QueryFlags, FilterData, QueryFilterData, QueryCallback, DebugParams);	//todo(ocohen): namespace?
 	}
 
 	//SceneTrace - sweep
@@ -231,7 +231,7 @@ struct TSQTraits
 #if !(UE_BUILD_TEST || UE_BUILD_SHIPPING)
 		DebugParams.bDebugQuery = Params.bDebugQuery;
 #endif
-		LowLevelSweep(Container, *GeomInputs.GetGeometry(), StartTM, Dir, DeltaMag, HitBuffer, OutputFlags, QueryFlags, FilterData, QueryFilterData, QueryCallback, DebugParams);	//todo(ocohen): namespace?
+		Chaos::Private::LowLevelSweep(Container, *GeomInputs.GetGeometry(), StartTM, Dir, DeltaMag, HitBuffer, OutputFlags, QueryFlags, FilterData, QueryFilterData, QueryCallback, DebugParams);	//todo(ocohen): namespace?
 	}
 
 	/*

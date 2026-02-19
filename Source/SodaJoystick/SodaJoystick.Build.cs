@@ -43,19 +43,10 @@ public class SodaJoystick : ModuleRules
                 "Engine",
                 "Slate",
                 "SlateCore",
-                "ApplicationCore"
+                "ApplicationCore",
+                "SDL3"
             }
         );
-
-        if (Target.Platform == UnrealTargetPlatform.Win64)
-		{
-			PublicDependencyModuleNames.Add("SDL2_2010");
-		}
-			
-		if (Target.Platform == UnrealTargetPlatform.Linux)
-		{
-			PrivateDependencyModuleNames.Add("SDL2");
-		}
 
         if (!Directory.Exists(ModuleDirectory + "/Private"))
         {

@@ -69,6 +69,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = NavigationRoute, EditAnywhere, SaveGame, meta = (EditInRuntime))
 	float ZOffset = 50;
 
+	UPROPERTY(BlueprintReadWrite, Category = NavigationRoute, EditAnywhere, SaveGame, meta = (EditInRuntime))
+	float RouteWidth = 40.0;
+
 	/** Tags can be used to determine which traffic participants can use a given route and which cannot */
 	UPROPERTY(BlueprintReadWrite, Category = NavigationRoute, EditAnywhere, SaveGame, meta = (EditInRuntime))
 	TSet<FString> RouteTags;
@@ -87,6 +90,13 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Connections, BlueprintReadOnly, SaveGame, meta = (EditInRuntime))
 	TSoftObjectPtr<ANavigationRoute> SuccessorRoute;
+
+
+	UFUNCTION(CallInEditor, Category = LoadCustomFile, meta = (DisplayName = "Save the data of this route into the file", CallInRuntime))
+	void SaveNavigationRouteToFile();
+	UFUNCTION(CallInEditor, Category = LoadCustomFile, meta = (DisplayName = "Recreate the data of this route from the file", CallInRuntime))
+	void RecreateNavigationRouteFromFile();
+
 
 public:
 
@@ -231,10 +241,7 @@ public:
 	virtual void RuntimePostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 
 
-	UFUNCTION(CallInEditor, Category = LoadCustomFile, meta = (DisplayName = "Save the data of this route into the file", CallInRuntime))
-	void SaveNavigationRouteToFile();
-	UFUNCTION(CallInEditor, Category = LoadCustomFile, meta = (DisplayName = "Recreate the data of this route from the file", CallInRuntime))
-	void RecreateNavigationRouteFromFile();
+
 
 public:
 	ANavigationRouteEditable(const FObjectInitializer& ObjectInitializer);

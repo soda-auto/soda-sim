@@ -6,6 +6,7 @@
 #include "AnimationRuntime.h"
 #include "Animation/AnimStats.h"
 #include "WheeledVehiclePawn.h"
+#include "Animation/AnimTrace.h"
 
 FAnimNode_StageCoachSodaWheelController::FAnimNode_StageCoachSodaWheelController()
 	: WheelSpokeCount(5)

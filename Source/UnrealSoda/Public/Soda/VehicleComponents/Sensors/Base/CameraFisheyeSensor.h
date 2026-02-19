@@ -63,7 +63,7 @@ class UNREALSODA_API USceneCaptureDeferredComponent2D : public USceneCaptureComp
 	GENERATED_UCLASS_BODY()
 
 public:
-	void UpdateSceneCaptureContents(FSceneInterface* Scene) override;
+	void UpdateSceneCaptureContents(FSceneInterface* Scene, class ISceneRenderBuilder& SceneRenderBuilder) override;
     UWorld * CustomWorld = nullptr;
 };
 

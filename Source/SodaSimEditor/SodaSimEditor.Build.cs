@@ -26,8 +26,8 @@ public class SodaSimEditor : ModuleRules
 
 		bEnableExceptions = true;
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-		bEnableUndefinedIdentifierWarnings = false;
-		SetupModulePhysicsSupport(Target);
+        UndefinedIdentifierWarningLevel = WarningLevel.Off;
+        SetupModulePhysicsSupport(Target);
 		//bUsePrecompiled = true;
 		bUseUnity = false;
 

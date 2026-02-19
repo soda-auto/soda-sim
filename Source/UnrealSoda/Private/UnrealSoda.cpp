@@ -66,7 +66,7 @@ void FUnrealSodaModule::StartupModule()
 
 #if PLATFORM_WINDOWS
 	FString DllDirectory = FPaths::Combine(IPluginManager::Get().FindPlugin(TEXT("SodaSim"))->GetBaseDir(), TEXT("/Binaries/Win64"));
-	TArray<FString> DllNames = { "libsodium.dll", "libzmq-v141-mt-4_3_2.dll", "SDL2.dll" };
+	TArray<FString> DllNames = { "libsodium.dll", "libzmq-v141-mt-4_3_2.dll"};
 	FPlatformProcess::PushDllDirectory(*DllDirectory);
 
 	for (auto& It : DllNames)

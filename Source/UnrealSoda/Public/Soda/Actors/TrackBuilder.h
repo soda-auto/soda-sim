@@ -196,6 +196,8 @@ public:
 	//bool bStoreJSON = false;
 
 public:
+
+
 	UFUNCTION(BlueprintCallable, Category = LoadJsonTrack)
 	bool LoadJsonFromFile(const FString& InFileName);
 

@@ -39,11 +39,11 @@ USceneCaptureDeferredComponent2D::USceneCaptureDeferredComponent2D(const FObject
 {
 }
 
-void USceneCaptureDeferredComponent2D::UpdateSceneCaptureContents(FSceneInterface* Scene)
+void USceneCaptureDeferredComponent2D::UpdateSceneCaptureContents(FSceneInterface* Scene, ISceneRenderBuilder& SceneRenderBuilder)
 {
 	if (IsValid(CustomWorld))
 	{
-		USceneCaptureComponent2D::UpdateSceneCaptureContents(CustomWorld->Scene);
+		USceneCaptureComponent2D::UpdateSceneCaptureContents(CustomWorld->Scene, SceneRenderBuilder);
 	}
 }
 

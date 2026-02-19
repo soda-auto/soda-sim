@@ -281,9 +281,11 @@ bool ULidarDepth2DSensor::OnActivateVehicleComponent()
 	SceneCaptureComponent2D->bCaptureEveryFrame = true;
 	SceneCaptureComponent2D->PostProcessSettings = LidarPostProcessSettings;
 	SceneCaptureComponent2D->HideComponent(this);
-	SceneCaptureComponent2D->HideComponent(GetWorld()->LineBatcher.Get());
-	SceneCaptureComponent2D->HideComponent(GetWorld()->PersistentLineBatcher.Get());
-	SceneCaptureComponent2D->HideComponent(GetWorld()->ForegroundLineBatcher.Get());
+	SceneCaptureComponent2D->HideComponent(GetWorld()->GetLineBatcher(UWorld::ELineBatcherType::World));
+	SceneCaptureComponent2D->HideComponent(GetWorld()->GetLineBatcher(UWorld::ELineBatcherType::WorldPersistent));
+	SceneCaptureComponent2D->HideComponent(GetWorld()->GetLineBatcher(UWorld::ELineBatcherType::Foreground));
+	SceneCaptureComponent2D->HideComponent(GetWorld()->GetLineBatcher(UWorld::ELineBatcherType::ForegroundPersistent));
+	SceneCaptureComponent2D->HideComponent(GetWorld()->GetLineBatcher(UWorld::ELineBatcherType::World));
 
 	CameraFrame = FCameraFrame(ECameraSensorShader::Depth8);
 	CameraFrame.Height = TextureHeight;

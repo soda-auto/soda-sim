@@ -5,14 +5,6 @@
 #include <vector>
 #include "UAxisStruct.h"
 #include "JoystickGameSettings.h"
-#if defined(_MSC_VER)
-#	pragma warning( push )
-#	pragma warning(disable: 4668)
-#endif
-#include "ThirdParty/SDL2/SDL-gui-backend/include/SDL.h"
-#if defined(_MSC_VER)
-#	pragma warning( pop )
-#endif
 
 DECLARE_LOG_CATEGORY_EXTERN(SodaSDLJoystickDevice, Log, All);
 
@@ -69,7 +61,7 @@ public:
 	void ActualizeAxesNum();
 	void ActualizeButtonsNum();
 
-	int GetJoyNum() const { return Joys.Num(); }
+	int GetJoyNum() const { return 0; /*return Joys.Num(); */ }
 
 private:
 	bool SDLStartup();
@@ -79,12 +71,11 @@ private:
 	/* Message handler */
 	TSharedRef<FGenericApplicationMessageHandler> MessageHandler;
 
-	TArray<SDL_Joystick *> Joys;
+	//TArray<SDL_Joystick*> Joys;
+	//TArray<SDL_Haptic*> Haptics;
+	//SDL_HapticEffect EffectConstant;
+	//SDL_HapticEffect EffectBump;
 
-	TArray < SDL_Haptic *> Haptics;
-
-	SDL_HapticEffect EffectConstant;
-	SDL_HapticEffect EffectBump;
 	TArray<int> EffectConstantIds;
 	TArray<int> EffectBumpIds;
 

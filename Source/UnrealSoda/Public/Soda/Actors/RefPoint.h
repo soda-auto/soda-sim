@@ -27,13 +27,13 @@ class UNREALSODA_API ARefPoint
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RefPoint, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RefPoint, SaveGame, meta = (EditInRuntime))
 	double Latitude = 59.995;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RefPoint, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RefPoint, SaveGame, meta = (EditInRuntime))
 	double Longitude = 30.13;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RefPoint, meta = (EditInRuntime))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RefPoint, SaveGame, meta = (EditInRuntime))
 	double Altitude = 10.0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visibility, SaveGame, meta = (EditInRuntime))

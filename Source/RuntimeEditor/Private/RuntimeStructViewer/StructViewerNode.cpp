@@ -3,7 +3,7 @@
 #include "StructViewerNode.h"
 
 #include "AssetRegistry/AssetData.h"
-#include "Engine/UserDefinedStruct.h"
+#include "StructUtils/UserDefinedStruct.h"
 #include "HAL/Platform.h"
 #include "HAL/PlatformCrt.h"
 #include "Internationalization/Internationalization.h"

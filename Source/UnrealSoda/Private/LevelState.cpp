@@ -312,14 +312,7 @@ void ALevelState::SetGeoReference(double Lat, double Lon, double Alt, const FVec
 	LLConverter.OrignDYaw = OrignDYaw;
 	LLConverter.Init();
 
-	for (TActorIterator<ARefPoint> It(GetWorld()); It; ++It)
-	{
-		It->SetActorLocation(LLConverter.OrignShift);
-		It->SetActorRotation(FRotator(0, LLConverter.OrignDYaw, 0));
-		It->Longitude = Lon;
-		It->Latitude = Lat;
-		It->Altitude = Alt;
-	}
+
 }
 
 void ALevelState::ClearLevel()
